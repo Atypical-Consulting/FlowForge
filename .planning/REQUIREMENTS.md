@@ -9,11 +9,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Foundation
 
-- [ ] **FOUND-01**: Application launches on macOS, Windows, and Linux
-- [ ] **FOUND-02**: User can open a Git repository from file picker
-- [ ] **FOUND-03**: User can open recent repositories from bookmarks
-- [ ] **FOUND-04**: Application detects and displays repository status (branch, clean/dirty)
-- [ ] **FOUND-05**: IPC layer provides type-safe communication between Rust and React
+- [x] **FOUND-01**: Application launches on macOS, Windows, and Linux
+- [x] **FOUND-02**: User can open a Git repository from file picker
+- [x] **FOUND-03**: User can open recent repositories from bookmarks
+- [x] **FOUND-04**: Application detects and displays repository status (branch, clean/dirty)
+- [x] **FOUND-05**: IPC layer provides type-safe communication between Rust and React
 
 ### Core Git Operations
 
@@ -149,11 +149,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 | Phase 1 | Pending |
-| FOUND-02 | Phase 1 | Pending |
-| FOUND-03 | Phase 1 | Pending |
-| FOUND-04 | Phase 1 | Pending |
-| FOUND-05 | Phase 1 | Pending |
+| FOUND-01 | Phase 1 | Complete |
+| FOUND-02 | Phase 1 | Complete |
+| FOUND-03 | Phase 1 | Complete |
+| FOUND-04 | Phase 1 | Complete |
+| FOUND-05 | Phase 1 | Complete |
 | GIT-01 | Phase 2 | Pending |
 | GIT-02 | Phase 2 | Pending |
 | GIT-03 | Phase 2 | Pending |

@@ -12,7 +12,7 @@ FlowForge delivers a cross-platform Git client in 8 phases: starting with Tauri 
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - Tauri scaffold, repo opening, IPC layer
+- [x] **Phase 1: Foundation** - Tauri scaffold, repo opening, IPC layer
 - [ ] **Phase 2: Core Git - Staging & Commits** - Stage, unstage, diff, commit, push/pull/fetch, history
 - [ ] **Phase 3: Core Git - Branches** - Branch CRUD, checkout, merge, stash, tags
 - [ ] **Phase 4: Gitflow State Machine** - Feature/release/hotfix workflows with enforcement
@@ -35,9 +35,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 01-01-PLAN.md — Tauri + React scaffold with tauri-specta IPC
-- [ ] 01-02-PLAN.md — Git service layer with spawn_blocking pattern
-- [ ] 01-03-PLAN.md — Repository UI with file picker, recent repos, status display
+- [x] 01-01-PLAN.md — Tauri + React scaffold with tauri-specta IPC
+- [x] 01-02-PLAN.md — Git service layer with spawn_blocking pattern
+- [x] 01-03-PLAN.md — Repository UI with file picker, recent repos, status display
 
 ### Phase 2: Core Git - Staging & Commits
 **Goal**: User can view changes, stage/unstage files, commit, and sync with remotes
@@ -129,7 +129,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 
 | Phase | Status | Completed |
 |-------|--------|-----------|
-| 1. Foundation | Planned | - |
+| 1. Foundation | Complete | 2026-02-04 |
 | 2. Core Git - Staging & Commits | Not started | - |
 | 3. Core Git - Branches | Not started | - |
 | 4. Gitflow State Machine | Not started | - |
