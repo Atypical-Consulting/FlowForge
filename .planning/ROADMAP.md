@@ -32,7 +32,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. User can open a Git repository via file picker and see it load
   3. User can see recent repositories and reopen them with one click
   4. User can see current branch name and dirty/clean status in the UI
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
+
+Plans:
+- [ ] 01-01-PLAN.md — Tauri + React scaffold with tauri-specta IPC
+- [ ] 01-02-PLAN.md — Git service layer with spawn_blocking pattern
+- [ ] 01-03-PLAN.md — Repository UI with file picker, recent repos, status display
 
 ### Phase 2: Core Git - Staging & Commits
 **Goal**: User can view changes, stage/unstage files, commit, and sync with remotes
@@ -124,7 +129,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 
 | Phase | Status | Completed |
 |-------|--------|-----------|
-| 1. Foundation | Not started | - |
+| 1. Foundation | Planned | - |
 | 2. Core Git - Staging & Commits | Not started | - |
 | 3. Core Git - Branches | Not started | - |
 | 4. Gitflow State Machine | Not started | - |
