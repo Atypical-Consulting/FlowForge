@@ -1,11 +1,17 @@
-import { Plus, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
-import { cn } from "../../lib/utils";
 import { useStashStore } from "../../stores/stash";
 import { StashDialog } from "./StashDialog";
 import { StashItem } from "./StashItem";
 
-export function StashList() {
+interface StashListProps {
+  showSaveDialog: boolean;
+  onCloseSaveDialog: () => void;
+}
+
+export function StashList({
+  showSaveDialog,
+  onCloseSaveDialog,
+}: StashListProps) {
   const {
     stashes,
     isLoading,
@@ -16,7 +22,6 @@ export function StashList() {
     dropStash,
     clearError,
   } = useStashStore();
-  const [showSaveDialog, setShowSaveDialog] = useState(false);
 
   useEffect(() => {
     loadStashes();
@@ -30,27 +35,6 @@ export function StashList() {
 
   return (
     <div className="flex flex-col">
-      {/* Action buttons */}
-      <div className="flex justify-end gap-1 p-2 border-b border-gray-800">
-        <button
-          type="button"
-          onClick={() => loadStashes()}
-          disabled={isLoading}
-          className="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white"
-          title="Refresh stashes"
-        >
-          <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowSaveDialog(true)}
-          className="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white"
-          title="Save new stash"
-        >
-          <Plus className="w-4 h-4" />
-        </button>
-      </div>
-
       {error && (
         <div className="p-3 bg-red-900/30 text-red-300 text-sm">
           {error}
@@ -77,9 +61,7 @@ export function StashList() {
         )}
       </div>
 
-      {showSaveDialog && (
-        <StashDialog onClose={() => setShowSaveDialog(false)} />
-      )}
+      {showSaveDialog && <StashDialog onClose={onCloseSaveDialog} />}
     </div>
   );
 }

@@ -1,17 +1,22 @@
-import { Plus, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import type { TagInfo } from "../../bindings";
 import { commands } from "../../bindings";
 import { getErrorMessage } from "../../lib/errors";
-import { cn } from "../../lib/utils";
 import { CreateTagDialog } from "./CreateTagDialog";
 import { TagItem } from "./TagItem";
 
-export function TagList() {
+interface TagListProps {
+  showCreateDialog: boolean;
+  onCloseCreateDialog: () => void;
+}
+
+export function TagList({
+  showCreateDialog,
+  onCloseCreateDialog,
+}: TagListProps) {
   const [tags, setTags] = useState<TagInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const loadTags = useCallback(async () => {
     setIsLoading(true);
@@ -39,27 +44,6 @@ export function TagList() {
 
   return (
     <div className="flex flex-col">
-      {/* Action buttons */}
-      <div className="flex justify-end gap-1 p-2 border-b border-gray-800">
-        <button
-          type="button"
-          onClick={() => loadTags()}
-          disabled={isLoading}
-          className="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white"
-          title="Refresh tags"
-        >
-          <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowCreateDialog(true)}
-          className="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white"
-          title="Create new tag"
-        >
-          <Plus className="w-4 h-4" />
-        </button>
-      </div>
-
       {error && (
         <div className="p-3 bg-red-900/30 text-red-300 text-sm">
           {error}
@@ -89,10 +73,7 @@ export function TagList() {
       </div>
 
       {showCreateDialog && (
-        <CreateTagDialog
-          onClose={() => setShowCreateDialog(false)}
-          onCreated={loadTags}
-        />
+        <CreateTagDialog onClose={onCloseCreateDialog} onCreated={loadTags} />
       )}
     </div>
   );

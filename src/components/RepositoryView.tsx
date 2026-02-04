@@ -4,12 +4,16 @@ import {
   GitBranch,
   GitMerge,
   History,
+  Plus,
+  RefreshCw,
   Tag,
 } from "lucide-react";
 import { useState } from "react";
 import type { CommitSummary } from "../bindings";
 import { cn } from "../lib/utils";
+import { useBranchStore } from "../stores/branches";
 import { useRepositoryStore } from "../stores/repository";
+import { useStashStore } from "../stores/stash";
 import { BranchList } from "./branches/BranchList";
 import { CommitDetails } from "./commit/CommitDetails";
 import { CommitForm } from "./commit/CommitForm";
@@ -24,22 +28,47 @@ type Tab = "changes" | "history";
 
 export function RepositoryView() {
   const { status } = useRepositoryStore();
+  const { loadBranches, isLoading: branchesLoading } = useBranchStore();
+  const { loadStashes, isLoading: stashesLoading } = useStashStore();
   const [activeTab, setActiveTab] = useState<Tab>("changes");
   const [selectedCommit, setSelectedCommit] = useState<CommitSummary | null>(
     null,
   );
+  const [tagsLoading, setTagsLoading] = useState(false);
+  const [showStashDialog, setShowStashDialog] = useState(false);
+  const [showTagDialog, setShowTagDialog] = useState(false);
 
   if (!status) return null;
+
+  const handleRefreshTags = () => {
+    setTagsLoading(true);
+    // Tags refresh is handled by TagList's useEffect, we just trigger a re-render
+    setTimeout(() => setTagsLoading(false), 500);
+  };
 
   return (
     <div className="flex-1 flex h-full overflow-hidden">
       {/* Left sidebar - Branches, Stash, Tags */}
-      <div className="w-64 shrink-0 border-r border-gray-800 bg-gray-950 overflow-hidden flex flex-col">
+      <div className="w-64 shrink-0 border-r border-gray-800 bg-gray-950 overflow-y-auto">
         {/* Branches section */}
         <details open className="border-b border-gray-800">
-          <summary className="p-3 cursor-pointer hover:bg-gray-800/50 flex items-center gap-2 select-none">
+          <summary className="p-3 cursor-pointer hover:bg-gray-800/50 flex items-center gap-2 select-none sticky top-0 bg-gray-950 z-10">
             <GitBranch className="w-4 h-4" />
-            <span className="font-semibold text-sm">Branches</span>
+            <span className="font-semibold text-sm flex-1">Branches</span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                loadBranches();
+              }}
+              disabled={branchesLoading}
+              className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-white"
+              title="Refresh branches"
+            >
+              <RefreshCw
+                className={cn("w-3.5 h-3.5", branchesLoading && "animate-spin")}
+              />
+            </button>
           </summary>
           <div className="max-h-64 overflow-y-auto">
             <BranchList />
@@ -48,31 +77,87 @@ export function RepositoryView() {
 
         {/* Stash section */}
         <details className="border-b border-gray-800">
-          <summary className="p-3 cursor-pointer hover:bg-gray-800/50 flex items-center gap-2 select-none">
+          <summary className="p-3 cursor-pointer hover:bg-gray-800/50 flex items-center gap-2 select-none sticky top-0 bg-gray-950 z-10">
             <Archive className="w-4 h-4" />
-            <span className="font-semibold text-sm">Stashes</span>
+            <span className="font-semibold text-sm flex-1">Stashes</span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                loadStashes();
+              }}
+              disabled={stashesLoading}
+              className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-white"
+              title="Refresh stashes"
+            >
+              <RefreshCw
+                className={cn("w-3.5 h-3.5", stashesLoading && "animate-spin")}
+              />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setShowStashDialog(true);
+              }}
+              className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-white"
+              title="Save new stash"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
           </summary>
           <div className="max-h-48 overflow-y-auto">
-            <StashList />
+            <StashList
+              showSaveDialog={showStashDialog}
+              onCloseSaveDialog={() => setShowStashDialog(false)}
+            />
           </div>
         </details>
 
         {/* Tags section */}
         <details className="border-b border-gray-800">
-          <summary className="p-3 cursor-pointer hover:bg-gray-800/50 flex items-center gap-2 select-none">
+          <summary className="p-3 cursor-pointer hover:bg-gray-800/50 flex items-center gap-2 select-none sticky top-0 bg-gray-950 z-10">
             <Tag className="w-4 h-4" />
-            <span className="font-semibold text-sm">Tags</span>
+            <span className="font-semibold text-sm flex-1">Tags</span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                handleRefreshTags();
+              }}
+              disabled={tagsLoading}
+              className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-white"
+              title="Refresh tags"
+            >
+              <RefreshCw
+                className={cn("w-3.5 h-3.5", tagsLoading && "animate-spin")}
+              />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setShowTagDialog(true);
+              }}
+              className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-white"
+              title="Create new tag"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
           </summary>
           <div className="max-h-48 overflow-y-auto">
-            <TagList />
+            <TagList
+              showCreateDialog={showTagDialog}
+              onCloseCreateDialog={() => setShowTagDialog(false)}
+            />
           </div>
         </details>
 
         {/* Gitflow section */}
         <details className="border-b border-gray-800">
-          <summary className="p-3 cursor-pointer hover:bg-gray-800/50 flex items-center gap-2 select-none">
+          <summary className="p-3 cursor-pointer hover:bg-gray-800/50 flex items-center gap-2 select-none sticky top-0 bg-gray-950 z-10">
             <GitMerge className="w-4 h-4" />
-            <span className="font-semibold text-sm">Gitflow</span>
+            <span className="font-semibold text-sm flex-1">Gitflow</span>
           </summary>
           <GitflowPanel />
         </details>
