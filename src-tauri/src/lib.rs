@@ -1,4 +1,5 @@
 mod git;
+mod gitflow;
 
 use git::{
     branch::{checkout_branch, create_branch, delete_branch, list_branches},
