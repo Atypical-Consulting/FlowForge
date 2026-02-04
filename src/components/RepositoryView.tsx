@@ -12,6 +12,7 @@ import { useState } from "react";
 import type { CommitSummary } from "../bindings";
 import { cn } from "../lib/utils";
 import { useRepositoryStore } from "../stores/repository";
+import { useTopologyStore } from "../stores/topology";
 import { BranchList } from "./branches/BranchList";
 import { CommitDetails } from "./commit/CommitDetails";
 import { CommitForm } from "./commit/CommitForm";
@@ -21,12 +22,14 @@ import { GitflowPanel } from "./gitflow";
 import { StagingPanel } from "./staging/StagingPanel";
 import { StashList } from "./stash/StashList";
 import { TagList } from "./tags/TagList";
-import { TopologyPanel } from "./topology";
+import { TopologyPanel, TopologyCommitDetails } from "./topology";
 
 type Tab = "changes" | "history" | "topology";
 
 export function RepositoryView() {
   const { status } = useRepositoryStore();
+  const topologySelectedCommit = useTopologyStore((s) => s.selectedCommit);
+  const clearTopologySelection = useTopologyStore((s) => s.selectCommit);
   const [activeTab, setActiveTab] = useState<Tab>("changes");
   const [selectedCommit, setSelectedCommit] = useState<CommitSummary | null>(
     null,
@@ -202,8 +205,18 @@ export function RepositoryView() {
       {activeTab === "changes" ? (
         <DiffViewer />
       ) : activeTab === "topology" ? (
-        <div className="flex-1 bg-gray-900">
-          <TopologyPanel />
+        <div className="flex-1 flex bg-gray-900">
+          <div className={topologySelectedCommit ? "flex-1" : "w-full"}>
+            <TopologyPanel />
+          </div>
+          {topologySelectedCommit && (
+            <div className="w-80 shrink-0">
+              <TopologyCommitDetails
+                oid={topologySelectedCommit}
+                onClose={() => clearTopologySelection(null)}
+              />
+            </div>
+          )}
         </div>
       ) : selectedCommit ? (
         <div className="flex-1 bg-gray-900">
