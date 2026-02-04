@@ -35,6 +35,7 @@ export function RepositoryView() {
     null,
   );
   const [tagsLoading, setTagsLoading] = useState(false);
+  const [showBranchDialog, setShowBranchDialog] = useState(false);
   const [showStashDialog, setShowStashDialog] = useState(false);
   const [showTagDialog, setShowTagDialog] = useState(false);
 
@@ -69,9 +70,23 @@ export function RepositoryView() {
                 className={cn("w-3.5 h-3.5", branchesLoading && "animate-spin")}
               />
             </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setShowBranchDialog(true);
+              }}
+              className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-white"
+              title="Create new branch"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
           </summary>
           <div className="max-h-64 overflow-y-auto">
-            <BranchList />
+            <BranchList
+              showCreateDialog={showBranchDialog}
+              onCloseCreateDialog={() => setShowBranchDialog(false)}
+            />
           </div>
         </details>
 
