@@ -1,22 +1,29 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Check,
-  FileEdit,
-  FileMinus,
-  FilePlus,
-  FileQuestion,
-  X,
-} from "lucide-react";
+import { Check, X } from "lucide-react";
 import type { FileChange, FileStatus } from "../../bindings";
 import { commands } from "../../bindings";
 import { cn } from "../../lib/utils";
 import { useStagingStore } from "../../stores/staging";
+import { FileTypeIcon } from "../icons/FileTypeIcon";
 
 interface FileItemProps {
   file: FileChange;
   section: "staged" | "unstaged" | "untracked";
   depth?: number;
   showFilenameOnly?: boolean;
+}
+
+function getStatusDot(status: FileStatus): { color: string; title: string } {
+  if (status === "added") return { color: "bg-green-500", title: "Added" };
+  if (status === "deleted") return { color: "bg-red-500", title: "Deleted" };
+  if (status === "modified")
+    return { color: "bg-yellow-500", title: "Modified" };
+  if (status === "untracked")
+    return { color: "bg-blue-500", title: "Untracked" };
+  if (typeof status === "object" && "renamed" in status) {
+    return { color: "bg-purple-500", title: "Renamed" };
+  }
+  return { color: "bg-gray-500", title: "Unknown" };
 }
 
 export function FileItem({
@@ -41,7 +48,7 @@ export function FileItem({
       queryClient.invalidateQueries({ queryKey: ["stagingStatus"] }),
   });
 
-  const StatusIcon = getStatusIcon(file.status);
+  const statusDot = getStatusDot(file.status);
   const displayName = showFilenameOnly
     ? file.path.split("/").pop() || file.path
     : file.path;
@@ -68,7 +75,16 @@ export function FileItem({
       )}
       style={indentStyle}
     >
-      <StatusIcon className="w-4 h-4 text-gray-400 shrink-0" />
+      <div className="relative shrink-0">
+        <FileTypeIcon path={file.path} className="w-4 h-4" />
+        <span
+          className={cn(
+            "absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-gray-900",
+            statusDot.color,
+          )}
+          title={statusDot.title}
+        />
+      </div>
       <span className="flex-1 truncate text-sm text-gray-200">
         {displayName}
       </span>
@@ -97,13 +113,4 @@ export function FileItem({
       </button>
     </div>
   );
-}
-
-function getStatusIcon(status: FileStatus) {
-  if (status === "added") return FilePlus;
-  if (status === "deleted") return FileMinus;
-  if (status === "modified") return FileEdit;
-  if (status === "untracked") return FileQuestion;
-  if (typeof status === "object" && "renamed" in status) return FileEdit;
-  return FileEdit;
 }
