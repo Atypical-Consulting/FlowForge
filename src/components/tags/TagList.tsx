@@ -1,7 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import type { TagInfo } from "../../bindings";
-import { commands } from "../../bindings";
-import { getErrorMessage } from "../../lib/errors";
+import { useEffect } from "react";
+import { useTagStore } from "../../stores/tags";
 import { CreateTagDialog } from "./CreateTagDialog";
 import { TagItem } from "./TagItem";
 
@@ -14,21 +12,8 @@ export function TagList({
   showCreateDialog,
   onCloseCreateDialog,
 }: TagListProps) {
-  const [tags, setTags] = useState<TagInfo[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadTags = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    const result = await commands.listTags();
-    if (result.status === "ok") {
-      setTags(result.data);
-    } else {
-      setError(getErrorMessage(result.error));
-    }
-    setIsLoading(false);
-  }, []);
+  const { tags, isLoading, error, loadTags, deleteTag, clearError } =
+    useTagStore();
 
   useEffect(() => {
     loadTags();
@@ -36,10 +21,7 @@ export function TagList({
 
   const handleDelete = async (name: string) => {
     if (!window.confirm(`Delete tag "${name}"?`)) return;
-    const result = await commands.deleteTag(name);
-    if (result.status === "ok") {
-      await loadTags();
-    }
+    await deleteTag(name);
   };
 
   return (
@@ -47,11 +29,7 @@ export function TagList({
       {error && (
         <div className="p-3 bg-red-900/30 text-red-300 text-sm">
           {error}
-          <button
-            type="button"
-            onClick={() => setError(null)}
-            className="ml-2 underline"
-          >
+          <button type="button" onClick={clearError} className="ml-2 underline">
             dismiss
           </button>
         </div>
