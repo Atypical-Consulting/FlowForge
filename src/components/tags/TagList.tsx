@@ -39,25 +39,25 @@ export function TagList() {
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center justify-between p-3 border-b border-gray-800">
-        <h2 className="text-sm font-semibold text-gray-300">Tags</h2>
-        <div className="flex gap-1">
-          <button
-            type="button"
-            onClick={() => loadTags()}
-            disabled={isLoading}
-            className="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white"
-          >
-            <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowCreateDialog(true)}
-            className="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
+      {/* Action buttons */}
+      <div className="flex justify-end gap-1 p-2 border-b border-gray-800">
+        <button
+          type="button"
+          onClick={() => loadTags()}
+          disabled={isLoading}
+          className="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white"
+          title="Refresh tags"
+        >
+          <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowCreateDialog(true)}
+          className="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white"
+          title="Create new tag"
+        >
+          <Plus className="w-4 h-4" />
+        </button>
       </div>
 
       {error && (

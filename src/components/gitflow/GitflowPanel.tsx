@@ -1,12 +1,4 @@
-import {
-  AlertTriangle,
-  Flag,
-  GitBranch,
-  Play,
-  RefreshCw,
-  Square,
-  X,
-} from "lucide-react";
+import { AlertTriangle, Flag, Play, Square, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useBranchStore } from "../../stores/branches";
 import { useGitflowStore } from "../../stores/gitflow";
@@ -57,25 +49,6 @@ export function GitflowPanel() {
 
   return (
     <div className="p-3 space-y-3">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <GitBranch className="w-4 h-4 text-purple-400" />
-          <span className="font-medium text-sm">Gitflow</span>
-        </div>
-        <button
-          type="button"
-          onClick={() => refresh()}
-          disabled={isLoading}
-          className="p-1 hover:bg-gray-800 rounded text-gray-400 hover:text-white"
-          title="Refresh status"
-        >
-          <RefreshCw
-            className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`}
-          />
-        </button>
-      </div>
-
       {/* Active flow indicator */}
       {status.activeFlow && (
         <div className="bg-purple-900/30 border border-purple-700/50 rounded p-2.5">

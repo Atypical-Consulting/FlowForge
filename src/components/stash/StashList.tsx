@@ -30,35 +30,31 @@ export function StashList() {
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center justify-between p-3 border-b border-gray-800">
-        <h2 className="text-sm font-semibold text-gray-300">Stashes</h2>
-        <div className="flex gap-1">
-          <button
-            type="button"
-            onClick={() => loadStashes()}
-            disabled={isLoading}
-            className="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white"
-          >
-            <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowSaveDialog(true)}
-            className="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
+      {/* Action buttons */}
+      <div className="flex justify-end gap-1 p-2 border-b border-gray-800">
+        <button
+          type="button"
+          onClick={() => loadStashes()}
+          disabled={isLoading}
+          className="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white"
+          title="Refresh stashes"
+        >
+          <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowSaveDialog(true)}
+          className="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white"
+          title="Save new stash"
+        >
+          <Plus className="w-4 h-4" />
+        </button>
       </div>
 
       {error && (
         <div className="p-3 bg-red-900/30 text-red-300 text-sm">
           {error}
-          <button
-            type="button"
-            onClick={clearError}
-            className="ml-2 underline"
-          >
+          <button type="button" onClick={clearError} className="ml-2 underline">
             dismiss
           </button>
         </div>
