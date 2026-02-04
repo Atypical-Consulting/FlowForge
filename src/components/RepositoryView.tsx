@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { CommitSummary } from "../bindings";
+import { cn } from "../lib/utils";
 import { useRepositoryStore } from "../stores/repository";
 import { BranchList } from "./branches/BranchList";
 import { CommitDetails } from "./commit/CommitDetails";
