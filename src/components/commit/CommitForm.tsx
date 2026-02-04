@@ -4,8 +4,10 @@ import { useState } from "react";
 import { commands } from "../../bindings";
 import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
+import { ConventionalCommitForm } from "./ConventionalCommitForm";
 
 export function CommitForm() {
+  const [useConventional, setUseConventional] = useState(true);
   const [message, setMessage] = useState("");
   const [amend, setAmend] = useState(false);
   const queryClient = useQueryClient();
@@ -16,7 +18,8 @@ export function CommitForm() {
   });
 
   const commitMutation = useMutation({
-    mutationFn: () => commands.createCommit(message, amend),
+    mutationFn: (commitMessage: string) =>
+      commands.createCommit(commitMessage, amend),
     onSuccess: () => {
       setMessage("");
       setAmend(false);
@@ -28,9 +31,14 @@ export function CommitForm() {
 
   const status = result?.status === "ok" ? result.data : null;
   const hasStagedFiles = status && status.staged.length > 0;
-  const canCommit = hasStagedFiles && message.trim().length > 0;
 
-  // Parse subject line for character count
+  // Handle commit from ConventionalCommitForm
+  const handleConventionalCommit = (commitMessage: string) => {
+    commitMutation.mutate(commitMessage);
+  };
+
+  // Simple form logic
+  const canSimpleCommit = hasStagedFiles && message.trim().length > 0;
   const lines = message.split("\n");
   const subject = lines[0] || "";
   const subjectLength = subject.length;
@@ -46,80 +54,115 @@ export function CommitForm() {
 
   return (
     <div className="border-t border-gray-800 p-3 bg-gray-950">
-      <div className="space-y-2">
-        <textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Commit message..."
-          className={cn(
-            "w-full h-24 px-3 py-2 text-sm bg-gray-900 border border-gray-700",
-            "rounded resize-none focus:outline-none focus:border-blue-500",
-            "text-gray-200 placeholder:text-gray-500",
-          )}
-        />
+      {/* Mode toggle */}
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-medium text-gray-300">Commit</span>
+        <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={useConventional}
+            onChange={(e) => setUseConventional(e.target.checked)}
+            className="rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500"
+          />
+          Conventional Commits
+        </label>
+      </div>
 
-        {/* Character count and guidance */}
-        <div className="flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2">
-            <label className="flex items-center gap-1.5 text-gray-400">
-              <input
-                type="checkbox"
-                checked={amend}
-                onChange={(e) => setAmend(e.target.checked)}
-                className="rounded border-gray-600"
-              />
-              Amend last commit
-            </label>
+      {/* Conventional commit form */}
+      {useConventional ? (
+        <div className="space-y-3">
+          <ConventionalCommitForm
+            onCommit={handleConventionalCommit}
+            disabled={commitMutation.isPending || !hasStagedFiles}
+          />
+          {!hasStagedFiles && (
+            <p className="text-xs text-gray-500 text-center">
+              No staged changes to commit
+            </p>
+          )}
+          {commitMutation.isError && (
+            <p className="text-xs text-red-400 text-center">
+              {String(commitMutation.error)}
+            </p>
+          )}
+        </div>
+      ) : (
+        /* Simple commit form */
+        <div className="space-y-2">
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Commit message..."
+            className={cn(
+              "w-full h-24 px-3 py-2 text-sm bg-gray-900 border border-gray-700",
+              "rounded resize-none focus:outline-none focus:border-blue-500",
+              "text-gray-200 placeholder:text-gray-500",
+            )}
+          />
+
+          {/* Character count and guidance */}
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-1.5 text-gray-400">
+                <input
+                  type="checkbox"
+                  checked={amend}
+                  onChange={(e) => setAmend(e.target.checked)}
+                  className="rounded border-gray-600"
+                />
+                Amend last commit
+              </label>
+            </div>
+
+            <span
+              className={cn(
+                "font-mono",
+                subjectStatus === "good" && "text-green-500",
+                subjectStatus === "warning" && "text-yellow-500",
+                subjectStatus === "error" && "text-red-500",
+                subjectStatus === "empty" && "text-gray-500",
+              )}
+            >
+              {subjectLength}/50
+              {subjectStatus === "warning" && " (suggested max)"}
+              {subjectStatus === "error" && " (too long)"}
+            </span>
           </div>
 
-          <span
-            className={cn(
-              "font-mono",
-              subjectStatus === "good" && "text-green-500",
-              subjectStatus === "warning" && "text-yellow-500",
-              subjectStatus === "error" && "text-red-500",
-              subjectStatus === "empty" && "text-gray-500",
-            )}
+          {/* Commit button */}
+          <Button
+            onClick={() => commitMutation.mutate(message)}
+            disabled={!canSimpleCommit || commitMutation.isPending}
+            className="w-full"
           >
-            {subjectLength}/50
-            {subjectStatus === "warning" && " (suggested max)"}
-            {subjectStatus === "error" && " (too long)"}
-          </span>
-        </div>
+            {commitMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Committing...
+              </>
+            ) : amend ? (
+              <>
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Amend Commit
+              </>
+            ) : (
+              "Commit"
+            )}
+          </Button>
 
-        {/* Commit button */}
-        <Button
-          onClick={() => commitMutation.mutate()}
-          disabled={!canCommit || commitMutation.isPending}
-          className="w-full"
-        >
-          {commitMutation.isPending ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Committing...
-            </>
-          ) : amend ? (
-            <>
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Amend Commit
-            </>
-          ) : (
-            "Commit"
+          {!hasStagedFiles && (
+            <p className="text-xs text-gray-500 text-center">
+              No staged changes to commit
+            </p>
           )}
-        </Button>
 
-        {!hasStagedFiles && (
-          <p className="text-xs text-gray-500 text-center">
-            No staged changes to commit
-          </p>
-        )}
-
-        {commitMutation.isError && (
-          <p className="text-xs text-red-400 text-center">
-            {String(commitMutation.error)}
-          </p>
-        )}
-      </div>
+          {commitMutation.isError && (
+            <p className="text-xs text-red-400 text-center">
+              {String(commitMutation.error)}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

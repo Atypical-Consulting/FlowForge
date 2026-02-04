@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { ChangelogDialog } from "./components/changelog";
 import { Header } from "./components/Header";
 import { RepositoryView } from "./components/RepositoryView";
 import { WelcomeView } from "./components/WelcomeView";
@@ -27,6 +28,7 @@ function App() {
       <main className="flex-1 overflow-hidden">
         {status ? <RepositoryView /> : <WelcomeView />}
       </main>
+      <ChangelogDialog />
     </div>
   );
 }
