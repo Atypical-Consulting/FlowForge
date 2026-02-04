@@ -631,6 +631,84 @@ export const commands = {
       else return { status: "error", error: e as any };
     }
   },
+  /**
+   * Validate a conventional commit message.
+   *
+   * Returns validation result with errors and warnings.
+   */
+  async validateConventionalCommit(message: string): Promise<ValidationResult> {
+    return await TAURI_INVOKE("validate_conventional_commit", { message });
+  },
+  /**
+   * Suggest a commit type based on staged files.
+   *
+   * Analyzes the currently staged files and returns a type suggestion
+   * with confidence level.
+   */
+  async suggestCommitType(): Promise<Result<TypeSuggestion, GitError>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("suggest_commit_type") };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Get scope suggestions from commit history.
+   *
+   * Extracts scopes used in previous commits, sorted by frequency.
+   */
+  async getScopeSuggestions(
+    limit: number | null,
+  ): Promise<Result<ScopeSuggestion[], GitError>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("get_scope_suggestions", { limit }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Infer scope from staged files based on common directory.
+   */
+  async inferScopeFromStaged(): Promise<Result<string | null, GitError>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("infer_scope_from_staged"),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Generate a changelog from commit history.
+   *
+   * Generates markdown changelog grouped by commit type.
+   */
+  async generateChangelogCmd(
+    fromRef: string | null,
+    toRef: string | null,
+    version: string | null,
+  ): Promise<Result<ChangelogOutput, GitError>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("generate_changelog_cmd", {
+          fromRef,
+          toRef,
+          version,
+        }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
 };
 
 /** user-defined events **/
@@ -1144,6 +1222,119 @@ export type TagInfo = {
    * True for annotated tags, false for lightweight
    */
   isAnnotated: boolean;
+};
+/**
+ * Commit type enumeration.
+ */
+export type CommitType =
+  | "feat"
+  | "fix"
+  | "docs"
+  | "style"
+  | "refactor"
+  | "perf"
+  | "test"
+  | "chore"
+  | "ci"
+  | "build"
+  | "revert";
+/**
+ * Confidence level for type inference.
+ */
+export type Confidence = "high" | "medium" | "low";
+/**
+ * A suggested commit type based on file analysis.
+ */
+export type TypeSuggestion = {
+  suggestedType: CommitType;
+  confidence: Confidence;
+  reason: string;
+};
+/**
+ * A scope suggestion from commit history.
+ */
+export type ScopeSuggestion = {
+  scope: string;
+  usageCount: number;
+};
+/**
+ * A validation error.
+ */
+export type ValidationError = {
+  code: string;
+  message: string;
+  suggestion: string | null;
+};
+/**
+ * A validation warning.
+ */
+export type ValidationWarning = {
+  code: string;
+  message: string;
+};
+/**
+ * Result of validating a commit message.
+ */
+export type ValidationResult = {
+  isValid: boolean;
+  errors: ValidationError[];
+  warnings: ValidationWarning[];
+};
+/**
+ * A parsed conventional commit.
+ */
+export type ParsedCommit = {
+  commitType: CommitType;
+  scope: string | null;
+  description: string;
+  body: string | null;
+  breaking: boolean;
+  footers: Footer[];
+};
+/**
+ * A footer in a conventional commit.
+ */
+export type Footer = {
+  token: string;
+  value: string;
+};
+/**
+ * Options for changelog generation.
+ */
+export type ChangelogOptions = {
+  fromRef: string | null;
+  toRef: string | null;
+  includeUnreleased: boolean;
+  groupByScope: boolean;
+  version: string | null;
+  date: string | null;
+};
+/**
+ * Output from changelog generation.
+ */
+export type ChangelogOutput = {
+  markdown: string;
+  commitCount: number;
+  groups: CommitGroup[];
+};
+/**
+ * A group of commits by type.
+ */
+export type CommitGroup = {
+  commitType: string;
+  title: string;
+  commits: ChangelogCommit[];
+};
+/**
+ * A commit entry for the changelog.
+ */
+export type ChangelogCommit = {
+  hash: string;
+  scope: string | null;
+  description: string;
+  breaking: boolean;
+  author: string;
+  date: string;
 };
 
 /** tauri-specta globals **/
