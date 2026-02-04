@@ -1,6 +1,14 @@
-import { X } from "lucide-react";
 import { useState } from "react";
 import { useStashStore } from "../../stores/stash";
+import { Button } from "../ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import { Input } from "../ui/input";
 
 interface StashDialogProps {
   onClose: () => void;
@@ -18,18 +26,11 @@ export function StashDialog({ onClose }: StashDialogProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 w-96">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Stash Changes</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1 hover:bg-gray-800 rounded"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Stash Changes</DialogTitle>
+        </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -39,13 +40,12 @@ export function StashDialog({ onClose }: StashDialogProps) {
             >
               Message (optional)
             </label>
-            <input
+            <Input
               id="stash-message"
               type="text"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="WIP: description"
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:border-blue-500"
             />
           </div>
 
@@ -61,24 +61,16 @@ export function StashDialog({ onClose }: StashDialogProps) {
 
           {error && <p className="text-red-400 text-sm">{error}</p>}
 
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm text-gray-400 hover:text-white"
-            >
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={onClose}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 rounded disabled:opacity-50"
-            >
+            </Button>
+            <Button type="submit" disabled={isLoading}>
               {isLoading ? "Stashing..." : "Stash"}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
