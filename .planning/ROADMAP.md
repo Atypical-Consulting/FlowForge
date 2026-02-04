@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Core Git - Branches** - Branch CRUD, checkout, merge, stash, tags
 - [x] **Phase 4: Gitflow State Machine** - Feature/release/hotfix workflows with enforcement
 - [x] **Phase 5: Topology Visualization** - DAG graph with Gitflow-colored lanes
-- [ ] **Phase 6: Conventional Commits** - Composer, validation, changelog generation
+- [x] **Phase 6: Conventional Commits** - Composer, validation, changelog generation
 - [ ] **Phase 6.1: Catppuccin Mocha File Icons** - File type icons in changes view (INSERTED)
 - [ ] **Phase 7: Worktree Management** - Panel, create/delete, status, navigation
 - [ ] **Phase 8: Polish & Performance** - UX fundamentals, keyboard shortcuts, performance targets
@@ -130,13 +130,13 @@ Plans:
 **Plans**: 7 plans in 4 waves
 
 Plans:
-- [ ] 06-01-PLAN.md — Rust conventional commit parsing, validation, type inference
-- [ ] 06-02-PLAN.md — Rust changelog generation with Tera templates
-- [ ] 06-03-PLAN.md — IPC command registration for conventional commits
-- [ ] 06-04-PLAN.md — Frontend store and hooks for conventional commits
-- [ ] 06-05-PLAN.md — Conventional commit form UI components
-- [ ] 06-06-PLAN.md — Changelog dialog and preview UI
-- [ ] 06-07-PLAN.md — Integration with existing commit workflow
+- [x] 06-01-PLAN.md — Rust conventional commit parsing, validation, type inference
+- [x] 06-02-PLAN.md — Rust changelog generation with Tera templates
+- [x] 06-03-PLAN.md — IPC command registration for conventional commits
+- [x] 06-04-PLAN.md — Frontend store and hooks for conventional commits
+- [x] 06-05-PLAN.md — Conventional commit form UI components
+- [x] 06-06-PLAN.md — Changelog dialog and preview UI
+- [x] 06-07-PLAN.md — Integration with existing commit workflow
 
 ### Phase 6.1: Catppuccin Mocha File Icons (INSERTED)
 **Goal**: Files in the changes view display Catppuccin Mocha-themed icons based on file type/extension
@@ -189,7 +189,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 3. Core Git - Branches | Complete | 2026-02-04 |
 | 4. Gitflow State Machine | Complete | 2026-02-04 |
 | 5. Topology Visualization | Complete | 2026-02-04 |
-| 6. Conventional Commits | Not started | - |
+| 6. Conventional Commits | Complete | 2026-02-04 |
 | 6.1 Catppuccin Mocha File Icons | Not started | - |
 | 7. Worktree Management | Not started | - |
 | 8. Polish & Performance | Not started | - |
