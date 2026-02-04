@@ -24,3 +24,21 @@
 .react-flow__controls-button:last-child {
     border-bottom: none;
 }
+
+/* React Flow Attribution - Dark Theme */
+.react-flow__attribution {
+    background: #030712; /* gray-950 */
+    border: 1px solid #1f2937; /* gray-800 */
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 10px;
+}
+
+.react-flow__attribution a {
+    color: #6b7280; /* gray-500 */
+    text-decoration: none;
+}
+
+.react-flow__attribution a:hover {
+    color: #9ca3af; /* gray-400 */
+}
