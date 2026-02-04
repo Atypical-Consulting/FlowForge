@@ -1,6 +1,7 @@
-import { ChevronDown, ChevronRight, Folder } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { FileChange } from "../../bindings";
+import { FileTypeIcon } from "../icons/FileTypeIcon";
 import { FileItem } from "./FileItem";
 
 interface FileTreeNode {
@@ -95,7 +96,7 @@ function TreeNode({ node, section, depth }: TreeNodeProps) {
         ) : (
           <ChevronRight className="w-3 h-3" />
         )}
-        <Folder className="w-4 h-4 text-blue-400" />
+        <FileTypeIcon path={node.path} isDirectory isOpen={expanded} />
         <span>{node.name}</span>
       </button>
       {expanded && (
