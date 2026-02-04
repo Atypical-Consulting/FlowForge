@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 Phase: 7 of 8 (Worktree Management) — NOT STARTED
 Plan: TBD (needs planning)
 Status: Ready for Phase 7 planning
-Last activity: 2026-02-04 - Completed quick task 015: Upgrade all packages
+Last activity: 2026-02-04 - Completed quick task 016: Fix resizable panel separators
 
 Progress: █████████░ 88%
 
@@ -94,6 +94,7 @@ None yet.
 | 013 | Fix NuGet viewer link and download count | 2026-02-04 | bdfb41c | [013-fix-nuget-viewer-link-and-download-count](./quick/013-fix-nuget-viewer-link-and-download-count/) |
 | 014 | Fix errors and warnings | 2026-02-04 | a798e5c | [014-fix-errors-and-warnings](./quick/014-fix-errors-and-warnings/) |
 | 015 | Upgrade all packages to latest versions | 2026-02-04 | a5b9164 | [015-upgrade-all-packages-in-cargo-toml-and-p](./quick/015-upgrade-all-packages-in-cargo-toml-and-p/) |
+| 016 | Fix resizable panel separators stuck on left | 2026-02-04 | 689d7d9 | [016-fix-vertical-separators-stuck-on-left-re](./quick/016-fix-vertical-separators-stuck-on-left-re/) |
 
 ## Session Continuity
 
