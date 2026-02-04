@@ -62,13 +62,13 @@ export function StartFlowDialog({ flowType, onClose }: StartFlowDialogProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-gray-900 border border-gray-700 rounded-lg p-5 w-96 shadow-xl">
+      <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-5 w-96 shadow-xl">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">{title}</h3>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 hover:bg-gray-800 rounded text-gray-400 hover:text-white"
+            className="p-1 hover:bg-ctp-surface0 rounded text-ctp-overlay1 hover:text-ctp-text"
           >
             <X className="w-5 h-5" />
           </button>
@@ -78,7 +78,7 @@ export function StartFlowDialog({ flowType, onClose }: StartFlowDialogProps) {
           <div>
             <label
               htmlFor="flow-name"
-              className="block text-sm text-gray-400 mb-1.5"
+              className="block text-sm text-ctp-overlay1 mb-1.5"
             >
               {label}
             </label>
@@ -88,32 +88,32 @@ export function StartFlowDialog({ flowType, onClose }: StartFlowDialogProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={placeholder}
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 rounded text-sm focus:outline-none focus:border-ctp-blue focus:ring-1 focus:ring-ctp-blue"
               autoFocus
             />
-            <p className="text-xs text-gray-500 mt-1.5">
+            <p className="text-xs text-ctp-overlay0 mt-1.5">
               Branch will be created as{" "}
-              <code className="text-gray-400">
+              <code className="text-ctp-overlay1">
                 {prefix}
                 {name || "..."}
               </code>
             </p>
           </div>
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {error && <p className="text-ctp-red text-sm">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
+              className="px-4 py-2 text-sm text-ctp-overlay1 hover:text-ctp-text transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!name.trim() || isLoading}
-              className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 rounded font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 text-sm bg-ctp-blue hover:bg-ctp-blue/80 rounded font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? "Starting..." : "Start"}
             </button>

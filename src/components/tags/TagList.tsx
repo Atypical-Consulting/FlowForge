@@ -27,7 +27,7 @@ export function TagList({
   return (
     <div className="flex flex-col">
       {error && (
-        <div className="p-3 bg-red-900/30 text-red-300 text-sm">
+        <div className="p-3 bg-ctp-red/20 text-ctp-red text-sm">
           {error}
           <button type="button" onClick={clearError} className="ml-2 underline">
             dismiss
@@ -37,7 +37,7 @@ export function TagList({
 
       <div className="p-2 space-y-1">
         {tags.length === 0 ? (
-          <p className="text-gray-500 text-sm p-2">No tags</p>
+          <p className="text-ctp-overlay0 text-sm p-2">No tags</p>
         ) : (
           tags.map((tag) => (
             <TagItem

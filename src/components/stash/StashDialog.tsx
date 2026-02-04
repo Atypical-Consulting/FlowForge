@@ -36,7 +36,7 @@ export function StashDialog({ onClose }: StashDialogProps) {
           <div>
             <label
               htmlFor="stash-message"
-              className="block text-sm text-gray-400 mb-1"
+              className="block text-sm text-ctp-overlay1 mb-1"
             >
               Message (optional)
             </label>
@@ -59,7 +59,7 @@ export function StashDialog({ onClose }: StashDialogProps) {
             <span>Include untracked files</span>
           </label>
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {error && <p className="text-ctp-red text-sm">{error}</p>}
 
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose}>

@@ -22,13 +22,13 @@ export function CreateBranchDialog({ onClose }: CreateBranchDialogProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 w-96">
+      <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-6 w-96">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Create Branch</h3>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 hover:bg-gray-800 rounded"
+            className="p-1 hover:bg-ctp-surface0 rounded"
           >
             <X className="w-5 h-5" />
           </button>
@@ -38,7 +38,7 @@ export function CreateBranchDialog({ onClose }: CreateBranchDialogProps) {
           <div>
             <label
               htmlFor="branch-name"
-              className="block text-sm text-gray-400 mb-1"
+              className="block text-sm text-ctp-overlay1 mb-1"
             >
               Branch name
             </label>
@@ -48,7 +48,7 @@ export function CreateBranchDialog({ onClose }: CreateBranchDialogProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="feature/my-feature"
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 rounded focus:outline-none focus:border-ctp-blue"
               autoFocus
             />
           </div>
@@ -63,20 +63,20 @@ export function CreateBranchDialog({ onClose }: CreateBranchDialogProps) {
             <span>Switch to new branch after creation</span>
           </label>
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {error && <p className="text-ctp-red text-sm">{error}</p>}
 
           <div className="flex justify-end gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm text-gray-400 hover:text-white"
+              className="px-4 py-2 text-sm text-ctp-overlay1 hover:text-ctp-text"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!name.trim() || isLoading}
-              className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 rounded disabled:opacity-50"
+              className="px-4 py-2 text-sm bg-ctp-blue hover:bg-ctp-blue/80 rounded disabled:opacity-50"
             >
               {isLoading ? "Creating..." : "Create"}
             </button>

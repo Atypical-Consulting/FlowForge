@@ -17,11 +17,11 @@ export function StashItem({
   disabled,
 }: StashItemProps) {
   return (
-    <div className="flex items-center justify-between px-3 py-2 rounded-md hover:bg-gray-800">
+    <div className="flex items-center justify-between px-3 py-2 rounded-md hover:bg-ctp-surface0">
       <div className="flex items-center gap-2 min-w-0 flex-1">
-        <Archive className="w-4 h-4 shrink-0 text-gray-400" />
+        <Archive className="w-4 h-4 shrink-0 text-ctp-overlay1" />
         <div className="min-w-0">
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-ctp-overlay0">
             stash@{"{" + stash.index + "}"}
           </span>
           <p className="truncate text-sm">{stash.message}</p>
@@ -32,7 +32,7 @@ export function StashItem({
           type="button"
           onClick={onApply}
           disabled={disabled}
-          className="p-1.5 hover:bg-gray-700 rounded text-gray-400 hover:text-white"
+          className="p-1.5 hover:bg-ctp-surface1 rounded text-ctp-overlay1 hover:text-ctp-text"
           title="Apply (keep stash)"
         >
           <Download className="w-4 h-4" />
@@ -41,7 +41,7 @@ export function StashItem({
           type="button"
           onClick={onPop}
           disabled={disabled}
-          className="p-1.5 hover:bg-gray-700 rounded text-gray-400 hover:text-green-400"
+          className="p-1.5 hover:bg-ctp-surface1 rounded text-ctp-overlay1 hover:text-ctp-green"
           title="Pop (apply and remove)"
         >
           <Play className="w-4 h-4" />
@@ -50,7 +50,7 @@ export function StashItem({
           type="button"
           onClick={onDrop}
           disabled={disabled}
-          className="p-1.5 hover:bg-gray-700 rounded text-gray-400 hover:text-red-400"
+          className="p-1.5 hover:bg-ctp-surface1 rounded text-ctp-overlay1 hover:text-ctp-red"
           title="Drop (discard)"
         >
           <Trash2 className="w-4 h-4" />

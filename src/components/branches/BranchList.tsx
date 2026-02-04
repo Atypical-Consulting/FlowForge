@@ -62,7 +62,7 @@ export function BranchList({
   return (
     <div className="flex flex-col h-full">
       {error && (
-        <div className="p-3 bg-red-900/30 border-b border-red-800 text-red-300 text-sm">
+        <div className="p-3 bg-ctp-red/20 border-b border-ctp-red/30 text-ctp-red text-sm">
           {error}
           <button type="button" onClick={clearError} className="ml-2 underline">
             dismiss

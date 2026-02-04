@@ -19,8 +19,8 @@ export function FileViewer() {
 
   if (!selectedFile) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-900">
-        <p className="text-gray-500 text-sm">Select a file to view</p>
+      <div className="flex-1 flex items-center justify-center bg-ctp-mantle">
+        <p className="text-ctp-overlay0 text-sm">Select a file to view</p>
       </div>
     );
   }
@@ -29,8 +29,8 @@ export function FileViewer() {
 
   if (!Viewer) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-900">
-        <p className="text-gray-500 text-sm">
+      <div className="flex-1 flex items-center justify-center bg-ctp-mantle">
+        <p className="text-ctp-overlay0 text-sm">
           No viewer available for this file type
         </p>
       </div>

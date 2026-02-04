@@ -98,16 +98,18 @@ export function NugetPackageViewer({ file }: ViewerProps) {
 
   if (!parsed) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-900">
-        <p className="text-gray-400 text-sm">Invalid NuGet package filename</p>
+      <div className="flex-1 flex items-center justify-center bg-ctp-mantle">
+        <p className="text-ctp-overlay1 text-sm">
+          Invalid NuGet package filename
+        </p>
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-900">
-        <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+      <div className="flex-1 flex items-center justify-center bg-ctp-mantle">
+        <Loader2 className="w-5 h-5 animate-spin text-ctp-overlay1" />
       </div>
     );
   }
@@ -115,67 +117,69 @@ export function NugetPackageViewer({ file }: ViewerProps) {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-800 bg-gray-950">
-        <Package className="w-4 h-4 text-purple-400" />
-        <span className="text-sm text-gray-300 truncate flex-1">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-ctp-surface0 bg-ctp-crust">
+        <Package className="w-4 h-4 text-ctp-mauve" />
+        <span className="text-sm text-ctp-subtext1 truncate flex-1">
           {file.path}
         </span>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-900">
+      <div className="flex-1 overflow-y-auto p-4 bg-ctp-mantle">
         <div className="max-w-2xl space-y-4">
           {/* Package Title */}
           <div>
-            <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-ctp-text flex items-center gap-2">
               {parsed.id}
-              <span className="text-sm font-normal text-gray-400 bg-gray-800 px-2 py-0.5 rounded">
+              <span className="text-sm font-normal text-ctp-overlay1 bg-ctp-surface0 px-2 py-0.5 rounded">
                 v{parsed.version}
               </span>
             </h2>
             {packageInfo?.description && (
-              <p className="text-gray-400 mt-2">{packageInfo.description}</p>
+              <p className="text-ctp-overlay1 mt-2">
+                {packageInfo.description}
+              </p>
             )}
           </div>
 
           {/* Stats Grid */}
           {packageInfo && (
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-800 rounded-lg p-3">
-                <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
+              <div className="bg-ctp-surface0 rounded-lg p-3">
+                <div className="flex items-center gap-2 text-ctp-overlay1 text-xs mb-1">
                   <Download className="w-3 h-3" />
                   Total Downloads
                 </div>
-                <div className="text-white font-medium">
+                <div className="text-ctp-text font-medium">
                   {packageInfo.totalDownloads.toLocaleString()}
                 </div>
               </div>
 
-              <div className="bg-gray-800 rounded-lg p-3">
-                <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
+              <div className="bg-ctp-surface0 rounded-lg p-3">
+                <div className="flex items-center gap-2 text-ctp-overlay1 text-xs mb-1">
                   <User className="w-3 h-3" />
                   Authors
                 </div>
-                <div className="text-white font-medium truncate">
+                <div className="text-ctp-text font-medium truncate">
                   {packageInfo.authors}
                 </div>
               </div>
 
               {packageInfo.published && (
-                <div className="bg-gray-800 rounded-lg p-3">
-                  <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
+                <div className="bg-ctp-surface0 rounded-lg p-3">
+                  <div className="flex items-center gap-2 text-ctp-overlay1 text-xs mb-1">
                     <Calendar className="w-3 h-3" />
                     Published
                   </div>
-                  <div className="text-white font-medium">
+                  <div className="text-ctp-text font-medium">
                     {new Date(packageInfo.published).toLocaleDateString()}
                   </div>
                 </div>
               )}
 
               {/* NuGet.org Link - always available */}
-              <div className="bg-gray-800 rounded-lg p-3">
-                <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
+              <div className="bg-ctp-surface0 rounded-lg p-3">
+                <div className="flex items-center gap-2 text-ctp-overlay1 text-xs mb-1">
                   <ExternalLink className="w-3 h-3" />
                   NuGet.org
                 </div>
@@ -183,7 +187,7 @@ export function NugetPackageViewer({ file }: ViewerProps) {
                   href={packageInfo.nugetUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-400 hover:underline text-sm truncate block"
+                  className="text-ctp-blue hover:underline text-sm truncate block"
                 >
                   View on NuGet.org
                 </a>
@@ -191,8 +195,8 @@ export function NugetPackageViewer({ file }: ViewerProps) {
 
               {/* Project URL (GitHub etc) - optional */}
               {packageInfo.projectUrl && (
-                <div className="bg-gray-800 rounded-lg p-3">
-                  <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
+                <div className="bg-ctp-surface0 rounded-lg p-3">
+                  <div className="flex items-center gap-2 text-ctp-overlay1 text-xs mb-1">
                     <Github className="w-3 h-3" />
                     Project
                   </div>
@@ -200,7 +204,7 @@ export function NugetPackageViewer({ file }: ViewerProps) {
                     href={packageInfo.projectUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline text-sm truncate block"
+                    className="text-ctp-blue hover:underline text-sm truncate block"
                   >
                     View Source
                   </a>
@@ -212,12 +216,12 @@ export function NugetPackageViewer({ file }: ViewerProps) {
           {/* Tags */}
           {packageInfo?.tags && packageInfo.tags.length > 0 && (
             <div>
-              <div className="text-gray-400 text-xs mb-2">Tags</div>
+              <div className="text-ctp-overlay1 text-xs mb-2">Tags</div>
               <div className="flex flex-wrap gap-2">
                 {packageInfo.tags.slice(0, 10).map((tag) => (
                   <span
                     key={tag}
-                    className="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs"
+                    className="bg-ctp-surface0 text-ctp-subtext1 px-2 py-1 rounded text-xs"
                   >
                     {tag}
                   </span>
@@ -228,13 +232,13 @@ export function NugetPackageViewer({ file }: ViewerProps) {
 
           {/* Error/Not Found State */}
           {error && (
-            <div className="text-yellow-400 text-sm">
+            <div className="text-ctp-yellow text-sm">
               Could not fetch package info from NuGet.org
             </div>
           )}
 
           {!isLoading && !packageInfo && !error && (
-            <div className="text-gray-400 text-sm">
+            <div className="text-ctp-overlay1 text-sm">
               Package not found on NuGet.org. This may be a private or local
               package.
             </div>
