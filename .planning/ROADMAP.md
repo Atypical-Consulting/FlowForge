@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - Tauri scaffold, repo opening, IPC layer
 - [x] **Phase 2: Core Git - Staging & Commits** - Stage, unstage, diff, commit, push/pull/fetch, history
 - [x] **Phase 3: Core Git - Branches** - Branch CRUD, checkout, merge, stash, tags
-- [ ] **Phase 4: Gitflow State Machine** - Feature/release/hotfix workflows with enforcement
+- [x] **Phase 4: Gitflow State Machine** - Feature/release/hotfix workflows with enforcement
 - [ ] **Phase 5: Topology Visualization** - DAG graph with Gitflow-colored lanes
 - [ ] **Phase 6: Conventional Commits** - Composer, validation, changelog generation
 - [ ] **Phase 7: Worktree Management** - Panel, create/delete, status, navigation
@@ -89,7 +89,14 @@ Plans:
   3. User can complete full release flow: start from develop, finish to main AND develop, auto-tag
   4. User can complete full hotfix flow: start from main, finish to main AND develop, auto-tag
   5. Invalid Gitflow operations are prevented (buttons disabled, actions blocked) not just warned
-**Plans**: TBD
+**Plans**: 5 plans in 4 waves
+
+Plans:
+- [x] 04-01-PLAN.md — Foundation: statig, errors, policy, state machine
+- [x] 04-02-PLAN.md — No-FF merge + Feature flow commands
+- [x] 04-03-PLAN.md — Release + Hotfix flow commands + status
+- [x] 04-04-PLAN.md — IPC registration + Gitflow store
+- [x] 04-05-PLAN.md — Gitflow UI components + integration
 
 ### Phase 5: Topology Visualization
 **Goal**: User sees commit graph with color-coded Gitflow lanes showing branch relationships
@@ -148,7 +155,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 1. Foundation | Complete | 2026-02-04 |
 | 2. Core Git - Staging & Commits | Complete | 2026-02-04 |
 | 3. Core Git - Branches | Complete | 2026-02-04 |
-| 4. Gitflow State Machine | Not started | - |
+| 4. Gitflow State Machine | Complete | 2026-02-04 |
 | 5. Topology Visualization | Not started | - |
 | 6. Conventional Commits | Not started | - |
 | 7. Worktree Management | Not started | - |
