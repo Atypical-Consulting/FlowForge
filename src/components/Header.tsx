@@ -1,8 +1,8 @@
-import { FolderOpen, GitBranch, Circle } from "lucide-react";
 import { open } from "@tauri-apps/plugin-dialog";
-import { Button } from "./ui/button";
-import { useRepositoryStore } from "../stores/repository";
+import { Circle, FolderOpen, GitBranch } from "lucide-react";
 import { useRecentRepos } from "../hooks/useRecentRepos";
+import { useRepositoryStore } from "../stores/repository";
+import { Button } from "./ui/button";
 
 export function Header() {
   const { status, isLoading, openRepository, closeRepository } =

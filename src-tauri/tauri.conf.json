@@ -13,12 +13,13 @@
     "withGlobalTauri": false,
     "windows": [
       {
+        "label": "main",
         "title": "FlowForge",
         "width": 1200,
         "height": 800,
         "resizable": true,
         "fullscreen": false,
-        "visible": false
+        "visible": true
       }
     ],
     "security": {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getStore } from "../lib/store";
 
 export interface RecentRepo {
@@ -35,8 +35,7 @@ export function useRecentRepos() {
   const addRecentRepo = useCallback(async (path: string, name?: string) => {
     try {
       const store = await getStore();
-      const existing =
-        (await store.get<RecentRepo[]>(RECENT_REPOS_KEY)) || [];
+      const existing = (await store.get<RecentRepo[]>(RECENT_REPOS_KEY)) || [];
 
       // Extract folder name from path if not provided
       const repoName =
@@ -61,8 +60,7 @@ export function useRecentRepos() {
   const removeRecentRepo = useCallback(async (path: string) => {
     try {
       const store = await getStore();
-      const existing =
-        (await store.get<RecentRepo[]>(RECENT_REPOS_KEY)) || [];
+      const existing = (await store.get<RecentRepo[]>(RECENT_REPOS_KEY)) || [];
       const updated = existing.filter((r) => r.path !== path);
       await store.set(RECENT_REPOS_KEY, updated);
       setRecentRepos(updated);

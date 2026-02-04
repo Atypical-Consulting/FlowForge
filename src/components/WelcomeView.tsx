@@ -1,15 +1,14 @@
-import { useState, useCallback, useEffect } from "react";
-import { FolderOpen, AlertCircle } from "lucide-react";
 import { open } from "@tauri-apps/plugin-dialog";
-import { Button } from "./ui/button";
-import { RecentRepos } from "./RecentRepos";
-import { useRepositoryStore } from "../stores/repository";
-import { useRecentRepos } from "../hooks/useRecentRepos";
+import { AlertCircle, FolderOpen } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { commands } from "../bindings";
+import { useRecentRepos } from "../hooks/useRecentRepos";
+import { useRepositoryStore } from "../stores/repository";
+import { RecentRepos } from "./RecentRepos";
+import { Button } from "./ui/button";
 
 export function WelcomeView() {
-  const { openRepository, isLoading, error, clearError } =
-    useRepositoryStore();
+  const { openRepository, isLoading, error, clearError } = useRepositoryStore();
   const { addRecentRepo } = useRecentRepos();
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -88,7 +87,7 @@ export function WelcomeView() {
         console.error("Failed to open dropped repository:", e);
       }
     },
-    [openRepository, addRecentRepo, clearError]
+    [openRepository, addRecentRepo, clearError],
   );
 
   return (
@@ -138,7 +137,7 @@ export function WelcomeView() {
         {/* Error display */}
         {error && (
           <div className="flex items-start gap-3 p-4 bg-red-900/20 border border-red-800/50 rounded-lg">
-            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
             <div>
               <div className="text-sm font-medium text-red-300">
                 Failed to open repository

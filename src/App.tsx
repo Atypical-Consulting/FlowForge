@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Header } from "./components/Header";
-import { WelcomeView } from "./components/WelcomeView";
 import { RepositoryView } from "./components/RepositoryView";
+import { WelcomeView } from "./components/WelcomeView";
 import { useRepositoryStore } from "./stores/repository";
 
 function App() {

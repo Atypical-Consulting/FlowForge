@@ -1,5 +1,5 @@
-import { Folder, X, Clock } from "lucide-react";
-import { useRecentRepos, type RecentRepo } from "../hooks/useRecentRepos";
+import { Clock, Folder, X } from "lucide-react";
+import { type RecentRepo, useRecentRepos } from "../hooks/useRecentRepos";
 import { useRepositoryStore } from "../stores/repository";
 import { Button } from "./ui/button";
 
@@ -68,7 +68,7 @@ export function RecentRepos({ onRepoOpened }: RecentReposProps) {
             role="button"
             tabIndex={0}
           >
-            <Folder className="w-5 h-5 text-blue-400 flex-shrink-0" />
+            <Folder className="w-5 h-5 text-blue-400 shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-white truncate">
                 {repo.name}
@@ -77,7 +77,7 @@ export function RecentRepos({ onRepoOpened }: RecentReposProps) {
                 {truncatePath(repo.path)}
               </div>
             </div>
-            <div className="text-xs text-gray-500 flex-shrink-0">
+            <div className="text-xs text-gray-500 shrink-0">
               {formatTime(repo.lastOpened)}
             </div>
             <Button

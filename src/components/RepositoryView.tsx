@@ -1,5 +1,5 @@
-import { useRepositoryStore } from "../stores/repository";
 import { Folder, GitBranch } from "lucide-react";
+import { useRepositoryStore } from "../stores/repository";
 
 export function RepositoryView() {
   const { status } = useRepositoryStore();
