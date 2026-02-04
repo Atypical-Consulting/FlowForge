@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Core Git - Staging & Commits** - Stage, unstage, diff, commit, push/pull/fetch, history
 - [x] **Phase 3: Core Git - Branches** - Branch CRUD, checkout, merge, stash, tags
 - [x] **Phase 4: Gitflow State Machine** - Feature/release/hotfix workflows with enforcement
-- [ ] **Phase 5: Topology Visualization** - DAG graph with Gitflow-colored lanes
+- [x] **Phase 5: Topology Visualization** - DAG graph with Gitflow-colored lanes
 - [ ] **Phase 6: Conventional Commits** - Composer, validation, changelog generation
 - [ ] **Phase 7: Worktree Management** - Panel, create/delete, status, navigation
 - [ ] **Phase 8: Polish & Performance** - UX fundamentals, keyboard shortcuts, performance targets
@@ -107,7 +107,14 @@ Plans:
   2. Main branch appears in distinct color (red/orange) separate from develop (blue/green)
   3. Feature, release, and hotfix branches each have their own lane colors
   4. User can click on any commit in the graph to see its details
-**Plans**: TBD
+**Plans**: 5 plans in 4 waves
+
+Plans:
+- [x] 05-01-PLAN.md — Rust graph module with branch classification and lane assignment
+- [x] 05-02-PLAN.md — IPC command registration and TypeScript bindings
+- [x] 05-03-PLAN.md — Topology store and useCommitGraph hook
+- [x] 05-04-PLAN.md — React Flow components with Gitflow colors
+- [x] 05-05-PLAN.md — UI integration and commit selection
 
 ### Phase 6: Conventional Commits
 **Goal**: Commit composer guides users to write conventional commits with validation and changelog generation
@@ -156,7 +163,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 2. Core Git - Staging & Commits | Complete | 2026-02-04 |
 | 3. Core Git - Branches | Complete | 2026-02-04 |
 | 4. Gitflow State Machine | Complete | 2026-02-04 |
-| 5. Topology Visualization | Not started | - |
+| 5. Topology Visualization | Complete | 2026-02-04 |
 | 6. Conventional Commits | Not started | - |
 | 7. Worktree Management | Not started | - |
 | 8. Polish & Performance | Not started | - |
