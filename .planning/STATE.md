@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 Phase: 5 of 8 (Topology Visualization) — COMPLETE
 Plan: All 5 plans executed
 Status: Ready for Phase 6
-Last activity: 2026-02-04 - Completed quick task 009: Auto-select first item in history/changes panels
+Last activity: 2026-02-04 - Completed quick task 010: Top bar repo name and fix button icons
 
 Progress: ██████░░░░ 62.5%
 
@@ -76,6 +76,7 @@ None yet.
 | 007 | Dark theme for React Flow controls | 2026-02-04 | 7f54091 | [007-use-dark-colors-for-react-flow-controls-](./quick/007-use-dark-colors-for-react-flow-controls-/) |
 | 008 | Dark theme for React Flow attribution panel | 2026-02-04 | f57bf6c | [008-dark-theme-for-react-flow-attribution-pa](./quick/008-dark-theme-for-react-flow-attribution-pa/) |
 | 009 | Auto-select first item in history/changes panels | 2026-02-04 | 10ede79 | [009-auto-select-first-item-in-history-change](./quick/009-auto-select-first-item-in-history-change/) |
+| 010 | Top bar repo name and fix button icons | 2026-02-04 | f8fbfbf | [010-top-bar-repo-name-and-fix-button-icons](./quick/010-top-bar-repo-name-and-fix-button-icons/) |
 
 ## Session Continuity
 
