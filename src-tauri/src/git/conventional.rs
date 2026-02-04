@@ -672,14 +672,14 @@ pub async fn suggest_commit_type(
 #[specta::specta]
 pub async fn get_scope_suggestions(
     state: State<'_, RepositoryState>,
-    limit: Option<usize>,
+    limit: Option<u32>,
 ) -> Result<Vec<ScopeSuggestion>, GitError> {
     let path = state
         .get_path()
         .await
         .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
 
-    let limit = limit.unwrap_or(20);
+    let limit = limit.unwrap_or(20) as usize;
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&path)?;
