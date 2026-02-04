@@ -222,3 +222,73 @@ pub async fn get_commit_details(
     .await
     .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
 }
+
+/// Search commits by message text.
+/// Returns up to `limit` commits whose message contains `query` (case-insensitive).
+#[tauri::command]
+#[specta::specta]
+pub async fn search_commits(
+    query: String,
+    limit: u32,
+    state: State<'_, RepositoryState>,
+) -> Result<Vec<CommitSummary>, GitError> {
+    let repo_path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+
+    let query_lower = query.to_lowercase();
+
+    tokio::task::spawn_blocking(move || {
+        let repo = git2::Repository::open(&repo_path)?;
+
+        // Handle empty repo
+        match repo.head() {
+            Err(e) if e.code() == git2::ErrorCode::UnbornBranch => {
+                return Ok(vec![]);
+            }
+            Err(e) => return Err(e.into()),
+            Ok(_) => {}
+        }
+
+        let mut revwalk = repo.revwalk()?;
+        revwalk.push_head()?;
+        revwalk.set_sorting(git2::Sort::TIME)?;
+
+        let mut results = Vec::new();
+
+        for oid_result in revwalk {
+            if results.len() >= limit as usize {
+                break;
+            }
+
+            let oid = match oid_result {
+                Ok(o) => o,
+                Err(_) => continue,
+            };
+
+            let commit = match repo.find_commit(oid) {
+                Ok(c) => c,
+                Err(_) => continue,
+            };
+
+            // Check if message contains query (case-insensitive)
+            let message = commit.message().unwrap_or("");
+            if message.to_lowercase().contains(&query_lower) {
+                let author = commit.author();
+                results.push(CommitSummary {
+                    oid: oid.to_string(),
+                    short_oid: format!("{:.7}", oid),
+                    message_subject: commit.summary().unwrap_or("").to_string(),
+                    author_name: author.name().unwrap_or("Unknown").to_string(),
+                    author_email: author.email().unwrap_or("").to_string(),
+                    timestamp_ms: (author.when().seconds() as f64) * 1000.0,
+                });
+            }
+        }
+
+        Ok(results)
+    })
+    .await
+    .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}

@@ -225,6 +225,24 @@ export const commands = {
     }
   },
   /**
+   * Search commits by message text.
+   * Returns up to `limit` commits whose message contains `query` (case-insensitive).
+   */
+  async searchCommits(
+    query: string,
+    limit: number,
+  ): Promise<Result<CommitSummary[], GitError>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("search_commits", { query, limit }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
    * IPC command to get the commit graph for visualization.
    *
    * # Arguments

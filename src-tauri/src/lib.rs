@@ -15,7 +15,7 @@ use git::{
     },
     diff::get_file_diff,
     graph::get_commit_graph,
-    history::{get_commit_details, get_commit_history},
+    history::{get_commit_details, get_commit_history, search_commits},
     merge::{abort_merge, get_merge_status, merge_branch},
     remote::{fetch_from_remote, get_remotes, pull_from_remote, push_to_remote},
     staging::{get_staging_status, stage_all, stage_file, unstage_all, unstage_file},
@@ -59,6 +59,7 @@ pub fn run() {
         // History commands
         get_commit_history,
         get_commit_details,
+        search_commits,
         // Graph commands
         get_commit_graph,
         // Remote commands
