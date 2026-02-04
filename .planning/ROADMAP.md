@@ -21,7 +21,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 6.1: Catppuccin Mocha File Icons** - File type icons in changes view (INSERTED)
 - [x] **Phase 6.2: UX/UI Enhancements** - Typography, theming, animations, spatial composition (INSERTED)
 - [x] **Phase 7: Worktree Management** - Panel, create/delete, status, navigation
-- [ ] **Phase 8: Polish & Performance** - UX fundamentals, keyboard shortcuts, performance targets
+- [x] **Phase 8: Polish & Performance** - UX fundamentals, keyboard shortcuts, performance targets
 
 ## Phase Details
 
@@ -212,12 +212,12 @@ Plans:
 **Plans**: 6 plans in 4 waves
 
 Plans:
-- [ ] 08-01-PLAN.md — Theme system with Catppuccin Latte/Mocha toggle
-- [ ] 08-02-PLAN.md — File watcher backend with notify-rs
-- [ ] 08-03-PLAN.md — Keyboard shortcuts with react-hotkeys-hook
-- [ ] 08-04-PLAN.md — Commit search by message text
-- [ ] 08-05-PLAN.md — Undo Git operations via reflog
-- [ ] 08-06-PLAN.md — Performance optimization and verification
+- [x] 08-01-PLAN.md — Theme system with Catppuccin Latte/Mocha toggle
+- [x] 08-02-PLAN.md — File watcher backend with notify-rs
+- [x] 08-03-PLAN.md — Keyboard shortcuts with react-hotkeys-hook
+- [x] 08-04-PLAN.md — Commit search by message text
+- [x] 08-05-PLAN.md — Undo Git operations via reflog
+- [x] 08-06-PLAN.md — Performance optimization and verification
 
 ## Progress
 
@@ -235,7 +235,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 6.1 Catppuccin Mocha File Icons | Complete | 2026-02-04 |
 | 6.2 UX/UI Enhancements | Complete | 2026-02-04 |
 | 7. Worktree Management | Complete | 2026-02-04 |
-| 8. Polish & Performance | Not started | - |
+| 8. Polish & Performance | Complete | 2026-02-04 |
 
 ---
 *Roadmap created: 2026-02-03*
