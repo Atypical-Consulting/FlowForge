@@ -2,6 +2,9 @@
 node_modules/
 target/
 
+# Planning docs (internal)
+.planning/
+
 # Build outputs
 dist/
 build/
