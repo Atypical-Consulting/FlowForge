@@ -11,6 +11,9 @@
     "check": "biome check --write ."
   },
   "dependencies": {
+    "@catppuccin/tailwindcss": "^1.0.0-beta.1",
+    "@fontsource-variable/geist": "^5.2.8",
+    "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "@monaco-editor/react": "^4.7.0",
     "@tanstack/react-query": "^5",
     "@tauri-apps/api": "^2",
