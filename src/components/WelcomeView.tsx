@@ -1,11 +1,14 @@
 import { open } from "@tauri-apps/plugin-dialog";
-import { AlertCircle, FolderOpen } from "lucide-react";
+import { motion } from "framer-motion";
+import { AlertCircle, Flame, FolderOpen } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { commands } from "../bindings";
 import { useRecentRepos } from "../hooks/useRecentRepos";
+import { fadeInUp, staggerContainer, staggerItem } from "../lib/animations";
 import { useRepositoryStore } from "../stores/repository";
 import { RecentRepos } from "./RecentRepos";
 import { Button } from "./ui/button";
+import { AnimatedGradientBg } from "./welcome";
 
 export function WelcomeView() {
   const { openRepository, isLoading, error, clearError } = useRepositoryStore();
@@ -92,64 +95,93 @@ export function WelcomeView() {
 
   return (
     <div
-      className={`flex flex-col items-center justify-center min-h-[calc(100vh-3.5rem)] bg-gray-950 p-8 transition-colors ${
-        isDragOver ? "bg-blue-950/20" : ""
+      className={`relative flex flex-col items-center justify-center min-h-[calc(100vh-3.5rem)] p-8 transition-colors ${
+        isDragOver ? "bg-ctp-blue/10" : ""
       }`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
+      {/* Animated background */}
+      <AnimatedGradientBg />
+
       {/* Drag overlay */}
       {isDragOver && (
-        <div className="fixed inset-0 bg-blue-500/10 pointer-events-none flex items-center justify-center z-50">
-          <div className="text-xl font-medium text-blue-400 bg-gray-900/90 px-8 py-4 rounded-xl border border-blue-500/30">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="absolute inset-0 bg-ctp-blue/10 pointer-events-none flex items-center justify-center z-50"
+        >
+          <div className="text-xl font-medium text-ctp-blue bg-ctp-mantle/90 px-8 py-4 rounded-xl border border-ctp-blue/30">
             Drop folder to open repository
           </div>
-        </div>
+        </motion.div>
       )}
 
-      <div className="max-w-md w-full space-y-8">
+      {/* Content with stagger animation */}
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="show"
+        className="relative z-10 max-w-md w-full space-y-8"
+      >
         {/* Main action */}
-        <div className="text-center space-y-4">
-          <div className="inline-flex p-4 rounded-full bg-gray-800/50">
-            <FolderOpen className="w-12 h-12 text-blue-400" />
+        <motion.div variants={staggerItem} className="text-center space-y-4">
+          <div className="inline-flex p-4 rounded-full bg-ctp-surface0/50 backdrop-blur-sm">
+            <Flame className="w-12 h-12 text-ctp-peach" />
           </div>
-          <h2 className="text-2xl font-bold text-white">Open a Repository</h2>
-          <p className="text-gray-400">
-            Select a folder or drag and drop a Git repository to get started.
+          <h2 className="text-2xl font-bold text-ctp-text">
+            Welcome to FlowForge
+          </h2>
+          <p className="text-ctp-subtext0">
+            Open a repository to start forging your workflow.
           </p>
+        </motion.div>
+
+        <motion.div
+          variants={staggerItem}
+          className="flex flex-col items-center gap-3"
+        >
           <Button
             size="lg"
             onClick={openDialog}
             disabled={isLoading}
-            className="mt-4"
+            className="gap-2"
           >
+            <FolderOpen className="w-5 h-5" />
             {isLoading ? "Opening..." : "Open Repository"}
           </Button>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-ctp-subtext0">
             or press{" "}
-            <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-gray-400 font-mono">
+            <kbd className="px-1.5 py-0.5 bg-ctp-surface0 rounded text-ctp-subtext1 font-mono text-xs">
               {navigator.platform.includes("Mac") ? "Cmd" : "Ctrl"}+O
             </kbd>
           </p>
-        </div>
+        </motion.div>
 
         {/* Error display */}
         {error && (
-          <div className="flex items-start gap-3 p-4 bg-red-900/20 border border-red-800/50 rounded-lg">
-            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            animate="show"
+            className="flex items-start gap-3 p-4 bg-ctp-red/10 border border-ctp-red/30 rounded-lg"
+          >
+            <AlertCircle className="w-5 h-5 text-ctp-red shrink-0 mt-0.5" />
             <div>
-              <div className="text-sm font-medium text-red-300">
+              <div className="text-sm font-medium text-ctp-red">
                 Failed to open repository
               </div>
-              <div className="text-sm text-red-400/80 mt-1">{error}</div>
+              <div className="text-sm text-ctp-red/80 mt-1">{error}</div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Recent repos */}
-        <RecentRepos />
-      </div>
+        <motion.div variants={staggerItem}>
+          <RecentRepos />
+        </motion.div>
+      </motion.div>
     </div>
   );
 }

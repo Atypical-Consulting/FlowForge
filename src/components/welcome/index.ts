@@ -1,0 +1,1 @@
+export { AnimatedGradientBg } from "./AnimatedGradientBg";
