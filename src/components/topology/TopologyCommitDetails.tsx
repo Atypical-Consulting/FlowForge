@@ -8,7 +8,10 @@ interface TopologyCommitDetailsProps {
   onClose: () => void;
 }
 
-export function TopologyCommitDetails({ oid, onClose }: TopologyCommitDetailsProps) {
+export function TopologyCommitDetails({
+  oid,
+  onClose,
+}: TopologyCommitDetailsProps) {
   const {
     data: result,
     isLoading,
@@ -40,7 +43,9 @@ export function TopologyCommitDetails({ oid, onClose }: TopologyCommitDetailsPro
     <div className="h-full overflow-y-auto bg-gray-900 border-l border-gray-800">
       {/* Header with close button */}
       <div className="sticky top-0 bg-gray-900 border-b border-gray-800 p-3 flex items-center justify-between">
-        <span className="font-mono text-sm text-blue-400">{details.shortOid}</span>
+        <span className="font-mono text-sm text-blue-400">
+          {details.shortOid}
+        </span>
         <button
           onClick={onClose}
           className="p-1 hover:bg-gray-800 rounded text-gray-400 hover:text-white"
@@ -53,7 +58,9 @@ export function TopologyCommitDetails({ oid, onClose }: TopologyCommitDetailsPro
       <div className="p-4 space-y-4">
         {/* Commit message */}
         <div>
-          <h3 className="text-lg text-white whitespace-pre-wrap">{details.message}</h3>
+          <h3 className="text-lg text-white whitespace-pre-wrap">
+            {details.message}
+          </h3>
         </div>
 
         {/* Author info */}
@@ -100,7 +107,7 @@ export function TopologyCommitDetails({ oid, onClose }: TopologyCommitDetailsPro
                       "truncate",
                       file.status === "Added" && "text-green-400",
                       file.status === "Deleted" && "text-red-400",
-                      file.status === "Modified" && "text-yellow-400"
+                      file.status === "Modified" && "text-yellow-400",
                     )}
                   >
                     {file.path}

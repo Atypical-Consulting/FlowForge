@@ -1,7 +1,7 @@
+import type { Edge, Node } from "@xyflow/react";
 import { graphlib } from "dagre-d3-es";
 import { layout } from "dagre-d3-es/src/dagre/index.js";
-import type { Node, Edge } from "@xyflow/react";
-import type { GraphNode, GraphEdge, BranchType } from "../../bindings";
+import type { BranchType, GraphEdge, GraphNode } from "../../bindings";
 
 const NODE_WIDTH = 220;
 const NODE_HEIGHT = 60;

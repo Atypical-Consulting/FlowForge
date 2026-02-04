@@ -1,10 +1,10 @@
-import { memo } from "react";
 import {
   BaseEdge,
-  getSmoothStepPath,
-  type EdgeProps,
   type Edge,
+  type EdgeProps,
+  getSmoothStepPath,
 } from "@xyflow/react";
+import { memo } from "react";
 import { getBranchColor } from "./layoutUtils";
 import type { CommitEdgeData } from "./layoutUtils";
 

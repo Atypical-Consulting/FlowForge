@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { useTopologyStore } from "../stores/topology";
 import { useRepositoryStore } from "../stores/repository";
+import { useTopologyStore } from "../stores/topology";
 
 export function useCommitGraph() {
   const repoStatus = useRepositoryStore((s) => s.status);

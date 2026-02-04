@@ -1,25 +1,25 @@
-import { useMemo, useEffect } from "react";
 import {
-  ReactFlow,
-  Controls,
   Background,
   BackgroundVariant,
-  useNodesState,
-  useEdgesState,
-  type Node,
+  Controls,
   type Edge,
+  type Node,
+  ReactFlow,
+  useEdgesState,
+  useNodesState,
 } from "@xyflow/react";
+import { useEffect, useMemo } from "react";
 import "@xyflow/react/dist/style.css";
 
-import { useCommitGraph } from "../../hooks/useCommitGraph";
-import {
-  layoutGraph,
-  type CommitNodeData,
-  type CommitEdgeData,
-} from "./layoutUtils";
-import { CommitNode } from "./CommitNode";
-import { CommitEdge } from "./CommitEdge";
 import { Loader2 } from "lucide-react";
+import { useCommitGraph } from "../../hooks/useCommitGraph";
+import { CommitEdge } from "./CommitEdge";
+import { CommitNode } from "./CommitNode";
+import {
+  type CommitEdgeData,
+  type CommitNodeData,
+  layoutGraph,
+} from "./layoutUtils";
 
 const nodeTypes = { commit: CommitNode };
 const edgeTypes = { gitflow: CommitEdge };

@@ -17,7 +17,7 @@ import { BranchList } from "./branches/BranchList";
 import { CommitDetails } from "./commit/CommitDetails";
 import { CommitForm } from "./commit/CommitForm";
 import { CommitHistory } from "./commit/CommitHistory";
-import { DiffViewer } from "./diff/DiffViewer";
+import { FileViewer } from "./viewers";
 import { GitflowPanel } from "./gitflow";
 import { StagingPanel } from "./staging/StagingPanel";
 import { StashList } from "./stash/StashList";
@@ -201,7 +201,7 @@ export function RepositoryView() {
 
       {/* Right panel - Diff/Commit Details/Topology */}
       {activeTab === "changes" ? (
-        <DiffViewer />
+        <FileViewer />
       ) : activeTab === "topology" ? (
         <div className="flex-1 flex bg-gray-900">
           <div className={topologySelectedCommit ? "flex-1" : "w-full"}>

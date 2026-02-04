@@ -1,7 +1,7 @@
+import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
 import { memo } from "react";
-import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
-import { cn } from "../../lib/utils";
 import type { BranchType } from "../../bindings";
+import { cn } from "../../lib/utils";
 import type { CommitNodeData } from "./layoutUtils";
 
 const BRANCH_STYLES: Record<BranchType, string> = {

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { CommitGraph, GraphNode, GraphEdge } from "../bindings";
+import type { CommitGraph, GraphEdge, GraphNode } from "../bindings";
 import { commands } from "../bindings";
 import { getErrorMessage } from "../lib/errors";
 
@@ -63,7 +63,10 @@ export const useTopologyStore = create<TopologyState>((set, get) => ({
 
     set({ isLoading: true });
     try {
-      const result = await commands.getCommitGraph(LOAD_MORE_AMOUNT, currentOffset);
+      const result = await commands.getCommitGraph(
+        LOAD_MORE_AMOUNT,
+        currentOffset,
+      );
       if (result.status === "ok") {
         set({
           nodes: [...nodes, ...result.data.nodes],
