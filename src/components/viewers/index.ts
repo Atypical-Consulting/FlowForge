@@ -1,4 +1,5 @@
 export { DiffViewer } from "./DiffViewer";
+export { NugetPackageViewer } from "./NugetPackageViewer";
 export {
   getViewerForFile,
   registerViewer,
