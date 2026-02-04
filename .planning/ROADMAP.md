@@ -18,6 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Gitflow State Machine** - Feature/release/hotfix workflows with enforcement
 - [x] **Phase 5: Topology Visualization** - DAG graph with Gitflow-colored lanes
 - [ ] **Phase 6: Conventional Commits** - Composer, validation, changelog generation
+- [ ] **Phase 6.1: Catppuccin Mocha File Icons** - File type icons in changes view (INSERTED)
 - [ ] **Phase 7: Worktree Management** - Panel, create/delete, status, navigation
 - [ ] **Phase 8: Polish & Performance** - UX fundamentals, keyboard shortcuts, performance targets
 
@@ -137,6 +138,21 @@ Plans:
 - [ ] 06-06-PLAN.md — Changelog dialog and preview UI
 - [ ] 06-07-PLAN.md — Integration with existing commit workflow
 
+### Phase 6.1: Catppuccin Mocha File Icons (INSERTED)
+**Goal**: Files in the changes view display Catppuccin Mocha-themed icons based on file type/extension
+**Depends on**: Phase 6
+**Requirements**: None (UX enhancement)
+**Reference**: https://github.com/catppuccin/vscode-icons/tree/main/icons/mocha
+**Success Criteria** (what must be TRUE):
+  1. User sees file-type-specific icons next to each file in the changes view
+  2. Icons follow Catppuccin Mocha color palette for visual consistency
+  3. Common file types (js, ts, tsx, rs, md, json, etc.) have distinct icons
+  4. Folder icons distinguish directories from files
+**Plans**: TBD (run /gsd:plan-phase 6.1 to break down)
+
+Plans:
+- [ ] TBD
+
 ### Phase 7: Worktree Management
 **Goal**: User can manage multiple worktrees with full visibility and easy navigation
 **Depends on**: Phase 1
@@ -174,6 +190,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 4. Gitflow State Machine | Complete | 2026-02-04 |
 | 5. Topology Visualization | Complete | 2026-02-04 |
 | 6. Conventional Commits | Not started | - |
+| 6.1 Catppuccin Mocha File Icons | Not started | - |
 | 7. Worktree Management | Not started | - |
 | 8. Polish & Performance | Not started | - |
 

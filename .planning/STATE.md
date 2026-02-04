@@ -28,10 +28,11 @@ Progress: ██████░░░░ 62.5%
 | 4 | Gitflow State Machine | 11 | Complete |
 | 5 | Topology Visualization | 1 | Complete |
 | 6 | Conventional Commits | 9 | Not started |
+| 6.1 | Catppuccin Mocha File Icons | 0 | Not started |
 | 7 | Worktree Management | 9 | Not started |
 | 8 | Polish & Performance | 14 | Not started |
 
-**Total:** 58 requirements across 8 phases
+**Total:** 58 requirements across 9 phases (8 planned + 1 inserted)
 
 ## Accumulated Context
 
@@ -62,6 +63,10 @@ None yet.
 ### Blockers/Concerns
 
 None yet.
+
+### Roadmap Evolution
+
+- Phase 6.1 inserted after Phase 6: Catppuccin Mocha File Icons (URGENT) - Add file type icons using Catppuccin Mocha theme to changes view
 
 ### Quick Tasks Completed
 
