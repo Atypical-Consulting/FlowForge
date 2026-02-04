@@ -1,1 +1,26 @@
 @import "tailwindcss";
+
+/* React Flow Controls - Dark Theme */
+.react-flow__controls {
+    background: #030712; /* gray-950 */
+    border: 1px solid #1f2937; /* gray-800 */
+    border-radius: 6px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+}
+
+.react-flow__controls-button {
+    background: #030712; /* gray-950 */
+    border-bottom: 1px solid #1f2937; /* gray-800 */
+    fill: #9ca3af; /* gray-400 */
+    width: 28px;
+    height: 28px;
+}
+
+.react-flow__controls-button:hover {
+    background: #111827; /* gray-900 */
+    fill: #e5e7eb; /* gray-200 */
+}
+
+.react-flow__controls-button:last-child {
+    border-bottom: none;
+}
