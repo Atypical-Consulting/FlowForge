@@ -13,7 +13,7 @@ FlowForge delivers a cross-platform Git client in 8 phases: starting with Tauri 
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Tauri scaffold, repo opening, IPC layer
-- [ ] **Phase 2: Core Git - Staging & Commits** - Stage, unstage, diff, commit, push/pull/fetch, history
+- [x] **Phase 2: Core Git - Staging & Commits** - Stage, unstage, diff, commit, push/pull/fetch, history
 - [ ] **Phase 3: Core Git - Branches** - Branch CRUD, checkout, merge, stash, tags
 - [ ] **Phase 4: Gitflow State Machine** - Feature/release/hotfix workflows with enforcement
 - [ ] **Phase 5: Topology Visualization** - DAG graph with Gitflow-colored lanes
@@ -52,12 +52,12 @@ Plans:
 **Plans**: 6 plans in 2 waves
 
 Plans:
-- [ ] 02-01-PLAN.md — Rust staging & diff module
-- [ ] 02-02-PLAN.md — Rust commit & history module
-- [ ] 02-03-PLAN.md — Rust remote module with Channels
-- [ ] 02-04-PLAN.md — Frontend file list & staging UI
-- [ ] 02-05-PLAN.md — Frontend diff viewer & commit form
-- [ ] 02-06-PLAN.md — Frontend sync & history UI
+- [x] 02-01-PLAN.md — Rust staging & diff module
+- [x] 02-02-PLAN.md — Rust commit & history module
+- [x] 02-03-PLAN.md — Rust remote module with Channels
+- [x] 02-04-PLAN.md — Frontend file list & staging UI
+- [x] 02-05-PLAN.md — Frontend diff viewer & commit form
+- [x] 02-06-PLAN.md — Frontend sync & history UI
 
 ### Phase 3: Core Git - Branches
 **Goal**: User can create, switch, merge, and delete branches with stash and tag support
@@ -138,7 +138,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | Phase | Status | Completed |
 |-------|--------|-----------|
 | 1. Foundation | Complete | 2026-02-04 |
-| 2. Core Git - Staging & Commits | Planned | - |
+| 2. Core Git - Staging & Commits | Complete | 2026-02-04 |
 | 3. Core Git - Branches | Not started | - |
 | 4. Gitflow State Machine | Not started | - |
 | 5. Topology Visualization | Not started | - |
