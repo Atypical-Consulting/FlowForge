@@ -1,8 +1,10 @@
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use std::path::Path;
+use tauri::State;
 
 use crate::git::error::GitError;
+use crate::git::repository::RepositoryState;
 
 /// Status of a worktree's working directory.
 #[derive(Debug, Clone, Serialize, Deserialize, Type, PartialEq)]
@@ -266,4 +268,62 @@ pub fn delete_worktree_internal(
     }
 
     Ok(())
+}
+
+// ============================================================================
+// Tauri Commands
+// ============================================================================
+
+/// List all worktrees for the current repository.
+#[tauri::command]
+#[specta::specta]
+pub async fn list_worktrees(
+    state: State<'_, RepositoryState>,
+) -> Result<Vec<WorktreeInfo>, GitError> {
+    let repo_path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+
+    tokio::task::spawn_blocking(move || list_worktrees_internal(&repo_path))
+        .await
+        .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}
+
+/// Create a new worktree.
+#[tauri::command]
+#[specta::specta]
+pub async fn create_worktree(
+    options: CreateWorktreeOptions,
+    state: State<'_, RepositoryState>,
+) -> Result<WorktreeInfo, GitError> {
+    let repo_path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+
+    tokio::task::spawn_blocking(move || create_worktree_internal(&repo_path, options))
+        .await
+        .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}
+
+/// Delete a worktree.
+#[tauri::command]
+#[specta::specta]
+pub async fn delete_worktree(
+    name: String,
+    force: bool,
+    delete_branch: bool,
+    state: State<'_, RepositoryState>,
+) -> Result<(), GitError> {
+    let repo_path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+
+    tokio::task::spawn_blocking(move || {
+        delete_worktree_internal(&repo_path, &name, force, delete_branch)
+    })
+    .await
+    .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
 }

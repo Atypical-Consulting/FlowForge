@@ -2,6 +2,7 @@ mod git;
 mod gitflow;
 
 use git::{
+    RepositoryState,
     branch::{checkout_branch, create_branch, delete_branch, list_branches},
     changelog::generate_changelog_cmd,
     commands::{close_repository, get_repository_status, is_git_repository, open_repository},
@@ -18,7 +19,7 @@ use git::{
     staging::{get_staging_status, stage_all, stage_file, unstage_all, unstage_file},
     stash::{list_stashes, stash_apply, stash_drop, stash_pop, stash_save},
     tag::{create_tag, delete_tag, list_tags},
-    RepositoryState,
+    worktree::{create_worktree, delete_worktree, list_worktrees},
 };
 use gitflow::{
     abort_gitflow, finish_feature, finish_hotfix, finish_release, get_gitflow_status,
@@ -26,7 +27,7 @@ use gitflow::{
 };
 use specta_typescript::Typescript;
 use tauri::Manager;
-use tauri_specta::{collect_commands, Builder};
+use tauri_specta::{Builder, collect_commands};
 
 #[tauri::command]
 #[specta::specta]
@@ -97,6 +98,10 @@ pub fn run() {
         get_scope_suggestions,
         infer_scope_from_staged,
         generate_changelog_cmd,
+        // Worktree commands
+        list_worktrees,
+        create_worktree,
+        delete_worktree,
     ]);
 
     #[cfg(debug_assertions)]
