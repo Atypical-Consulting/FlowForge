@@ -19,7 +19,7 @@ export default defineConfig({
     sourcemap: !!process.env.TAURI_DEBUG,
   },
   optimizeDeps: {
-    include: ["@dagrejs/dagre", "@dagrejs/graphlib"],
+    include: ["dagre-d3-es"],
   },
   resolve: {
     alias: {

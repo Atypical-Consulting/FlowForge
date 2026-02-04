@@ -1,4 +1,5 @@
-import * as Dagre from "@dagrejs/dagre";
+import { graphlib } from "dagre-d3-es";
+import { layout } from "dagre-d3-es/src/dagre/index.js";
 import type { Node, Edge } from "@xyflow/react";
 import type { GraphNode, GraphEdge, BranchType } from "../../bindings";
 
@@ -27,21 +28,21 @@ export function layoutGraph(
   graphNodes: GraphNode[],
   graphEdges: GraphEdge[],
 ): { nodes: Node<CommitNodeData>[]; edges: Edge<CommitEdgeData>[] } {
-  const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
+  const g = new graphlib.Graph().setDefaultEdgeLabel(() => ({}));
   g.setGraph({ rankdir: "TB", nodesep: 50, ranksep: 80 });
 
-  // Add nodes to dagre
+  // Add nodes to graph
   graphNodes.forEach((node) => {
     g.setNode(node.oid, { width: NODE_WIDTH, height: NODE_HEIGHT });
   });
 
-  // Add edges to dagre
+  // Add edges to graph
   graphEdges.forEach((edge) => {
     g.setEdge(edge.from, edge.to);
   });
 
   // Run layout
-  Dagre.layout(g);
+  layout(g, undefined);
 
   // Convert to React Flow format
   const nodes: Node<CommitNodeData>[] = graphNodes.map((node) => {
