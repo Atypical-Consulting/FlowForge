@@ -6,6 +6,7 @@ use git::{
     commands::{close_repository, get_repository_status, is_git_repository, open_repository},
     commit::create_commit,
     diff::get_file_diff,
+    graph::get_commit_graph,
     history::{get_commit_details, get_commit_history},
     merge::{abort_merge, get_merge_status, merge_branch},
     remote::{fetch_from_remote, get_remotes, pull_from_remote, push_to_remote},
@@ -50,6 +51,8 @@ pub fn run() {
         // History commands
         get_commit_history,
         get_commit_details,
+        // Graph commands
+        get_commit_graph,
         // Remote commands
         get_remotes,
         fetch_from_remote,

@@ -2,8 +2,10 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use std::collections::HashMap;
 use std::path::PathBuf;
+use tauri::State;
 
 use crate::git::error::GitError;
+use crate::git::repository::RepositoryState;
 
 /// Branch type classification for Gitflow-based coloring.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
@@ -35,14 +37,14 @@ pub struct GraphNode {
     pub message: String,
     /// Author name
     pub author: String,
-    /// Unix timestamp of the commit
-    pub timestamp: i64,
+    /// Unix timestamp in milliseconds (safe for JS Number up to year 275760)
+    pub timestamp_ms: f64,
     /// Parent commit SHAs
     pub parents: Vec<String>,
     /// Classification of the branch type for coloring
     pub branch_type: BranchType,
     /// Lane/column position for visual layout (0-indexed from left)
-    pub column: usize,
+    pub column: u32,
     /// Branch names pointing to this commit
     pub branch_names: Vec<String>,
 }
@@ -86,22 +88,38 @@ pub fn classify_branch(name: &str) -> BranchType {
     }
 }
 
-/// Get the commit graph for visualization.
+/// IPC command to get the commit graph for visualization.
 ///
 /// # Arguments
-/// * `repo_path` - Path to the git repository
 /// * `limit` - Maximum number of commits to return (default: 100, max: 500)
 /// * `offset` - Number of commits to skip (default: 0)
+/// * `state` - Repository state containing the current repo path
 ///
 /// # Returns
 /// A CommitGraph containing nodes and edges for visualization.
+#[tauri::command]
+#[specta::specta]
 pub async fn get_commit_graph(
-    repo_path: PathBuf,
-    limit: Option<usize>,
-    offset: Option<usize>,
+    limit: Option<u32>,
+    offset: Option<u32>,
+    state: State<'_, RepositoryState>,
 ) -> Result<CommitGraph, GitError> {
-    let limit = limit.unwrap_or(100).min(500);
-    let offset = offset.unwrap_or(0);
+    let repo_path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+
+    get_commit_graph_impl(repo_path, limit, offset).await
+}
+
+/// Internal implementation of get_commit_graph.
+async fn get_commit_graph_impl(
+    repo_path: PathBuf,
+    limit: Option<u32>,
+    offset: Option<u32>,
+) -> Result<CommitGraph, GitError> {
+    let limit = limit.unwrap_or(100).min(500) as usize;
+    let offset = offset.unwrap_or(0) as usize;
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
@@ -238,7 +256,7 @@ pub async fn get_commit_graph(
                         short_oid: oid.to_string()[..7].to_string(),
                         message: commit.summary().unwrap_or("").to_string(),
                         author: author.name().unwrap_or("Unknown").to_string(),
-                        timestamp: commit.time().seconds(),
+                        timestamp_ms: (commit.time().seconds() as f64) * 1000.0,
                         parents: parent_oids,
                         branch_type,
                         column: 0, // Will be assigned by lane algorithm
@@ -270,21 +288,21 @@ fn assign_lanes(nodes: &mut [GraphNode]) {
     }
 
     // Maps commit OID to its assigned column
-    let mut oid_to_column: HashMap<String, usize> = HashMap::new();
+    let mut oid_to_column: HashMap<String, u32> = HashMap::new();
 
     // Active columns: Some(oid) means column is occupied by that branch line
     // None means column is free
     let mut active_columns: Vec<Option<String>> = Vec::new();
 
     // Find or create a column for a branch line
-    fn find_free_column(active: &mut Vec<Option<String>>) -> usize {
+    fn find_free_column(active: &mut Vec<Option<String>>) -> u32 {
         for (i, slot) in active.iter().enumerate() {
             if slot.is_none() {
-                return i;
+                return i as u32;
             }
         }
         // No free column, add a new one
-        let col = active.len();
+        let col = active.len() as u32;
         active.push(None);
         col
     }
@@ -293,8 +311,8 @@ fn assign_lanes(nodes: &mut [GraphNode]) {
         let column = if node.parents.is_empty() {
             // Root commit - assign to first free column
             let col = find_free_column(&mut active_columns);
-            if col < active_columns.len() {
-                active_columns[col] = Some(node.oid.clone());
+            if (col as usize) < active_columns.len() {
+                active_columns[col as usize] = Some(node.oid.clone());
             }
             col
         } else if let Some(&parent_col) = node.parents.first().and_then(|p| oid_to_column.get(p)) {
@@ -303,10 +321,10 @@ fn assign_lanes(nodes: &mut [GraphNode]) {
         } else {
             // First commit we see on a new branch line
             let col = find_free_column(&mut active_columns);
-            if col >= active_columns.len() {
+            if (col as usize) >= active_columns.len() {
                 active_columns.push(None);
             }
-            active_columns[col] = Some(node.oid.clone());
+            active_columns[col as usize] = Some(node.oid.clone());
             col
         };
 
@@ -319,8 +337,8 @@ fn assign_lanes(nodes: &mut [GraphNode]) {
             for parent in node.parents.iter().skip(1) {
                 if let Some(&parent_col) = oid_to_column.get(parent) {
                     // The merged branch's column can be freed
-                    if parent_col < active_columns.len() {
-                        active_columns[parent_col] = None;
+                    if (parent_col as usize) < active_columns.len() {
+                        active_columns[parent_col as usize] = None;
                     }
                 }
             }
@@ -391,7 +409,7 @@ mod tests {
             short_oid: "abc1234".to_string(),
             message: "Initial commit".to_string(),
             author: "Test".to_string(),
-            timestamp: 0,
+            timestamp_ms: 0.0,
             parents: vec![],
             branch_type: BranchType::Main,
             column: 0,
@@ -409,7 +427,7 @@ mod tests {
                 short_oid: "commit3".to_string(),
                 message: "Third".to_string(),
                 author: "Test".to_string(),
-                timestamp: 3,
+                timestamp_ms: 3000.0,
                 parents: vec!["commit2".to_string()],
                 branch_type: BranchType::Main,
                 column: 0,
@@ -420,7 +438,7 @@ mod tests {
                 short_oid: "commit2".to_string(),
                 message: "Second".to_string(),
                 author: "Test".to_string(),
-                timestamp: 2,
+                timestamp_ms: 2000.0,
                 parents: vec!["commit1".to_string()],
                 branch_type: BranchType::Main,
                 column: 0,
@@ -431,7 +449,7 @@ mod tests {
                 short_oid: "commit1".to_string(),
                 message: "First".to_string(),
                 author: "Test".to_string(),
-                timestamp: 1,
+                timestamp_ms: 1000.0,
                 parents: vec![],
                 branch_type: BranchType::Main,
                 column: 0,
