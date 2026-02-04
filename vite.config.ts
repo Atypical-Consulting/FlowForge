@@ -1,9 +1,10 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
+import svgr from "vite-plugin-svgr";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [svgr(), react(), tailwindcss()],
   clearScreen: false,
   server: {
     port: 1420,
