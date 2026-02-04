@@ -1,7 +1,7 @@
 import { DiffEditor, loader } from "@monaco-editor/react";
 import { useQuery } from "@tanstack/react-query";
 import { AlignJustify, Columns, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { commands } from "../../bindings";
 import { useStagingStore } from "../../stores/staging";
 import { Button } from "../ui/button";
@@ -45,6 +45,13 @@ const FLOWFORGE_THEME = {
     "scrollbarSlider.activeBackground": "#9ca3af80",
   },
 };
+
+// Configure Monaco loader to use local files and suppress source map warnings
+loader.config({
+  paths: {
+    vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs",
+  },
+});
 
 // Initialize Monaco with custom theme
 loader.init().then((monaco) => {
