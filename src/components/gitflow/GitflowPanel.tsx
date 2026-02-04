@@ -8,6 +8,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useBranchStore } from "../../stores/branches";
 import { useGitflowStore } from "../../stores/gitflow";
 import { FinishFlowDialog } from "./FinishFlowDialog";
 import { StartFlowDialog } from "./StartFlowDialog";
@@ -17,19 +18,23 @@ type FlowType = "feature" | "release" | "hotfix";
 export function GitflowPanel() {
   const { status, isLoading, error, refresh, abort, clearError } =
     useGitflowStore();
+  const { branches } = useBranchStore();
   const [showStartDialog, setShowStartDialog] = useState<FlowType | null>(null);
   const [showFinishDialog, setShowFinishDialog] = useState<FlowType | null>(
     null,
   );
 
+  // Refresh gitflow status when branches change (includes checkout, create, delete)
   useEffect(() => {
     refresh();
-  }, [refresh]);
+  }, [refresh, branches]);
 
   if (!status) {
     return (
       <div className="p-3 text-gray-400 text-sm">
-        {isLoading ? "Loading gitflow status..." : "No gitflow status available"}
+        {isLoading
+          ? "Loading gitflow status..."
+          : "No gitflow status available"}
       </div>
     );
   }
@@ -65,7 +70,9 @@ export function GitflowPanel() {
           className="p-1 hover:bg-gray-800 rounded text-gray-400 hover:text-white"
           title="Refresh status"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+          <RefreshCw
+            className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`}
+          />
         </button>
       </div>
 
