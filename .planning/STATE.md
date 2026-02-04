@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 Phase: 4 of 8 (Gitflow State Machine) — COMPLETE
 Plan: All 5 plans executed
 Status: Ready for Phase 5
-Last activity: 2026-02-04 - Phase 4 complete
+Last activity: 2026-02-04 - Completed quick task 001: merge duplicate menu items
 
 Progress: █████░░░░░ 50%
 
@@ -61,6 +61,12 @@ None yet.
 ### Blockers/Concerns
 
 None yet.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 001 | Merge duplicate Stashes/Tags/Gitflow menu items | 2026-02-04 | 55b3656 | [001-merge-duplicate-stashes-tags-gitflow-men](./quick/001-merge-duplicate-stashes-tags-gitflow-men/) |
 
 ## Session Continuity
 
