@@ -20,16 +20,16 @@ export function BreakingChangeSection({
           type="checkbox"
           checked={isBreaking}
           onChange={(e) => onBreakingChange(e.target.checked)}
-          className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-orange-500 focus:ring-orange-500"
+          className="w-4 h-4 rounded border-ctp-surface2 bg-ctp-surface0 text-ctp-peach focus:ring-ctp-peach"
         />
-        <span className="text-sm font-medium text-gray-300">
+        <span className="text-sm font-medium text-ctp-subtext1">
           Breaking Change
         </span>
       </label>
 
       {isBreaking && (
         <div className="pl-6 space-y-2">
-          <label className="text-sm text-gray-400">
+          <label className="text-sm text-ctp-overlay1">
             Describe the breaking change *
           </label>
           <textarea
@@ -38,13 +38,13 @@ export function BreakingChangeSection({
             placeholder="What breaks and how to migrate..."
             rows={3}
             className={cn(
-              "w-full px-3 py-2 text-sm bg-gray-800 border rounded resize-none",
-              "text-white placeholder:text-gray-500",
+              "w-full px-3 py-2 text-sm bg-ctp-surface0 border rounded resize-none",
+              "text-ctp-text placeholder:text-ctp-overlay0",
               "focus:outline-none focus:ring-1",
-              "border-orange-500/30 focus:border-orange-500 focus:ring-orange-500",
+              "border-ctp-peach/30 focus:border-ctp-peach focus:ring-ctp-peach",
             )}
           />
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-ctp-overlay0">
             This will be added as a BREAKING CHANGE footer
           </p>
         </div>

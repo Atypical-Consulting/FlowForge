@@ -53,16 +53,16 @@ export function CommitForm() {
           : "error";
 
   return (
-    <div className="border-t border-gray-800 p-3 bg-gray-950">
+    <div className="border-t border-ctp-surface0 p-3 bg-ctp-crust">
       {/* Mode toggle */}
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-medium text-gray-300">Commit</span>
-        <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+        <span className="text-sm font-medium text-ctp-subtext1">Commit</span>
+        <label className="flex items-center gap-2 text-xs text-ctp-overlay1 cursor-pointer">
           <input
             type="checkbox"
             checked={useConventional}
             onChange={(e) => setUseConventional(e.target.checked)}
-            className="rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500"
+            className="rounded border-ctp-surface2 bg-ctp-surface0 text-ctp-blue focus:ring-ctp-blue"
           />
           Conventional Commits
         </label>
@@ -76,12 +76,12 @@ export function CommitForm() {
             disabled={commitMutation.isPending || !hasStagedFiles}
           />
           {!hasStagedFiles && (
-            <p className="text-xs text-gray-500 text-center">
+            <p className="text-xs text-ctp-overlay0 text-center">
               No staged changes to commit
             </p>
           )}
           {commitMutation.isError && (
-            <p className="text-xs text-red-400 text-center">
+            <p className="text-xs text-ctp-red text-center">
               {String(commitMutation.error)}
             </p>
           )}
@@ -94,21 +94,21 @@ export function CommitForm() {
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Commit message..."
             className={cn(
-              "w-full h-24 px-3 py-2 text-sm bg-gray-900 border border-gray-700",
-              "rounded resize-none focus:outline-none focus:border-blue-500",
-              "text-gray-200 placeholder:text-gray-500",
+              "w-full h-24 px-3 py-2 text-sm bg-ctp-mantle border border-ctp-surface1",
+              "rounded resize-none focus:outline-none focus:border-ctp-blue",
+              "text-ctp-text placeholder:text-ctp-overlay0",
             )}
           />
 
           {/* Character count and guidance */}
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
-              <label className="flex items-center gap-1.5 text-gray-400">
+              <label className="flex items-center gap-1.5 text-ctp-overlay1">
                 <input
                   type="checkbox"
                   checked={amend}
                   onChange={(e) => setAmend(e.target.checked)}
-                  className="rounded border-gray-600"
+                  className="rounded border-ctp-surface2"
                 />
                 Amend last commit
               </label>
@@ -117,10 +117,10 @@ export function CommitForm() {
             <span
               className={cn(
                 "font-mono",
-                subjectStatus === "good" && "text-green-500",
-                subjectStatus === "warning" && "text-yellow-500",
-                subjectStatus === "error" && "text-red-500",
-                subjectStatus === "empty" && "text-gray-500",
+                subjectStatus === "good" && "text-ctp-green",
+                subjectStatus === "warning" && "text-ctp-yellow",
+                subjectStatus === "error" && "text-ctp-red",
+                subjectStatus === "empty" && "text-ctp-overlay0",
               )}
             >
               {subjectLength}/50
@@ -151,13 +151,13 @@ export function CommitForm() {
           </Button>
 
           {!hasStagedFiles && (
-            <p className="text-xs text-gray-500 text-center">
+            <p className="text-xs text-ctp-overlay0 text-center">
               No staged changes to commit
             </p>
           )}
 
           {commitMutation.isError && (
-            <p className="text-xs text-red-400 text-center">
+            <p className="text-xs text-ctp-red text-center">
               {String(commitMutation.error)}
             </p>
           )}

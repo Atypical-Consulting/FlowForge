@@ -43,7 +43,7 @@ export function ChangelogDialog() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
+                  <label className="text-sm font-medium text-ctp-subtext1">
                     From (tag/commit)
                   </label>
                   <input
@@ -52,14 +52,14 @@ export function ChangelogDialog() {
                     onChange={(e) => setFromRef(e.target.value)}
                     placeholder="e.g., v1.0.0 (leave empty for all)"
                     className={cn(
-                      "w-full px-3 py-2 text-sm bg-gray-800 border border-gray-700 rounded",
-                      "text-white placeholder:text-gray-500",
-                      "focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500",
+                      "w-full px-3 py-2 text-sm bg-ctp-surface0 border border-ctp-surface1 rounded",
+                      "text-ctp-text placeholder:text-ctp-overlay0",
+                      "focus:outline-none focus:border-ctp-blue focus:ring-1 focus:ring-ctp-blue",
                     )}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
+                  <label className="text-sm font-medium text-ctp-subtext1">
                     To (tag/commit)
                   </label>
                   <input
@@ -68,16 +68,16 @@ export function ChangelogDialog() {
                     onChange={(e) => setToRef(e.target.value)}
                     placeholder="HEAD"
                     className={cn(
-                      "w-full px-3 py-2 text-sm bg-gray-800 border border-gray-700 rounded",
-                      "text-white placeholder:text-gray-500",
-                      "focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500",
+                      "w-full px-3 py-2 text-sm bg-ctp-surface0 border border-ctp-surface1 rounded",
+                      "text-ctp-text placeholder:text-ctp-overlay0",
+                      "focus:outline-none focus:border-ctp-blue focus:ring-1 focus:ring-ctp-blue",
                     )}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-300">
+                <label className="text-sm font-medium text-ctp-subtext1">
                   Version (optional)
                 </label>
                 <input
@@ -86,15 +86,15 @@ export function ChangelogDialog() {
                   onChange={(e) => setVersion(e.target.value)}
                   placeholder="e.g., 1.1.0 (for changelog header)"
                   className={cn(
-                    "w-full px-3 py-2 text-sm bg-gray-800 border border-gray-700 rounded",
-                    "text-white placeholder:text-gray-500",
-                    "focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500",
+                    "w-full px-3 py-2 text-sm bg-ctp-surface0 border border-ctp-surface1 rounded",
+                    "text-ctp-text placeholder:text-ctp-overlay0",
+                    "focus:outline-none focus:border-ctp-blue focus:ring-1 focus:ring-ctp-blue",
                   )}
                 />
               </div>
 
               {error && (
-                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded text-red-400 text-sm">
+                <div className="p-3 bg-ctp-red/10 border border-ctp-red/20 rounded text-ctp-red text-sm">
                   {error}
                 </div>
               )}

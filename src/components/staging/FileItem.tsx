@@ -14,16 +14,16 @@ interface FileItemProps {
 }
 
 function getStatusDot(status: FileStatus): { color: string; title: string } {
-  if (status === "added") return { color: "bg-green-500", title: "Added" };
-  if (status === "deleted") return { color: "bg-red-500", title: "Deleted" };
+  if (status === "added") return { color: "bg-ctp-green", title: "Added" };
+  if (status === "deleted") return { color: "bg-ctp-red", title: "Deleted" };
   if (status === "modified")
-    return { color: "bg-yellow-500", title: "Modified" };
+    return { color: "bg-ctp-yellow", title: "Modified" };
   if (status === "untracked")
-    return { color: "bg-blue-500", title: "Untracked" };
+    return { color: "bg-ctp-blue", title: "Untracked" };
   if (typeof status === "object" && "renamed" in status) {
-    return { color: "bg-purple-500", title: "Renamed" };
+    return { color: "bg-ctp-mauve", title: "Renamed" };
   }
-  return { color: "bg-gray-500", title: "Unknown" };
+  return { color: "bg-ctp-overlay0", title: "Unknown" };
 }
 
 export function FileItem({
@@ -70,8 +70,8 @@ export function FileItem({
       onKeyDown={(e) => e.key === "Enter" && selectFile(file, section)}
       className={cn(
         "flex items-center gap-2 px-3 py-1.5 cursor-pointer group",
-        "hover:bg-gray-800/50 transition-colors",
-        isSelected && "bg-blue-900/30 border-l-2 border-blue-500",
+        "hover:bg-ctp-surface0/50 transition-colors",
+        isSelected && "bg-ctp-blue/20 border-l-2 border-ctp-blue",
       )}
       style={indentStyle}
     >
@@ -79,19 +79,19 @@ export function FileItem({
         <FileTypeIcon path={file.path} className="w-4 h-4" />
         <span
           className={cn(
-            "absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-gray-900",
+            "absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-ctp-mantle",
             statusDot.color,
           )}
           title={statusDot.title}
         />
       </div>
-      <span className="flex-1 truncate text-sm text-gray-200">
+      <span className="flex-1 truncate text-sm text-ctp-text">
         {displayName}
       </span>
       {file.additions !== null && file.deletions !== null && (
-        <span className="text-xs text-gray-500">
-          <span className="text-green-500">+{file.additions}</span>{" "}
-          <span className="text-red-500">-{file.deletions}</span>
+        <span className="text-xs text-ctp-overlay0">
+          <span className="text-ctp-green">+{file.additions}</span>{" "}
+          <span className="text-ctp-red">-{file.deletions}</span>
         </span>
       )}
       <button
@@ -100,8 +100,8 @@ export function FileItem({
         className={cn(
           "opacity-0 group-hover:opacity-100 p-1 rounded transition-opacity",
           section === "staged"
-            ? "hover:bg-red-900/50 text-red-400"
-            : "hover:bg-green-900/50 text-green-400",
+            ? "hover:bg-ctp-red/20 text-ctp-red"
+            : "hover:bg-ctp-green/20 text-ctp-green",
         )}
         title={section === "staged" ? "Unstage" : "Stage"}
       >

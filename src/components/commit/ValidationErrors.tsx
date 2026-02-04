@@ -11,7 +11,9 @@ export function ValidationErrors({
 }: ValidationErrorsProps) {
   if (isValidating) {
     return (
-      <div className="text-sm text-gray-400 animate-pulse">Validating...</div>
+      <div className="text-sm text-ctp-overlay1 animate-pulse">
+        Validating...
+      </div>
     );
   }
 
@@ -25,13 +27,13 @@ export function ValidationErrors({
           {validation.errors.map((error, i) => (
             <div
               key={i}
-              className="flex items-start gap-2 p-2 bg-red-500/10 border border-red-500/20 rounded text-sm"
+              className="flex items-start gap-2 p-2 bg-ctp-red/10 border border-ctp-red/20 rounded text-sm"
             >
-              <span className="text-red-400 shrink-0">✗</span>
+              <span className="text-ctp-red shrink-0">✗</span>
               <div>
-                <p className="text-red-400">{error.message}</p>
+                <p className="text-ctp-red">{error.message}</p>
                 {error.suggestion && (
-                  <p className="text-gray-400 mt-1 text-xs">
+                  <p className="text-ctp-overlay1 mt-1 text-xs">
                     {error.suggestion}
                   </p>
                 )}
@@ -47,10 +49,10 @@ export function ValidationErrors({
           {validation.warnings.map((warning, i) => (
             <div
               key={i}
-              className="flex items-start gap-2 p-2 bg-yellow-500/10 border border-yellow-500/20 rounded text-sm"
+              className="flex items-start gap-2 p-2 bg-ctp-yellow/10 border border-ctp-yellow/20 rounded text-sm"
             >
-              <span className="text-yellow-400 shrink-0">⚠</span>
-              <p className="text-yellow-400">{warning.message}</p>
+              <span className="text-ctp-yellow shrink-0">⚠</span>
+              <p className="text-ctp-yellow">{warning.message}</p>
             </div>
           ))}
         </div>
@@ -58,9 +60,9 @@ export function ValidationErrors({
 
       {/* Success */}
       {validation.isValid && validation.errors.length === 0 && (
-        <div className="flex items-center gap-2 p-2 bg-green-500/10 border border-green-500/20 rounded text-sm">
-          <span className="text-green-400">✓</span>
-          <span className="text-green-400">Valid conventional commit</span>
+        <div className="flex items-center gap-2 p-2 bg-ctp-green/10 border border-ctp-green/20 rounded text-sm">
+          <span className="text-ctp-green">✓</span>
+          <span className="text-ctp-green">Valid conventional commit</span>
         </div>
       )}
     </div>

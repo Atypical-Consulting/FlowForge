@@ -14,7 +14,9 @@ export function RecentRepos({ onRepoOpened }: RecentReposProps) {
 
   if (isLoading) {
     return (
-      <div className="text-gray-500 text-sm py-4">Loading recent repos...</div>
+      <div className="text-ctp-overlay0 text-sm py-4">
+        Loading recent repos...
+      </div>
     );
   }
 
@@ -54,7 +56,7 @@ export function RecentRepos({ onRepoOpened }: RecentReposProps) {
 
   return (
     <div className="space-y-3">
-      <h2 className="text-sm font-medium text-gray-400 flex items-center gap-2">
+      <h2 className="text-sm font-medium text-ctp-overlay1 flex items-center gap-2">
         <Clock className="w-4 h-4" />
         Recent Repositories
       </h2>
@@ -62,22 +64,22 @@ export function RecentRepos({ onRepoOpened }: RecentReposProps) {
         {recentRepos.map((repo) => (
           <div
             key={repo.path}
-            className="group flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800/50 cursor-pointer transition-colors"
+            className="group flex items-center gap-3 p-3 rounded-lg hover:bg-ctp-surface0/50 cursor-pointer transition-colors"
             onClick={() => handleOpen(repo)}
             onKeyDown={(e) => e.key === "Enter" && handleOpen(repo)}
             role="button"
             tabIndex={0}
           >
-            <Folder className="w-5 h-5 text-blue-400 shrink-0" />
+            <Folder className="w-5 h-5 text-ctp-blue shrink-0" />
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-white truncate">
+              <div className="text-sm font-medium text-ctp-text truncate">
                 {repo.name}
               </div>
-              <div className="text-xs text-gray-500 truncate">
+              <div className="text-xs text-ctp-overlay0 truncate">
                 {truncatePath(repo.path)}
               </div>
             </div>
-            <div className="text-xs text-gray-500 shrink-0">
+            <div className="text-xs text-ctp-overlay0 shrink-0">
               {formatTime(repo.lastOpened)}
             </div>
             <Button
@@ -90,7 +92,7 @@ export function RecentRepos({ onRepoOpened }: RecentReposProps) {
               }}
               aria-label={`Remove ${repo.name} from recent`}
             >
-              <X className="w-4 h-4 text-gray-500 hover:text-red-400" />
+              <X className="w-4 h-4 text-ctp-overlay0 hover:text-ctp-red" />
             </Button>
           </div>
         ))}

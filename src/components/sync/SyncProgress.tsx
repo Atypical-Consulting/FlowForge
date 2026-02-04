@@ -11,7 +11,7 @@ export function SyncProgressDisplay({ progress }: SyncProgressProps) {
   switch (progress.event) {
     case "started":
       return (
-        <div className="flex items-center gap-2 text-xs text-gray-400">
+        <div className="flex items-center gap-2 text-xs text-ctp-overlay1">
           <Loader2 className="w-3 h-3 animate-spin" />
           <span>Starting {progress.data.operation}...</span>
         </div>
@@ -23,7 +23,7 @@ export function SyncProgressDisplay({ progress }: SyncProgressProps) {
           ? Math.round((progress.data.current / progress.data.total) * 100)
           : 0;
       return (
-        <div className="flex items-center gap-2 text-xs text-gray-400">
+        <div className="flex items-center gap-2 text-xs text-ctp-overlay1">
           <Loader2 className="w-3 h-3 animate-spin" />
           <span>Transferring... {percent}%</span>
         </div>
@@ -32,7 +32,7 @@ export function SyncProgressDisplay({ progress }: SyncProgressProps) {
 
     case "finished":
       return (
-        <div className="flex items-center gap-2 text-xs text-green-400">
+        <div className="flex items-center gap-2 text-xs text-ctp-green">
           <Check className="w-3 h-3" />
           <span>{progress.data.operation} complete</span>
         </div>
@@ -40,7 +40,7 @@ export function SyncProgressDisplay({ progress }: SyncProgressProps) {
 
     case "error":
       return (
-        <div className="flex items-center gap-2 text-xs text-red-400">
+        <div className="flex items-center gap-2 text-xs text-ctp-red">
           <AlertCircle className="w-3 h-3" />
           <span>{progress.data.message}</span>
         </div>
