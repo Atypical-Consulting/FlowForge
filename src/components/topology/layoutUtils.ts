@@ -1,4 +1,4 @@
-import Dagre from "@dagrejs/dagre";
+import * as Dagre from "@dagrejs/dagre";
 import type { Node, Edge } from "@xyflow/react";
 import type { GraphNode, GraphEdge, BranchType } from "../../bindings";
 
