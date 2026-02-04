@@ -1,14 +1,14 @@
 import { useStagingStore } from "../../stores/staging";
-import { getViewerForFile, registerViewer } from "./ViewerRegistry";
 import { DiffViewer } from "./DiffViewer";
 import { NugetPackageViewer } from "./NugetPackageViewer";
+import { getViewerForFile, registerViewer } from "./ViewerRegistry";
 
 // Register viewers on module load
 // NuGet viewer: matches .nupkg files with high priority
 registerViewer(
   (file) => file.path.toLowerCase().endsWith(".nupkg"),
   NugetPackageViewer,
-  100
+  100,
 );
 
 // Default diff viewer: matches all files as fallback (priority 0)

@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import {
-  Package,
-  Download,
-  User,
   Calendar,
+  Download,
   ExternalLink,
-  Loader2,
   Github,
+  Loader2,
+  Package,
+  User,
 } from "lucide-react";
 import type { ViewerProps } from "./ViewerRegistry";
 

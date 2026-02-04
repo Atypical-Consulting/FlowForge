@@ -1,14 +1,9 @@
 import { FileText } from "lucide-react";
-import { useChangelogStore } from "../../stores/changelogStore";
-import { ChangelogPreview } from "./ChangelogPreview";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
 import { cn } from "../../lib/utils";
+import { useChangelogStore } from "../../stores/changelogStore";
+import { Button } from "../ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { ChangelogPreview } from "./ChangelogPreview";
 
 export function ChangelogDialog() {
   const {
@@ -120,11 +115,7 @@ export function ChangelogDialog() {
               <ChangelogPreview changelog={changelog} />
 
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={reset}
-                  className="flex-1"
-                >
+                <Button variant="outline" onClick={reset} className="flex-1">
                   Generate Another
                 </Button>
                 <Button onClick={handleClose}>Done</Button>

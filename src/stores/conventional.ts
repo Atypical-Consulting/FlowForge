@@ -2,8 +2,8 @@ import { create } from "zustand";
 import { commands } from "../bindings";
 import type {
   CommitType,
-  TypeSuggestion,
   ScopeSuggestion,
+  TypeSuggestion,
   ValidationResult,
 } from "../bindings";
 
@@ -156,8 +156,14 @@ export const useConventionalStore = create<ConventionalState>((set, get) => ({
   },
 
   buildCommitMessage: () => {
-    const { commitType, scope, description, body, isBreaking, breakingDescription } =
-      get();
+    const {
+      commitType,
+      scope,
+      description,
+      body,
+      isBreaking,
+      breakingDescription,
+    } = get();
 
     if (!commitType || !description) {
       return "";

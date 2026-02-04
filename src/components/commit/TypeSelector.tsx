@@ -1,10 +1,10 @@
-import {
-  type CommitType,
-  COMMIT_TYPES,
-  COMMIT_TYPE_LABELS,
-} from "../../stores/conventional";
 import type { TypeSuggestion } from "../../bindings";
 import { cn } from "../../lib/utils";
+import {
+  COMMIT_TYPES,
+  COMMIT_TYPE_LABELS,
+  type CommitType,
+} from "../../stores/conventional";
 
 /**
  * Type descriptions for commit types.
@@ -45,7 +45,9 @@ export function TypeSelector({
         <div className="flex items-center gap-2 p-2 bg-blue-500/10 border border-blue-500/20 rounded text-sm">
           <span className="text-gray-300">
             Suggested:{" "}
-            <strong className="text-blue-400">{suggestion.suggestedType}</strong>
+            <strong className="text-blue-400">
+              {suggestion.suggestedType}
+            </strong>
           </span>
           <span className="text-gray-500">
             ({suggestion.confidence} confidence)

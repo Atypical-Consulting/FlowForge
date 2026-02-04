@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { ChangelogDialog } from "./components/changelog";
 import { Header } from "./components/Header";
 import { RepositoryView } from "./components/RepositoryView";
 import { WelcomeView } from "./components/WelcomeView";
+import { ChangelogDialog } from "./components/changelog";
 import { useRepositoryStore } from "./stores/repository";
 
 function App() {

@@ -48,7 +48,7 @@ const dialogContentVariants = cva(
     defaultVariants: {
       size: "default",
     },
-  }
+  },
 );
 
 interface DialogContentProps
@@ -78,7 +78,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
     React.useEffect(() => {
       if (open && contentRef.current) {
         const focusable = contentRef.current.querySelector<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
         );
         focusable?.focus();
       }
@@ -117,7 +117,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
         </div>
       </>
     );
-  }
+  },
 );
 DialogContent.displayName = "DialogContent";
 

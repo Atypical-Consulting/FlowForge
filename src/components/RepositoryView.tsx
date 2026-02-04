@@ -17,12 +17,12 @@ import { BranchList } from "./branches/BranchList";
 import { CommitDetails } from "./commit/CommitDetails";
 import { CommitForm } from "./commit/CommitForm";
 import { CommitHistory } from "./commit/CommitHistory";
-import { FileViewer } from "./viewers";
 import { GitflowPanel } from "./gitflow";
 import { StagingPanel } from "./staging/StagingPanel";
 import { StashList } from "./stash/StashList";
 import { TagList } from "./tags/TagList";
 import { TopologyCommitDetails, TopologyPanel } from "./topology";
+import { FileViewer } from "./viewers";
 
 type Tab = "changes" | "history" | "topology";
 

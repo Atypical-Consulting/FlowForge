@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ScopeSuggestion } from "../../bindings";
 import { cn } from "../../lib/utils";
 

@@ -1,5 +1,5 @@
-import type { FileChange } from "../../bindings";
 import type { ComponentType } from "react";
+import type { FileChange } from "../../bindings";
 
 export interface ViewerProps {
   file: FileChange;
@@ -19,14 +19,14 @@ const viewers: RegisteredViewer[] = [];
 export function registerViewer(
   matcher: ViewerMatcher,
   component: ComponentType<ViewerProps>,
-  priority: number = 0
+  priority = 0,
 ) {
   viewers.push({ matcher, component, priority });
   viewers.sort((a, b) => b.priority - a.priority);
 }
 
 export function getViewerForFile(
-  file: FileChange
+  file: FileChange,
 ): ComponentType<ViewerProps> | null {
   for (const viewer of viewers) {
     if (viewer.matcher(file)) {

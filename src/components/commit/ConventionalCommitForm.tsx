@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { useConventionalCommit } from "../../hooks/useConventionalCommit";
-import { TypeSelector } from "./TypeSelector";
-import { ScopeAutocomplete } from "./ScopeAutocomplete";
-import { BreakingChangeSection } from "./BreakingChangeSection";
-import { ValidationErrors } from "./ValidationErrors";
 import { cn } from "../../lib/utils";
+import { BreakingChangeSection } from "./BreakingChangeSection";
+import { ScopeAutocomplete } from "./ScopeAutocomplete";
+import { TypeSelector } from "./TypeSelector";
+import { ValidationErrors } from "./ValidationErrors";
 
 const MAX_DESCRIPTION_LENGTH = 72;
 
@@ -165,7 +165,7 @@ export function ConventionalCommitForm({
           <pre
             className={cn(
               "p-3 text-sm bg-gray-900 border border-gray-700 rounded",
-              "text-gray-300 font-mono whitespace-pre-wrap break-words",
+              "text-gray-300 font-mono whitespace-pre-wrap wrap-break-words",
               "max-h-32 overflow-y-auto",
             )}
           >

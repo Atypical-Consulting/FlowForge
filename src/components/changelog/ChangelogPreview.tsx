@@ -1,7 +1,7 @@
-import { useState } from "react";
 import { Check, Copy } from "lucide-react";
-import type { ChangelogOutput } from "../../stores/changelogStore";
+import { useState } from "react";
 import { cn } from "../../lib/utils";
+import type { ChangelogOutput } from "../../stores/changelogStore";
 
 interface ChangelogPreviewProps {
   changelog: ChangelogOutput;
@@ -49,7 +49,7 @@ export function ChangelogPreview({ changelog }: ChangelogPreviewProps) {
       </button>
 
       {/* Markdown preview */}
-      <div className="p-4 bg-gray-950 border border-gray-700 rounded max-h-[300px] overflow-y-auto">
+      <div className="p-4 bg-gray-950 border border-gray-700 rounded max-h-75 overflow-y-auto">
         <pre className="text-sm font-mono whitespace-pre-wrap text-gray-300">
           {changelog.markdown}
         </pre>

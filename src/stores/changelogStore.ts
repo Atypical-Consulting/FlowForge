@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import { commands } from "../bindings";
 import type {
+  ChangelogCommit,
   ChangelogOutput,
   CommitGroup,
-  ChangelogCommit,
 } from "../bindings";
 
 interface ChangelogState {

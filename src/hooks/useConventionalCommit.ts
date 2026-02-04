@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useCallback } from "react";
+import { useCallback, useEffect, useMemo } from "react";
+import { debounce } from "../lib/utils";
 import {
-  useConventionalStore,
   COMMIT_TYPES,
   COMMIT_TYPE_LABELS,
   type CommitType,
+  useConventionalStore,
 } from "../stores/conventional";
-import { debounce } from "../lib/utils";
 
 /**
  * Hook for managing conventional commit form state.

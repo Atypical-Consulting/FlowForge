@@ -27,7 +27,7 @@ export function ValidationErrors({
               key={i}
               className="flex items-start gap-2 p-2 bg-red-500/10 border border-red-500/20 rounded text-sm"
             >
-              <span className="text-red-400 flex-shrink-0">✗</span>
+              <span className="text-red-400 shrink-0">✗</span>
               <div>
                 <p className="text-red-400">{error.message}</p>
                 {error.suggestion && (
@@ -49,7 +49,7 @@ export function ValidationErrors({
               key={i}
               className="flex items-start gap-2 p-2 bg-yellow-500/10 border border-yellow-500/20 rounded text-sm"
             >
-              <span className="text-yellow-400 flex-shrink-0">⚠</span>
+              <span className="text-yellow-400 shrink-0">⚠</span>
               <p className="text-yellow-400">{warning.message}</p>
             </div>
           ))}
