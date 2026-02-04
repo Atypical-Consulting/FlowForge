@@ -14,6 +14,10 @@ use git::{
     tag::{create_tag, delete_tag, list_tags},
     RepositoryState,
 };
+use gitflow::{
+    abort_gitflow, finish_feature, finish_hotfix, finish_release, get_gitflow_status,
+    start_feature, start_hotfix, start_release,
+};
 use specta_typescript::Typescript;
 use tauri::Manager;
 use tauri_specta::{collect_commands, Builder};
@@ -70,6 +74,15 @@ pub fn run() {
         merge_branch,
         get_merge_status,
         abort_merge,
+        // Gitflow commands
+        start_feature,
+        finish_feature,
+        start_release,
+        finish_release,
+        start_hotfix,
+        finish_hotfix,
+        get_gitflow_status,
+        abort_gitflow,
     ]);
 
     #[cfg(debug_assertions)]
