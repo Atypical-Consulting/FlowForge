@@ -292,6 +292,7 @@ fn get_commits_in_range(
 ///
 /// # Returns
 /// The name of the previous tag, if found.
+#[allow(dead_code)]
 pub fn find_previous_tag(repo: &Repository, current: &str) -> Option<String> {
     let current_oid = resolve_ref(repo, current).ok()?;
     let current_commit = repo.find_commit(current_oid).ok()?;

@@ -26,6 +26,7 @@ impl Default for GitflowState {
 }
 
 /// Events that trigger state transitions.
+#[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(tag = "type", content = "data")]
 pub enum GitflowEvent {
@@ -48,11 +49,13 @@ pub enum GitflowEvent {
 /// The Gitflow state machine.
 ///
 /// Tracks the current workflow state and validates transitions.
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct GitflowMachine {
     state: GitflowState,
 }
 
+#[allow(dead_code)]
 impl GitflowMachine {
     /// Create a new state machine in Idle state.
     pub fn new() -> Self {

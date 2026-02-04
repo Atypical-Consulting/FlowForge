@@ -15,9 +15,5 @@ pub mod state;
 
 pub use commands::{
     abort_gitflow, finish_feature, finish_hotfix, finish_release, get_gitflow_status,
-    start_feature, start_hotfix, start_release, ActiveFlow, FlowType, GitflowStatus,
+    start_feature, start_hotfix, start_release,
 };
-pub use error::GitflowError;
-pub use machine::{GitflowEvent, GitflowMachine, GitflowState};
-pub use merge::merge_no_ff;
-pub use state::{reconstruct_state, GitflowContext};

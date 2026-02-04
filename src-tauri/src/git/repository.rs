@@ -135,6 +135,7 @@ impl RepositoryState {
     }
 
     /// Check if a repository is currently open.
+    #[allow(dead_code)]
     pub async fn is_open(&self) -> bool {
         self.current_path.lock().await.is_some()
     }
