@@ -25,3 +25,6 @@ tokio = { version = "1", features = ["full"] }
 thiserror = "2"
 git2 = "0.20"
 statig = "0.3"
+git-conventional = "0.12"
+tera = "1"
+chrono = "0.4"
