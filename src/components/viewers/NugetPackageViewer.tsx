@@ -6,6 +6,7 @@ import {
   Calendar,
   ExternalLink,
   Loader2,
+  Github,
 } from "lucide-react";
 import type { ViewerProps } from "./ViewerRegistry";
 
@@ -19,46 +20,65 @@ interface NugetPackageInfo {
   projectUrl?: string;
   licenseUrl?: string;
   tags: string[];
+  nugetUrl: string;
 }
 
 // Extract package ID and version from filename: PackageName.1.2.3.nupkg
 function parseNupkgFilename(
-  path: string
+  path: string,
 ): { id: string; version: string } | null {
   const filename = path.split("/").pop() || "";
   const match = filename.match(
-    /^(.+?)\.(\d+\.\d+\.\d+(?:\.\d+)?(?:-[a-zA-Z0-9.-]+)?)\.nupkg$/
+    /^(.+?)\.(\d+\.\d+\.\d+(?:\.\d+)?(?:-[a-zA-Z0-9.-]+)?)\.nupkg$/,
   );
   if (!match) return null;
   return { id: match[1], version: match[2] };
 }
 
 async function fetchNugetInfo(
-  packageId: string
+  packageId: string,
 ): Promise<NugetPackageInfo | null> {
-  const lowerId = packageId.toLowerCase();
-  const registrationUrl = `https://api.nuget.org/v3/registration5-gz-semver2/${lowerId}/index.json`;
+  // Use the search API which provides totalDownloads
+  const searchUrl = `https://azuresearch-usnc.nuget.org/query?q=packageid:${encodeURIComponent(packageId)}&prerelease=true&take=1`;
 
-  const response = await fetch(registrationUrl);
+  const response = await fetch(searchUrl);
   if (!response.ok) return null;
 
   const data = await response.json();
-  const items = data.items?.[0]?.items || data.items || [];
-  const latestEntry = items[items.length - 1];
-  const catalogEntry = latestEntry?.catalogEntry;
+  const pkg = data.data?.[0];
 
-  if (!catalogEntry) return null;
+  if (!pkg) return null;
+
+  // Get the latest version's details from registration API for published date
+  const lowerId = packageId.toLowerCase();
+  const registrationUrl = `https://api.nuget.org/v3/registration5-gz-semver2/${lowerId}/index.json`;
+
+  let published = "";
+  try {
+    const regResponse = await fetch(registrationUrl);
+    if (regResponse.ok) {
+      const regData = await regResponse.json();
+      const items = regData.items?.[0]?.items || regData.items || [];
+      const latestEntry = items[items.length - 1];
+      published = latestEntry?.catalogEntry?.published || "";
+    }
+  } catch {
+    // Ignore registration fetch errors, published date is optional
+  }
 
   return {
-    id: catalogEntry.id || packageId,
-    version: catalogEntry.version,
-    description: catalogEntry.description || "No description available",
-    authors: catalogEntry.authors || "Unknown",
-    totalDownloads: data.totalDownloads || 0,
-    published: catalogEntry.published,
-    projectUrl: catalogEntry.projectUrl,
-    licenseUrl: catalogEntry.licenseUrl,
-    tags: catalogEntry.tags || [],
+    id: pkg.id || packageId,
+    version: pkg.version,
+    description: pkg.description || "No description available",
+    authors: Array.isArray(pkg.authors)
+      ? pkg.authors.join(", ")
+      : pkg.authors || "Unknown",
+    totalDownloads: pkg.totalDownloads || 0,
+    published,
+    projectUrl: pkg.projectUrl,
+    licenseUrl: pkg.licenseUrl,
+    tags: pkg.tags || [],
+    nugetUrl: `https://www.nuget.org/packages/${pkg.id || packageId}`,
   };
 }
 
@@ -153,10 +173,27 @@ export function NugetPackageViewer({ file }: ViewerProps) {
                 </div>
               )}
 
+              {/* NuGet.org Link - always available */}
+              <div className="bg-gray-800 rounded-lg p-3">
+                <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
+                  <ExternalLink className="w-3 h-3" />
+                  NuGet.org
+                </div>
+                <a
+                  href={packageInfo.nugetUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:underline text-sm truncate block"
+                >
+                  View on NuGet.org
+                </a>
+              </div>
+
+              {/* Project URL (GitHub etc) - optional */}
               {packageInfo.projectUrl && (
                 <div className="bg-gray-800 rounded-lg p-3">
                   <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
-                    <ExternalLink className="w-3 h-3" />
+                    <Github className="w-3 h-3" />
                     Project
                   </div>
                   <a
@@ -165,7 +202,7 @@ export function NugetPackageViewer({ file }: ViewerProps) {
                     rel="noopener noreferrer"
                     className="text-blue-400 hover:underline text-sm truncate block"
                   >
-                    View on NuGet.org
+                    View Source
                   </a>
                 </div>
               )}
