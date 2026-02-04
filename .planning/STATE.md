@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 Phase: 4 of 8 (Gitflow State Machine) — COMPLETE
 Plan: All 5 plans executed
 Status: Ready for Phase 5
-Last activity: 2026-02-04 - Completed quick task 001: merge duplicate menu items
+Last activity: 2026-02-04 - Completed quick task 002: sidebar UX improvements
 
 Progress: █████░░░░░ 50%
 
@@ -67,6 +67,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 001 | Merge duplicate Stashes/Tags/Gitflow menu items | 2026-02-04 | 55b3656 | [001-merge-duplicate-stashes-tags-gitflow-men](./quick/001-merge-duplicate-stashes-tags-gitflow-men/) |
+| 002 | Sidebar UX - buttons in headers and scrolling | 2026-02-04 | b1ac6c1 | [002-sidebar-ux-buttons-and-scroll](./quick/002-sidebar-ux-buttons-and-scroll/) |
 
 ## Session Continuity
 
