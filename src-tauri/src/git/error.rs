@@ -29,6 +29,26 @@ pub enum GitError {
 
     #[error("Internal error: {0}")]
     Internal(String),
+
+    // Commit errors
+    #[error("No staged changes to commit")]
+    NoStagedChanges,
+
+    #[error("Could not determine commit author: {0}")]
+    SignatureError(String),
+
+    // Remote errors
+    #[error("Remote not found: {0}")]
+    RemoteNotFound(String),
+
+    #[error("Authentication failed: {0}")]
+    AuthenticationFailed(String),
+
+    #[error("Push rejected: {0}")]
+    PushRejected(String),
+
+    #[error("Network error: {0}")]
+    NetworkError(String),
 }
 
 impl From<git2::Error> for GitError {

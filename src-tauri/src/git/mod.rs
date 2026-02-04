@@ -1,6 +1,16 @@
 pub mod commands;
+pub mod commit;
+pub mod diff;
 pub mod error;
+pub mod history;
+pub mod remote;
 pub mod repository;
+pub mod staging;
 
+pub use commit::CommitInfo;
+pub use diff::{DiffHunk, FileDiff};
 pub use error::GitError;
+pub use history::{CommitDetails, CommitSummary, FileChanged};
+pub use remote::{RemoteInfo, SyncProgress, SyncResult};
 pub use repository::{RepoStatus, RepositoryState};
+pub use staging::{FileChange, FileStatus, StagingStatus};

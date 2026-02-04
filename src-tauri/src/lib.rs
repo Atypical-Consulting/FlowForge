@@ -2,6 +2,11 @@ mod git;
 
 use git::{
     commands::{close_repository, get_repository_status, is_git_repository, open_repository},
+    commit::create_commit,
+    diff::get_file_diff,
+    history::{get_commit_details, get_commit_history},
+    remote::{fetch_from_remote, get_remotes, pull_from_remote, push_to_remote},
+    staging::{get_staging_status, stage_all, stage_file, unstage_all, unstage_file},
     RepositoryState,
 };
 use specta_typescript::Typescript;
@@ -18,10 +23,29 @@ async fn greet(name: String) -> String {
 pub fn run() {
     let builder = Builder::<tauri::Wry>::new().commands(collect_commands![
         greet,
+        // Repository commands
         open_repository,
         get_repository_status,
         is_git_repository,
         close_repository,
+        // Staging commands
+        get_staging_status,
+        stage_file,
+        unstage_file,
+        stage_all,
+        unstage_all,
+        // Diff commands
+        get_file_diff,
+        // Commit commands
+        create_commit,
+        // History commands
+        get_commit_history,
+        get_commit_details,
+        // Remote commands
+        get_remotes,
+        fetch_from_remote,
+        push_to_remote,
+        pull_from_remote,
     ]);
 
     #[cfg(debug_assertions)]
