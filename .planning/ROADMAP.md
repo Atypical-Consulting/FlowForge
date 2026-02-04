@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Tauri scaffold, repo opening, IPC layer
 - [x] **Phase 2: Core Git - Staging & Commits** - Stage, unstage, diff, commit, push/pull/fetch, history
-- [ ] **Phase 3: Core Git - Branches** - Branch CRUD, checkout, merge, stash, tags
+- [x] **Phase 3: Core Git - Branches** - Branch CRUD, checkout, merge, stash, tags
 - [ ] **Phase 4: Gitflow State Machine** - Feature/release/hotfix workflows with enforcement
 - [ ] **Phase 5: Topology Visualization** - DAG graph with Gitflow-colored lanes
 - [ ] **Phase 6: Conventional Commits** - Composer, validation, changelog generation
@@ -72,12 +72,12 @@ Plans:
 **Plans**: 6 plans in 3 waves
 
 Plans:
-- [ ] 03-01-PLAN.md — Branch backend (list, create, checkout, delete)
-- [ ] 03-02-PLAN.md — Stash backend (save, list, apply, pop, drop)
-- [ ] 03-03-PLAN.md — Tag backend (list, create, delete)
-- [ ] 03-04-PLAN.md — Merge backend (analysis, merge, abort, status)
-- [ ] 03-05-PLAN.md — Branch UI (store, components, header integration)
-- [ ] 03-06-PLAN.md — Stash & Tag UI + RepositoryView integration
+- [x] 03-01-PLAN.md — Branch backend (list, create, checkout, delete)
+- [x] 03-02-PLAN.md — Stash backend (save, list, apply, pop, drop)
+- [x] 03-03-PLAN.md — Tag backend (list, create, delete)
+- [x] 03-04-PLAN.md — Merge backend (analysis, merge, abort, status)
+- [x] 03-05-PLAN.md — Branch UI (store, components, header integration)
+- [x] 03-06-PLAN.md — Stash & Tag UI + RepositoryView integration
 
 ### Phase 4: Gitflow State Machine
 **Goal**: Gitflow workflows are enforced through state machine that prevents invalid operations
@@ -147,7 +147,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 |-------|--------|-----------|
 | 1. Foundation | Complete | 2026-02-04 |
 | 2. Core Git - Staging & Commits | Complete | 2026-02-04 |
-| 3. Core Git - Branches | Not started | - |
+| 3. Core Git - Branches | Complete | 2026-02-04 |
 | 4. Gitflow State Machine | Not started | - |
 | 5. Topology Visualization | Not started | - |
 | 6. Conventional Commits | Not started | - |
