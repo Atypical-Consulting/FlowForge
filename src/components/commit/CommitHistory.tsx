@@ -31,7 +31,7 @@ export function CommitHistory({
       }
       throw new Error(
         result.error && "message" in result.error
-          ? result.error.message
+          ? String(result.error.message)
           : "Unknown error",
       );
     },

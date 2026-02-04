@@ -1,13 +1,16 @@
-import { Files, History } from "lucide-react";
+import { Archive, Files, GitBranch, History, Tag } from "lucide-react";
 import { useState } from "react";
 import type { CommitSummary } from "../bindings";
 import { cn } from "../lib/utils";
 import { useRepositoryStore } from "../stores/repository";
+import { BranchList } from "./branches/BranchList";
 import { CommitDetails } from "./commit/CommitDetails";
 import { CommitForm } from "./commit/CommitForm";
 import { CommitHistory } from "./commit/CommitHistory";
 import { DiffViewer } from "./diff/DiffViewer";
 import { StagingPanel } from "./staging/StagingPanel";
+import { StashList } from "./stash/StashList";
+import { TagList } from "./tags/TagList";
 
 type Tab = "changes" | "history";
 
@@ -22,7 +25,43 @@ export function RepositoryView() {
 
   return (
     <div className="flex-1 flex h-full overflow-hidden">
-      {/* Left panel */}
+      {/* Left sidebar - Branches, Stash, Tags */}
+      <div className="w-64 shrink-0 border-r border-gray-800 bg-gray-950 overflow-hidden flex flex-col">
+        {/* Branches section */}
+        <details open className="border-b border-gray-800">
+          <summary className="p-3 cursor-pointer hover:bg-gray-800/50 flex items-center gap-2 select-none">
+            <GitBranch className="w-4 h-4" />
+            <span className="font-semibold text-sm">Branches</span>
+          </summary>
+          <div className="max-h-64 overflow-y-auto">
+            <BranchList />
+          </div>
+        </details>
+
+        {/* Stash section */}
+        <details className="border-b border-gray-800">
+          <summary className="p-3 cursor-pointer hover:bg-gray-800/50 flex items-center gap-2 select-none">
+            <Archive className="w-4 h-4" />
+            <span className="font-semibold text-sm">Stashes</span>
+          </summary>
+          <div className="max-h-48 overflow-y-auto">
+            <StashList />
+          </div>
+        </details>
+
+        {/* Tags section */}
+        <details className="border-b border-gray-800">
+          <summary className="p-3 cursor-pointer hover:bg-gray-800/50 flex items-center gap-2 select-none">
+            <Tag className="w-4 h-4" />
+            <span className="font-semibold text-sm">Tags</span>
+          </summary>
+          <div className="max-h-48 overflow-y-auto">
+            <TagList />
+          </div>
+        </details>
+      </div>
+
+      {/* Middle panel - Changes/History */}
       <div className="w-80 shrink-0 border-r border-gray-800 bg-gray-950 overflow-hidden flex flex-col">
         {/* Tabs */}
         <div className="flex border-b border-gray-800">
@@ -77,7 +116,7 @@ export function RepositoryView() {
         )}
       </div>
 
-      {/* Right panel */}
+      {/* Right panel - Diff/Commit Details */}
       {activeTab === "changes" ? (
         <DiffViewer />
       ) : selectedCommit ? (

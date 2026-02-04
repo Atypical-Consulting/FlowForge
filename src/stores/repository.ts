@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { commands } from "../bindings";
 import type { RepoStatus } from "../bindings";
+import { getErrorMessage } from "../lib/errors";
 
 interface RepositoryState {
   // Current repository state
@@ -27,8 +28,7 @@ export const useRepositoryStore = create<RepositoryState>((set, get) => ({
       if (result.status === "ok") {
         set({ status: result.data, isLoading: false });
       } else {
-        const errorMsg =
-          "message" in result.error ? result.error.message : result.error.type;
+        const errorMsg = getErrorMessage(result.error);
         set({ error: errorMsg, isLoading: false, status: null });
         throw new Error(errorMsg);
       }
