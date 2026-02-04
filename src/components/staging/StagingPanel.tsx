@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FolderTree, List, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { commands } from "../../bindings";
+import { formatShortcut } from "../../hooks/useKeyboardShortcuts";
 import { cn } from "../../lib/utils";
 import { useStagingStore } from "../../stores/staging";
 import { Button } from "../ui/button";
@@ -158,6 +159,7 @@ export function StagingPanel() {
                     type="button"
                     onClick={() => stageAllMutation.mutate()}
                     className="text-xs text-ctp-subtext0 hover:text-ctp-text"
+                    title={`Stage All (${formatShortcut("mod+shift+A")})`}
                   >
                     Stage All
                   </button>
@@ -182,6 +184,7 @@ export function StagingPanel() {
                     type="button"
                     onClick={() => stageAllMutation.mutate()}
                     className="text-xs text-ctp-subtext0 hover:text-ctp-text"
+                    title={`Stage All (${formatShortcut("mod+shift+A")})`}
                   >
                     Stage All
                   </button>

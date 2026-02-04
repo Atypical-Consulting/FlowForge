@@ -3,6 +3,7 @@ import { Channel } from "@tauri-apps/api/core";
 import { ArrowDown, ArrowUp, CloudDownload, Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { type SyncProgress, commands } from "../../bindings";
+import { formatShortcut } from "../../hooks/useKeyboardShortcuts";
 import { Button } from "../ui/button";
 import { SyncProgressDisplay } from "./SyncProgress";
 
@@ -75,7 +76,7 @@ export function SyncButtons() {
         size="sm"
         onClick={() => fetchMutation.mutate()}
         disabled={isLoading}
-        title="Fetch"
+        title={`Fetch (${formatShortcut("mod+shift+F")})`}
       >
         {fetchMutation.isPending ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -89,7 +90,7 @@ export function SyncButtons() {
         size="sm"
         onClick={() => pullMutation.mutate()}
         disabled={isLoading}
-        title="Pull"
+        title={`Pull (${formatShortcut("mod+shift+L")})`}
       >
         {pullMutation.isPending ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -103,7 +104,7 @@ export function SyncButtons() {
         size="sm"
         onClick={() => pushMutation.mutate()}
         disabled={isLoading}
-        title="Push"
+        title={`Push (${formatShortcut("mod+shift+P")})`}
       >
         {pushMutation.isPending ? (
           <Loader2 className="w-4 h-4 animate-spin" />

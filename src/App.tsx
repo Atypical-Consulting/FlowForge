@@ -3,6 +3,7 @@ import { Header } from "./components/Header";
 import { RepositoryView } from "./components/RepositoryView";
 import { WelcomeView } from "./components/WelcomeView";
 import { ChangelogDialog } from "./components/changelog";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useRepositoryStore } from "./stores/repository";
 import { useThemeStore } from "./stores/theme";
 
@@ -10,24 +11,13 @@ function App() {
   const { status } = useRepositoryStore();
   const initTheme = useThemeStore((s) => s.initTheme);
 
+  // Register global keyboard shortcuts
+  useKeyboardShortcuts();
+
   // Initialize theme on mount
   useEffect(() => {
     initTheme();
   }, [initTheme]);
-
-  // Set up keyboard shortcut for Cmd/Ctrl+O
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "o") {
-        e.preventDefault();
-        // Trigger the open dialog via a custom event
-        document.dispatchEvent(new CustomEvent("open-repository-dialog"));
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
 
   return (
     <div className="flex flex-col h-screen bg-ctp-base text-ctp-text font-sans">
