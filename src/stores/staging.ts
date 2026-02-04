@@ -7,7 +7,10 @@ interface StagingState {
   selectedFile: FileChange | null;
   selectedSection: "staged" | "unstaged" | "untracked" | null;
   viewMode: ViewMode;
-  selectFile: (file: FileChange | null, section?: "staged" | "unstaged" | "untracked") => void;
+  selectFile: (
+    file: FileChange | null,
+    section?: "staged" | "unstaged" | "untracked",
+  ) => void;
   setViewMode: (mode: ViewMode) => void;
 }
 

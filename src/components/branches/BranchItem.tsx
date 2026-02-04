@@ -24,7 +24,7 @@ export function BranchItem({
         branch.isHead
           ? "bg-blue-900/30 border border-blue-700"
           : "hover:bg-gray-800",
-        disabled && "opacity-50"
+        disabled && "opacity-50",
       )}
     >
       <div className="flex items-center gap-2 min-w-0 flex-1">

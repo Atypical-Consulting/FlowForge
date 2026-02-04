@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { GitCommit, Loader2 } from "lucide-react";
 import { Virtuoso } from "react-virtuoso";
-import { commands, type CommitSummary } from "../../bindings";
+import { type CommitSummary, commands } from "../../bindings";
 import { cn } from "../../lib/utils";
 
 interface CommitHistoryProps {

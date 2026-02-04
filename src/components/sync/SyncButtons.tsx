@@ -1,8 +1,8 @@
-import { Channel } from "@tauri-apps/api/core";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Channel } from "@tauri-apps/api/core";
 import { ArrowDown, ArrowUp, Loader2, RefreshCw } from "lucide-react";
 import { useCallback, useState } from "react";
-import { commands, type SyncProgress } from "../../bindings";
+import { type SyncProgress, commands } from "../../bindings";
 import { Button } from "../ui/button";
 import { SyncProgressDisplay } from "./SyncProgress";
 
@@ -60,9 +60,7 @@ export function SyncButtons() {
   });
 
   const isLoading =
-    pushMutation.isPending ||
-    pullMutation.isPending ||
-    fetchMutation.isPending;
+    pushMutation.isPending || pullMutation.isPending || fetchMutation.isPending;
 
   if (!hasRemote) {
     return null;

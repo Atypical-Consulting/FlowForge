@@ -9,8 +9,14 @@ interface FinishFlowDialogProps {
 }
 
 export function FinishFlowDialog({ flowType, onClose }: FinishFlowDialogProps) {
-  const { status, finishFeature, finishRelease, finishHotfix, isLoading, error } =
-    useGitflowStore();
+  const {
+    status,
+    finishFeature,
+    finishRelease,
+    finishHotfix,
+    isLoading,
+    error,
+  } = useGitflowStore();
   const { loadBranches } = useBranchStore();
   const [tagMessage, setTagMessage] = useState("");
 

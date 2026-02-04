@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Clock, FileText, Loader2, User } from "lucide-react";
-import { commands, type CommitSummary } from "../../bindings";
+import { type CommitSummary, commands } from "../../bindings";
 import { cn } from "../../lib/utils";
 
 interface CommitDetailsProps {
@@ -8,7 +8,11 @@ interface CommitDetailsProps {
 }
 
 export function CommitDetails({ commit }: CommitDetailsProps) {
-  const { data: result, isLoading, error } = useQuery({
+  const {
+    data: result,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["commitDetails", commit.oid],
     queryFn: () => commands.getCommitDetails(commit.oid),
   });
@@ -51,9 +55,7 @@ export function CommitDetails({ commit }: CommitDetailsProps) {
         </div>
         <div className="flex items-center gap-2 text-gray-400">
           <Clock className="w-4 h-4" />
-          <span>
-            {new Date(details.authorTimestampMs).toLocaleString()}
-          </span>
+          <span>{new Date(details.authorTimestampMs).toLocaleString()}</span>
         </div>
       </div>
 
@@ -74,7 +76,7 @@ export function CommitDetails({ commit }: CommitDetailsProps) {
                   "w-4 text-center text-xs",
                   file.status === "added" && "text-green-500",
                   file.status === "deleted" && "text-red-500",
-                  file.status === "modified" && "text-yellow-500"
+                  file.status === "modified" && "text-yellow-500",
                 )}
               >
                 {file.status === "added"

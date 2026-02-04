@@ -54,7 +54,7 @@ export function CommitForm() {
           className={cn(
             "w-full h-24 px-3 py-2 text-sm bg-gray-900 border border-gray-700",
             "rounded resize-none focus:outline-none focus:border-blue-500",
-            "text-gray-200 placeholder:text-gray-500"
+            "text-gray-200 placeholder:text-gray-500",
           )}
         />
 
@@ -78,7 +78,7 @@ export function CommitForm() {
               subjectStatus === "good" && "text-green-500",
               subjectStatus === "warning" && "text-yellow-500",
               subjectStatus === "error" && "text-red-500",
-              subjectStatus === "empty" && "text-gray-500"
+              subjectStatus === "empty" && "text-gray-500",
             )}
           >
             {subjectLength}/50
