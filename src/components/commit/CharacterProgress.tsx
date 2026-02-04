@@ -41,8 +41,8 @@ export function CharacterProgress({
       </div>
       <span
         className={cn(
-          "text-xs font-mono tabular-nums min-w-[3rem] text-right",
-          getTextColor()
+          "text-xs font-mono tabular-nums min-w-12 text-right",
+          getTextColor(),
         )}
       >
         {remaining}

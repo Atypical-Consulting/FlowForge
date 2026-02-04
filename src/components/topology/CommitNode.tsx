@@ -34,7 +34,7 @@ export const CommitNode = memo(({ data }: CommitNodeProps) => {
     <div
       className={cn(
         "px-3 py-2 rounded-lg border-2 cursor-pointer transition-all",
-        "hover:shadow-lg min-w-[200px]",
+        "hover:shadow-lg min-w-50",
         branchStyle,
         data.isSelected &&
           `ring-2 ${ringColor} ring-offset-2 ring-offset-ctp-base shadow-lg`,
@@ -44,7 +44,7 @@ export const CommitNode = memo(({ data }: CommitNodeProps) => {
       <Handle
         type="target"
         position={Position.Top}
-        className="!bg-ctp-overlay0"
+        className="bg-ctp-overlay0!"
       />
 
       <div className="flex items-center gap-2 mb-1">
@@ -52,14 +52,14 @@ export const CommitNode = memo(({ data }: CommitNodeProps) => {
           {data.shortOid}
         </span>
         {data.branchNames.length > 0 && (
-          <span className="text-xs px-1.5 py-0.5 rounded bg-ctp-surface0 text-ctp-subtext1 truncate max-w-[100px]">
+          <span className="text-xs px-1.5 py-0.5 rounded bg-ctp-surface0 text-ctp-subtext1 truncate max-w-25">
             {data.branchNames[0]}
           </span>
         )}
       </div>
 
       <div
-        className="text-sm text-ctp-text truncate max-w-[180px]"
+        className="text-sm text-ctp-text truncate max-w-45"
         title={data.message}
       >
         {data.message}
@@ -70,7 +70,7 @@ export const CommitNode = memo(({ data }: CommitNodeProps) => {
       <Handle
         type="source"
         position={Position.Bottom}
-        className="!bg-ctp-overlay0"
+        className="bg-ctp-overlay0!"
       />
     </div>
   );

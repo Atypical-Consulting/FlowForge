@@ -25,7 +25,7 @@ function App() {
   return (
     <div className="flex flex-col h-screen bg-ctp-base text-ctp-text font-sans">
       <Header />
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 min-h-0 overflow-hidden">
         {status ? <RepositoryView /> : <WelcomeView />}
       </main>
       <ChangelogDialog />

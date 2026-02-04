@@ -1289,7 +1289,6 @@ export type SyncResult = {
   message: string;
   commitsTransferred: number;
 };
-// TAURI_CHANNEL type is imported from @tauri-apps/api/core below
 /**
  * Information about a git tag.
  */
