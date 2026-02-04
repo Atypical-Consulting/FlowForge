@@ -16,8 +16,6 @@ jobs:
         include:
           - platform: macos-latest
             args: --target aarch64-apple-darwin
-          - platform: macos-latest
-            args: --target x86_64-apple-darwin
           - platform: ubuntu-22.04
             args: ""
           - platform: windows-latest
@@ -40,7 +38,7 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin' || '' }}
 
       - name: Install dependencies (Linux only)
         if: matrix.platform == 'ubuntu-22.04'
@@ -65,7 +63,7 @@ jobs:
 
             ### Installation
 
-            **macOS:** Download the `.dmg` file and drag FlowForge to your Applications folder.
+            **macOS (Apple Silicon):** Download the `.dmg` file and drag FlowForge to your Applications folder.
 
             **Windows:** Download the `.msi` installer and run it.
 
