@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "@catppuccin/tailwindcss/mocha.css";
+@import "@catppuccin/tailwindcss/config.css";
 @import "@fontsource-variable/jetbrains-mono";
 @import "@fontsource-variable/geist";
 
