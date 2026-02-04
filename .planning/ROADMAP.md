@@ -69,7 +69,15 @@ Plans:
   3. User can merge one branch into another and see the result
   4. User can delete a branch (with protection against unmerged branches)
   5. User can stash changes, view stash list, and apply or pop stashes
-**Plans**: TBD
+**Plans**: 6 plans in 3 waves
+
+Plans:
+- [ ] 03-01-PLAN.md — Branch backend (list, create, checkout, delete)
+- [ ] 03-02-PLAN.md — Stash backend (save, list, apply, pop, drop)
+- [ ] 03-03-PLAN.md — Tag backend (list, create, delete)
+- [ ] 03-04-PLAN.md — Merge backend (analysis, merge, abort, status)
+- [ ] 03-05-PLAN.md — Branch UI (store, components, header integration)
+- [ ] 03-06-PLAN.md — Stash & Tag UI + RepositoryView integration
 
 ### Phase 4: Gitflow State Machine
 **Goal**: Gitflow workflows are enforced through state machine that prevents invalid operations
