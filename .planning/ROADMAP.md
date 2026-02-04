@@ -209,7 +209,15 @@ Plans:
   3. User can search commits by message text and see results quickly
   4. Common operations complete in <100ms on repos with <10K commits, verified by profiling
   5. Application uses <200MB memory at idle and binary is <50MB installed
-**Plans**: TBD
+**Plans**: 6 plans in 4 waves
+
+Plans:
+- [ ] 08-01-PLAN.md — Theme system with Catppuccin Latte/Mocha toggle
+- [ ] 08-02-PLAN.md — File watcher backend with notify-rs
+- [ ] 08-03-PLAN.md — Keyboard shortcuts with react-hotkeys-hook
+- [ ] 08-04-PLAN.md — Commit search by message text
+- [ ] 08-05-PLAN.md — Undo Git operations via reflog
+- [ ] 08-06-PLAN.md — Performance optimization and verification
 
 ## Progress
 
