@@ -148,10 +148,11 @@ Plans:
   2. Icons follow Catppuccin Mocha color palette for visual consistency
   3. Common file types (js, ts, tsx, rs, md, json, etc.) have distinct icons
   4. Folder icons distinguish directories from files
-**Plans**: TBD (run /gsd:plan-phase 6.1 to break down)
+**Plans**: 2 plans in 2 waves
 
 Plans:
-- [ ] TBD
+- [ ] 06.1-01-PLAN.md — SVG infrastructure, icon download, FileTypeIcon component
+- [ ] 06.1-02-PLAN.md — Integration into FileItem and FileTreeView
 
 ### Phase 7: Worktree Management
 **Goal**: User can manage multiple worktrees with full visibility and easy navigation
