@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 Phase: 5 of 8 (Topology Visualization) — COMPLETE
 Plan: All 5 plans executed
 Status: Ready for Phase 6
-Last activity: 2026-02-04 - Completed quick task 012: NuGet package viewer with modular viewer system
+Last activity: 2026-02-04 - Completed quick task 013: Fix NuGet viewer link and download count
 
 Progress: ██████░░░░ 62.5%
 
@@ -79,6 +79,7 @@ None yet.
 | 010 | Top bar repo name and fix button icons | 2026-02-04 | f8fbfbf | [010-top-bar-repo-name-and-fix-button-icons](./quick/010-top-bar-repo-name-and-fix-button-icons/) |
 | 011 | Improve UX/UI with Dialog and Input components | 2026-02-04 | b512807 | [011-improve-the-ux-ui-of-this-application](./quick/011-improve-the-ux-ui-of-this-application/) |
 | 012 | NuGet package viewer with modular viewer system | 2026-02-04 | ec2affb | [012-nupkg-file-viewer-with-nuget-org-info](./quick/012-nupkg-file-viewer-with-nuget-org-info/) |
+| 013 | Fix NuGet viewer link and download count | 2026-02-04 | bdfb41c | [013-fix-nuget-viewer-link-and-download-count](./quick/013-fix-nuget-viewer-link-and-download-count/) |
 
 ## Session Continuity
 
