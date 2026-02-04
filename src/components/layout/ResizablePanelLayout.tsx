@@ -56,7 +56,7 @@ export function ResizeHandle({ className }: { className?: string }) {
     <PanelResizeHandle
       className={cn(
         "w-1 bg-ctp-surface0 hover:bg-ctp-blue transition-colors cursor-col-resize",
-        "data-[resize-handle-active]:bg-ctp-blue",
+        "data-resize-handle-active:bg-ctp-blue",
         className,
       )}
     />

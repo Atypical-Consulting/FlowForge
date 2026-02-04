@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { debounce } from "../lib/utils";
 import {
   COMMIT_TYPES,
@@ -17,94 +18,147 @@ import {
  * - Computed canCommit flag
  */
 export function useConventionalCommit() {
-  const store = useConventionalStore();
+  // Use shallow comparison to prevent unnecessary re-renders
+  const {
+    commitType,
+    scope,
+    description,
+    body,
+    isBreaking,
+    breakingDescription,
+    typeSuggestion,
+    scopeSuggestions,
+    inferredScope,
+    validation,
+    isValidating,
+    setCommitType,
+    setScope,
+    setDescription,
+    setBody,
+    setIsBreaking,
+    setBreakingDescription,
+    fetchTypeSuggestion,
+    fetchScopeSuggestions,
+    fetchInferredScope,
+    validateMessage,
+    buildCommitMessage,
+    reset,
+  } = useConventionalStore(
+    useShallow((state) => ({
+      commitType: state.commitType,
+      scope: state.scope,
+      description: state.description,
+      body: state.body,
+      isBreaking: state.isBreaking,
+      breakingDescription: state.breakingDescription,
+      typeSuggestion: state.typeSuggestion,
+      scopeSuggestions: state.scopeSuggestions,
+      inferredScope: state.inferredScope,
+      validation: state.validation,
+      isValidating: state.isValidating,
+      setCommitType: state.setCommitType,
+      setScope: state.setScope,
+      setDescription: state.setDescription,
+      setBody: state.setBody,
+      setIsBreaking: state.setIsBreaking,
+      setBreakingDescription: state.setBreakingDescription,
+      fetchTypeSuggestion: state.fetchTypeSuggestion,
+      fetchScopeSuggestions: state.fetchScopeSuggestions,
+      fetchInferredScope: state.fetchInferredScope,
+      validateMessage: state.validateMessage,
+      buildCommitMessage: state.buildCommitMessage,
+      reset: state.reset,
+    })),
+  );
 
   // Build current message
-  const currentMessage = store.buildCommitMessage();
+  const currentMessage = buildCommitMessage();
 
-  // Debounced validation
+  // Track if suggestions have been initialized
+  const initializedRef = useRef(false);
+
+  // Debounced validation - use ref to keep stable reference
+  const validateMessageRef = useRef(validateMessage);
+  validateMessageRef.current = validateMessage;
+
   const debouncedValidate = useMemo(
     () =>
       debounce((message: string) => {
         if (message.trim()) {
-          store.validateMessage(message);
+          validateMessageRef.current(message);
         }
       }, 300),
-    [store],
+    [],
   );
 
   // Validate on message change
   useEffect(() => {
-    if (store.description) {
+    if (description) {
       debouncedValidate(currentMessage);
     }
     return () => debouncedValidate.cancel?.();
-  }, [currentMessage, debouncedValidate, store.description]);
+  }, [currentMessage, debouncedValidate, description]);
 
   // Filtered scope suggestions for autocomplete
   const filteredScopes = useMemo(() => {
-    const query = store.scope.toLowerCase();
-    if (!query) return store.scopeSuggestions;
-    return store.scopeSuggestions.filter((s) =>
+    const query = scope.toLowerCase();
+    if (!query) return scopeSuggestions;
+    return scopeSuggestions.filter((s) =>
       s.scope.toLowerCase().includes(query),
     );
-  }, [store.scope, store.scopeSuggestions]);
+  }, [scope, scopeSuggestions]);
 
   // Is form valid for commit?
   const canCommit = useMemo(() => {
     return (
-      store.commitType !== "" &&
-      store.description.trim() !== "" &&
-      (store.validation?.isValid ?? false) &&
-      (!store.isBreaking || store.breakingDescription.trim() !== "")
+      commitType !== "" &&
+      description.trim() !== "" &&
+      (validation?.isValid ?? false) &&
+      (!isBreaking || breakingDescription.trim() !== "")
     );
-  }, [
-    store.commitType,
-    store.description,
-    store.validation,
-    store.isBreaking,
-    store.breakingDescription,
-  ]);
+  }, [commitType, description, validation, isBreaking, breakingDescription]);
 
   // Apply type suggestion
   const applyTypeSuggestion = useCallback(() => {
-    if (store.typeSuggestion) {
-      store.setCommitType(store.typeSuggestion.suggestedType);
+    if (typeSuggestion) {
+      setCommitType(typeSuggestion.suggestedType);
     }
-  }, [store]);
+  }, [typeSuggestion, setCommitType]);
 
   // Apply scope suggestion
   const applyScopeSuggestion = useCallback(
-    (scope: string) => {
-      store.setScope(scope);
+    (scopeValue: string) => {
+      setScope(scopeValue);
     },
-    [store],
+    [setScope],
   );
 
-  // Initialize suggestions when hook is used
+  // Initialize suggestions when hook is used - only once
   const initializeSuggestions = useCallback(() => {
-    store.fetchTypeSuggestion();
-    store.fetchInferredScope();
-    store.fetchScopeSuggestions();
-  }, [store]);
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+    fetchTypeSuggestion();
+    fetchInferredScope();
+    fetchScopeSuggestions();
+  }, [fetchTypeSuggestion, fetchInferredScope, fetchScopeSuggestions]);
 
   return {
     // State
-    commitType: store.commitType,
-    scope: store.scope,
-    description: store.description,
-    body: store.body,
-    isBreaking: store.isBreaking,
-    breakingDescription: store.breakingDescription,
+    commitType,
+    scope,
+    description,
+    body,
+    isBreaking,
+    breakingDescription,
 
     // Suggestions
-    typeSuggestion: store.typeSuggestion,
+    typeSuggestion,
     scopeSuggestions: filteredScopes,
-    inferredScope: store.inferredScope,
+    inferredScope,
 
     // Validation
-    validation: store.validation,
-    isValidating: store.isValidating,
+    validation,
+    isValidating,
     canCommit,
 
     // Computed
@@ -113,16 +167,16 @@ export function useConventionalCommit() {
     commitTypeLabels: COMMIT_TYPE_LABELS,
 
     // Actions
-    setCommitType: store.setCommitType,
-    setScope: store.setScope,
-    setDescription: store.setDescription,
-    setBody: store.setBody,
-    setIsBreaking: store.setIsBreaking,
-    setBreakingDescription: store.setBreakingDescription,
+    setCommitType,
+    setScope,
+    setDescription,
+    setBody,
+    setIsBreaking,
+    setBreakingDescription,
     applyTypeSuggestion,
     applyScopeSuggestion,
     initializeSuggestions,
-    reset: store.reset,
+    reset,
   };
 }
 

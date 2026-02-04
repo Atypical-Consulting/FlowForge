@@ -1289,6 +1289,7 @@ export type SyncResult = {
   message: string;
   commitsTransferred: number;
 };
+
 /**
  * Information about a git tag.
  */
