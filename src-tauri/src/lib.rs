@@ -3,8 +3,13 @@ mod gitflow;
 
 use git::{
     branch::{checkout_branch, create_branch, delete_branch, list_branches},
+    changelog::generate_changelog_cmd,
     commands::{close_repository, get_repository_status, is_git_repository, open_repository},
     commit::create_commit,
+    conventional::{
+        get_scope_suggestions, infer_scope_from_staged, suggest_commit_type,
+        validate_conventional_commit,
+    },
     diff::get_file_diff,
     graph::get_commit_graph,
     history::{get_commit_details, get_commit_history},
@@ -86,6 +91,12 @@ pub fn run() {
         finish_hotfix,
         get_gitflow_status,
         abort_gitflow,
+        // Conventional commit commands
+        validate_conventional_commit,
+        suggest_commit_type,
+        get_scope_suggestions,
+        infer_scope_from_staged,
+        generate_changelog_cmd,
     ]);
 
     #[cfg(debug_assertions)]

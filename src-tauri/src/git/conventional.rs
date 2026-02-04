@@ -584,6 +584,189 @@ pub fn extract_scopes_from_history(
     suggestions
 }
 
+// ============================================================================
+// IPC Commands
+// ============================================================================
+
+use crate::git::error::GitError;
+use crate::git::repository::RepositoryState;
+use tauri::State;
+
+/// Validate a conventional commit message.
+///
+/// Returns validation result with errors and warnings.
+#[tauri::command]
+#[specta::specta]
+pub async fn validate_conventional_commit(message: String) -> ValidationResult {
+    validate_commit_message(&message)
+}
+
+/// Suggest a commit type based on staged files.
+///
+/// Analyzes the currently staged files and returns a type suggestion
+/// with confidence level.
+#[tauri::command]
+#[specta::specta]
+pub async fn suggest_commit_type(
+    state: State<'_, RepositoryState>,
+) -> Result<TypeSuggestion, GitError> {
+    let path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+
+    tokio::task::spawn_blocking(move || {
+        let repo = git2::Repository::open(&path)?;
+
+        let mut opts = git2::StatusOptions::new();
+        opts.include_untracked(true)
+            .recurse_untracked_dirs(true)
+            .exclude_submodules(true)
+            .include_ignored(false);
+
+        let statuses = repo.statuses(Some(&mut opts))?;
+
+        let mut staged_files = Vec::new();
+
+        for entry in statuses.iter() {
+            let status = entry.status();
+            let file_path = entry.path().unwrap_or("").to_string();
+
+            // Check for staged changes (INDEX_*)
+            if status.intersects(
+                git2::Status::INDEX_NEW
+                    | git2::Status::INDEX_MODIFIED
+                    | git2::Status::INDEX_DELETED
+                    | git2::Status::INDEX_RENAMED,
+            ) {
+                let file_status = if status.contains(git2::Status::INDEX_NEW) {
+                    crate::git::staging::FileStatus::Added
+                } else if status.contains(git2::Status::INDEX_DELETED) {
+                    crate::git::staging::FileStatus::Deleted
+                } else {
+                    crate::git::staging::FileStatus::Modified
+                };
+
+                staged_files.push(FileChange {
+                    path: file_path,
+                    status: file_status,
+                    additions: None,
+                    deletions: None,
+                });
+            }
+        }
+
+        Ok(infer_commit_type(&staged_files))
+    })
+    .await
+    .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}
+
+/// Get scope suggestions from commit history.
+///
+/// Extracts scopes used in previous commits, sorted by frequency.
+#[tauri::command]
+#[specta::specta]
+pub async fn get_scope_suggestions(
+    state: State<'_, RepositoryState>,
+    limit: Option<usize>,
+) -> Result<Vec<ScopeSuggestion>, GitError> {
+    let path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+
+    let limit = limit.unwrap_or(20);
+
+    tokio::task::spawn_blocking(move || {
+        let repo = git2::Repository::open(&path)?;
+
+        // Handle empty repo
+        match repo.head() {
+            Err(e) if e.code() == git2::ErrorCode::UnbornBranch => {
+                return Ok(vec![]);
+            }
+            Err(e) => return Err(e.into()),
+            Ok(_) => {}
+        }
+
+        let mut revwalk = repo.revwalk()?;
+        revwalk.push_head()?;
+        revwalk.set_sorting(git2::Sort::TIME)?;
+
+        let commits: Vec<CommitSummary> = revwalk
+            .take(500)
+            .filter_map(|oid| oid.ok())
+            .filter_map(|oid| {
+                let commit = repo.find_commit(oid).ok()?;
+                let author = commit.author();
+
+                Some(CommitSummary {
+                    oid: oid.to_string(),
+                    short_oid: format!("{:.7}", oid),
+                    message_subject: commit.summary().unwrap_or("").to_string(),
+                    author_name: author.name().unwrap_or("Unknown").to_string(),
+                    author_email: author.email().unwrap_or("").to_string(),
+                    timestamp_ms: (author.when().seconds() as f64) * 1000.0,
+                })
+            })
+            .collect();
+
+        Ok(extract_scopes_from_history(&commits, limit))
+    })
+    .await
+    .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}
+
+/// Infer scope from staged files based on common directory.
+#[tauri::command]
+#[specta::specta]
+pub async fn infer_scope_from_staged(
+    state: State<'_, RepositoryState>,
+) -> Result<Option<String>, GitError> {
+    let path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+
+    tokio::task::spawn_blocking(move || {
+        let repo = git2::Repository::open(&path)?;
+
+        let mut opts = git2::StatusOptions::new();
+        opts.include_untracked(true)
+            .recurse_untracked_dirs(true)
+            .exclude_submodules(true)
+            .include_ignored(false);
+
+        let statuses = repo.statuses(Some(&mut opts))?;
+
+        let mut staged_files = Vec::new();
+
+        for entry in statuses.iter() {
+            let status = entry.status();
+            let file_path = entry.path().unwrap_or("").to_string();
+
+            if status.intersects(
+                git2::Status::INDEX_NEW
+                    | git2::Status::INDEX_MODIFIED
+                    | git2::Status::INDEX_DELETED
+                    | git2::Status::INDEX_RENAMED,
+            ) {
+                staged_files.push(FileChange {
+                    path: file_path,
+                    status: crate::git::staging::FileStatus::Modified,
+                    additions: None,
+                    deletions: None,
+                });
+            }
+        }
+
+        Ok(infer_scope_from_files(&staged_files))
+    })
+    .await
+    .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

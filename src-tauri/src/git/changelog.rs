@@ -390,6 +390,52 @@ pub fn generate_changelog(
     })
 }
 
+// ============================================================================
+// IPC Commands
+// ============================================================================
+
+use crate::git::error::GitError;
+use crate::git::repository::RepositoryState;
+use tauri::State;
+
+/// Generate a changelog from commit history.
+///
+/// Generates markdown changelog grouped by commit type.
+#[tauri::command]
+#[specta::specta]
+pub async fn generate_changelog_cmd(
+    state: State<'_, RepositoryState>,
+    from_ref: Option<String>,
+    to_ref: Option<String>,
+    version: Option<String>,
+) -> Result<ChangelogOutput, GitError> {
+    let path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+
+    tokio::task::spawn_blocking(move || {
+        let repo = git2::Repository::open(&path)?;
+
+        let options = ChangelogOptions {
+            from_ref,
+            to_ref,
+            include_unreleased: true,
+            group_by_scope: false,
+            version,
+            date: Some(chrono::Local::now().format("%Y-%m-%d").to_string()),
+        };
+
+        generate_changelog(&repo, options).map_err(|e| match e {
+            ChangelogError::GitError(msg) => GitError::OperationFailed(msg),
+            ChangelogError::ParseError(msg) => GitError::OperationFailed(msg),
+            ChangelogError::TemplateError(msg) => GitError::Internal(msg),
+        })
+    })
+    .await
+    .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
