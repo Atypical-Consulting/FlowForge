@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";
-import { ArrowDown, ArrowUp, Loader2, RefreshCw } from "lucide-react";
+import { ArrowDown, ArrowUp, CloudDownload, Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { type SyncProgress, commands } from "../../bindings";
 import { Button } from "../ui/button";
@@ -80,7 +80,7 @@ export function SyncButtons() {
         {fetchMutation.isPending ? (
           <Loader2 className="w-4 h-4 animate-spin" />
         ) : (
-          <RefreshCw className="w-4 h-4" />
+          <CloudDownload className="w-4 h-4" />
         )}
       </Button>
 

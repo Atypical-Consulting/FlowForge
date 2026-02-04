@@ -52,6 +52,12 @@ export function Header() {
     <header className="flex items-center justify-between h-14 px-4 border-b border-gray-800 bg-gray-900 select-none">
       <div className="flex items-center gap-4">
         <h1 className="text-lg font-semibold text-white">FlowForge</h1>
+        {status && (
+          <>
+            <span className="text-gray-500">/</span>
+            <span className="text-sm text-gray-300">{status.repoName}</span>
+          </>
+        )}
 
         {status && (
           <div className="flex items-center gap-2 px-3 py-1 rounded-md bg-gray-800">
