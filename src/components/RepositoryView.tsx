@@ -1,4 +1,11 @@
-import { Archive, Files, GitBranch, History, Tag } from "lucide-react";
+import {
+  Archive,
+  Files,
+  GitBranch,
+  GitMerge,
+  History,
+  Tag,
+} from "lucide-react";
 import { useState } from "react";
 import type { CommitSummary } from "../bindings";
 import { cn } from "../lib/utils";
@@ -8,6 +15,7 @@ import { CommitDetails } from "./commit/CommitDetails";
 import { CommitForm } from "./commit/CommitForm";
 import { CommitHistory } from "./commit/CommitHistory";
 import { DiffViewer } from "./diff/DiffViewer";
+import { GitflowPanel } from "./gitflow";
 import { StagingPanel } from "./staging/StagingPanel";
 import { StashList } from "./stash/StashList";
 import { TagList } from "./tags/TagList";
@@ -58,6 +66,15 @@ export function RepositoryView() {
           <div className="max-h-48 overflow-y-auto">
             <TagList />
           </div>
+        </details>
+
+        {/* Gitflow section */}
+        <details className="border-b border-gray-800">
+          <summary className="p-3 cursor-pointer hover:bg-gray-800/50 flex items-center gap-2 select-none">
+            <GitMerge className="w-4 h-4" />
+            <span className="font-semibold text-sm">Gitflow</span>
+          </summary>
+          <GitflowPanel />
         </details>
       </div>
 
