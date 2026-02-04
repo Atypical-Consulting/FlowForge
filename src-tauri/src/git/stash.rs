@@ -11,7 +11,7 @@ use crate::git::repository::RepositoryState;
 #[serde(rename_all = "camelCase")]
 pub struct StashEntry {
     /// 0-based index for stash operations
-    pub index: usize,
+    pub index: u32,
     /// Stash message
     pub message: String,
     /// Commit OID of the stash
@@ -34,7 +34,7 @@ pub async fn list_stashes(state: State<'_, RepositoryState>) -> Result<Vec<Stash
 
         repo.stash_foreach(|index, message, oid| {
             stashes.push(StashEntry {
-                index,
+                index: index as u32,
                 message: message.to_string(),
                 oid: oid.to_string(),
             });
@@ -95,7 +95,7 @@ pub async fn stash_save(
 /// Apply a stash by index without removing it.
 #[tauri::command]
 #[specta::specta]
-pub async fn stash_apply(index: usize, state: State<'_, RepositoryState>) -> Result<(), GitError> {
+pub async fn stash_apply(index: u32, state: State<'_, RepositoryState>) -> Result<(), GitError> {
     let repo_path = state
         .get_path()
         .await
@@ -104,7 +104,7 @@ pub async fn stash_apply(index: usize, state: State<'_, RepositoryState>) -> Res
     tokio::task::spawn_blocking(move || {
         let mut repo = git2::Repository::open(&repo_path)?;
 
-        repo.stash_apply(index, None).map_err(|e| {
+        repo.stash_apply(index as usize, None).map_err(|e| {
             if e.message().contains("does not exist") {
                 GitError::StashNotFound(index)
             } else {
@@ -121,7 +121,7 @@ pub async fn stash_apply(index: usize, state: State<'_, RepositoryState>) -> Res
 /// Apply a stash by index and remove it from the stash list.
 #[tauri::command]
 #[specta::specta]
-pub async fn stash_pop(index: usize, state: State<'_, RepositoryState>) -> Result<(), GitError> {
+pub async fn stash_pop(index: u32, state: State<'_, RepositoryState>) -> Result<(), GitError> {
     let repo_path = state
         .get_path()
         .await
@@ -130,7 +130,7 @@ pub async fn stash_pop(index: usize, state: State<'_, RepositoryState>) -> Resul
     tokio::task::spawn_blocking(move || {
         let mut repo = git2::Repository::open(&repo_path)?;
 
-        repo.stash_pop(index, None).map_err(|e| {
+        repo.stash_pop(index as usize, None).map_err(|e| {
             if e.message().contains("does not exist") {
                 GitError::StashNotFound(index)
             } else {
@@ -147,7 +147,7 @@ pub async fn stash_pop(index: usize, state: State<'_, RepositoryState>) -> Resul
 /// Drop a stash by index without applying it.
 #[tauri::command]
 #[specta::specta]
-pub async fn stash_drop(index: usize, state: State<'_, RepositoryState>) -> Result<(), GitError> {
+pub async fn stash_drop(index: u32, state: State<'_, RepositoryState>) -> Result<(), GitError> {
     let repo_path = state
         .get_path()
         .await
@@ -156,7 +156,7 @@ pub async fn stash_drop(index: usize, state: State<'_, RepositoryState>) -> Resu
     tokio::task::spawn_blocking(move || {
         let mut repo = git2::Repository::open(&repo_path)?;
 
-        repo.stash_drop(index).map_err(|e| {
+        repo.stash_drop(index as usize).map_err(|e| {
             if e.message().contains("does not exist") {
                 GitError::StashNotFound(index)
             } else {

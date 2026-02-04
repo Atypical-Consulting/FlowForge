@@ -71,7 +71,7 @@ pub enum GitError {
 
     // Stash errors
     #[error("Stash not found at index {0}")]
-    StashNotFound(usize),
+    StashNotFound(u32),
 
     #[error("No local changes to stash")]
     NothingToStash,
