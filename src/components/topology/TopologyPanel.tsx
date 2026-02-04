@@ -59,6 +59,17 @@ export function TopologyPanel() {
     }));
   }, [layoutedNodes, selectedCommit, selectCommit]);
 
+  // Add index to edges for staggered animation
+  const edgesWithIndex = useMemo(() => {
+    return layoutedEdges.map((edge, index) => ({
+      ...edge,
+      data: {
+        branchType: edge.data?.branchType || "other",
+        index,
+      } as CommitEdgeData,
+    }));
+  }, [layoutedEdges]);
+
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<CommitNodeData>>(
     [] as Node<CommitNodeData>[],
   );
@@ -69,15 +80,15 @@ export function TopologyPanel() {
   // Update nodes when data changes
   useEffect(() => {
     setNodes(nodesWithHandlers);
-    setEdges(layoutedEdges);
-  }, [nodesWithHandlers, layoutedEdges, setNodes, setEdges]);
+    setEdges(edgesWithIndex);
+  }, [nodesWithHandlers, edgesWithIndex, setNodes, setEdges]);
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-full text-destructive p-4">
+      <div className="flex items-center justify-center h-full bg-ctp-mantle text-ctp-red p-4">
         <div className="text-center">
           <p className="font-medium">Error loading commit graph</p>
-          <p className="text-sm text-muted-foreground mt-1">{error}</p>
+          <p className="text-sm text-ctp-subtext0 mt-1">{error}</p>
         </div>
       </div>
     );
@@ -85,22 +96,22 @@ export function TopologyPanel() {
 
   if (isLoading && nodes.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex items-center justify-center h-full bg-ctp-mantle">
+        <Loader2 className="h-8 w-8 animate-spin text-ctp-overlay0" />
       </div>
     );
   }
 
   if (nodes.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-muted-foreground">
+      <div className="flex items-center justify-center h-full bg-ctp-mantle text-ctp-overlay0">
         <p>No commits to display</p>
       </div>
     );
   }
 
   return (
-    <div className="h-full w-full relative">
+    <div className="h-full w-full relative bg-ctp-mantle">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -117,8 +128,14 @@ export function TopologyPanel() {
         elementsSelectable={false}
         panOnScroll
         zoomOnScroll
+        style={{ background: "transparent" }}
       >
-        <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={20}
+          size={1}
+          color="var(--ctp-surface0, #313244)"
+        />
         <Controls showInteractive={false} />
       </ReactFlow>
 
@@ -127,7 +144,7 @@ export function TopologyPanel() {
           <button
             onClick={loadMore}
             disabled={isLoading}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
+            className="px-4 py-2 bg-ctp-blue text-ctp-base rounded-md hover:bg-ctp-blue/90 disabled:opacity-50 font-medium transition-colors"
           >
             {isLoading ? "Loading..." : "Load More"}
           </button>

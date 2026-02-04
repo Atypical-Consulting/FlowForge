@@ -22,6 +22,7 @@ export interface CommitNodeData extends Record<string, unknown> {
 
 export interface CommitEdgeData extends Record<string, unknown> {
   branchType: BranchType;
+  index?: number;
 }
 
 export function layoutGraph(
@@ -85,14 +86,14 @@ export function layoutGraph(
   return { nodes, edges };
 }
 
-// Gitflow color mapping (per success criteria)
+// Catppuccin Mocha color mapping
 export const GITFLOW_COLORS: Record<BranchType, string> = {
-  main: "#f97316", // orange-500 (red/orange per success criteria)
-  develop: "#22c55e", // green-500 (blue/green per success criteria)
-  feature: "#3b82f6", // blue-500
-  release: "#a855f7", // purple-500
-  hotfix: "#ef4444", // red-500
-  other: "#6b7280", // gray-500
+  main: "#fab387", // ctp-peach
+  develop: "#a6e3a1", // ctp-green
+  feature: "#89b4fa", // ctp-blue
+  release: "#cba6f7", // ctp-mauve
+  hotfix: "#f38ba8", // ctp-red
+  other: "#6c7086", // ctp-overlay0
 };
 
 export function getBranchColor(branchType: BranchType): string {
