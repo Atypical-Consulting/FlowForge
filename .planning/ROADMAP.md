@@ -126,7 +126,16 @@ Plans:
   3. User gets real-time validation errors when commit message violates conventional commit spec
   4. User can mark commit as breaking change with required footer description
   5. User can generate a changelog grouped by commit type from repository history
-**Plans**: TBD
+**Plans**: 7 plans in 4 waves
+
+Plans:
+- [ ] 06-01-PLAN.md — Rust conventional commit parsing, validation, type inference
+- [ ] 06-02-PLAN.md — Rust changelog generation with Tera templates
+- [ ] 06-03-PLAN.md — IPC command registration for conventional commits
+- [ ] 06-04-PLAN.md — Frontend store and hooks for conventional commits
+- [ ] 06-05-PLAN.md — Conventional commit form UI components
+- [ ] 06-06-PLAN.md — Changelog dialog and preview UI
+- [ ] 06-07-PLAN.md — Integration with existing commit workflow
 
 ### Phase 7: Worktree Management
 **Goal**: User can manage multiple worktrees with full visibility and easy navigation
