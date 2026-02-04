@@ -1,6 +1,7 @@
 import {
   Archive,
   Files,
+  FolderGit2,
   GitBranch,
   GitMerge,
   History,
@@ -24,6 +25,7 @@ import { StashList } from "./stash/StashList";
 import { TagList } from "./tags/TagList";
 import { TopologyCommitDetails, TopologyPanel } from "./topology";
 import { FileViewer } from "./viewers";
+import { WorktreePanel } from "./worktree";
 
 type Tab = "changes" | "history" | "topology";
 
@@ -38,6 +40,8 @@ export function RepositoryView() {
   const [showBranchDialog, setShowBranchDialog] = useState(false);
   const [showStashDialog, setShowStashDialog] = useState(false);
   const [showTagDialog, setShowTagDialog] = useState(false);
+  const [showWorktreeDialog, setShowWorktreeDialog] = useState(false);
+  const [worktreeToDelete, setWorktreeToDelete] = useState<string | null>(null);
 
   if (!status) return null;
 
@@ -128,6 +132,30 @@ export function RepositoryView() {
               <span className="font-semibold text-sm flex-1">Gitflow</span>
             </summary>
             <GitflowPanel />
+          </details>
+
+          {/* Worktrees section */}
+          <details className="border-b border-ctp-surface0">
+            <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 bg-ctp-base z-10">
+              <FolderGit2 className="w-4 h-4" />
+              <span className="font-semibold text-sm flex-1">Worktrees</span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowWorktreeDialog(true);
+                }}
+                className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
+                title="Create new worktree"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </summary>
+            <div className="max-h-64 overflow-y-auto">
+              <WorktreePanel
+                onOpenDeleteDialog={(name) => setWorktreeToDelete(name)}
+              />
+            </div>
           </details>
         </div>
       </ResizablePanel>
