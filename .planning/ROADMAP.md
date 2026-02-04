@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Gitflow State Machine** - Feature/release/hotfix workflows with enforcement
 - [x] **Phase 5: Topology Visualization** - DAG graph with Gitflow-colored lanes
 - [x] **Phase 6: Conventional Commits** - Composer, validation, changelog generation
-- [ ] **Phase 6.1: Catppuccin Mocha File Icons** - File type icons in changes view (INSERTED)
+- [x] **Phase 6.1: Catppuccin Mocha File Icons** - File type icons in changes view (INSERTED)
 - [ ] **Phase 7: Worktree Management** - Panel, create/delete, status, navigation
 - [ ] **Phase 8: Polish & Performance** - UX fundamentals, keyboard shortcuts, performance targets
 
@@ -151,8 +151,8 @@ Plans:
 **Plans**: 2 plans in 2 waves
 
 Plans:
-- [ ] 06.1-01-PLAN.md — SVG infrastructure, icon download, FileTypeIcon component
-- [ ] 06.1-02-PLAN.md — Integration into FileItem and FileTreeView
+- [x] 06.1-01-PLAN.md — SVG infrastructure, icon download, FileTypeIcon component
+- [x] 06.1-02-PLAN.md — Integration into FileItem and FileTreeView
 
 ### Phase 7: Worktree Management
 **Goal**: User can manage multiple worktrees with full visibility and easy navigation
@@ -191,7 +191,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 4. Gitflow State Machine | Complete | 2026-02-04 |
 | 5. Topology Visualization | Complete | 2026-02-04 |
 | 6. Conventional Commits | Complete | 2026-02-04 |
-| 6.1 Catppuccin Mocha File Icons | Not started | - |
+| 6.1 Catppuccin Mocha File Icons | Complete | 2026-02-04 |
 | 7. Worktree Management | Not started | - |
 | 8. Polish & Performance | Not started | - |
 
