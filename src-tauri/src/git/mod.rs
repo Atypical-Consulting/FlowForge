@@ -13,5 +13,6 @@ pub mod repository;
 pub mod staging;
 pub mod stash;
 pub mod tag;
+pub mod worktree;
 
 pub use repository::RepositoryState;
