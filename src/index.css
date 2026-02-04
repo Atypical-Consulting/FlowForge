@@ -1,65 +1,77 @@
 @import "tailwindcss";
+@import "@catppuccin/tailwindcss/mocha.css";
+@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/geist";
+
+@theme {
+    --font-sans:
+        "Geist Variable", system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Roboto, sans-serif;
+    --font-mono:
+        "JetBrains Mono Variable", ui-monospace, "SF Mono", "Monaco",
+        "Cascadia Code", "Consolas", monospace;
+}
 
 /* React Flow Controls - Dark Theme */
 .react-flow__controls {
-  background: #030712; /* gray-950 */
-  border: 1px solid #1f2937; /* gray-800 */
-  border-radius: 6px;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+    background: #030712; /* gray-950 */
+    border: 1px solid #1f2937; /* gray-800 */
+    border-radius: 6px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
 }
 
 .react-flow__controls-button {
-  background: #030712; /* gray-950 */
-  border-bottom: 1px solid #1f2937; /* gray-800 */
-  fill: #9ca3af; /* gray-400 */
-  width: 28px;
-  height: 28px;
+    background: #030712; /* gray-950 */
+    border-bottom: 1px solid #1f2937; /* gray-800 */
+    fill: #9ca3af; /* gray-400 */
+    width: 28px;
+    height: 28px;
 }
 
 .react-flow__controls-button:hover {
-  background: #111827; /* gray-900 */
-  fill: #e5e7eb; /* gray-200 */
+    background: #111827; /* gray-900 */
+    fill: #e5e7eb; /* gray-200 */
 }
 
 .react-flow__controls-button:last-child {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 /* React Flow Attribution - Dark Theme */
 .react-flow__attribution {
-  background: #030712; /* gray-950 */
-  border: 1px solid #1f2937; /* gray-800 */
-  border-radius: 4px;
-  padding: 2px 6px;
-  font-size: 10px;
+    background: #030712; /* gray-950 */
+    border: 1px solid #1f2937; /* gray-800 */
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 10px;
 }
 
 .react-flow__attribution a {
-  color: #6b7280; /* gray-500 */
-  text-decoration: none;
+    color: #6b7280; /* gray-500 */
+    text-decoration: none;
 }
 
 .react-flow__attribution a:hover {
-  color: #9ca3af; /* gray-400 */
+    color: #9ca3af; /* gray-400 */
 }
 
 /* Dialog Animations */
 @keyframes dialog-overlay-show {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes dialog-content-show {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -48%) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
+    from {
+        opacity: 0;
+        transform: translate(-50%, -48%) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
 }
