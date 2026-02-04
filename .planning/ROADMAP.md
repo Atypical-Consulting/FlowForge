@@ -191,7 +191,13 @@ Plans:
   3. User can delete a worktree with cleanup confirmation and optional branch deletion
   4. User can open a worktree in system file explorer
   5. User can switch context to a different worktree within the app
-**Plans**: TBD
+**Plans**: 4 plans in 4 waves
+
+Plans:
+- [ ] 07-01-PLAN.md — Backend worktree module (Rust types and operations)
+- [ ] 07-02-PLAN.md — IPC commands + Frontend store
+- [ ] 07-03-PLAN.md — WorktreePanel + WorktreeItem components
+- [ ] 07-04-PLAN.md — Create/Delete dialogs + integration
 
 ### Phase 8: Polish & Performance
 **Goal**: Application meets UX standards with keyboard shortcuts, theming, and performance targets
