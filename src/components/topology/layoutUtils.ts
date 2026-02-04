@@ -86,14 +86,14 @@ export function layoutGraph(
   return { nodes, edges };
 }
 
-// Catppuccin Mocha color mapping
+// Catppuccin Mocha color mapping using CSS variables
 export const GITFLOW_COLORS: Record<BranchType, string> = {
-  main: "#fab387", // ctp-peach
-  develop: "#a6e3a1", // ctp-green
-  feature: "#89b4fa", // ctp-blue
-  release: "#cba6f7", // ctp-mauve
-  hotfix: "#f38ba8", // ctp-red
-  other: "#6c7086", // ctp-overlay0
+  main: "var(--ctp-peach)",
+  develop: "var(--ctp-green)",
+  feature: "var(--ctp-blue)",
+  release: "var(--ctp-mauve)",
+  hotfix: "var(--ctp-red)",
+  other: "var(--ctp-overlay0)",
 };
 
 export function getBranchColor(branchType: BranchType): string {

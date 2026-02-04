@@ -3,14 +3,14 @@ import { motion } from "framer-motion";
 import { memo } from "react";
 import type { CommitEdgeData } from "./layoutUtils";
 
-// Catppuccin Mocha branch colors for edges
+// Catppuccin Mocha branch colors for edges using CSS variables
 const BRANCH_EDGE_COLORS: Record<string, string> = {
-  main: "#fab387", // peach
-  develop: "#a6e3a1", // green
-  feature: "#89b4fa", // blue
-  release: "#cba6f7", // mauve
-  hotfix: "#f38ba8", // red
-  other: "#6c7086", // overlay0
+  main: "var(--ctp-peach)",
+  develop: "var(--ctp-green)",
+  feature: "var(--ctp-blue)",
+  release: "var(--ctp-mauve)",
+  hotfix: "var(--ctp-red)",
+  other: "var(--ctp-overlay0)",
 };
 
 type CommitEdgeProps = EdgeProps<Edge<CommitEdgeData>> & {

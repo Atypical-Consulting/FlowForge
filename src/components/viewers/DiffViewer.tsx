@@ -6,43 +6,43 @@ import { commands } from "../../bindings";
 import { Button } from "../ui/button";
 import type { ViewerProps } from "./ViewerRegistry";
 
-// Custom theme matching the app's dark color scheme
-// Tailwind gray-950: #030712, gray-900: #111827, gray-800: #1f2937
+// Custom theme matching Catppuccin Mocha color scheme
+// Using CSS variable hex values for Monaco (Monaco doesn't support CSS variables directly)
 const FLOWFORGE_THEME = {
   base: "vs-dark" as const,
   inherit: true,
   rules: [
-    { token: "comment", foreground: "6b7280", fontStyle: "italic" },
-    { token: "keyword", foreground: "c084fc" },
-    { token: "string", foreground: "86efac" },
-    { token: "number", foreground: "fbbf24" },
-    { token: "type", foreground: "67e8f9" },
-    { token: "function", foreground: "93c5fd" },
-    { token: "variable", foreground: "e5e7eb" },
-    { token: "operator", foreground: "9ca3af" },
+    { token: "comment", foreground: "6c7086", fontStyle: "italic" }, // ctp-overlay0
+    { token: "keyword", foreground: "cba6f7" }, // ctp-mauve
+    { token: "string", foreground: "a6e3a1" }, // ctp-green
+    { token: "number", foreground: "fab387" }, // ctp-peach
+    { token: "type", foreground: "94e2d5" }, // ctp-teal
+    { token: "function", foreground: "89b4fa" }, // ctp-blue
+    { token: "variable", foreground: "cdd6f4" }, // ctp-text
+    { token: "operator", foreground: "9399b2" }, // ctp-overlay2
   ],
   colors: {
-    "editor.background": "#030712", // gray-950
-    "editor.foreground": "#e5e7eb", // gray-200
-    "editor.lineHighlightBackground": "#1f293766", // gray-800 with transparency
-    "editor.selectionBackground": "#3b82f640", // blue-500 with transparency
-    "editor.inactiveSelectionBackground": "#3b82f620",
-    "editorLineNumber.foreground": "#6b7280", // gray-500
-    "editorLineNumber.activeForeground": "#9ca3af", // gray-400
-    "editorCursor.foreground": "#3b82f6", // blue-500
-    "editorWhitespace.foreground": "#374151", // gray-700
-    "editorIndentGuide.background": "#374151", // gray-700
-    "editorIndentGuide.activeBackground": "#4b5563", // gray-600
-    "editor.wordHighlightBackground": "#3b82f620",
-    "diffEditor.insertedTextBackground": "#22c55e20", // green-500 with transparency
-    "diffEditor.removedTextBackground": "#ef444420", // red-500 with transparency
-    "diffEditor.insertedLineBackground": "#16a34a15", // green-600 with transparency
-    "diffEditor.removedLineBackground": "#dc262615", // red-600 with transparency
-    "diffEditorGutter.insertedLineBackground": "#22c55e30",
-    "diffEditorGutter.removedLineBackground": "#ef444430",
-    "scrollbarSlider.background": "#4b556350",
-    "scrollbarSlider.hoverBackground": "#6b728070",
-    "scrollbarSlider.activeBackground": "#9ca3af80",
+    "editor.background": "#11111b", // ctp-crust
+    "editor.foreground": "#cdd6f4", // ctp-text
+    "editor.lineHighlightBackground": "#31324466", // ctp-surface0 with transparency
+    "editor.selectionBackground": "#89b4fa40", // ctp-blue with transparency
+    "editor.inactiveSelectionBackground": "#89b4fa20", // ctp-blue with less transparency
+    "editorLineNumber.foreground": "#6c7086", // ctp-overlay0
+    "editorLineNumber.activeForeground": "#9399b2", // ctp-overlay2
+    "editorCursor.foreground": "#89b4fa", // ctp-blue
+    "editorWhitespace.foreground": "#45475a", // ctp-surface1
+    "editorIndentGuide.background": "#45475a", // ctp-surface1
+    "editorIndentGuide.activeBackground": "#585b70", // ctp-surface2
+    "editor.wordHighlightBackground": "#89b4fa20", // ctp-blue with transparency
+    "diffEditor.insertedTextBackground": "#a6e3a120", // ctp-green with transparency
+    "diffEditor.removedTextBackground": "#f38ba820", // ctp-red with transparency
+    "diffEditor.insertedLineBackground": "#a6e3a115", // ctp-green with less transparency
+    "diffEditor.removedLineBackground": "#f38ba815", // ctp-red with less transparency
+    "diffEditorGutter.insertedLineBackground": "#a6e3a130", // ctp-green gutter
+    "diffEditorGutter.removedLineBackground": "#f38ba830", // ctp-red gutter
+    "scrollbarSlider.background": "#58587050", // ctp-surface2 with transparency
+    "scrollbarSlider.hoverBackground": "#6c708670", // ctp-overlay0 with transparency
+    "scrollbarSlider.activeBackground": "#9399b280", // ctp-overlay2 with transparency
   },
 };
 
@@ -78,16 +78,16 @@ export function DiffViewer({ file, section }: ViewerProps) {
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-900">
-        <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+      <div className="flex-1 flex items-center justify-center bg-ctp-mantle">
+        <Loader2 className="w-5 h-5 animate-spin text-ctp-overlay1" />
       </div>
     );
   }
 
   if (error || !result || result.status === "error") {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-900">
-        <p className="text-red-400 text-sm">Failed to load diff</p>
+      <div className="flex-1 flex items-center justify-center bg-ctp-mantle">
+        <p className="text-ctp-red text-sm">Failed to load diff</p>
       </div>
     );
   }
@@ -96,8 +96,8 @@ export function DiffViewer({ file, section }: ViewerProps) {
 
   if (diff.isBinary) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-900">
-        <p className="text-gray-400 text-sm">
+      <div className="flex-1 flex items-center justify-center bg-ctp-mantle">
+        <p className="text-ctp-overlay1 text-sm">
           Binary file - diff not available
         </p>
       </div>
@@ -107,8 +107,8 @@ export function DiffViewer({ file, section }: ViewerProps) {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-800 bg-gray-950">
-        <span className="text-sm text-gray-300 truncate flex-1">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-ctp-surface0 bg-ctp-crust">
+        <span className="text-sm text-ctp-subtext1 truncate flex-1">
           {file.path}
         </span>
         <Button
