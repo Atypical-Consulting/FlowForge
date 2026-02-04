@@ -1,4 +1,4 @@
-import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
+import { Group, Panel, Separator } from "react-resizable-panels";
 import type { ReactNode } from "react";
 import { cn } from "../../lib/utils";
 
@@ -14,13 +14,9 @@ export function ResizablePanelLayout({
   children,
 }: ResizablePanelLayoutProps) {
   return (
-    <PanelGroup
-      autoSaveId={autoSaveId}
-      direction={direction}
-      className="h-full"
-    >
+    <Group id={autoSaveId} orientation={direction} className="h-full">
       {children}
-    </PanelGroup>
+    </Group>
   );
 }
 
@@ -53,11 +49,11 @@ export function ResizablePanel({
 
 export function ResizeHandle({ className }: { className?: string }) {
   return (
-    <PanelResizeHandle
+    <Separator
       className={cn(
         "w-1 bg-ctp-surface0 hover:bg-ctp-blue transition-colors cursor-col-resize",
         "data-[resize-handle-active]:bg-ctp-blue",
-        className
+        className,
       )}
     />
   );
