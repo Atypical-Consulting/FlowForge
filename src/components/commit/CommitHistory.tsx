@@ -15,24 +15,30 @@ export function CommitHistory({
   onSelectCommit,
   selectedOid,
 }: CommitHistoryProps) {
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error } =
-    useInfiniteQuery({
-      queryKey: ["commitHistory"],
-      queryFn: async ({ pageParam = 0 }) => {
-        const result = await commands.getCommitHistory(pageParam, PAGE_SIZE);
-        if (result.status === "ok") {
-          return result.data;
-        }
-        throw new Error(
-          result.error && "message" in result.error
-            ? result.error.message
-            : "Unknown error"
-        );
-      },
-      getNextPageParam: (lastPage, allPages) =>
-        lastPage.length === PAGE_SIZE ? allPages.flat().length : undefined,
-      initialPageParam: 0,
-    });
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    error,
+  } = useInfiniteQuery({
+    queryKey: ["commitHistory"],
+    queryFn: async ({ pageParam = 0 }) => {
+      const result = await commands.getCommitHistory(pageParam, PAGE_SIZE);
+      if (result.status === "ok") {
+        return result.data;
+      }
+      throw new Error(
+        result.error && "message" in result.error
+          ? result.error.message
+          : "Unknown error",
+      );
+    },
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length === PAGE_SIZE ? allPages.flat().length : undefined,
+    initialPageParam: 0,
+  });
 
   const commits = data?.pages.flat() ?? [];
 
@@ -72,11 +78,11 @@ export function CommitHistory({
           className={cn(
             "w-full text-left px-3 py-2 cursor-pointer border-b border-gray-800",
             "hover:bg-gray-800/50 transition-colors",
-            selectedOid === commit.oid && "bg-blue-900/30"
+            selectedOid === commit.oid && "bg-blue-900/30",
           )}
         >
           <div className="flex items-start gap-2">
-            <GitCommit className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+            <GitCommit className="w-4 h-4 text-gray-500 mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm text-gray-200 truncate">
                 {commit.messageSubject}

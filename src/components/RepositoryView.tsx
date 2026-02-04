@@ -23,7 +23,7 @@ export function RepositoryView() {
   return (
     <div className="flex-1 flex h-full overflow-hidden">
       {/* Left panel */}
-      <div className="w-80 flex-shrink-0 border-r border-gray-800 bg-gray-950 overflow-hidden flex flex-col">
+      <div className="w-80 shrink-0 border-r border-gray-800 bg-gray-950 overflow-hidden flex flex-col">
         {/* Tabs */}
         <div className="flex border-b border-gray-800">
           <button

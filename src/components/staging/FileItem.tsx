@@ -1,5 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, FileEdit, FileMinus, FilePlus, FileQuestion, X } from "lucide-react";
+import {
+  Check,
+  FileEdit,
+  FileMinus,
+  FilePlus,
+  FileQuestion,
+  X,
+} from "lucide-react";
 import type { FileChange, FileStatus } from "../../bindings";
 import { commands } from "../../bindings";
 import { cn } from "../../lib/utils";
@@ -45,10 +52,10 @@ export function FileItem({ file, section }: FileItemProps) {
       className={cn(
         "flex items-center gap-2 px-3 py-1.5 cursor-pointer group",
         "hover:bg-gray-800/50 transition-colors",
-        isSelected && "bg-blue-900/30 border-l-2 border-blue-500"
+        isSelected && "bg-blue-900/30 border-l-2 border-blue-500",
       )}
     >
-      <StatusIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+      <StatusIcon className="w-4 h-4 text-gray-400 shrink-0" />
       <span className="flex-1 truncate text-sm text-gray-200">{file.path}</span>
       {file.additions !== null && file.deletions !== null && (
         <span className="text-xs text-gray-500">
@@ -63,7 +70,7 @@ export function FileItem({ file, section }: FileItemProps) {
           "opacity-0 group-hover:opacity-100 p-1 rounded transition-opacity",
           section === "staged"
             ? "hover:bg-red-900/50 text-red-400"
-            : "hover:bg-green-900/50 text-green-400"
+            : "hover:bg-green-900/50 text-green-400",
         )}
         title={section === "staged" ? "Unstage" : "Stage"}
       >
