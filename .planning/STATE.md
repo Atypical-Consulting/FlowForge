@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 Phase: 7 of 8 (Worktree Management) — NOT STARTED
 Plan: TBD (needs planning)
 Status: Ready for Phase 7 planning
-Last activity: 2026-02-04 - Completed quick task 016: Fix resizable panel separators
+Last activity: 2026-02-04 - Completed quick task 017: Fix Monaco editor visibility
 
 Progress: █████████░ 88%
 
@@ -95,6 +95,7 @@ None yet.
 | 014 | Fix errors and warnings | 2026-02-04 | a798e5c | [014-fix-errors-and-warnings](./quick/014-fix-errors-and-warnings/) |
 | 015 | Upgrade all packages to latest versions | 2026-02-04 | a5b9164 | [015-upgrade-all-packages-in-cargo-toml-and-p](./quick/015-upgrade-all-packages-in-cargo-toml-and-p/) |
 | 016 | Fix resizable panel separators stuck on left | 2026-02-04 | 689d7d9 | [016-fix-vertical-separators-stuck-on-left-re](./quick/016-fix-vertical-separators-stuck-on-left-re/) |
+| 017 | Fix Monaco editor visibility | 2026-02-04 | e41a8df | [017-the-monaco-editor-is-not-visible-but-the](./quick/017-the-monaco-editor-is-not-visible-but-the/) |
 
 ## Session Continuity
 
