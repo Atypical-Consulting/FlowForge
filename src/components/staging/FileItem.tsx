@@ -15,9 +15,16 @@ import { useStagingStore } from "../../stores/staging";
 interface FileItemProps {
   file: FileChange;
   section: "staged" | "unstaged" | "untracked";
+  depth?: number;
+  showFilenameOnly?: boolean;
 }
 
-export function FileItem({ file, section }: FileItemProps) {
+export function FileItem({
+  file,
+  section,
+  depth = 0,
+  showFilenameOnly = false,
+}: FileItemProps) {
   const queryClient = useQueryClient();
   const { selectedFile, selectFile } = useStagingStore();
   const isSelected = selectedFile?.path === file.path;
@@ -35,6 +42,11 @@ export function FileItem({ file, section }: FileItemProps) {
   });
 
   const StatusIcon = getStatusIcon(file.status);
+  const displayName = showFilenameOnly
+    ? file.path.split("/").pop() || file.path
+    : file.path;
+  const indentStyle =
+    depth > 0 ? { paddingLeft: `${depth * 12 + 12}px` } : undefined;
 
   const handleAction = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -54,9 +66,12 @@ export function FileItem({ file, section }: FileItemProps) {
         "hover:bg-gray-800/50 transition-colors",
         isSelected && "bg-blue-900/30 border-l-2 border-blue-500",
       )}
+      style={indentStyle}
     >
       <StatusIcon className="w-4 h-4 text-gray-400 shrink-0" />
-      <span className="flex-1 truncate text-sm text-gray-200">{file.path}</span>
+      <span className="flex-1 truncate text-sm text-gray-200">
+        {displayName}
+      </span>
       {file.additions !== null && file.deletions !== null && (
         <span className="text-xs text-gray-500">
           <span className="text-green-500">+{file.additions}</span>{" "}

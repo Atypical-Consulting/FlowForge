@@ -70,7 +70,14 @@ function TreeNode({ node, section, depth }: TreeNodeProps) {
   const [expanded, setExpanded] = useState(true);
 
   if (!node.isDirectory && node.file) {
-    return <FileItem file={node.file} section={section} />;
+    return (
+      <FileItem
+        file={node.file}
+        section={section}
+        depth={depth}
+        showFilenameOnly
+      />
+    );
   }
 
   const childNodes = Array.from(node.children.values());
