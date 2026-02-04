@@ -6,6 +6,7 @@ use git::{
     commit::create_commit,
     diff::get_file_diff,
     history::{get_commit_details, get_commit_history},
+    merge::{abort_merge, get_merge_status, merge_branch},
     remote::{fetch_from_remote, get_remotes, pull_from_remote, push_to_remote},
     staging::{get_staging_status, stage_all, stage_file, unstage_all, unstage_file},
     stash::{list_stashes, stash_apply, stash_drop, stash_pop, stash_save},
@@ -64,6 +65,10 @@ pub fn run() {
         list_tags,
         create_tag,
         delete_tag,
+        // Merge commands
+        merge_branch,
+        get_merge_status,
+        abort_merge,
     ]);
 
     #[cfg(debug_assertions)]

@@ -82,6 +82,10 @@ pub enum GitError {
 
     #[error("Tag not found: {0}")]
     TagNotFound(String),
+
+    // Merge errors
+    #[error("No merge in progress")]
+    NoMergeInProgress,
 }
 
 impl From<git2::Error> for GitError {
