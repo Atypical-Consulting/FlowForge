@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 Phase: 4 of 8 (Gitflow State Machine) — COMPLETE
 Plan: All 5 plans executed
 Status: Ready for Phase 5
-Last activity: 2026-02-04 - Completed quick task 005: Monaco editor styling
+Last activity: 2026-02-04 - Completed quick task 006: File tree view indentation
 
 Progress: █████░░░░░ 50%
 
@@ -71,6 +71,7 @@ None yet.
 | 003 | Remove duplicate Branches header | 2026-02-04 | a8d3ca3 | [003-branches-duplicate-header](./quick/003-branches-duplicate-header/) |
 | 004 | Unified refresh button in Header | 2026-02-04 | d2fe8f1 | [004-unified-refresh-button](./quick/004-unified-refresh-button/) |
 | 005 | Monaco editor styling to match app theme | 2026-02-04 | 7a4178c | [005-monaco-editor-styling](./quick/005-monaco-editor-styling/) |
+| 006 | Fix file tree view indentation | 2026-02-04 | 2d53062 | [006-treeview-indentation](./quick/006-treeview-indentation/) |
 
 ## Session Continuity
 
