@@ -161,7 +161,7 @@ pub struct ScopeSuggestion {
     /// The scope string.
     pub scope: String,
     /// Number of times this scope has been used.
-    pub usage_count: usize,
+    pub usage_count: u32,
 }
 
 /// Parse a conventional commit message into structured components.
@@ -572,7 +572,10 @@ pub fn extract_scopes_from_history(
     let mut suggestions: Vec<ScopeSuggestion> = scope_counts
         .into_iter()
         .filter(|(_, count)| *count >= 2)
-        .map(|(scope, usage_count)| ScopeSuggestion { scope, usage_count })
+        .map(|(scope, usage_count)| ScopeSuggestion {
+            scope,
+            usage_count: usage_count as u32,
+        })
         .collect();
 
     // Sort by frequency descending
