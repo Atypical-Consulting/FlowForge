@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 Phase: 5 of 8 (Topology Visualization) — COMPLETE
 Plan: All 5 plans executed
 Status: Ready for Phase 6
-Last activity: 2026-02-04 - Completed quick task 008: Dark theme for React Flow attribution panel
+Last activity: 2026-02-04 - Completed quick task 009: Auto-select first item in history/changes panels
 
 Progress: ██████░░░░ 62.5%
 
@@ -75,6 +75,7 @@ None yet.
 | 006 | Fix file tree view indentation | 2026-02-04 | 2d53062 | [006-treeview-indentation](./quick/006-treeview-indentation/) |
 | 007 | Dark theme for React Flow controls | 2026-02-04 | 7f54091 | [007-use-dark-colors-for-react-flow-controls-](./quick/007-use-dark-colors-for-react-flow-controls-/) |
 | 008 | Dark theme for React Flow attribution panel | 2026-02-04 | f57bf6c | [008-dark-theme-for-react-flow-attribution-pa](./quick/008-dark-theme-for-react-flow-attribution-pa/) |
+| 009 | Auto-select first item in history/changes panels | 2026-02-04 | 10ede79 | [009-auto-select-first-item-in-history-change](./quick/009-auto-select-first-item-in-history-change/) |
 
 ## Session Continuity
 
