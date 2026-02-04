@@ -23,7 +23,7 @@ function App() {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen bg-gray-950 text-gray-100">
+    <div className="flex flex-col h-screen bg-gray-950 text-gray-100 font-sans">
       <Header />
       <main className="flex-1 overflow-hidden">
         {status ? <RepositoryView /> : <WelcomeView />}

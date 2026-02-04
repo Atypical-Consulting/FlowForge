@@ -70,7 +70,7 @@ export function Header() {
         {status && (
           <div className="flex items-center gap-2 px-3 py-1 rounded-md bg-gray-800">
             <GitBranch className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-white font-medium">
+            <span className="text-sm text-white font-medium font-mono">
               {status.branchName}
             </span>
             {status.isDirty && (
