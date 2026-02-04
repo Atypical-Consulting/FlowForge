@@ -19,6 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Topology Visualization** - DAG graph with Gitflow-colored lanes
 - [x] **Phase 6: Conventional Commits** - Composer, validation, changelog generation
 - [x] **Phase 6.1: Catppuccin Mocha File Icons** - File type icons in changes view (INSERTED)
+- [ ] **Phase 6.2: UX/UI Enhancements** - Typography, theming, animations, spatial composition (INSERTED)
 - [ ] **Phase 7: Worktree Management** - Panel, create/delete, status, navigation
 - [ ] **Phase 8: Polish & Performance** - UX fundamentals, keyboard shortcuts, performance targets
 
@@ -154,6 +155,34 @@ Plans:
 - [x] 06.1-01-PLAN.md — SVG infrastructure, icon download, FileTypeIcon component
 - [x] 06.1-02-PLAN.md — Integration into FileItem and FileTreeView
 
+### Phase 6.2: UX/UI Enhancements (INSERTED)
+**Goal**: Elevate the visual design with distinctive typography, extended Catppuccin theming, micro-interactions, and improved spatial composition
+**Depends on**: Phase 6.1
+**Requirements**: None (UX enhancement based on design audit)
+**Success Criteria** (what must be TRUE):
+  1. Custom typography system with developer-focused fonts (JetBrains Mono/Geist) replaces system defaults
+  2. Welcome view features animated gradient background and memorable onboarding experience
+  3. Catppuccin Mocha palette extends throughout entire UI (not just file icons)
+  4. Header includes backdrop blur, resizable panels are available, collapsible sidebar works
+  5. Micro-interactions added: stagger animations on load, smooth tab transitions, hover effects, success feedback
+  6. Commit form has visual type selector, character counter progress bar, keyboard shortcuts
+  7. File tree has indent guides, search/filter, and improved batch selection
+  8. Topology view has animated path drawing, branch color coding, and time-based grouping
+**Plans**: TBD (8 improvement areas to break into plans)
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 6.2 to break down)
+
+**Improvement Areas:**
+1. Typography & Brand Identity — Custom font pairing (JetBrains Mono + Geist)
+2. Welcome View Redesign — Animated gradient, forge aesthetic, onboarding flow
+3. Color System — Full Catppuccin Mocha extension, warm accent colors
+4. Spatial Layout — Backdrop blur header, resizable panels, collapsible sidebar
+5. Micro-interactions — Stagger animations, smooth transitions, success feedback
+6. Commit Form UX — Visual type selector, progress bar, keyboard-first
+7. File Tree Enhancements — Indent guides, search, batch selection
+8. Topology View Polish — Animated paths, branch colors, time grouping
+
 ### Phase 7: Worktree Management
 **Goal**: User can manage multiple worktrees with full visibility and easy navigation
 **Depends on**: Phase 1
@@ -192,6 +221,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 5. Topology Visualization | Complete | 2026-02-04 |
 | 6. Conventional Commits | Complete | 2026-02-04 |
 | 6.1 Catppuccin Mocha File Icons | Complete | 2026-02-04 |
+| 6.2 UX/UI Enhancements | Not started | - |
 | 7. Worktree Management | Not started | - |
 | 8. Polish & Performance | Not started | - |
 

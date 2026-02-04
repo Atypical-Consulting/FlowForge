@@ -1,16 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FolderTree, List, Loader2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { commands } from "../../bindings";
 import { cn } from "../../lib/utils";
 import { useStagingStore } from "../../stores/staging";
 import { Button } from "../ui/button";
 import { FileList } from "./FileList";
+import { FileTreeSearch } from "./FileTreeSearch";
 import { FileTreeView } from "./FileTreeView";
 
 export function StagingPanel() {
   const queryClient = useQueryClient();
   const { viewMode, setViewMode, selectedFile, selectFile } = useStagingStore();
+  const [searchFilter, setSearchFilter] = useState("");
 
   const {
     data: result,
@@ -86,8 +88,13 @@ export function StagingPanel() {
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
-      {/* View mode toggle */}
-      <div className="flex items-center justify-end px-3 py-1.5 border-b border-ctp-surface0">
+      {/* Search and view mode toggle */}
+      <div className="flex items-center justify-between gap-2 px-3 py-1.5 border-b border-ctp-surface0">
+        <FileTreeSearch
+          value={searchFilter}
+          onChange={setSearchFilter}
+          placeholder="Filter files..."
+        />
         <div className="flex items-center gap-1 bg-ctp-surface0 rounded p-0.5">
           <Button
             variant={viewMode === "tree" ? "secondary" : "ghost"}
@@ -131,7 +138,11 @@ export function StagingPanel() {
                     Unstage All
                   </button>
                 </div>
-                <FileTreeView files={status.staged} section="staged" />
+                <FileTreeView
+                  files={status.staged}
+                  section="staged"
+                  filter={searchFilter}
+                />
               </div>
             )}
             {status.unstaged.length > 0 && (
@@ -151,7 +162,11 @@ export function StagingPanel() {
                     Stage All
                   </button>
                 </div>
-                <FileTreeView files={status.unstaged} section="unstaged" />
+                <FileTreeView
+                  files={status.unstaged}
+                  section="unstaged"
+                  filter={searchFilter}
+                />
               </div>
             )}
             {status.untracked.length > 0 && (
@@ -171,7 +186,11 @@ export function StagingPanel() {
                     Stage All
                   </button>
                 </div>
-                <FileTreeView files={status.untracked} section="untracked" />
+                <FileTreeView
+                  files={status.untracked}
+                  section="untracked"
+                  filter={searchFilter}
+                />
               </div>
             )}
           </>
