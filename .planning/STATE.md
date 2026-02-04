@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 Phase: 8 of 8 (Polish & Performance) — COMPLETE
 Plan: All 6 plans executed (08-01 through 08-06)
 Status: **MILESTONE v1.0 COMPLETE**
-Last activity: 2026-02-04 - Completed Phase 8: Polish & Performance
+Last activity: 2026-02-04 - Completed quick task 018: Use transparent background image for app icon
 
 Progress: ██████████ 100%
 
@@ -96,6 +96,7 @@ None yet.
 | 015 | Upgrade all packages to latest versions | 2026-02-04 | a5b9164 | [015-upgrade-all-packages-in-cargo-toml-and-p](./quick/015-upgrade-all-packages-in-cargo-toml-and-p/) |
 | 016 | Fix resizable panel separators stuck on left | 2026-02-04 | 689d7d9 | [016-fix-vertical-separators-stuck-on-left-re](./quick/016-fix-vertical-separators-stuck-on-left-re/) |
 | 017 | Fix Monaco editor visibility | 2026-02-04 | e41a8df | [017-the-monaco-editor-is-not-visible-but-the](./quick/017-the-monaco-editor-is-not-visible-but-the/) |
+| 018 | Use transparent background image for app icon | 2026-02-04 | 654a4b5 | [018-use-transparent-background-image-for-app](./quick/018-use-transparent-background-image-for-app/) |
 
 ## Session Continuity
 
