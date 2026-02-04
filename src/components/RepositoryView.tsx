@@ -4,6 +4,7 @@ import {
   GitBranch,
   GitMerge,
   History,
+  Network,
   Plus,
   Tag,
 } from "lucide-react";
@@ -20,8 +21,9 @@ import { GitflowPanel } from "./gitflow";
 import { StagingPanel } from "./staging/StagingPanel";
 import { StashList } from "./stash/StashList";
 import { TagList } from "./tags/TagList";
+import { TopologyPanel } from "./topology";
 
-type Tab = "changes" | "history";
+type Tab = "changes" | "history" | "topology";
 
 export function RepositoryView() {
   const { status } = useRepositoryStore();
@@ -159,6 +161,23 @@ export function RepositoryView() {
             <History className="w-4 h-4" />
             History
           </button>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("topology");
+              setSelectedCommit(null);
+            }}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm",
+              "transition-colors border-b-2",
+              activeTab === "topology"
+                ? "text-white border-blue-500 bg-gray-900/50"
+                : "text-gray-400 border-transparent hover:text-gray-300",
+            )}
+          >
+            <Network className="w-4 h-4" />
+            Topology
+          </button>
         </div>
 
         {/* Tab content */}
@@ -169,19 +188,23 @@ export function RepositoryView() {
             </div>
             <CommitForm />
           </>
-        ) : (
+        ) : activeTab === "history" ? (
           <div className="flex-1 overflow-hidden">
             <CommitHistory
               onSelectCommit={setSelectedCommit}
               selectedOid={selectedCommit?.oid ?? null}
             />
           </div>
-        )}
+        ) : null}
       </div>
 
-      {/* Right panel - Diff/Commit Details */}
+      {/* Right panel - Diff/Commit Details/Topology */}
       {activeTab === "changes" ? (
         <DiffViewer />
+      ) : activeTab === "topology" ? (
+        <div className="flex-1 bg-gray-900">
+          <TopologyPanel />
+        </div>
       ) : selectedCommit ? (
         <div className="flex-1 bg-gray-900">
           <CommitDetails commit={selectedCommit} />
