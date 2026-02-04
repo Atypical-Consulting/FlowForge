@@ -1,8 +1,10 @@
 mod git;
 mod gitflow;
 
+use std::sync::Mutex;
+
 use git::{
-    RepositoryState,
+    RepositoryState, WatcherState,
     branch::{checkout_branch, create_branch, delete_branch, list_branches},
     changelog::generate_changelog_cmd,
     commands::{close_repository, get_repository_status, is_git_repository, open_repository},
@@ -115,6 +117,7 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_window_state::Builder::new().build())
         .manage(RepositoryState::new())
+        .manage(Mutex::new(WatcherState::new()))
         .invoke_handler(builder.invoke_handler())
         .setup(move |app| {
             builder.mount_events(app);
