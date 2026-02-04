@@ -3,17 +3,18 @@ import * as React from "react";
 import { cn } from "../../lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ctp-overlay0 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-blue-600 text-white shadow hover:bg-blue-700",
-        destructive: "bg-red-600 text-white shadow-sm hover:bg-red-700",
+        default: "bg-ctp-blue text-ctp-base shadow hover:bg-ctp-blue/90",
+        destructive: "bg-ctp-red text-ctp-base shadow-sm hover:bg-ctp-red/90",
         outline:
-          "border border-gray-600 bg-transparent shadow-sm hover:bg-gray-800 hover:text-white",
-        secondary: "bg-gray-700 text-white shadow-sm hover:bg-gray-600",
-        ghost: "hover:bg-gray-800 hover:text-white",
-        link: "text-blue-400 underline-offset-4 hover:underline",
+          "border border-ctp-surface1 bg-transparent shadow-sm hover:bg-ctp-surface0 hover:text-ctp-text",
+        secondary:
+          "bg-ctp-surface1 text-ctp-text shadow-sm hover:bg-ctp-surface0",
+        ghost: "hover:bg-ctp-surface0 hover:text-ctp-text",
+        link: "text-ctp-blue underline-offset-4 hover:underline",
       },
       size: {
         default: "h-9 px-4 py-2",
@@ -30,7 +31,8 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {}
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(

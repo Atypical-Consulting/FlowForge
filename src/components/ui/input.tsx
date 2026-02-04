@@ -3,7 +3,7 @@ import * as React from "react";
 import { cn } from "../../lib/utils";
 
 const inputVariants = cva(
-  "w-full bg-gray-800 border border-gray-700 rounded text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors",
+  "w-full bg-ctp-surface0 border border-ctp-surface1 rounded text-ctp-text placeholder:text-ctp-overlay0 focus:outline-none focus:border-ctp-blue focus:ring-1 focus:ring-ctp-blue disabled:opacity-50 disabled:cursor-not-allowed transition-colors",
   {
     variants: {
       inputSize: {
@@ -19,7 +19,8 @@ const inputVariants = cva(
 );
 
 export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement>,
+  extends
+    React.InputHTMLAttributes<HTMLInputElement>,
     VariantProps<typeof inputVariants> {}
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -37,7 +38,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 Input.displayName = "Input";
 
 const textareaVariants = cva(
-  "w-full bg-gray-800 border border-gray-700 rounded text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors resize-none",
+  "w-full bg-ctp-surface0 border border-ctp-surface1 rounded text-ctp-text placeholder:text-ctp-overlay0 focus:outline-none focus:border-ctp-blue focus:ring-1 focus:ring-ctp-blue disabled:opacity-50 disabled:cursor-not-allowed transition-colors resize-none",
   {
     variants: {
       inputSize: {
@@ -53,7 +54,8 @@ const textareaVariants = cva(
 );
 
 export interface TextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement>,
+  extends
+    React.TextareaHTMLAttributes<HTMLTextAreaElement>,
     VariantProps<typeof textareaVariants> {}
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(

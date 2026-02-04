@@ -36,7 +36,7 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
 
 // DialogContent variants
 const dialogContentVariants = cva(
-  "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-gray-900 border border-gray-700 rounded-lg shadow-xl w-full p-6 animate-[dialog-content-show_150ms_ease-out]",
+  "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-ctp-mantle border border-ctp-surface0 rounded-lg shadow-xl w-full p-6 animate-[dialog-content-show_150ms_ease-out]",
   {
     variants: {
       size: {
@@ -52,7 +52,8 @@ const dialogContentVariants = cva(
 );
 
 interface DialogContentProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof dialogContentVariants> {}
 
 const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
@@ -136,10 +137,10 @@ function DialogHeader({ className, children, ...props }: DialogHeaderProps) {
       <button
         type="button"
         onClick={() => onOpenChange(false)}
-        className="p-1 hover:bg-gray-800 rounded transition-colors"
+        className="p-1 hover:bg-ctp-surface0 rounded transition-colors"
         aria-label="Close"
       >
-        <X className="w-5 h-5" />
+        <X className="w-5 h-5 text-ctp-subtext0" />
       </button>
     </div>
   );
