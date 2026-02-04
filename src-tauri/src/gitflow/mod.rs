@@ -4,12 +4,20 @@
 //! - State machine for tracking Gitflow workflow state
 //! - Policy validation for branch names
 //! - Error types for Gitflow-specific operations
+//! - Tauri commands for Gitflow operations
 
+pub mod commands;
 pub mod error;
 pub mod machine;
+pub mod merge;
 pub mod policy;
 pub mod state;
 
+pub use commands::{
+    abort_gitflow, finish_feature, finish_hotfix, finish_release, get_gitflow_status,
+    start_feature, start_hotfix, start_release, ActiveFlow, FlowType, GitflowStatus,
+};
 pub use error::GitflowError;
 pub use machine::{GitflowEvent, GitflowMachine, GitflowState};
+pub use merge::merge_no_ff;
 pub use state::{reconstruct_state, GitflowContext};
