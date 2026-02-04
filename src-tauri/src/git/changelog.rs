@@ -49,7 +49,7 @@ pub struct ChangelogOutput {
     /// Rendered markdown changelog.
     pub markdown: String,
     /// Total number of commits included.
-    pub commit_count: usize,
+    pub commit_count: u32,
     /// Commits grouped by type.
     pub groups: Vec<CommitGroup>,
 }
@@ -337,7 +337,7 @@ pub fn generate_changelog(
     let parsed_commits =
         get_commits_in_range(repo, options.from_ref.as_deref(), options.to_ref.as_deref())?;
 
-    let commit_count = parsed_commits.len();
+    let commit_count = parsed_commits.len() as u32;
 
     // Group by type
     let mut groups_map: HashMap<String, Vec<ChangelogCommit>> = HashMap::new();
