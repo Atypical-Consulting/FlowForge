@@ -4,9 +4,16 @@ import { RepositoryView } from "./components/RepositoryView";
 import { WelcomeView } from "./components/WelcomeView";
 import { ChangelogDialog } from "./components/changelog";
 import { useRepositoryStore } from "./stores/repository";
+import { useThemeStore } from "./stores/theme";
 
 function App() {
   const { status } = useRepositoryStore();
+  const initTheme = useThemeStore((s) => s.initTheme);
+
+  // Initialize theme on mount
+  useEffect(() => {
+    initTheme();
+  }, [initTheme]);
 
   // Set up keyboard shortcut for Cmd/Ctrl+O
   useEffect(() => {

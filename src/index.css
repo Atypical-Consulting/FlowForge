@@ -12,47 +12,58 @@
         "Cascadia Code", "Consolas", monospace;
 }
 
-/* React Flow Controls - Catppuccin Theme */
+/*
+ * Theme switching using Catppuccin flavour classes.
+ * The mocha.css import provides:
+ * - Latte (light) colors in :root by default
+ * - Mocha (dark) colors in @variant dark
+ * - .latte, .mocha classes for forcing specific themes
+ *
+ * We use .mocha class on html element for dark mode (default)
+ * and .latte class for light mode, bypassing the system preference.
+ */
+
+/* React Flow Controls - Theme-aware */
 .react-flow__controls {
-    background: #181825; /* ctp-mantle */
-    border: 1px solid #313244; /* ctp-surface0 */
+    background: var(--ctp-mantle);
+    border: 1px solid var(--ctp-surface0);
     border-radius: 6px;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 
 .react-flow__controls-button {
-    background: #181825; /* ctp-mantle */
-    border-bottom: 1px solid #313244; /* ctp-surface0 */
-    fill: #a6adc8; /* ctp-subtext0 */
+    background: var(--ctp-mantle);
+    border-bottom: 1px solid var(--ctp-surface0);
+    fill: var(--ctp-subtext0);
     width: 28px;
     height: 28px;
 }
 
 .react-flow__controls-button:hover {
-    background: #313244; /* ctp-surface0 */
-    fill: #cdd6f4; /* ctp-text */
+    background: var(--ctp-surface0);
+    fill: var(--ctp-text);
 }
 
 .react-flow__controls-button:last-child {
     border-bottom: none;
 }
 
-/* React Flow Attribution - Catppuccin Theme */
+/* React Flow Attribution - Theme-aware */
 .react-flow__attribution {
-    background: #181825; /* ctp-mantle */
-    border: 1px solid #313244; /* ctp-surface0 */
+    background: var(--ctp-mantle);
+    border: 1px solid var(--ctp-surface0);
     border-radius: 4px;
     padding: 2px 6px;
     font-size: 10px;
 }
 
 .react-flow__attribution a {
-    color: #6c7086; /* ctp-overlay0 */
+    color: var(--ctp-overlay0);
     text-decoration: none;
 }
 
 .react-flow__attribution a:hover {
-    color: #a6adc8; /* ctp-subtext0 */
+    color: var(--ctp-subtext0);
 }
 
 /* Dialog Animations */
@@ -74,4 +85,13 @@
         opacity: 1;
         transform: translate(-50%, -50%) scale(1);
     }
+}
+
+/* Color scheme meta for browser UI (scrollbars, etc.) */
+html.mocha {
+    color-scheme: dark;
+}
+
+html.latte {
+    color-scheme: light;
 }

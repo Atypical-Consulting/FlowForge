@@ -15,6 +15,7 @@ import { useStashStore } from "../stores/stash";
 import { useTagStore } from "../stores/tags";
 import { SyncButtons } from "./sync/SyncButtons";
 import { Button } from "./ui/button";
+import { ThemeToggle } from "./ui/ThemeToggle";
 
 export function Header() {
   const { status, isLoading, openRepository, closeRepository } =
@@ -84,6 +85,7 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-2">
+        <ThemeToggle />
         {status && (
           <Button
             variant="ghost"
