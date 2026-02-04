@@ -12,47 +12,47 @@
         "Cascadia Code", "Consolas", monospace;
 }
 
-/* React Flow Controls - Dark Theme */
+/* React Flow Controls - Catppuccin Theme */
 .react-flow__controls {
-    background: #030712; /* gray-950 */
-    border: 1px solid #1f2937; /* gray-800 */
+    background: #181825; /* ctp-mantle */
+    border: 1px solid #313244; /* ctp-surface0 */
     border-radius: 6px;
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
 }
 
 .react-flow__controls-button {
-    background: #030712; /* gray-950 */
-    border-bottom: 1px solid #1f2937; /* gray-800 */
-    fill: #9ca3af; /* gray-400 */
+    background: #181825; /* ctp-mantle */
+    border-bottom: 1px solid #313244; /* ctp-surface0 */
+    fill: #a6adc8; /* ctp-subtext0 */
     width: 28px;
     height: 28px;
 }
 
 .react-flow__controls-button:hover {
-    background: #111827; /* gray-900 */
-    fill: #e5e7eb; /* gray-200 */
+    background: #313244; /* ctp-surface0 */
+    fill: #cdd6f4; /* ctp-text */
 }
 
 .react-flow__controls-button:last-child {
     border-bottom: none;
 }
 
-/* React Flow Attribution - Dark Theme */
+/* React Flow Attribution - Catppuccin Theme */
 .react-flow__attribution {
-    background: #030712; /* gray-950 */
-    border: 1px solid #1f2937; /* gray-800 */
+    background: #181825; /* ctp-mantle */
+    border: 1px solid #313244; /* ctp-surface0 */
     border-radius: 4px;
     padding: 2px 6px;
     font-size: 10px;
 }
 
 .react-flow__attribution a {
-    color: #6b7280; /* gray-500 */
+    color: #6c7086; /* ctp-overlay0 */
     text-decoration: none;
 }
 
 .react-flow__attribution a:hover {
-    color: #9ca3af; /* gray-400 */
+    color: #a6adc8; /* ctp-subtext0 */
 }
 
 /* Dialog Animations */

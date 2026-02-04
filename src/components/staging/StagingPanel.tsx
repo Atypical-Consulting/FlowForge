@@ -51,20 +51,20 @@ export function StagingPanel() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-4">
-        <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+        <Loader2 className="w-5 h-5 animate-spin text-ctp-subtext0" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4 text-red-400 text-sm">Failed to load file status</div>
+      <div className="p-4 text-ctp-red text-sm">Failed to load file status</div>
     );
   }
 
   if (!result || result.status === "error") {
     return (
-      <div className="p-4 text-red-400 text-sm">
+      <div className="p-4 text-ctp-red text-sm">
         {result?.status === "error" ? String(result.error) : "No data"}
       </div>
     );
@@ -78,7 +78,7 @@ export function StagingPanel() {
 
   if (!hasChanges) {
     return (
-      <div className="p-4 text-gray-500 text-sm text-center">
+      <div className="p-4 text-ctp-overlay0 text-sm text-center">
         No changes to commit
       </div>
     );
@@ -87,8 +87,8 @@ export function StagingPanel() {
   return (
     <div className="flex flex-col h-full overflow-y-auto">
       {/* View mode toggle */}
-      <div className="flex items-center justify-end px-3 py-1.5 border-b border-gray-800">
-        <div className="flex items-center gap-1 bg-gray-800 rounded p-0.5">
+      <div className="flex items-center justify-end px-3 py-1.5 border-b border-ctp-surface0">
+        <div className="flex items-center gap-1 bg-ctp-surface0 rounded p-0.5">
           <Button
             variant={viewMode === "tree" ? "secondary" : "ghost"}
             size="sm"
@@ -116,17 +116,17 @@ export function StagingPanel() {
           <>
             {status.staged.length > 0 && (
               <div className="mb-2">
-                <div className="flex items-center justify-between px-3 py-2 text-sm font-medium text-gray-300">
+                <div className="flex items-center justify-between px-3 py-2 text-sm font-medium text-ctp-subtext1">
                   <span>
                     Staged Changes{" "}
-                    <span className="text-xs text-gray-500 bg-gray-800 px-1.5 py-0.5 rounded ml-1">
+                    <span className="text-xs text-ctp-overlay0 bg-ctp-surface0 px-1.5 py-0.5 rounded ml-1">
                       {status.staged.length}
                     </span>
                   </span>
                   <button
                     type="button"
                     onClick={() => unstageAllMutation.mutate()}
-                    className="text-xs text-gray-400 hover:text-white"
+                    className="text-xs text-ctp-subtext0 hover:text-ctp-text"
                   >
                     Unstage All
                   </button>
@@ -136,17 +136,17 @@ export function StagingPanel() {
             )}
             {status.unstaged.length > 0 && (
               <div className="mb-2">
-                <div className="flex items-center justify-between px-3 py-2 text-sm font-medium text-gray-300">
+                <div className="flex items-center justify-between px-3 py-2 text-sm font-medium text-ctp-subtext1">
                   <span>
                     Changes{" "}
-                    <span className="text-xs text-gray-500 bg-gray-800 px-1.5 py-0.5 rounded ml-1">
+                    <span className="text-xs text-ctp-overlay0 bg-ctp-surface0 px-1.5 py-0.5 rounded ml-1">
                       {status.unstaged.length}
                     </span>
                   </span>
                   <button
                     type="button"
                     onClick={() => stageAllMutation.mutate()}
-                    className="text-xs text-gray-400 hover:text-white"
+                    className="text-xs text-ctp-subtext0 hover:text-ctp-text"
                   >
                     Stage All
                   </button>
@@ -156,17 +156,17 @@ export function StagingPanel() {
             )}
             {status.untracked.length > 0 && (
               <div className="mb-2">
-                <div className="flex items-center justify-between px-3 py-2 text-sm font-medium text-gray-300">
+                <div className="flex items-center justify-between px-3 py-2 text-sm font-medium text-ctp-subtext1">
                   <span>
                     Untracked Files{" "}
-                    <span className="text-xs text-gray-500 bg-gray-800 px-1.5 py-0.5 rounded ml-1">
+                    <span className="text-xs text-ctp-overlay0 bg-ctp-surface0 px-1.5 py-0.5 rounded ml-1">
                       {status.untracked.length}
                     </span>
                   </span>
                   <button
                     type="button"
                     onClick={() => stageAllMutation.mutate()}
-                    className="text-xs text-gray-400 hover:text-white"
+                    className="text-xs text-ctp-subtext0 hover:text-ctp-text"
                   >
                     Stage All
                   </button>

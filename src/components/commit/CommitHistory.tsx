@@ -53,14 +53,14 @@ export function CommitHistory({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+        <Loader2 className="w-5 h-5 animate-spin text-ctp-subtext0" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-full text-red-400 text-sm">
+      <div className="flex items-center justify-center h-full text-ctp-red text-sm">
         Failed to load history
       </div>
     );
@@ -68,7 +68,7 @@ export function CommitHistory({
 
   if (commits.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500 text-sm">
+      <div className="flex items-center justify-center h-full text-ctp-overlay0 text-sm">
         No commits yet
       </div>
     );
@@ -84,18 +84,18 @@ export function CommitHistory({
           key={commit.oid}
           onClick={() => onSelectCommit(commit)}
           className={cn(
-            "w-full text-left px-3 py-2 cursor-pointer border-b border-gray-800",
-            "hover:bg-gray-800/50 transition-colors",
-            selectedOid === commit.oid && "bg-blue-900/30",
+            "w-full text-left px-3 py-2 cursor-pointer border-b border-ctp-surface0",
+            "hover:bg-ctp-surface0/50 transition-colors",
+            selectedOid === commit.oid && "bg-ctp-blue/20",
           )}
         >
           <div className="flex items-start gap-2">
-            <GitCommit className="w-4 h-4 text-gray-500 mt-0.5 shrink-0" />
+            <GitCommit className="w-4 h-4 text-ctp-overlay0 mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-gray-200 truncate">
+              <p className="text-sm text-ctp-subtext1 truncate">
                 {commit.messageSubject}
               </p>
-              <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+              <div className="flex items-center gap-2 mt-1 text-xs text-ctp-overlay0">
                 <span className="font-mono">{commit.shortOid}</span>
                 <span>{commit.authorName}</span>
                 <span>{formatTimestamp(commit.timestampMs)}</span>
@@ -108,7 +108,7 @@ export function CommitHistory({
         Footer: () =>
           isFetchingNextPage ? (
             <div className="flex justify-center py-2">
-              <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+              <Loader2 className="w-4 h-4 animate-spin text-ctp-subtext0" />
             </div>
           ) : null,
       }}

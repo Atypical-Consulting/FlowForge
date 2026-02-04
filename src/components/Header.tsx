@@ -57,25 +57,25 @@ export function Header() {
   };
 
   return (
-    <header className="flex items-center justify-between h-14 px-4 border-b border-gray-800 bg-gray-900 select-none">
+    <header className="flex items-center justify-between h-14 px-4 border-b border-ctp-surface0 bg-ctp-mantle/80 backdrop-blur-md select-none sticky top-0 z-50">
       <div className="flex items-center gap-4">
-        <h1 className="text-lg font-semibold text-white">FlowForge</h1>
+        <h1 className="text-lg font-semibold text-ctp-text">FlowForge</h1>
         {status && (
           <>
-            <span className="text-gray-500">/</span>
-            <span className="text-sm text-gray-300">{status.repoName}</span>
+            <span className="text-ctp-overlay0">/</span>
+            <span className="text-sm text-ctp-subtext1">{status.repoName}</span>
           </>
         )}
 
         {status && (
-          <div className="flex items-center gap-2 px-3 py-1 rounded-md bg-gray-800">
-            <GitBranch className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-white font-medium font-mono">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-md bg-ctp-surface0">
+            <GitBranch className="w-4 h-4 text-ctp-subtext0" />
+            <span className="text-sm text-ctp-text font-medium font-mono">
               {status.branchName}
             </span>
             {status.isDirty && (
               <Circle
-                className="w-2 h-2 fill-yellow-500 text-yellow-500"
+                className="w-2 h-2 fill-ctp-yellow text-ctp-yellow"
                 aria-label="Uncommitted changes"
               />
             )}
@@ -118,7 +118,7 @@ export function Header() {
           size="sm"
           onClick={handleOpenRepo}
           disabled={isLoading}
-          className="text-gray-300 hover:text-white"
+          className="text-ctp-subtext1 hover:text-ctp-text"
         >
           <FolderOpen className="w-4 h-4 mr-2" />
           Open
