@@ -1,3 +1,15 @@
 [workspace]
 members = ["src-tauri"]
 resolver = "2"
+
+[profile.release]
+# Link-time optimization for smaller binary
+lto = true
+# Single codegen unit for better optimization
+codegen-units = 1
+# Strip symbols from binary
+strip = true
+# Optimize for size
+opt-level = "s"
+# Abort on panic (smaller than unwind)
+panic = "abort"
