@@ -1,35 +1,52 @@
 import { open } from "@tauri-apps/plugin-dialog";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Circle,
   FileText,
   FolderOpen,
   GitBranch,
   RefreshCw,
+  Undo2,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRecentRepos } from "../hooks/useRecentRepos";
 import { useBranchStore } from "../stores/branches";
 import { useChangelogStore } from "../stores/changelogStore";
 import { useRepositoryStore } from "../stores/repository";
 import { useStashStore } from "../stores/stash";
 import { useTagStore } from "../stores/tags";
+import { useUndoStore } from "../stores/undo";
 import { SyncButtons } from "./sync/SyncButtons";
 import { Button } from "./ui/button";
 import { ThemeToggle } from "./ui/ThemeToggle";
 
 export function Header() {
+  const queryClient = useQueryClient();
   const { status, isLoading, openRepository, closeRepository } =
     useRepositoryStore();
   const { loadBranches, isLoading: branchesLoading } = useBranchStore();
   const { loadStashes, isLoading: stashesLoading } = useStashStore();
   const { loadTags, isLoading: tagsLoading } = useTagStore();
+  const { undoInfo, isUndoing, loadUndoInfo, performUndo } = useUndoStore();
   const openChangelog = useChangelogStore((s) => s.openDialog);
   const { addRecentRepo } = useRecentRepos();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Load undo info when repo opens
+  useEffect(() => {
+    if (status) {
+      loadUndoInfo();
+    }
+  }, [status, loadUndoInfo]);
+
   const handleRefreshAll = async () => {
     setIsRefreshing(true);
-    await Promise.all([loadBranches(), loadStashes(), loadTags()]);
+    await Promise.all([
+      loadBranches(),
+      loadStashes(),
+      loadTags(),
+      loadUndoInfo(),
+    ]);
     setIsRefreshing(false);
   };
 
@@ -55,6 +72,25 @@ export function Header() {
 
   const handleClose = async () => {
     await closeRepository();
+  };
+
+  const handleUndo = async () => {
+    if (!undoInfo?.canUndo) return;
+
+    // Confirm before undo
+    const confirmed = window.confirm(
+      `Are you sure you want to undo?\n\n${undoInfo.description}`,
+    );
+
+    if (confirmed) {
+      const success = await performUndo();
+      if (success) {
+        // Invalidate relevant queries to refresh UI
+        queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
+        queryClient.invalidateQueries({ queryKey: ["stagingStatus"] });
+        queryClient.invalidateQueries({ queryKey: ["repositoryStatus"] });
+      }
+    }
   };
 
   return (
@@ -86,6 +122,17 @@ export function Header() {
 
       <div className="flex items-center gap-2">
         <ThemeToggle />
+        {status && undoInfo?.canUndo && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleUndo}
+            disabled={isUndoing}
+            title={undoInfo.description || "Undo last operation"}
+          >
+            <Undo2 className={`w-4 h-4 ${isUndoing ? "animate-spin" : ""}`} />
+          </Button>
+        )}
         {status && (
           <Button
             variant="ghost"

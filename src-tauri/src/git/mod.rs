@@ -13,6 +13,7 @@ pub mod repository;
 pub mod staging;
 pub mod stash;
 pub mod tag;
+pub mod undo;
 pub mod watcher;
 pub mod worktree;
 

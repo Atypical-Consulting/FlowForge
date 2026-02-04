@@ -21,6 +21,7 @@ use git::{
     staging::{get_staging_status, stage_all, stage_file, unstage_all, unstage_file},
     stash::{list_stashes, stash_apply, stash_drop, stash_pop, stash_save},
     tag::{create_tag, delete_tag, list_tags},
+    undo::{get_undo_info, undo_last_operation},
     worktree::{create_worktree, delete_worktree, list_worktrees},
 };
 use gitflow::{
@@ -105,6 +106,9 @@ pub fn run() {
         list_worktrees,
         create_worktree,
         delete_worktree,
+        // Undo commands
+        get_undo_info,
+        undo_last_operation,
     ]);
 
     #[cfg(debug_assertions)]

@@ -777,6 +777,29 @@ export const commands = {
       else return { status: "error", error: e as any };
     }
   },
+  /**
+   * Get information about what can be undone.
+   * Looks at HEAD reflog to find the previous state.
+   */
+  async getUndoInfo(): Promise<Result<UndoInfo, GitError>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("get_undo_info") };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Undo the last operation by resetting HEAD to the previous reflog entry.
+   */
+  async undoLastOperation(): Promise<Result<null, GitError>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("undo_last_operation") };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
 };
 
 /** user-defined events **/
@@ -1424,6 +1447,27 @@ export type TypeSuggestion = {
    * Reason for the suggestion.
    */
   reason: string;
+};
+/**
+ * Information about what can be undone
+ */
+export type UndoInfo = {
+  /**
+   * Whether undo is available
+   */
+  canUndo: boolean;
+  /**
+   * Description of what will be undone
+   */
+  description: string | null;
+  /**
+   * The reflog entry message
+   */
+  reflogMessage: string | null;
+  /**
+   * The commit OID to revert to
+   */
+  targetOid: string | null;
 };
 /**
  * A validation error.
