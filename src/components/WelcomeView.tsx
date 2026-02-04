@@ -1,6 +1,7 @@
 import { open } from "@tauri-apps/plugin-dialog";
 import { motion } from "framer-motion";
-import { AlertCircle, Flame, FolderOpen } from "lucide-react";
+import { AlertCircle, FolderOpen } from "lucide-react";
+import appIcon from "../../src-tauri/icons/icon.png";
 import { useCallback, useEffect, useState } from "react";
 import { commands } from "../bindings";
 import { useRecentRepos } from "../hooks/useRecentRepos";
@@ -128,7 +129,7 @@ export function WelcomeView() {
         {/* Main action */}
         <motion.div variants={staggerItem} className="text-center space-y-4">
           <div className="inline-flex p-4 rounded-full bg-ctp-surface0/50 backdrop-blur-sm">
-            <Flame className="w-12 h-12 text-ctp-peach" />
+            <img src={appIcon} alt="FlowForge" className="w-12 h-12" />
           </div>
           <h2 className="text-2xl font-bold text-ctp-text">
             Welcome to FlowForge
