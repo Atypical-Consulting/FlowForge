@@ -1,12 +1,15 @@
 mod git;
 
 use git::{
+    branch::{checkout_branch, create_branch, delete_branch, list_branches},
     commands::{close_repository, get_repository_status, is_git_repository, open_repository},
     commit::create_commit,
     diff::get_file_diff,
     history::{get_commit_details, get_commit_history},
     remote::{fetch_from_remote, get_remotes, pull_from_remote, push_to_remote},
     staging::{get_staging_status, stage_all, stage_file, unstage_all, unstage_file},
+    stash::{list_stashes, stash_apply, stash_drop, stash_pop, stash_save},
+    tag::{create_tag, delete_tag, list_tags},
     RepositoryState,
 };
 use specta_typescript::Typescript;
@@ -46,6 +49,21 @@ pub fn run() {
         fetch_from_remote,
         push_to_remote,
         pull_from_remote,
+        // Branch commands
+        list_branches,
+        create_branch,
+        checkout_branch,
+        delete_branch,
+        // Stash commands
+        list_stashes,
+        stash_save,
+        stash_apply,
+        stash_pop,
+        stash_drop,
+        // Tag commands
+        list_tags,
+        create_tag,
+        delete_tag,
     ]);
 
     #[cfg(debug_assertions)]

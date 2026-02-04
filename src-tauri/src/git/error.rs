@@ -49,6 +49,39 @@ pub enum GitError {
 
     #[error("Network error: {0}")]
     NetworkError(String),
+
+    // Branch errors
+    #[error("Branch not found: {0}")]
+    BranchNotFound(String),
+
+    #[error("Cannot delete the currently checked out branch")]
+    CannotDeleteCurrentBranch,
+
+    #[error("Branch has unmerged commits: {0}")]
+    BranchNotMerged(String),
+
+    #[error("Invalid branch name: {0}")]
+    InvalidBranchName(String),
+
+    #[error("Branch already exists: {0}")]
+    BranchAlreadyExists(String),
+
+    #[error("Cannot checkout with uncommitted changes")]
+    DirtyWorkingDirectory,
+
+    // Stash errors
+    #[error("Stash not found at index {0}")]
+    StashNotFound(usize),
+
+    #[error("No local changes to stash")]
+    NothingToStash,
+
+    // Tag errors
+    #[error("Tag already exists: {0}")]
+    TagAlreadyExists(String),
+
+    #[error("Tag not found: {0}")]
+    TagNotFound(String),
 }
 
 impl From<git2::Error> for GitError {
