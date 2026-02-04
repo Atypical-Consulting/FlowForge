@@ -210,7 +210,7 @@ export function RepositoryView() {
 
       {/* Right panel - Diff/Commit Details/Topology */}
       <ResizablePanel defaultSize={55}>
-        <div className="h-full bg-ctp-mantle">
+        <div className="h-full bg-ctp-mantle flex flex-col">
           {activeTab === "changes" ? (
             <FileViewer />
           ) : activeTab === "topology" ? (
