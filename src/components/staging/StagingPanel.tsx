@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FolderTree, List, Loader2 } from "lucide-react";
+import { useEffect } from "react";
 import { commands } from "../../bindings";
 import { cn } from "../../lib/utils";
 import { useStagingStore } from "../../stores/staging";
@@ -9,7 +10,7 @@ import { FileTreeView } from "./FileTreeView";
 
 export function StagingPanel() {
   const queryClient = useQueryClient();
-  const { viewMode, setViewMode } = useStagingStore();
+  const { viewMode, setViewMode, selectedFile, selectFile } = useStagingStore();
 
   const {
     data: result,
@@ -32,6 +33,20 @@ export function StagingPanel() {
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ["stagingStatus"] }),
   });
+
+  // Auto-select first file when data loads and no selection exists
+  useEffect(() => {
+    if (!selectedFile && result?.status === "ok") {
+      const status = result.data;
+      if (status.staged.length > 0) {
+        selectFile(status.staged[0], "staged");
+      } else if (status.unstaged.length > 0) {
+        selectFile(status.unstaged[0], "unstaged");
+      } else if (status.untracked.length > 0) {
+        selectFile(status.untracked[0], "untracked");
+      }
+    }
+  }, [result, selectedFile, selectFile]);
 
   if (isLoading) {
     return (

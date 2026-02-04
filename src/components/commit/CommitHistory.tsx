@@ -1,5 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { GitCommit, Loader2 } from "lucide-react";
+import { useEffect } from "react";
 import { Virtuoso } from "react-virtuoso";
 import { type CommitSummary, commands } from "../../bindings";
 import { cn } from "../../lib/utils";
@@ -41,6 +42,13 @@ export function CommitHistory({
   });
 
   const commits = data?.pages.flat() ?? [];
+
+  // Auto-select first commit when data loads and no selection exists
+  useEffect(() => {
+    if (commits.length > 0 && !selectedOid) {
+      onSelectCommit(commits[0]);
+    }
+  }, [commits, selectedOid, onSelectCommit]);
 
   if (isLoading) {
     return (

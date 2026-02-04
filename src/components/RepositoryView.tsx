@@ -22,7 +22,7 @@ import { GitflowPanel } from "./gitflow";
 import { StagingPanel } from "./staging/StagingPanel";
 import { StashList } from "./stash/StashList";
 import { TagList } from "./tags/TagList";
-import { TopologyPanel, TopologyCommitDetails } from "./topology";
+import { TopologyCommitDetails, TopologyPanel } from "./topology";
 
 type Tab = "changes" | "history" | "topology";
 
@@ -151,7 +151,6 @@ export function RepositoryView() {
             type="button"
             onClick={() => {
               setActiveTab("history");
-              setSelectedCommit(null);
             }}
             className={cn(
               "flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm",
@@ -168,7 +167,6 @@ export function RepositoryView() {
             type="button"
             onClick={() => {
               setActiveTab("topology");
-              setSelectedCommit(null);
             }}
             className={cn(
               "flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm",
