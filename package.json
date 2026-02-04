@@ -11,6 +11,7 @@
     "check": "biome check --write ."
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "@tanstack/react-query": "^5",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-dialog": "^2",
@@ -22,6 +23,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router": "^7",
+    "react-virtuoso": "^4.18.1",
     "tailwind-merge": "^3.4.0",
     "zustand": "^5"
   },

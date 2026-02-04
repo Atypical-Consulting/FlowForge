@@ -2,6 +2,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { Circle, FolderOpen, GitBranch } from "lucide-react";
 import { useRecentRepos } from "../hooks/useRecentRepos";
 import { useRepositoryStore } from "../stores/repository";
+import { SyncButtons } from "./sync/SyncButtons";
 import { Button } from "./ui/button";
 
 export function Header() {
@@ -52,6 +53,7 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-2">
+        {status && <SyncButtons />}
         {status && (
           <Button variant="ghost" size="sm" onClick={handleClose}>
             Close
