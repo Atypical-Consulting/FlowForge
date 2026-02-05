@@ -8,6 +8,7 @@
 
 pub mod commands;
 pub mod error;
+pub mod init;
 pub mod machine;
 pub mod merge;
 pub mod policy;
@@ -17,3 +18,4 @@ pub use commands::{
     abort_gitflow, finish_feature, finish_hotfix, finish_release, get_gitflow_status,
     start_feature, start_hotfix, start_release,
 };
+pub use init::{init_gitflow, GitflowConfig, GitflowInitResult};

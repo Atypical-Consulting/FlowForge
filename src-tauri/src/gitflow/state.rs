@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 
 use crate::gitflow::error::GitflowError;
+use crate::gitflow::init::get_gitflow_config;
 use crate::gitflow::machine::GitflowState;
 use crate::gitflow::policy::{is_develop_branch, is_main_branch, parse_branch_type, BranchType};
 
@@ -20,6 +21,8 @@ pub struct GitflowContext {
     pub has_main: bool,
     /// Whether the repository has a develop branch
     pub has_develop: bool,
+    /// Whether the repository has Gitflow initialized (config in .git/config)
+    pub is_initialized: bool,
 }
 
 impl GitflowContext {
@@ -36,12 +39,14 @@ impl GitflowContext {
         let has_main = check_branch_exists(repo, "main") || check_branch_exists(repo, "master");
         let has_develop =
             check_branch_exists(repo, "develop") || check_branch_exists(repo, "development");
+        let is_initialized = get_gitflow_config(repo).is_some();
 
         Ok(GitflowContext {
             state,
             current_branch,
             has_main,
             has_develop,
+            is_initialized,
         })
     }
 
