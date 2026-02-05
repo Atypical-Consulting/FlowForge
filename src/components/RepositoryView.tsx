@@ -54,114 +54,124 @@ export function RepositoryView() {
       <ResizablePanelLayout autoSaveId="repo-layout" direction="horizontal">
         {/* Left sidebar - Branches, Stash, Tags */}
         <ResizablePanel id="sidebar" defaultSize={20} minSize={15} maxSize={30}>
-          <div className="h-full border-r border-ctp-surface0 bg-ctp-base overflow-y-auto">
-            {/* Branches section */}
-            <details open className="border-b border-ctp-surface0">
-              <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 bg-ctp-base z-10">
-                <GitBranch className="w-4 h-4" />
-                <span className="font-semibold text-sm flex-1">Branches</span>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowBranchDialog(true);
-                  }}
-                  className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
-                  title="Create new branch"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              </summary>
-              <div className="max-h-64 overflow-y-auto">
-                <BranchList
-                  showCreateDialog={showBranchDialog}
-                  onCloseCreateDialog={() => setShowBranchDialog(false)}
-                />
-              </div>
-            </details>
+          <div className="h-full border-r border-ctp-surface0 bg-ctp-base flex flex-col">
+            {/* Scrollable sections container */}
+            <div className="flex-1 overflow-y-auto">
+              {/* Branches section */}
+              <details open className="border-b border-ctp-surface0">
+                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 bg-ctp-base z-10">
+                  <GitBranch className="w-4 h-4" />
+                  <span className="font-semibold text-sm flex-1">Branches</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowBranchDialog(true);
+                    }}
+                    className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
+                    title="Create new branch"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </summary>
+                <div className="max-h-64 overflow-y-auto">
+                  <BranchList
+                    showCreateDialog={showBranchDialog}
+                    onCloseCreateDialog={() => setShowBranchDialog(false)}
+                  />
+                </div>
+              </details>
 
-            {/* Stash section */}
-            <details className="border-b border-ctp-surface0">
-              <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 bg-ctp-base z-10">
-                <Archive className="w-4 h-4" />
-                <span className="font-semibold text-sm flex-1">Stashes</span>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowStashDialog(true);
-                  }}
-                  className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
-                  title="Save new stash"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              </summary>
-              <div className="max-h-48 overflow-y-auto">
-                <StashList
-                  showSaveDialog={showStashDialog}
-                  onCloseSaveDialog={() => setShowStashDialog(false)}
-                />
-              </div>
-            </details>
+              {/* Stash section */}
+              <details className="border-b border-ctp-surface0">
+                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 bg-ctp-base z-10">
+                  <Archive className="w-4 h-4" />
+                  <span className="font-semibold text-sm flex-1">Stashes</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowStashDialog(true);
+                    }}
+                    className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
+                    title="Save new stash"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </summary>
+                <div className="max-h-48 overflow-y-auto">
+                  <StashList
+                    showSaveDialog={showStashDialog}
+                    onCloseSaveDialog={() => setShowStashDialog(false)}
+                  />
+                </div>
+              </details>
 
-            {/* Tags section */}
-            <details className="border-b border-ctp-surface0">
-              <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 bg-ctp-base z-10">
-                <Tag className="w-4 h-4" />
-                <span className="font-semibold text-sm flex-1">Tags</span>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowTagDialog(true);
-                  }}
-                  className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
-                  title="Create new tag"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              </summary>
-              <div className="max-h-48 overflow-y-auto">
-                <TagList
-                  showCreateDialog={showTagDialog}
-                  onCloseCreateDialog={() => setShowTagDialog(false)}
-                />
-              </div>
-            </details>
+              {/* Tags section */}
+              <details className="border-b border-ctp-surface0">
+                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 bg-ctp-base z-10">
+                  <Tag className="w-4 h-4" />
+                  <span className="font-semibold text-sm flex-1">Tags</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowTagDialog(true);
+                    }}
+                    className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
+                    title="Create new tag"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </summary>
+                <div className="max-h-48 overflow-y-auto">
+                  <TagList
+                    showCreateDialog={showTagDialog}
+                    onCloseCreateDialog={() => setShowTagDialog(false)}
+                  />
+                </div>
+              </details>
 
-            {/* Gitflow section */}
-            <details className="border-b border-ctp-surface0">
-              <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 bg-ctp-base z-10">
-                <GitMerge className="w-4 h-4" />
-                <span className="font-semibold text-sm flex-1">Gitflow</span>
-              </summary>
-              <GitflowPanel />
-            </details>
+              {/* Gitflow section */}
+              <details className="border-b border-ctp-surface0">
+                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 bg-ctp-base z-10">
+                  <GitMerge className="w-4 h-4" />
+                  <span className="font-semibold text-sm flex-1">Gitflow</span>
+                </summary>
+                <GitflowPanel />
+              </details>
 
-            {/* Worktrees section */}
-            <details className="border-b border-ctp-surface0">
-              <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 bg-ctp-base z-10">
-                <FolderGit2 className="w-4 h-4" />
-                <span className="font-semibold text-sm flex-1">Worktrees</span>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowWorktreeDialog(true);
-                  }}
-                  className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
-                  title="Create new worktree"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              </summary>
-              <div className="max-h-64 overflow-y-auto">
-                <WorktreePanel
-                  onOpenDeleteDialog={(name) => setWorktreeToDelete(name)}
-                />
-              </div>
-            </details>
+              {/* Worktrees section */}
+              <details className="border-b border-ctp-surface0">
+                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 bg-ctp-base z-10">
+                  <FolderGit2 className="w-4 h-4" />
+                  <span className="font-semibold text-sm flex-1">
+                    Worktrees
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowWorktreeDialog(true);
+                    }}
+                    className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
+                    title="Create new worktree"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </summary>
+                <div className="max-h-64 overflow-y-auto">
+                  <WorktreePanel
+                    onOpenDeleteDialog={(name) => setWorktreeToDelete(name)}
+                  />
+                </div>
+              </details>
+            </div>
+
+            {/* Commit form at bottom of left panel */}
+            <div className="shrink-0 border-t border-ctp-surface0">
+              <CommitForm />
+            </div>
           </div>
         </ResizablePanel>
 
@@ -222,12 +232,9 @@ export function RepositoryView() {
 
             {/* Tab content */}
             {activeTab === "changes" ? (
-              <>
-                <div className="flex-1 overflow-hidden">
-                  <StagingPanel />
-                </div>
-                <CommitForm />
-              </>
+              <div className="flex-1 overflow-hidden">
+                <StagingPanel />
+              </div>
             ) : activeTab === "history" ? (
               <div className="flex-1 overflow-hidden">
                 <CommitHistory
