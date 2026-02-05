@@ -1,12 +1,13 @@
 import { open } from "@tauri-apps/plugin-dialog";
 import { motion } from "framer-motion";
-import { AlertCircle, FolderOpen } from "lucide-react";
+import { AlertCircle, FolderOpen, GitFork } from "lucide-react";
 import appIcon from "../../src-tauri/icons/icon.png";
 import { useCallback, useEffect, useState } from "react";
 import { commands } from "../bindings";
 import { useRecentRepos } from "../hooks/useRecentRepos";
 import { fadeInUp, staggerContainer, staggerItem } from "../lib/animations";
 import { useRepositoryStore } from "../stores/repository";
+import { CloneForm } from "./clone/CloneForm";
 import { RecentRepos } from "./RecentRepos";
 import { Button } from "./ui/button";
 import { AnimatedGradientBg } from "./welcome";
@@ -15,6 +16,7 @@ export function WelcomeView() {
   const { openRepository, isLoading, error, clearError } = useRepositoryStore();
   const { addRecentRepo } = useRecentRepos();
   const [isDragOver, setIsDragOver] = useState(false);
+  const [showCloneForm, setShowCloneForm] = useState(false);
 
   const openDialog = useCallback(async () => {
     try {
@@ -41,6 +43,14 @@ export function WelcomeView() {
     return () =>
       document.removeEventListener("open-repository-dialog", handler);
   }, [openDialog]);
+
+  // Listen for clone dialog event from header
+  useEffect(() => {
+    const handler = () => setShowCloneForm(true);
+    document.addEventListener("clone-repository-dialog", handler);
+    return () =>
+      document.removeEventListener("clone-repository-dialog", handler);
+  }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -143,21 +153,38 @@ export function WelcomeView() {
           variants={staggerItem}
           className="flex flex-col items-center gap-3"
         >
-          <Button
-            size="lg"
-            onClick={openDialog}
-            disabled={isLoading}
-            className="gap-2"
-          >
-            <FolderOpen className="w-5 h-5" />
-            {isLoading ? "Opening..." : "Open Repository"}
-          </Button>
-          <p className="text-xs text-ctp-subtext0">
-            or press{" "}
-            <kbd className="px-1.5 py-0.5 bg-ctp-surface0 rounded text-ctp-subtext1 font-mono text-xs">
-              {navigator.platform.includes("Mac") ? "Cmd" : "Ctrl"}+O
-            </kbd>
-          </p>
+          {showCloneForm ? (
+            <div className="w-full max-w-sm bg-ctp-surface0/50 backdrop-blur-sm rounded-lg p-4">
+              <CloneForm onCancel={() => setShowCloneForm(false)} />
+            </div>
+          ) : (
+            <>
+              <Button
+                size="lg"
+                onClick={openDialog}
+                disabled={isLoading}
+                className="gap-2"
+              >
+                <FolderOpen className="w-5 h-5" />
+                {isLoading ? "Opening..." : "Open Repository"}
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => setShowCloneForm(true)}
+                className="gap-2"
+              >
+                <GitFork className="w-5 h-5" />
+                Clone Repository
+              </Button>
+              <p className="text-xs text-ctp-subtext0">
+                or press{" "}
+                <kbd className="px-1.5 py-0.5 bg-ctp-surface0 rounded text-ctp-subtext1 font-mono text-xs">
+                  {navigator.platform.includes("Mac") ? "Cmd" : "Ctrl"}+O
+                </kbd>
+              </p>
+            </>
+          )}
         </motion.div>
 
         {/* Error display */}

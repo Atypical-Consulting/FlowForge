@@ -5,6 +5,7 @@ import {
   FileText,
   FolderOpen,
   GitBranch,
+  GitFork,
   RefreshCw,
   Settings,
   Undo2,
@@ -173,6 +174,19 @@ export function Header() {
             Close
           </Button>
         )}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            document.dispatchEvent(new CustomEvent("clone-repository-dialog"));
+          }}
+          disabled={isLoading}
+          className="text-ctp-subtext1 hover:text-ctp-text"
+          title="Clone Repository"
+        >
+          <GitFork className="w-4 h-4 mr-2" />
+          Clone
+        </Button>
         <Button
           variant="ghost"
           size="sm"

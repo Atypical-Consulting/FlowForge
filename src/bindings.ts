@@ -1260,6 +1260,31 @@ export type GitflowConfig = {
   hotfixPrefix: string;
 };
 /**
+ * Context about the repository's Gitflow state.
+ */
+export type GitflowContext = {
+  /**
+   * Current Gitflow state derived from branch name
+   */
+  state: GitflowState;
+  /**
+   * Current branch name
+   */
+  currentBranch: string;
+  /**
+   * Whether the repository has a main/master branch
+   */
+  hasMain: boolean;
+  /**
+   * Whether the repository has a develop branch
+   */
+  hasDevelop: boolean;
+  /**
+   * Whether the repository has Gitflow initialized (config in .git/config)
+   */
+  isInitialized: boolean;
+};
+/**
  * Gitflow operation errors that serialize across the IPC boundary.
  */
 export type GitflowError =
@@ -1329,6 +1354,26 @@ export type GitflowInitResult = {
   switchedToDevelop: boolean;
 };
 /**
+ * The current state of the Gitflow workflow.
+ */
+export type GitflowState =
+  /**
+   * No active workflow (on main, develop, or other)
+   */
+  | { type: "Idle" }
+  /**
+   * Working on a feature branch
+   */
+  | { type: "Feature"; data: { name: string } }
+  /**
+   * Working on a release branch
+   */
+  | { type: "Release"; data: { version: string } }
+  /**
+   * Working on a hotfix branch
+   */
+  | { type: "Hotfix"; data: { name: string } };
+/**
  * Status of Gitflow operations for UI consumption.
  */
 export type GitflowStatus = {
@@ -1342,6 +1387,10 @@ export type GitflowStatus = {
   canFinishHotfix: boolean;
   canAbort: boolean;
   activeFlow: ActiveFlow | null;
+  /**
+   * Context about the repository's Gitflow state
+   */
+  context: GitflowContext;
 };
 /**
  * An edge in the commit graph connecting parent and child commits.
