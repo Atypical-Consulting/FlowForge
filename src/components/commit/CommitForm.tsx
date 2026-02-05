@@ -1,13 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, RotateCcw } from "lucide-react";
+import { Loader2, PenLine, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { commands } from "../../bindings";
 import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
-import { ConventionalCommitForm } from "./ConventionalCommitForm";
+import { ConventionalCommitModal } from "./ConventionalCommitModal";
 
 export function CommitForm() {
-  const [useConventional, setUseConventional] = useState(true);
+  const [useConventional, setUseConventional] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [message, setMessage] = useState("");
   const [amend, setAmend] = useState(false);
   const queryClient = useQueryClient();
@@ -32,7 +33,7 @@ export function CommitForm() {
   const status = result?.status === "ok" ? result.data : null;
   const hasStagedFiles = status && status.staged.length > 0;
 
-  // Handle commit from ConventionalCommitForm
+  // Handle commit from ConventionalCommitModal
   const handleConventionalCommit = (commitMessage: string) => {
     commitMutation.mutate(commitMessage);
   };
@@ -68,13 +69,18 @@ export function CommitForm() {
         </label>
       </div>
 
-      {/* Conventional commit form */}
+      {/* Conventional commit mode - show button to open modal */}
       {useConventional ? (
         <div className="space-y-3">
-          <ConventionalCommitForm
-            onCommit={handleConventionalCommit}
+          <Button
+            onClick={() => setShowModal(true)}
             disabled={commitMutation.isPending || !hasStagedFiles}
-          />
+            variant="outline"
+            className="w-full"
+          >
+            <PenLine className="w-4 h-4 mr-2" />
+            Write commit message...
+          </Button>
           {!hasStagedFiles && (
             <p className="text-xs text-ctp-overlay0 text-center">
               No staged changes to commit
@@ -85,6 +91,12 @@ export function CommitForm() {
               {String(commitMutation.error)}
             </p>
           )}
+          <ConventionalCommitModal
+            open={showModal}
+            onOpenChange={setShowModal}
+            onCommit={handleConventionalCommit}
+            disabled={commitMutation.isPending || !hasStagedFiles}
+          />
         </div>
       ) : (
         /* Simple commit form */
