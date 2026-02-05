@@ -2,6 +2,8 @@ import { create } from "zustand";
 import type { GitflowConfig, GitflowStatus } from "../bindings";
 import { commands } from "../bindings";
 import { getErrorMessage } from "../lib/errors";
+import { useBranchStore } from "./branches";
+import { useRepositoryStore } from "./repository";
 
 interface GitflowState {
   status: GitflowStatus | null;
@@ -121,6 +123,9 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
     const result = await commands.abortGitflow();
     if (result.status === "ok") {
       await get().refresh();
+      // Refresh branches (deleted feature/release/hotfix) and repo status (switched branch)
+      await useBranchStore.getState().loadBranches();
+      await useRepositoryStore.getState().refreshStatus();
       return true;
     }
     set({ error: getErrorMessage(result.error), isLoading: false });
