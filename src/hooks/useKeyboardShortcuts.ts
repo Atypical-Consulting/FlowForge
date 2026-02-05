@@ -3,12 +3,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useHotkeys } from "react-hotkeys-hook";
 import { type SyncProgress, commands } from "../bindings";
 import { useRepositoryStore } from "../stores/repository";
+import { useSettingsStore } from "../stores/settings";
 
 /**
  * Keyboard shortcuts for common Git operations.
  *
  * Shortcuts:
  * - Cmd/Ctrl+O: Open repository
+ * - Cmd/Ctrl+,: Open settings
  * - Cmd/Ctrl+Shift+A: Stage all files
  * - Cmd/Ctrl+Shift+P: Push
  * - Cmd/Ctrl+Shift+L: Pull (L for "pull Latest")
@@ -17,6 +19,7 @@ import { useRepositoryStore } from "../stores/repository";
 export function useKeyboardShortcuts() {
   const queryClient = useQueryClient();
   const { status } = useRepositoryStore();
+  const openSettings = useSettingsStore((s) => s.openSettings);
 
   // Stage all mutation
   const stageAllMutation = useMutation({
@@ -66,6 +69,16 @@ export function useKeyboardShortcuts() {
     (e) => {
       e.preventDefault();
       document.dispatchEvent(new CustomEvent("open-repository-dialog"));
+    },
+    { preventDefault: true },
+  );
+
+  // Settings shortcut
+  useHotkeys(
+    "mod+,",
+    (e) => {
+      e.preventDefault();
+      openSettings();
     },
     { preventDefault: true },
   );

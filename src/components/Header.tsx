@@ -6,6 +6,7 @@ import {
   FolderOpen,
   GitBranch,
   RefreshCw,
+  Settings,
   Undo2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -13,6 +14,7 @@ import { useRecentRepos } from "../hooks/useRecentRepos";
 import { useBranchStore } from "../stores/branches";
 import { useChangelogStore } from "../stores/changelogStore";
 import { useRepositoryStore } from "../stores/repository";
+import { useSettingsStore } from "../stores/settings";
 import { useStashStore } from "../stores/stash";
 import { useTagStore } from "../stores/tags";
 import { useUndoStore } from "../stores/undo";
@@ -29,6 +31,7 @@ export function Header() {
   const { loadTags, isLoading: tagsLoading } = useTagStore();
   const { undoInfo, isUndoing, loadUndoInfo, performUndo } = useUndoStore();
   const openChangelog = useChangelogStore((s) => s.openDialog);
+  const openSettings = useSettingsStore((s) => s.openSettings);
   const { addRecentRepo } = useRecentRepos();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -121,6 +124,14 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={openSettings}
+          title="Settings (Ctrl+,)"
+        >
+          <Settings className="w-4 h-4" />
+        </Button>
         <ThemeToggle />
         {status && undoInfo?.canUndo && (
           <Button

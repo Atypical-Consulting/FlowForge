@@ -5,9 +5,11 @@ import { Header } from "./components/Header";
 import { RepositoryView } from "./components/RepositoryView";
 import { WelcomeView } from "./components/WelcomeView";
 import { ChangelogDialog } from "./components/changelog";
+import { SettingsWindow } from "./components/settings";
 import { ToastContainer } from "./components/ui/ToastContainer";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useRepositoryStore } from "./stores/repository";
+import { useSettingsStore } from "./stores/settings";
 import { useThemeStore } from "./stores/theme";
 import { useUndoStore } from "./stores/undo";
 
@@ -15,15 +17,17 @@ function App() {
   const queryClient = useQueryClient();
   const { status } = useRepositoryStore();
   const initTheme = useThemeStore((s) => s.initTheme);
+  const initSettings = useSettingsStore((s) => s.initSettings);
   const loadUndoInfo = useUndoStore((s) => s.loadUndoInfo);
 
   // Register global keyboard shortcuts
   useKeyboardShortcuts();
 
-  // Initialize theme on mount
+  // Initialize theme and settings on mount
   useEffect(() => {
     initTheme();
-  }, [initTheme]);
+    initSettings();
+  }, [initTheme, initSettings]);
 
   // Listen for file watcher events
   useEffect(() => {
@@ -56,6 +60,7 @@ function App() {
         {status ? <RepositoryView /> : <WelcomeView />}
       </main>
       <ChangelogDialog />
+      <SettingsWindow />
       <ToastContainer />
     </div>
   );
