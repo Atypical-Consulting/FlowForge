@@ -51,10 +51,29 @@ Each layer adds value; each inner layer stands without the outer ones.
 
 ### Active
 
+- [ ] Left panel readability (text size, action icons not overlapping)
+- [ ] Conventional Commits checkbox unchecked by default
+- [ ] Conventional Commits panel not covering changes list
+- [ ] Repository/branch switcher in top bar (GitHub Desktop style)
+- [ ] Settings grouped into modal/dedicated view
+- [ ] Clone repository from within app
+- [ ] Ungit-style topology graph improvements
+- [ ] Topology center panel shows commit details on selection
+- [ ] Amend commit reloads previous commit message
+- [ ] Initialize Gitflow from app for non-Gitflow repos
+- [ ] Inspect diffs of previous commits in History view
+- [ ] Toast notification system
+- [ ] Empty state illustrations
+- [ ] Keyboard shortcut tooltips
+- [ ] Button loading spinners
+- [ ] Panel header frosted glass effect
+- [ ] Dirty state pulse animation
+
+### Deferred to v2+
+
 - [ ] MCP server exposing repository state as structured resources
 - [ ] MCP Git operations as tools with policy enforcement
 - [ ] Tiered autonomy model for agent operations
-- [ ] Topology auto-refresh on commits (tech debt from v1.0)
 
 ### Out of Scope
 
@@ -81,8 +100,21 @@ Tech stack: Tauri 2.x, React 19, Zustand, React Query, React Flow, Monaco Editor
 All 58 v1 requirements implemented across 10 phases (53 plans).
 
 **Known tech debt:**
-- Topology graph requires manual tab switch to refresh after commits
+- Topology graph requires manual tab switch to refresh after commits (addressed in v1.1 topology rework)
 - Orphaned code: greet command, getMergeStatus, some unused animation components
+
+## Current Milestone: v1.1.0 Usability
+
+**Goal:** Fix UX pain points and enhance the topology visualization to match Ungit's intuitive approach.
+
+**Target features:**
+- Fix layout issues (left panel readability, conventional commits panel overlap)
+- Better defaults (conventional commits off by default, amend reloads message)
+- Navigation improvements (repo/branch switcher, settings modal)
+- New workflows (clone repo, initialize Gitflow)
+- Ungit-style topology with commit details in center panel
+- History view with diff inspection
+- Quick wins (toasts, empty states, loading spinners, frosted headers, tooltips)
 
 **v2 vision:** MCP server exposing repository state (branches, worktrees, commit history, diffs, Gitflow context) as structured resources and tools. Tiered autonomy model:
 - **Tier 1 (full autonomy):** Reversible, local, convention-clear operations
@@ -112,4 +144,4 @@ All 58 v1 requirements implemented across 10 phases (53 plans).
 | Zustand + React Query | Simple state management, powerful async handling | ✓ Good — clean architecture |
 
 ---
-*Last updated: 2026-02-04 after v1.0 milestone*
+*Last updated: 2026-02-05 after v1.1.0 milestone start*

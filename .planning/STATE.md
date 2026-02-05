@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 
 ## Current Position
 
-Phase: — (between milestones)
+Phase: Not started (defining requirements)
 Plan: —
-Status: **v1.0 SHIPPED** — Ready for v1.1 planning
-Last activity: 2026-02-05 — Completed quick task 023: Fix app icon not filling circle
+Status: Defining requirements for v1.1.0
+Last activity: 2026-02-05 — Milestone v1.1.0 Usability started
 
-Progress: ██████████ 100% (v1.0)
+Progress: ░░░░░░░░░░ 0% (v1.1.0)
 
 ## Milestone History
 
@@ -66,18 +66,8 @@ None.
 
 ## Next Steps
 
-To start v1.1:
-
-```
-/gsd:new-milestone
-```
-
-This will:
-1. Gather context through questioning
-2. Research domain if needed
-3. Define requirements for v1.1
-4. Create new ROADMAP.md with phases
+Researching domain for v1.1.0 features, then defining requirements and roadmap.
 
 ---
-*State updated: 2026-02-04*
-*Milestone: v1.0 complete, ready for v1.1*
+*State updated: 2026-02-05*
+*Milestone: v1.1.0 Usability in progress*
