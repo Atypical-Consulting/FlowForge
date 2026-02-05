@@ -67,7 +67,13 @@ Plans:
   1. Top bar displays current repository name and current branch name
   2. User can switch repositories from a dropdown in the top bar
   3. User can switch branches from a dropdown with recent branches and search
-**Plans**: TBD
+**Plans:** 5 plans
+Plans:
+- [ ] 13-01-PLAN.md — Rust backend: remote branch listing and checkout commands
+- [ ] 13-02-PLAN.md — Navigation store and RepoSwitcher component
+- [ ] 13-03-PLAN.md — BranchSwitcher component with search and remote toggle
+- [ ] 13-04-PLAN.md — Header integration, switching logic, stash-and-switch
+- [ ] 13-05-PLAN.md — Human verification
 
 ### Phase 14: UI Polish
 
@@ -101,7 +107,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 11. Foundation | 5/5 | Complete | 2026-02-05 |
 | 12. Workflows | 6/6 | Complete | 2026-02-05 |
-| 13. Navigation | 0/TBD | Not started | - |
+| 13. Navigation | 0/5 | Not started | - |
 | 14. UI Polish | 0/TBD | Not started | - |
 | 15. Topology | 0/TBD | Not started | - |
 
