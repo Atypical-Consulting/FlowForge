@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { GitflowStatus } from "../bindings";
+import type { GitflowConfig, GitflowStatus } from "../bindings";
 import { commands } from "../bindings";
 import { getErrorMessage } from "../lib/errors";
 
@@ -10,6 +10,10 @@ interface GitflowState {
 
   // Actions
   refresh: () => Promise<void>;
+  initGitflow: (
+    config: GitflowConfig,
+    pushDevelop: boolean,
+  ) => Promise<boolean>;
   startFeature: (name: string) => Promise<string | null>;
   finishFeature: () => Promise<boolean>;
   startRelease: (version: string) => Promise<string | null>;
@@ -33,6 +37,17 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
     } else {
       set({ error: getErrorMessage(result.error), isLoading: false });
     }
+  },
+
+  initGitflow: async (config, pushDevelop) => {
+    set({ isLoading: true, error: null });
+    const result = await commands.initGitflow(config, pushDevelop);
+    if (result.status === "ok") {
+      await get().refresh();
+      return true;
+    }
+    set({ error: getErrorMessage(result.error), isLoading: false });
+    return false;
   },
 
   startFeature: async (name) => {

@@ -1,8 +1,9 @@
-import { AlertTriangle, Flag, Play, Square, X } from "lucide-react";
+import { AlertTriangle, Flag, GitBranch, Play, Square, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useBranchStore } from "../../stores/branches";
 import { useGitflowStore } from "../../stores/gitflow";
 import { FinishFlowDialog } from "./FinishFlowDialog";
+import { InitGitflowDialog } from "./InitGitflowDialog";
 import { StartFlowDialog } from "./StartFlowDialog";
 
 type FlowType = "feature" | "release" | "hotfix";
@@ -15,6 +16,7 @@ export function GitflowPanel() {
   const [showFinishDialog, setShowFinishDialog] = useState<FlowType | null>(
     null,
   );
+  const [showInitDialog, setShowInitDialog] = useState(false);
 
   // Refresh gitflow status when branches change (includes checkout, create, delete)
   useEffect(() => {
@@ -31,18 +33,35 @@ export function GitflowPanel() {
     );
   }
 
-  if (!status.isGitflowReady) {
+  // Check if Gitflow is initialized (has config in .git/config)
+  const isInitialized = status.context.isInitialized;
+
+  if (!status.isGitflowReady || !isInitialized) {
     return (
       <div className="p-3">
         <div className="flex items-center gap-2 text-ctp-yellow text-sm mb-2">
           <AlertTriangle className="w-4 h-4" />
           <span>Gitflow not initialized</span>
         </div>
-        <p className="text-ctp-overlay1 text-xs">
-          Repository needs both <code className="text-ctp-subtext1">main</code>{" "}
-          and <code className="text-ctp-subtext1">develop</code> branches for
-          Gitflow workflows.
+        <p className="text-ctp-overlay1 text-xs mb-3">
+          {status.context.hasMain
+            ? "Initialize Gitflow to enable workflow automation."
+            : "Repository needs a main branch to initialize Gitflow."}
         </p>
+        {status.context.hasMain && (
+          <button
+            type="button"
+            onClick={() => setShowInitDialog(true)}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium bg-ctp-blue hover:bg-ctp-blue/80 rounded transition-colors"
+          >
+            <GitBranch className="w-4 h-4" />
+            Initialize Gitflow
+          </button>
+        )}
+        <InitGitflowDialog
+          open={showInitDialog}
+          onOpenChange={setShowInitDialog}
+        />
       </div>
     );
   }

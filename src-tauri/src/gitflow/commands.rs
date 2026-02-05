@@ -378,6 +378,8 @@ pub struct GitflowStatus {
     pub can_finish_hotfix: bool,
     pub can_abort: bool,
     pub active_flow: Option<ActiveFlow>,
+    /// Context about the repository's Gitflow state
+    pub context: GitflowContext,
 }
 
 /// Get current Gitflow status for UI.
@@ -447,6 +449,7 @@ pub async fn get_gitflow_status(
             can_finish_hotfix: matches!(ctx.state, GitflowState::Hotfix { .. }),
             can_abort: !matches!(ctx.state, GitflowState::Idle),
             active_flow,
+            context: ctx,
         })
     })
     .await
