@@ -1,8 +1,10 @@
+import { Channel } from "@tauri-apps/api/core";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, PenLine, RotateCcw } from "lucide-react";
 import { useState } from "react";
-import { commands } from "../../bindings";
+import { type SyncProgress, commands } from "../../bindings";
 import { cn } from "../../lib/utils";
+import { toast } from "../../stores/toast";
 import { Button } from "../ui/button";
 import { ConventionalCommitModal } from "./ConventionalCommitModal";
 
@@ -18,15 +20,44 @@ export function CommitForm() {
     queryFn: () => commands.getStagingStatus(),
   });
 
+  const pushMutation = useMutation({
+    mutationFn: () => {
+      const channel = new Channel<SyncProgress>();
+      return commands.pushToRemote("origin", channel);
+    },
+    onSuccess: () => {
+      toast.success("Pushed to origin");
+      queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
+    },
+    onError: (error) => {
+      toast.error(`Push failed: ${String(error)}`, {
+        label: "Retry",
+        onClick: () => pushMutation.mutate(),
+      });
+    },
+  });
+
   const commitMutation = useMutation({
     mutationFn: (commitMessage: string) =>
       commands.createCommit(commitMessage, amend),
-    onSuccess: () => {
+    onSuccess: (_data, commitMessage) => {
       setMessage("");
       setAmend(false);
       queryClient.invalidateQueries({ queryKey: ["stagingStatus"] });
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
       queryClient.invalidateQueries({ queryKey: ["repositoryStatus"] });
+
+      const shortMessage =
+        commitMessage.length > 50
+          ? `${commitMessage.slice(0, 50)}...`
+          : commitMessage;
+      toast.success(`Committed: ${shortMessage}`, {
+        label: "Push now",
+        onClick: () => pushMutation.mutate(),
+      });
+    },
+    onError: (error) => {
+      toast.error(`Commit failed: ${String(error)}`);
     },
   });
 

@@ -4,6 +4,7 @@ import { ArrowDown, ArrowUp, CloudDownload, Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { type SyncProgress, commands } from "../../bindings";
 import { formatShortcut } from "../../hooks/useKeyboardShortcuts";
+import { toast } from "../../stores/toast";
 import { Button } from "../ui/button";
 import { SyncProgressDisplay } from "./SyncProgress";
 
@@ -37,7 +38,14 @@ export function SyncButtons() {
       return commands.pushToRemote(defaultRemote, channel);
     },
     onSuccess: () => {
+      toast.success(`Pushed to ${defaultRemote}`);
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
+    },
+    onError: (error) => {
+      toast.error(`Push failed: ${String(error)}`, {
+        label: "Retry",
+        onClick: () => pushMutation.mutate(),
+      });
     },
   });
 
@@ -47,9 +55,16 @@ export function SyncButtons() {
       return commands.pullFromRemote(defaultRemote, channel);
     },
     onSuccess: () => {
+      toast.success(`Pulled from ${defaultRemote}`);
       queryClient.invalidateQueries({ queryKey: ["stagingStatus"] });
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
       queryClient.invalidateQueries({ queryKey: ["repositoryStatus"] });
+    },
+    onError: (error) => {
+      toast.error(`Pull failed: ${String(error)}`, {
+        label: "Retry",
+        onClick: () => pullMutation.mutate(),
+      });
     },
   });
 
@@ -57,6 +72,15 @@ export function SyncButtons() {
     mutationFn: async () => {
       const channel = createProgressChannel();
       return commands.fetchFromRemote(defaultRemote, channel);
+    },
+    onSuccess: () => {
+      toast.success(`Fetched from ${defaultRemote}`);
+    },
+    onError: (error) => {
+      toast.error(`Fetch failed: ${String(error)}`, {
+        label: "Retry",
+        onClick: () => fetchMutation.mutate(),
+      });
     },
   });
 
