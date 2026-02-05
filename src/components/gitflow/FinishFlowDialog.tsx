@@ -2,6 +2,7 @@ import { X } from "lucide-react";
 import { useState } from "react";
 import { useBranchStore } from "../../stores/branches";
 import { useGitflowStore } from "../../stores/gitflow";
+import { useRepositoryStore } from "../../stores/repository";
 
 interface FinishFlowDialogProps {
   flowType: "feature" | "release" | "hotfix";
@@ -18,6 +19,7 @@ export function FinishFlowDialog({ flowType, onClose }: FinishFlowDialogProps) {
     error,
   } = useGitflowStore();
   const { loadBranches } = useBranchStore();
+  const { refreshStatus } = useRepositoryStore();
   const [tagMessage, setTagMessage] = useState("");
 
   const needsTagMessage = flowType === "release" || flowType === "hotfix";
@@ -76,6 +78,7 @@ export function FinishFlowDialog({ flowType, onClose }: FinishFlowDialogProps) {
 
     if (success) {
       await loadBranches();
+      await refreshStatus(); // Update header to show new branch (develop after feature finish)
       onClose();
     }
   };
