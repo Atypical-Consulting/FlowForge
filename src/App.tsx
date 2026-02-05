@@ -5,6 +5,7 @@ import { Header } from "./components/Header";
 import { RepositoryView } from "./components/RepositoryView";
 import { WelcomeView } from "./components/WelcomeView";
 import { ChangelogDialog } from "./components/changelog";
+import { ToastContainer } from "./components/ui/ToastContainer";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useRepositoryStore } from "./stores/repository";
 import { useThemeStore } from "./stores/theme";
@@ -55,6 +56,7 @@ function App() {
         {status ? <RepositoryView /> : <WelcomeView />}
       </main>
       <ChangelogDialog />
+      <ToastContainer />
     </div>
   );
 }
