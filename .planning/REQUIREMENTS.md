@@ -9,18 +9,18 @@ Requirements for v1.1.0 release. Each maps to roadmap phases.
 
 ### Layout & Readability (LAYOUT)
 
-- [ ] **LAYOUT-01**: Left panel displays branches, stashes, and tags with readable text size
-- [ ] **LAYOUT-02**: Left panel action icons do not overlap with text content
-- [ ] **LAYOUT-03**: Conventional Commits panel does not cover the changes list when expanded
+- [x] **LAYOUT-01**: Left panel displays branches, stashes, and tags with readable text size
+- [x] **LAYOUT-02**: Left panel action icons do not overlap with text content
+- [x] **LAYOUT-03**: Conventional Commits panel does not cover the changes list when expanded
 
 ### Defaults & Settings (DFLT)
 
-- [ ] **DFLT-01**: Conventional Commits checkbox is unchecked by default for new commits
+- [x] **DFLT-01**: Conventional Commits checkbox is unchecked by default for new commits
 - [ ] **DFLT-02**: Amend commit action loads the previous commit's subject line
 - [ ] **DFLT-03**: Amend commit action loads the previous commit's body/description
 - [ ] **DFLT-04**: Amend commit works for both regular and conventional commit formats
-- [ ] **DFLT-05**: Settings are organized in a dedicated settings window/modal
-- [ ] **DFLT-06**: Settings window has categorized sections (General, Gitflow, Commits, Graph)
+- [x] **DFLT-05**: Settings are organized in a dedicated settings window/modal
+- [x] **DFLT-06**: Settings window has categorized sections (General, Gitflow, Commits, Graph)
 
 ### Navigation (NAV)
 
@@ -57,10 +57,10 @@ Requirements for v1.1.0 release. Each maps to roadmap phases.
 
 ### UI Polish (UI)
 
-- [ ] **UI-01**: Toast notifications appear for Git operation results (success/error)
-- [ ] **UI-02**: Toast notifications auto-dismiss after appropriate delay
-- [ ] **UI-03**: Toast notifications can be manually dismissed
-- [ ] **UI-04**: Error toasts persist until dismissed
+- [x] **UI-01**: Toast notifications appear for Git operation results (success/error)
+- [x] **UI-02**: Toast notifications auto-dismiss after appropriate delay
+- [x] **UI-03**: Toast notifications can be manually dismissed
+- [x] **UI-04**: Error toasts persist until dismissed
 - [ ] **UI-05**: Empty states show helpful illustration and guidance (staging, stash, tags)
 - [ ] **UI-06**: Buttons show loading spinner during async operations
 - [ ] **UI-07**: Keyboard shortcut hints appear on relevant button tooltips
@@ -105,15 +105,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LAYOUT-01 | Phase 11 | Pending |
-| LAYOUT-02 | Phase 11 | Pending |
-| LAYOUT-03 | Phase 11 | Pending |
-| DFLT-01 | Phase 11 | Pending |
+| LAYOUT-01 | Phase 11 | Complete |
+| LAYOUT-02 | Phase 11 | Complete |
+| LAYOUT-03 | Phase 11 | Complete |
+| DFLT-01 | Phase 11 | Complete |
 | DFLT-02 | Phase 12 | Pending |
 | DFLT-03 | Phase 12 | Pending |
 | DFLT-04 | Phase 12 | Pending |
-| DFLT-05 | Phase 11 | Pending |
-| DFLT-06 | Phase 11 | Pending |
+| DFLT-05 | Phase 11 | Complete |
+| DFLT-06 | Phase 11 | Complete |
 | NAV-01 | Phase 13 | Pending |
 | NAV-02 | Phase 13 | Pending |
 | NAV-03 | Phase 13 | Pending |
@@ -135,10 +135,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | HIST-01 | Phase 15 | Pending |
 | HIST-02 | Phase 15 | Pending |
 | HIST-03 | Phase 15 | Pending |
-| UI-01 | Phase 11 | Pending |
-| UI-02 | Phase 11 | Pending |
-| UI-03 | Phase 11 | Pending |
-| UI-04 | Phase 11 | Pending |
+| UI-01 | Phase 11 | Complete |
+| UI-02 | Phase 11 | Complete |
+| UI-03 | Phase 11 | Complete |
+| UI-04 | Phase 11 | Complete |
 | UI-05 | Phase 14 | Pending |
 | UI-06 | Phase 14 | Pending |
 | UI-07 | Phase 14 | Pending |

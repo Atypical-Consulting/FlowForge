@@ -11,7 +11,7 @@ v1.1.0 focuses on UX improvements and Ungit-style topology visualization. Starti
 
 ## Phases
 
-- [ ] **Phase 11: Foundation** - Toast notifications, settings window, layout fixes
+- [x] **Phase 11: Foundation** - Toast notifications, settings window, layout fixes
 - [ ] **Phase 12: Workflows** - Clone repository, Gitflow initialization, amend commit
 - [ ] **Phase 13: Navigation** - Repository/branch switcher in top bar
 - [ ] **Phase 14: UI Polish** - Empty states, loading spinners, tooltips, animations
@@ -32,11 +32,11 @@ v1.1.0 focuses on UX improvements and Ungit-style topology visualization. Starti
   5. Conventional Commits panel does not cover the changes list
 **Plans:** 5 plans
 Plans:
-- [ ] 11-01-PLAN.md — Toast System Core (store + components)
-- [ ] 11-02-PLAN.md — Settings Window (store + UI + access)
-- [ ] 11-03-PLAN.md — Layout Fixes (compact left panel, commit positioning)
-- [ ] 11-04-PLAN.md — Wire Toasts to Git Operations
-- [ ] 11-05-PLAN.md — Human Verification
+- [x] 11-01-PLAN.md — Toast System Core (store + components)
+- [x] 11-02-PLAN.md — Settings Window (store + UI + access)
+- [x] 11-03-PLAN.md — Layout Fixes (compact left panel, commit positioning)
+- [x] 11-04-PLAN.md — Wire Toasts to Git Operations
+- [x] 11-05-PLAN.md — Human Verification
 
 ### Phase 12: Workflows
 
@@ -92,7 +92,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 11. Foundation | 0/5 | Planned | - |
+| 11. Foundation | 5/5 | Complete | 2026-02-05 |
 | 12. Workflows | 0/TBD | Not started | - |
 | 13. Navigation | 0/TBD | Not started | - |
 | 14. UI Polish | 0/TBD | Not started | - |

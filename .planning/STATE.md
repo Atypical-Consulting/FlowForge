@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-05)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Phase 11 - Foundation (Toast + Settings + Layout)
+**Current focus:** Phase 12 - Workflows (Clone + Gitflow Init + Amend)
 
 ## Current Position
 
-Phase: 11 of 15 (Foundation)
+Phase: 12 of 15 (Workflows)
 Plan: Ready to plan
-Status: Ready to plan
-Last activity: 2026-02-05 — Roadmap created for v1.1.0 Usability
+Status: Phase 11 complete, ready for Phase 12
+Last activity: 2026-02-05 — Phase 11 Foundation complete
 
-Progress: ░░░░░░░░░░ 0% (v1.1.0)
+Progress: ██░░░░░░░░ 20% (v1.1.0)
 
 ## Milestone History
 
@@ -78,9 +78,20 @@ None.
 | 022 | Fix vertical separator stuck on left - resizable panels | 2026-02-05 | e22f4ea | [022-fix-vertical-separator-stuck-left](./quick/022-fix-vertical-separator-stuck-left/) |
 | 023 | Fix app icon not filling circle on welcome page | 2026-02-05 | 65485a5 | [023-fix-app-icon-not-filling-circle-on-welco](./quick/023-fix-app-icon-not-filling-circle-on-welco/) |
 
+## Phase 11 Summary
+
+**Completed:** 2026-02-05
+**Plans:** 5/5
+**Requirements:** 10 (LAYOUT-01/02/03, DFLT-01/05/06, UI-01/02/03/04)
+
+**Delivered:**
+- Toast notification system with queue, stacking (max 3), auto-dismiss, action buttons
+- Settings window with categorized sections and Tauri persistence
+- Layout fixes: compact left panel, commit form at bottom, conventional commits as modal
+
 ## Next Steps
 
-Run `/gsd:plan-phase 11` to create detailed execution plan for Phase 11 (Foundation).
+Run `/gsd:discuss-phase 12` to gather context for Phase 12 (Workflows).
 
 ---
 *State updated: 2026-02-05*
