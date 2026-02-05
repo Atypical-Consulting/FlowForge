@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useBranchStore } from "../../stores/branches";
+import { toast } from "../../stores/toast";
 import { BranchItem } from "./BranchItem";
 import { CreateBranchDialog } from "./CreateBranchDialog";
 import { MergeDialog } from "./MergeDialog";
@@ -49,7 +50,14 @@ export function BranchList({
 
   const confirmMerge = async () => {
     if (mergingBranch) {
-      await mergeBranch(mergingBranch);
+      const result = await mergeBranch(mergingBranch);
+      if (result) {
+        if (result.hasConflicts) {
+          toast.warning(`Merge has conflicts - resolve manually`);
+        } else {
+          toast.success(`Merged ${mergingBranch} successfully`);
+        }
+      }
     }
   };
 

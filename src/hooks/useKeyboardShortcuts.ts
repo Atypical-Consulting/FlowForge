@@ -4,6 +4,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { type SyncProgress, commands } from "../bindings";
 import { useRepositoryStore } from "../stores/repository";
 import { useSettingsStore } from "../stores/settings";
+import { toast } from "../stores/toast";
 
 /**
  * Keyboard shortcuts for common Git operations.
@@ -25,7 +26,11 @@ export function useKeyboardShortcuts() {
   const stageAllMutation = useMutation({
     mutationFn: () => commands.stageAll(),
     onSuccess: () => {
+      toast.success("Staged all changes");
       queryClient.invalidateQueries({ queryKey: ["stagingStatus"] });
+    },
+    onError: (error) => {
+      toast.error(`Failed to stage: ${String(error)}`);
     },
   });
 
@@ -36,7 +41,14 @@ export function useKeyboardShortcuts() {
       return commands.pushToRemote("origin", channel);
     },
     onSuccess: () => {
+      toast.success("Pushed to origin");
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
+    },
+    onError: (error) => {
+      toast.error(`Push failed: ${String(error)}`, {
+        label: "Retry",
+        onClick: () => pushMutation.mutate(),
+      });
     },
   });
 
@@ -47,8 +59,15 @@ export function useKeyboardShortcuts() {
       return commands.pullFromRemote("origin", channel);
     },
     onSuccess: () => {
+      toast.success("Pulled from origin");
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
       queryClient.invalidateQueries({ queryKey: ["stagingStatus"] });
+    },
+    onError: (error) => {
+      toast.error(`Pull failed: ${String(error)}`, {
+        label: "Retry",
+        onClick: () => pullMutation.mutate(),
+      });
     },
   });
 
@@ -59,7 +78,14 @@ export function useKeyboardShortcuts() {
       return commands.fetchFromRemote("origin", channel);
     },
     onSuccess: () => {
+      toast.success("Fetched from origin");
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
+    },
+    onError: (error) => {
+      toast.error(`Fetch failed: ${String(error)}`, {
+        label: "Retry",
+        onClick: () => fetchMutation.mutate(),
+      });
     },
   });
 
