@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 Phase: — (between milestones)
 Plan: —
 Status: **v1.0 SHIPPED** — Ready for v1.1 planning
-Last activity: 2026-02-04 — v1.0 milestone complete
+Last activity: 2026-02-05 — Completed quick task 022: Fix vertical separator
 
 Progress: ██████████ 100% (v1.0)
 
@@ -56,6 +56,12 @@ None.
 ### Blockers/Concerns
 
 None.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 022 | Fix vertical separator stuck on left - resizable panels | 2026-02-05 | e22f4ea | [022-fix-vertical-separator-stuck-left](./quick/022-fix-vertical-separator-stuck-left/) |
 
 ## Next Steps
 
