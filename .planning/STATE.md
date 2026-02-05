@@ -2,17 +2,17 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-04)
+See: .planning/PROJECT.md (updated 2026-02-05)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Planning next milestone
+**Current focus:** Phase 11 - Foundation (Toast + Settings + Layout)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements for v1.1.0
-Last activity: 2026-02-05 — Milestone v1.1.0 Usability started
+Phase: 11 of 15 (Foundation)
+Plan: Ready to plan
+Status: Ready to plan
+Last activity: 2026-02-05 — Roadmap created for v1.1.0 Usability
 
 Progress: ░░░░░░░░░░ 0% (v1.1.0)
 
@@ -21,6 +21,7 @@ Progress: ░░░░░░░░░░ 0% (v1.1.0)
 | Milestone | Status | Shipped |
 |-----------|--------|---------|
 | v1.0 MVP | ✅ Complete | 2026-02-04 |
+| v1.1.0 Usability | ◆ In Progress | - |
 
 See `.planning/MILESTONES.md` for full history.
 
@@ -38,11 +39,24 @@ See `.planning/MILESTONES.md` for full history.
 - `milestones/v1.0-REQUIREMENTS.md` — All requirements
 - `milestones/v1.0-MILESTONE-AUDIT.md` — Audit report
 
+## v1.1.0 Overview
+
+**Goal:** Fix UX pain points and enhance topology visualization to match Ungit's intuitive approach.
+
+**Phases:**
+- Phase 11: Foundation (Toast + Settings + Layout)
+- Phase 12: Workflows (Clone + Gitflow Init + Amend)
+- Phase 13: Navigation (Repo/Branch Switcher)
+- Phase 14: UI Polish (Empty states, spinners, tooltips)
+- Phase 15: Topology (Ungit-style + History diff)
+
+**Requirements:** 34 total
+
 ## Accumulated Context
 
 ### Tech Debt from v1.0
 
-- Topology graph requires manual tab switch to refresh after commits
+- Topology graph requires manual tab switch to refresh after commits (Phase 15 fixes)
 - Orphaned code: greet command, getMergeStatus, CollapsibleSidebar, AnimatedList, FadeIn
 
 ### Key Decisions
@@ -66,7 +80,7 @@ None.
 
 ## Next Steps
 
-Researching domain for v1.1.0 features, then defining requirements and roadmap.
+Run `/gsd:plan-phase 11` to create detailed execution plan for Phase 11 (Foundation).
 
 ---
 *State updated: 2026-02-05*

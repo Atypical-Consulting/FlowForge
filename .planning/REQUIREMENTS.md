@@ -105,51 +105,51 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LAYOUT-01 | TBD | Pending |
-| LAYOUT-02 | TBD | Pending |
-| LAYOUT-03 | TBD | Pending |
-| DFLT-01 | TBD | Pending |
-| DFLT-02 | TBD | Pending |
-| DFLT-03 | TBD | Pending |
-| DFLT-04 | TBD | Pending |
-| DFLT-05 | TBD | Pending |
-| DFLT-06 | TBD | Pending |
-| NAV-01 | TBD | Pending |
-| NAV-02 | TBD | Pending |
-| NAV-03 | TBD | Pending |
-| NAV-04 | TBD | Pending |
-| NAV-05 | TBD | Pending |
-| FLOW-01 | TBD | Pending |
-| FLOW-02 | TBD | Pending |
-| FLOW-03 | TBD | Pending |
-| FLOW-04 | TBD | Pending |
-| FLOW-05 | TBD | Pending |
-| FLOW-06 | TBD | Pending |
-| TOPO-01 | TBD | Pending |
-| TOPO-02 | TBD | Pending |
-| TOPO-03 | TBD | Pending |
-| TOPO-04 | TBD | Pending |
-| TOPO-05 | TBD | Pending |
-| TOPO-06 | TBD | Pending |
-| TOPO-07 | TBD | Pending |
-| HIST-01 | TBD | Pending |
-| HIST-02 | TBD | Pending |
-| HIST-03 | TBD | Pending |
-| UI-01 | TBD | Pending |
-| UI-02 | TBD | Pending |
-| UI-03 | TBD | Pending |
-| UI-04 | TBD | Pending |
-| UI-05 | TBD | Pending |
-| UI-06 | TBD | Pending |
-| UI-07 | TBD | Pending |
-| UI-08 | TBD | Pending |
-| UI-09 | TBD | Pending |
+| LAYOUT-01 | Phase 11 | Pending |
+| LAYOUT-02 | Phase 11 | Pending |
+| LAYOUT-03 | Phase 11 | Pending |
+| DFLT-01 | Phase 11 | Pending |
+| DFLT-02 | Phase 12 | Pending |
+| DFLT-03 | Phase 12 | Pending |
+| DFLT-04 | Phase 12 | Pending |
+| DFLT-05 | Phase 11 | Pending |
+| DFLT-06 | Phase 11 | Pending |
+| NAV-01 | Phase 13 | Pending |
+| NAV-02 | Phase 13 | Pending |
+| NAV-03 | Phase 13 | Pending |
+| NAV-04 | Phase 13 | Pending |
+| NAV-05 | Phase 13 | Pending |
+| FLOW-01 | Phase 12 | Pending |
+| FLOW-02 | Phase 12 | Pending |
+| FLOW-03 | Phase 12 | Pending |
+| FLOW-04 | Phase 12 | Pending |
+| FLOW-05 | Phase 12 | Pending |
+| FLOW-06 | Phase 12 | Pending |
+| TOPO-01 | Phase 15 | Pending |
+| TOPO-02 | Phase 15 | Pending |
+| TOPO-03 | Phase 15 | Pending |
+| TOPO-04 | Phase 15 | Pending |
+| TOPO-05 | Phase 15 | Pending |
+| TOPO-06 | Phase 15 | Pending |
+| TOPO-07 | Phase 15 | Pending |
+| HIST-01 | Phase 15 | Pending |
+| HIST-02 | Phase 15 | Pending |
+| HIST-03 | Phase 15 | Pending |
+| UI-01 | Phase 11 | Pending |
+| UI-02 | Phase 11 | Pending |
+| UI-03 | Phase 11 | Pending |
+| UI-04 | Phase 11 | Pending |
+| UI-05 | Phase 14 | Pending |
+| UI-06 | Phase 14 | Pending |
+| UI-07 | Phase 14 | Pending |
+| UI-08 | Phase 14 | Pending |
+| UI-09 | Phase 14 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 34 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 34
+- Mapped to phases: 34
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-05*
-*Last updated: 2026-02-05 after initial definition*
+*Last updated: 2026-02-05 after roadmap creation*
