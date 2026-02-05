@@ -1616,6 +1616,7 @@ export type SyncResult = {
   message: string;
   commitsTransferred: number;
 };
+// TAURI_CHANNEL stub removed - using real import from @tauri-apps/api/core
 /**
  * Information about a git tag.
  */

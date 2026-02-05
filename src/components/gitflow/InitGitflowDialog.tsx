@@ -4,6 +4,7 @@ import type { GitflowConfig } from "../../bindings";
 import { cn } from "../../lib/utils";
 import { useBranchStore } from "../../stores/branches";
 import { useGitflowStore } from "../../stores/gitflow";
+import { useRepositoryStore } from "../../stores/repository";
 import { toast } from "../../stores/toast";
 
 interface InitGitflowDialogProps {
@@ -11,9 +12,14 @@ interface InitGitflowDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function InitGitflowDialog({ open, onOpenChange }: InitGitflowDialogProps) {
-  const { status, initGitflow, isLoading, error, clearError } = useGitflowStore();
+export function InitGitflowDialog({
+  open,
+  onOpenChange,
+}: InitGitflowDialogProps) {
+  const { status, initGitflow, isLoading, error, clearError } =
+    useGitflowStore();
   const { loadBranches } = useBranchStore();
+  const { refreshStatus } = useRepositoryStore();
 
   // Detect default main branch name
   const defaultMainBranch = status?.context.hasMain ? "main" : "master";
@@ -38,9 +44,11 @@ export function InitGitflowDialog({ open, onOpenChange }: InitGitflowDialogProps
     e.preventDefault();
 
     // Validate prefixes end with /
-    if (!config.featurePrefix.endsWith("/") ||
-        !config.releasePrefix.endsWith("/") ||
-        !config.hotfixPrefix.endsWith("/")) {
+    if (
+      !config.featurePrefix.endsWith("/") ||
+      !config.releasePrefix.endsWith("/") ||
+      !config.hotfixPrefix.endsWith("/")
+    ) {
       toast.error("Prefixes must end with /");
       return;
     }
@@ -48,6 +56,7 @@ export function InitGitflowDialog({ open, onOpenChange }: InitGitflowDialogProps
     const success = await initGitflow(config, pushDevelop);
     if (success) {
       await loadBranches();
+      await refreshStatus(); // Update branch name in header
       toast.success("Gitflow initialized! Switched to develop branch.");
       handleClose();
     }
@@ -82,7 +91,8 @@ export function InitGitflowDialog({ open, onOpenChange }: InitGitflowDialogProps
           <div className="flex items-start gap-2 p-3 mb-4 bg-ctp-yellow/10 border border-ctp-yellow/30 rounded-lg">
             <AlertTriangle className="w-4 h-4 text-ctp-yellow shrink-0 mt-0.5" />
             <p className="text-sm text-ctp-yellow">
-              A 'develop' branch already exists. It will be used as the develop branch.
+              A 'develop' branch already exists. It will be used as the develop
+              branch.
             </p>
           </div>
         )}
@@ -95,7 +105,10 @@ export function InitGitflowDialog({ open, onOpenChange }: InitGitflowDialogProps
             </h4>
 
             <div>
-              <label htmlFor="main-branch" className="block text-sm text-ctp-overlay1 mb-1.5">
+              <label
+                htmlFor="main-branch"
+                className="block text-sm text-ctp-overlay1 mb-1.5"
+              >
                 Main branch
               </label>
               <input
@@ -112,7 +125,10 @@ export function InitGitflowDialog({ open, onOpenChange }: InitGitflowDialogProps
             </div>
 
             <div>
-              <label htmlFor="develop-branch" className="block text-sm text-ctp-overlay1 mb-1.5">
+              <label
+                htmlFor="develop-branch"
+                className="block text-sm text-ctp-overlay1 mb-1.5"
+              >
                 Develop branch
               </label>
               <input
@@ -137,14 +153,19 @@ export function InitGitflowDialog({ open, onOpenChange }: InitGitflowDialogProps
 
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label htmlFor="feature-prefix" className="block text-sm text-ctp-overlay1 mb-1.5">
+                <label
+                  htmlFor="feature-prefix"
+                  className="block text-sm text-ctp-overlay1 mb-1.5"
+                >
                   Feature
                 </label>
                 <input
                   id="feature-prefix"
                   type="text"
                   value={config.featurePrefix}
-                  onChange={(e) => updateConfig("featurePrefix", e.target.value)}
+                  onChange={(e) =>
+                    updateConfig("featurePrefix", e.target.value)
+                  }
                   placeholder="feature/"
                   className={cn(
                     "w-full px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 rounded text-sm",
@@ -155,14 +176,19 @@ export function InitGitflowDialog({ open, onOpenChange }: InitGitflowDialogProps
               </div>
 
               <div>
-                <label htmlFor="release-prefix" className="block text-sm text-ctp-overlay1 mb-1.5">
+                <label
+                  htmlFor="release-prefix"
+                  className="block text-sm text-ctp-overlay1 mb-1.5"
+                >
                   Release
                 </label>
                 <input
                   id="release-prefix"
                   type="text"
                   value={config.releasePrefix}
-                  onChange={(e) => updateConfig("releasePrefix", e.target.value)}
+                  onChange={(e) =>
+                    updateConfig("releasePrefix", e.target.value)
+                  }
                   placeholder="release/"
                   className={cn(
                     "w-full px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 rounded text-sm",
@@ -173,7 +199,10 @@ export function InitGitflowDialog({ open, onOpenChange }: InitGitflowDialogProps
               </div>
 
               <div>
-                <label htmlFor="hotfix-prefix" className="block text-sm text-ctp-overlay1 mb-1.5">
+                <label
+                  htmlFor="hotfix-prefix"
+                  className="block text-sm text-ctp-overlay1 mb-1.5"
+                >
                   Hotfix
                 </label>
                 <input
@@ -215,7 +244,11 @@ export function InitGitflowDialog({ open, onOpenChange }: InitGitflowDialogProps
             </button>
             <button
               type="submit"
-              disabled={!config.mainBranch.trim() || !config.developBranch.trim() || isLoading}
+              disabled={
+                !config.mainBranch.trim() ||
+                !config.developBranch.trim() ||
+                isLoading
+              }
               className="px-4 py-2 text-sm bg-ctp-blue hover:bg-ctp-blue/80 rounded font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? "Initializing..." : "Initialize Gitflow"}

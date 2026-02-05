@@ -53,7 +53,9 @@ export function CommitForm() {
           setAmend(true);
         }
       } else {
+        // Uncheck amend - clear the message
         setAmend(false);
+        setMessage("");
       }
     },
     [message, refetchLastMessage],

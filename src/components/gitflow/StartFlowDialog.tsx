@@ -86,7 +86,13 @@ export function StartFlowDialog({ flowType, onClose }: StartFlowDialogProps) {
               id="flow-name"
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                // Sanitize: replace spaces with dashes, remove invalid chars
+                const sanitized = e.target.value
+                  .replace(/\s+/g, "-")
+                  .replace(/[^a-zA-Z0-9._-]/g, "");
+                setName(sanitized);
+              }}
               placeholder={placeholder}
               className="w-full px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 rounded text-sm focus:outline-none focus:border-ctp-blue focus:ring-1 focus:ring-ctp-blue"
               autoFocus
