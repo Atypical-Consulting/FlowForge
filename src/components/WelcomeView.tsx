@@ -128,8 +128,8 @@ export function WelcomeView() {
       >
         {/* Main action */}
         <motion.div variants={staggerItem} className="text-center space-y-4">
-          <div className="inline-flex p-4 rounded-full bg-ctp-surface0/50 backdrop-blur-sm">
-            <img src={appIcon} alt="FlowForge" className="w-12 h-12" />
+          <div className="inline-flex rounded-full bg-ctp-surface0/50 backdrop-blur-sm overflow-hidden">
+            <img src={appIcon} alt="FlowForge" className="w-16 h-16" />
           </div>
           <h2 className="text-2xl font-bold text-ctp-text">
             Welcome to FlowForge
