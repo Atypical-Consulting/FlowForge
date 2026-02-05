@@ -189,6 +189,22 @@ export const commands = {
     }
   },
   /**
+   * Get the last commit message for amend pre-fill.
+   *
+   * Returns the HEAD commit's message parsed into subject and body components.
+   */
+  async getLastCommitMessage(): Promise<Result<LastCommitMessage, GitError>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("get_last_commit_message"),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
    * Get paginated commit history.
    *
    * Returns commits starting from HEAD, sorted by time.
@@ -542,6 +558,30 @@ export const commands = {
     }
   },
   /**
+   * Initialize Gitflow on a repository.
+   *
+   * This command:
+   * 1. Verifies the main branch exists
+   * 2. Creates the develop branch if it doesn't exist
+   * 3. Stores configuration in .git/config for git-flow CLI compatibility
+   * 4. Checks out the develop branch
+   * 5. Optionally pushes develop to origin
+   */
+  async initGitflow(
+    config: GitflowConfig,
+    pushDevelop: boolean,
+  ): Promise<Result<GitflowInitResult, GitflowError>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("init_gitflow", { config, pushDevelop }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
    * Start a new feature branch from develop.
    */
   async startFeature(name: string): Promise<Result<string, GitflowError>> {
@@ -800,6 +840,39 @@ export const commands = {
       else return { status: "error", error: e as any };
     }
   },
+  /**
+   * Clone a Git repository with progress tracking.
+   *
+   * Clones a repository from a URL to a local destination path,
+   * sending progress events through the provided channel.
+   *
+   * # Arguments
+   * * `url` - The repository URL (HTTPS or SSH)
+   * * `destination` - Local path where the repository will be cloned
+   * * `on_progress` - Channel for sending progress events
+   *
+   * # Returns
+   * The path to the cloned repository on success
+   */
+  async cloneRepository(
+    url: string,
+    destination: string,
+    onProgress: TAURI_CHANNEL<CloneProgress>,
+  ): Promise<Result<string, GitError>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("clone_repository", {
+          url,
+          destination,
+          onProgress,
+        }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
 };
 
 /** user-defined events **/
@@ -915,6 +988,38 @@ export type ChangelogOutput = {
    */
   groups: CommitGroup[];
 };
+/**
+ * Progress events for clone operations.
+ *
+ * Uses tagged enum serialization for frontend type safety.
+ */
+export type CloneProgress =
+  /**
+   * Clone operation started
+   */
+  | { event: "started"; data: { url: string } }
+  /**
+   * Receiving objects from remote
+   */
+  | {
+      event: "receiving";
+      data: { received: number; total: number; bytes: number };
+    }
+  /**
+   * Resolving deltas
+   */
+  | { event: "resolving"; data: { current: number; total: number } }
+  /**
+   * Checking out files
+   */
+  | {
+      event: "checkout";
+      data: { current: number; total: number; path: string };
+    }
+  /**
+   * Clone completed successfully
+   */
+  | { event: "finished"; data: { path: string } };
 /**
  * Full details of a commit.
  */
@@ -1124,7 +1229,36 @@ export type GitError =
   | { type: "NothingToStash" }
   | { type: "TagAlreadyExists"; message: string }
   | { type: "TagNotFound"; message: string }
-  | { type: "NoMergeInProgress" };
+  | { type: "NoMergeInProgress" }
+  | { type: "InvalidUrl"; message: string }
+  | { type: "PathExists"; message: string }
+  | { type: "CloneFailed"; message: string }
+  | { type: "InvalidPath"; message: string };
+/**
+ * Configuration for Gitflow initialization.
+ */
+export type GitflowConfig = {
+  /**
+   * Main/production branch name (e.g., "main" or "master")
+   */
+  mainBranch: string;
+  /**
+   * Development branch name (e.g., "develop")
+   */
+  developBranch: string;
+  /**
+   * Prefix for feature branches (e.g., "feature/")
+   */
+  featurePrefix: string;
+  /**
+   * Prefix for release branches (e.g., "release/")
+   */
+  releasePrefix: string;
+  /**
+   * Prefix for hotfix branches (e.g., "hotfix/")
+   */
+  hotfixPrefix: string;
+};
 /**
  * Gitflow operation errors that serialize across the IPC boundary.
  */
@@ -1181,6 +1315,19 @@ export type GitflowError =
    * Wrapped git2 error
    */
   | { type: "Git"; data: string };
+/**
+ * Result of Gitflow initialization.
+ */
+export type GitflowInitResult = {
+  /**
+   * Whether the develop branch was created (false if it already existed)
+   */
+  developCreated: boolean;
+  /**
+   * Whether we switched to the develop branch
+   */
+  switchedToDevelop: boolean;
+};
 /**
  * Status of Gitflow operations for UI consumption.
  */
@@ -1249,6 +1396,25 @@ export type GraphNode = {
    * Branch names pointing to this commit
    */
   branchNames: string[];
+};
+/**
+ * Last commit message with subject and body parsed separately.
+ *
+ * Used for amend commit pre-fill functionality.
+ */
+export type LastCommitMessage = {
+  /**
+   * First line of the commit message
+   */
+  subject: string;
+  /**
+   * Everything after the first blank line (if exists)
+   */
+  body: string | null;
+  /**
+   * Full commit message
+   */
+  fullMessage: string;
 };
 /**
  * Result of merge analysis.

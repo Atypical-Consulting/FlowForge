@@ -86,6 +86,19 @@ pub enum GitError {
     // Merge errors
     #[error("No merge in progress")]
     NoMergeInProgress,
+
+    // Clone errors
+    #[error("Invalid URL: {0}")]
+    InvalidUrl(String),
+
+    #[error("Path already exists: {0}")]
+    PathExists(String),
+
+    #[error("Clone failed: {0}")]
+    CloneFailed(String),
+
+    #[error("Invalid path: {0}")]
+    InvalidPath(String),
 }
 
 impl From<git2::Error> for GitError {

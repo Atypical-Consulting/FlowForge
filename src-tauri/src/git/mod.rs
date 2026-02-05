@@ -1,5 +1,6 @@
 pub mod branch;
 pub mod changelog;
+pub mod clone;
 pub mod commands;
 pub mod commit;
 pub mod conventional;

@@ -7,8 +7,9 @@ use git::{
     RepositoryState, WatcherState,
     branch::{checkout_branch, create_branch, delete_branch, list_branches},
     changelog::generate_changelog_cmd,
+    clone::clone_repository,
     commands::{close_repository, get_repository_status, is_git_repository, open_repository},
-    commit::create_commit,
+    commit::{create_commit, get_last_commit_message},
     conventional::{
         get_scope_suggestions, infer_scope_from_staged, suggest_commit_type,
         validate_conventional_commit,
@@ -26,7 +27,7 @@ use git::{
 };
 use gitflow::{
     abort_gitflow, finish_feature, finish_hotfix, finish_release, get_gitflow_status,
-    start_feature, start_hotfix, start_release,
+    init_gitflow, start_feature, start_hotfix, start_release,
 };
 use specta_typescript::Typescript;
 use tauri::Manager;
@@ -57,6 +58,7 @@ pub fn run() {
         get_file_diff,
         // Commit commands
         create_commit,
+        get_last_commit_message,
         // History commands
         get_commit_history,
         get_commit_details,
@@ -88,6 +90,7 @@ pub fn run() {
         get_merge_status,
         abort_merge,
         // Gitflow commands
+        init_gitflow,
         start_feature,
         finish_feature,
         start_release,
@@ -109,6 +112,8 @@ pub fn run() {
         // Undo commands
         get_undo_info,
         undo_last_operation,
+        // Clone commands
+        clone_repository,
     ]);
 
     #[cfg(debug_assertions)]
