@@ -1,7 +1,7 @@
 import { Channel } from "@tauri-apps/api/core";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, PenLine, RotateCcw } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { type SyncProgress, commands } from "../../bindings";
 import { cn } from "../../lib/utils";
 import { toast } from "../../stores/toast";
@@ -14,6 +14,61 @@ export function CommitForm() {
   const [message, setMessage] = useState("");
   const [amend, setAmend] = useState(false);
   const queryClient = useQueryClient();
+
+  // Fetch last commit message for amend pre-fill
+  const { data: lastMessageResult, refetch: refetchLastMessage } = useQuery({
+    queryKey: ["lastCommitMessage"],
+    queryFn: () => commands.getLastCommitMessage(),
+    enabled: false, // Only fetch when needed
+  });
+
+  const lastMessage =
+    lastMessageResult?.status === "ok" ? lastMessageResult.data : null;
+
+  // Handle amend checkbox change with pre-fill logic
+  const handleAmendChange = useCallback(
+    async (checked: boolean) => {
+      if (checked) {
+        // Fetch the last commit message
+        const result = await refetchLastMessage();
+        const fetchedMessage =
+          result.data?.status === "ok" ? result.data.data : null;
+
+        if (fetchedMessage) {
+          if (message.trim().length === 0) {
+            // Empty message - auto-fill
+            setMessage(fetchedMessage.fullMessage);
+            setAmend(true);
+          } else {
+            // Has content - ask user
+            const shouldReplace = window.confirm(
+              "You have unsaved text. Replace with previous commit message?",
+            );
+            if (shouldReplace) {
+              setMessage(fetchedMessage.fullMessage);
+            }
+            setAmend(true);
+          }
+        } else {
+          setAmend(true);
+        }
+      } else {
+        setAmend(false);
+      }
+    },
+    [message, refetchLastMessage],
+  );
+
+  // Listen for toggle-amend event from keyboard shortcut
+  useEffect(() => {
+    const handleToggleAmend = () => {
+      handleAmendChange(!amend);
+    };
+    document.addEventListener("toggle-amend", handleToggleAmend);
+    return () => {
+      document.removeEventListener("toggle-amend", handleToggleAmend);
+    };
+  }, [amend, handleAmendChange]);
 
   const { data: result } = useQuery({
     queryKey: ["stagingStatus"],
@@ -150,7 +205,7 @@ export function CommitForm() {
                 <input
                   type="checkbox"
                   checked={amend}
-                  onChange={(e) => setAmend(e.target.checked)}
+                  onChange={(e) => handleAmendChange(e.target.checked)}
                   className="rounded border-ctp-surface2"
                 />
                 Amend last commit
@@ -174,7 +229,15 @@ export function CommitForm() {
 
           {/* Commit button */}
           <Button
-            onClick={() => commitMutation.mutate(message)}
+            onClick={() => {
+              if (amend) {
+                const confirmed = window.confirm(
+                  "Amend will rewrite the last commit. This cannot be undone. Continue?",
+                );
+                if (!confirmed) return;
+              }
+              commitMutation.mutate(message);
+            }}
             disabled={!canSimpleCommit || commitMutation.isPending}
             className="w-full"
           >

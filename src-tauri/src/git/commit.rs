@@ -20,6 +20,94 @@ pub struct CommitInfo {
     pub message: String,
 }
 
+/// Last commit message with subject and body parsed separately.
+///
+/// Used for amend commit pre-fill functionality.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct LastCommitMessage {
+    /// First line of the commit message
+    pub subject: String,
+    /// Everything after the first blank line (if exists)
+    pub body: Option<String>,
+    /// Full commit message
+    pub full_message: String,
+}
+
+/// Get the last commit message for amend pre-fill.
+///
+/// Returns the HEAD commit's message parsed into subject and body components.
+#[tauri::command]
+#[specta::specta]
+pub async fn get_last_commit_message(
+    state: State<'_, RepositoryState>,
+) -> Result<LastCommitMessage, GitError> {
+    let repo_path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+
+    tokio::task::spawn_blocking(move || {
+        let repo = git2::Repository::open(&repo_path)?;
+
+        // Get HEAD commit
+        let head = repo
+            .head()
+            .map_err(|_| GitError::EmptyRepository)?;
+        let commit = head
+            .peel_to_commit()
+            .map_err(|_| GitError::EmptyRepository)?;
+
+        let full_message = commit.message().unwrap_or("").to_string();
+
+        // Parse message into subject and body
+        let (subject, body) = parse_commit_message(&full_message);
+
+        Ok(LastCommitMessage {
+            subject,
+            body,
+            full_message,
+        })
+    })
+    .await
+    .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}
+
+/// Parse a commit message into subject and body.
+///
+/// Subject is the first line (before first newline).
+/// Body is everything after the first blank line, trimmed.
+fn parse_commit_message(message: &str) -> (String, Option<String>) {
+    let lines: Vec<&str> = message.lines().collect();
+
+    if lines.is_empty() {
+        return (String::new(), None);
+    }
+
+    let subject = lines[0].to_string();
+
+    // Find the body (after first blank line)
+    let mut body_start = None;
+    for (i, line) in lines.iter().enumerate().skip(1) {
+        if line.trim().is_empty() {
+            // Found blank line, body starts after this
+            if i + 1 < lines.len() {
+                body_start = Some(i + 1);
+            }
+            break;
+        }
+    }
+
+    let body = body_start.map(|start| {
+        lines[start..]
+            .join("\n")
+            .trim()
+            .to_string()
+    }).filter(|b| !b.is_empty());
+
+    (subject, body)
+}
+
 /// Create a new commit from staged changes.
 ///
 /// Creates a commit with the given message from the current index (staged changes).

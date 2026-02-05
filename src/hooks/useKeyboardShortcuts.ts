@@ -16,6 +16,7 @@ import { toast } from "../stores/toast";
  * - Cmd/Ctrl+Shift+P: Push
  * - Cmd/Ctrl+Shift+L: Pull (L for "pull Latest")
  * - Cmd/Ctrl+Shift+F: Fetch
+ * - Cmd/Ctrl+Shift+M: Toggle amend commit
  */
 export function useKeyboardShortcuts() {
   const queryClient = useQueryClient();
@@ -152,6 +153,18 @@ export function useKeyboardShortcuts() {
       e.preventDefault();
       if (status) {
         fetchMutation.mutate();
+      }
+    },
+    { preventDefault: true, enabled: !!status },
+  );
+
+  // Toggle amend shortcut
+  useHotkeys(
+    "mod+shift+m",
+    (e) => {
+      e.preventDefault();
+      if (status) {
+        document.dispatchEvent(new CustomEvent("toggle-amend"));
       }
     },
     { preventDefault: true, enabled: !!status },
