@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 Phase: — (between milestones)
 Plan: —
 Status: **v1.0 SHIPPED** — Ready for v1.1 planning
-Last activity: 2026-02-05 — Completed quick task 022: Fix vertical separator
+Last activity: 2026-02-05 — Completed quick task 023: Fix app icon not filling circle
 
 Progress: ██████████ 100% (v1.0)
 
@@ -62,6 +62,7 @@ None.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 022 | Fix vertical separator stuck on left - resizable panels | 2026-02-05 | e22f4ea | [022-fix-vertical-separator-stuck-left](./quick/022-fix-vertical-separator-stuck-left/) |
+| 023 | Fix app icon not filling circle on welcome page | 2026-02-05 | 65485a5 | [023-fix-app-icon-not-filling-circle-on-welco](./quick/023-fix-app-icon-not-filling-circle-on-welco/) |
 
 ## Next Steps
 
