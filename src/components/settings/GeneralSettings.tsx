@@ -1,0 +1,45 @@
+import { useSettingsStore } from "../../stores/settings";
+
+const tabOptions = [
+  { value: "changes", label: "Changes" },
+  { value: "history", label: "History" },
+  { value: "topology", label: "Topology" },
+] as const;
+
+export function GeneralSettings() {
+  const { settings, updateSetting } = useSettingsStore();
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-medium text-ctp-text mb-4">General</h3>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-ctp-subtext1 mb-2">
+              Default view when opening repository
+            </label>
+            <div className="flex gap-2">
+              {tabOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() =>
+                    updateSetting("general", "defaultTab", option.value)
+                  }
+                  className={`px-4 py-2 rounded-md text-sm transition-colors ${
+                    settings.general.defaultTab === option.value
+                      ? "bg-ctp-blue text-ctp-base font-medium"
+                      : "bg-ctp-surface0 text-ctp-subtext1 hover:bg-ctp-surface1 hover:text-ctp-text"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
