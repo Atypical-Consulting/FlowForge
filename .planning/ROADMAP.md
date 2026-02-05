@@ -30,7 +30,13 @@ v1.1.0 focuses on UX improvements and Ungit-style topology visualization. Starti
   3. User can access settings from menu/header and see categorized sections
   4. Left panel branches/stashes/tags are readable with no icon overlap
   5. Conventional Commits panel does not cover the changes list
-**Plans**: TBD
+**Plans:** 5 plans
+Plans:
+- [ ] 11-01-PLAN.md — Toast System Core (store + components)
+- [ ] 11-02-PLAN.md — Settings Window (store + UI + access)
+- [ ] 11-03-PLAN.md — Layout Fixes (compact left panel, commit positioning)
+- [ ] 11-04-PLAN.md — Wire Toasts to Git Operations
+- [ ] 11-05-PLAN.md — Human Verification
 
 ### Phase 12: Workflows
 
@@ -86,7 +92,7 @@ v1.1.0 focuses on UX improvements and Ungit-style topology visualization. Starti
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 11. Foundation | 0/TBD | Not started | - |
+| 11. Foundation | 0/5 | Planned | - |
 | 12. Workflows | 0/TBD | Not started | - |
 | 13. Navigation | 0/TBD | Not started | - |
 | 14. UI Polish | 0/TBD | Not started | - |
