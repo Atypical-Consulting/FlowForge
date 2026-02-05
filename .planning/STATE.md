@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-05)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Phase 12 - Workflows (Clone + Gitflow Init + Amend)
+**Current focus:** Phase 13 - Navigation (Repo/Branch Switcher)
 
 ## Current Position
 
-Phase: 12 of 15 (Workflows)
+Phase: 13 of 15 (Navigation)
 Plan: Ready to plan
-Status: Phase 11 complete, ready for Phase 12
-Last activity: 2026-02-05 — Phase 11 Foundation complete
+Status: Phase 12 complete, ready for Phase 13
+Last activity: 2026-02-05 — Phase 12 Workflows complete
 
-Progress: ██░░░░░░░░ 20% (v1.1.0)
+Progress: ████░░░░░░ 40% (v1.1.0)
 
 ## Milestone History
 
@@ -44,8 +44,8 @@ See `.planning/MILESTONES.md` for full history.
 **Goal:** Fix UX pain points and enhance topology visualization to match Ungit's intuitive approach.
 
 **Phases:**
-- Phase 11: Foundation (Toast + Settings + Layout)
-- Phase 12: Workflows (Clone + Gitflow Init + Amend)
+- Phase 11: Foundation (Toast + Settings + Layout) ✓
+- Phase 12: Workflows (Clone + Gitflow Init + Amend) ✓
 - Phase 13: Navigation (Repo/Branch Switcher)
 - Phase 14: UI Polish (Empty states, spinners, tooltips)
 - Phase 15: Topology (Ungit-style + History diff)
@@ -89,9 +89,22 @@ None.
 - Settings window with categorized sections and Tauri persistence
 - Layout fixes: compact left panel, commit form at bottom, conventional commits as modal
 
+## Phase 12 Summary
+
+**Completed:** 2026-02-05
+**Plans:** 6/6
+**Requirements:** 9 (FLOW-01/02/03/04/05/06, DFLT-02/03/04)
+
+**Delivered:**
+- Clone repository with progress tracking and auto-open
+- Default destination folder (C:\repo\{name} on Windows, ~/repo/{name} on Unix)
+- Gitflow init with branch name configuration
+- Amend commit with pre-fill and confirmation
+- Feature/release/hotfix name sanitization
+
 ## Next Steps
 
-Run `/gsd:discuss-phase 12` to gather context for Phase 12 (Workflows).
+Run `/gsd:plan-phase 13` to plan Phase 13 (Navigation).
 
 ---
 *State updated: 2026-02-05*

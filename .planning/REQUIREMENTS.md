@@ -16,9 +16,9 @@ Requirements for v1.1.0 release. Each maps to roadmap phases.
 ### Defaults & Settings (DFLT)
 
 - [x] **DFLT-01**: Conventional Commits checkbox is unchecked by default for new commits
-- [ ] **DFLT-02**: Amend commit action loads the previous commit's subject line
-- [ ] **DFLT-03**: Amend commit action loads the previous commit's body/description
-- [ ] **DFLT-04**: Amend commit works for both regular and conventional commit formats
+- [x] **DFLT-02**: Amend commit action loads the previous commit's subject line
+- [x] **DFLT-03**: Amend commit action loads the previous commit's body/description
+- [x] **DFLT-04**: Amend commit works for both regular and conventional commit formats
 - [x] **DFLT-05**: Settings are organized in a dedicated settings window/modal
 - [x] **DFLT-06**: Settings window has categorized sections (General, Gitflow, Commits, Graph)
 
@@ -32,12 +32,12 @@ Requirements for v1.1.0 release. Each maps to roadmap phases.
 
 ### Git Workflows (FLOW)
 
-- [ ] **FLOW-01**: User can clone a repository by entering URL
-- [ ] **FLOW-02**: Clone shows progress indicator (receiving, resolving, checkout phases)
-- [ ] **FLOW-03**: Clone allows selecting destination directory
-- [ ] **FLOW-04**: User can initialize Gitflow on a non-Gitflow repository
-- [ ] **FLOW-05**: Gitflow init creates develop branch from main if not exists
-- [ ] **FLOW-06**: Gitflow init allows configuring branch names (main, develop)
+- [x] **FLOW-01**: User can clone a repository by entering URL
+- [x] **FLOW-02**: Clone shows progress indicator (receiving, resolving, checkout phases)
+- [x] **FLOW-03**: Clone allows selecting destination directory
+- [x] **FLOW-04**: User can initialize Gitflow on a non-Gitflow repository
+- [x] **FLOW-05**: Gitflow init creates develop branch from main if not exists
+- [x] **FLOW-06**: Gitflow init allows configuring branch names (main, develop)
 
 ### Topology Visualization (TOPO)
 
@@ -109,9 +109,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LAYOUT-02 | Phase 11 | Complete |
 | LAYOUT-03 | Phase 11 | Complete |
 | DFLT-01 | Phase 11 | Complete |
-| DFLT-02 | Phase 12 | Pending |
-| DFLT-03 | Phase 12 | Pending |
-| DFLT-04 | Phase 12 | Pending |
+| DFLT-02 | Phase 12 | Complete |
+| DFLT-03 | Phase 12 | Complete |
+| DFLT-04 | Phase 12 | Complete |
 | DFLT-05 | Phase 11 | Complete |
 | DFLT-06 | Phase 11 | Complete |
 | NAV-01 | Phase 13 | Pending |
@@ -119,12 +119,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | NAV-03 | Phase 13 | Pending |
 | NAV-04 | Phase 13 | Pending |
 | NAV-05 | Phase 13 | Pending |
-| FLOW-01 | Phase 12 | Pending |
-| FLOW-02 | Phase 12 | Pending |
-| FLOW-03 | Phase 12 | Pending |
-| FLOW-04 | Phase 12 | Pending |
-| FLOW-05 | Phase 12 | Pending |
-| FLOW-06 | Phase 12 | Pending |
+| FLOW-01 | Phase 12 | Complete |
+| FLOW-02 | Phase 12 | Complete |
+| FLOW-03 | Phase 12 | Complete |
+| FLOW-04 | Phase 12 | Complete |
+| FLOW-05 | Phase 12 | Complete |
+| FLOW-06 | Phase 12 | Complete |
 | TOPO-01 | Phase 15 | Pending |
 | TOPO-02 | Phase 15 | Pending |
 | TOPO-03 | Phase 15 | Pending |

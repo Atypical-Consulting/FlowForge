@@ -12,7 +12,7 @@ v1.1.0 focuses on UX improvements and Ungit-style topology visualization. Starti
 ## Phases
 
 - [x] **Phase 11: Foundation** - Toast notifications, settings window, layout fixes
-- [ ] **Phase 12: Workflows** - Clone repository, Gitflow initialization, amend commit
+- [x] **Phase 12: Workflows** - Clone repository, Gitflow initialization, amend commit
 - [ ] **Phase 13: Navigation** - Repository/branch switcher in top bar
 - [ ] **Phase 14: UI Polish** - Empty states, loading spinners, tooltips, animations
 - [ ] **Phase 15: Topology** - Ungit-style visualization with commit details and history diff
@@ -51,12 +51,12 @@ Plans:
   5. Amending a commit pre-fills the previous commit message (subject and body)
 **Plans:** 6 plans
 Plans:
-- [ ] 12-01-PLAN.md — Clone Backend (progress callbacks)
-- [ ] 12-02-PLAN.md — Clone Frontend (form, progress, entry points)
-- [ ] 12-03-PLAN.md — Gitflow Init Backend (command, config storage)
-- [ ] 12-04-PLAN.md — Gitflow Init Frontend (dialog, sidebar button)
-- [ ] 12-05-PLAN.md — Amend Commit (get message, pre-fill, confirmation)
-- [ ] 12-06-PLAN.md — Human Verification
+- [x] 12-01-PLAN.md — Clone Backend (progress callbacks)
+- [x] 12-02-PLAN.md — Clone Frontend (form, progress, entry points)
+- [x] 12-03-PLAN.md — Gitflow Init Backend (command, config storage)
+- [x] 12-04-PLAN.md — Gitflow Init Frontend (dialog, sidebar button)
+- [x] 12-05-PLAN.md — Amend Commit (get message, pre-fill, confirmation)
+- [x] 12-06-PLAN.md — Human Verification
 
 ### Phase 13: Navigation
 
@@ -100,7 +100,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 11. Foundation | 5/5 | Complete | 2026-02-05 |
-| 12. Workflows | 0/6 | Planned | - |
+| 12. Workflows | 6/6 | Complete | 2026-02-05 |
 | 13. Navigation | 0/TBD | Not started | - |
 | 14. UI Polish | 0/TBD | Not started | - |
 | 15. Topology | 0/TBD | Not started | - |
