@@ -49,7 +49,14 @@ Plans:
   3. User can initialize Gitflow on a non-Gitflow repository via UI
   4. Gitflow init creates develop branch and allows branch name configuration
   5. Amending a commit pre-fills the previous commit message (subject and body)
-**Plans**: TBD
+**Plans:** 6 plans
+Plans:
+- [ ] 12-01-PLAN.md — Clone Backend (progress callbacks)
+- [ ] 12-02-PLAN.md — Clone Frontend (form, progress, entry points)
+- [ ] 12-03-PLAN.md — Gitflow Init Backend (command, config storage)
+- [ ] 12-04-PLAN.md — Gitflow Init Frontend (dialog, sidebar button)
+- [ ] 12-05-PLAN.md — Amend Commit (get message, pre-fill, confirmation)
+- [ ] 12-06-PLAN.md — Human Verification
 
 ### Phase 13: Navigation
 
@@ -93,7 +100,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 11. Foundation | 5/5 | Complete | 2026-02-05 |
-| 12. Workflows | 0/TBD | Not started | - |
+| 12. Workflows | 0/6 | Planned | - |
 | 13. Navigation | 0/TBD | Not started | - |
 | 14. UI Polish | 0/TBD | Not started | - |
 | 15. Topology | 0/TBD | Not started | - |
