@@ -53,7 +53,7 @@ export function RepositoryView() {
     <>
       <ResizablePanelLayout autoSaveId="repo-layout" direction="horizontal">
         {/* Left sidebar - Branches, Stash, Tags */}
-        <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
+        <ResizablePanel id="sidebar" defaultSize={20} minSize={15} maxSize={30}>
           <div className="h-full border-r border-ctp-surface0 bg-ctp-base overflow-y-auto">
             {/* Branches section */}
             <details open className="border-b border-ctp-surface0">
@@ -168,7 +168,7 @@ export function RepositoryView() {
         <ResizeHandle />
 
         {/* Middle panel - Changes/History */}
-        <ResizablePanel defaultSize={25} minSize={20} maxSize={40}>
+        <ResizablePanel id="middle" defaultSize={25} minSize={20} maxSize={40}>
           <div className="h-full border-r border-ctp-surface0 bg-ctp-base overflow-hidden flex flex-col">
             {/* Tabs */}
             <div className="flex border-b border-ctp-surface0">
@@ -242,7 +242,7 @@ export function RepositoryView() {
         <ResizeHandle />
 
         {/* Right panel - Diff/Commit Details/Topology */}
-        <ResizablePanel defaultSize={55}>
+        <ResizablePanel id="main" defaultSize={55}>
           <div className="h-full bg-ctp-mantle flex flex-col">
             {activeTab === "changes" ? (
               <FileViewer />

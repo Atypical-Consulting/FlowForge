@@ -21,6 +21,7 @@ export function ResizablePanelLayout({
 }
 
 interface ResizablePanelProps {
+  id?: string;
   defaultSize?: number;
   minSize?: number;
   maxSize?: number;
@@ -29,17 +30,25 @@ interface ResizablePanelProps {
 }
 
 export function ResizablePanel({
+  id,
   defaultSize,
   minSize = 10,
   maxSize,
   children,
   className,
 }: ResizablePanelProps) {
+  // In v4, numeric values are interpreted as pixels, so we convert to percentage strings
+  const defaultSizeStr =
+    defaultSize !== undefined ? `${defaultSize}%` : undefined;
+  const minSizeStr = `${minSize}%`;
+  const maxSizeStr = maxSize !== undefined ? `${maxSize}%` : undefined;
+
   return (
     <Panel
-      defaultSize={defaultSize}
-      minSize={minSize}
-      maxSize={maxSize}
+      id={id}
+      defaultSize={defaultSizeStr}
+      minSize={minSizeStr}
+      maxSize={maxSizeStr}
       className={cn("overflow-hidden", className)}
     >
       {children}
@@ -51,8 +60,8 @@ export function ResizeHandle({ className }: { className?: string }) {
   return (
     <Separator
       className={cn(
-        "w-1 bg-ctp-surface0 hover:bg-ctp-blue transition-colors cursor-col-resize",
-        "data-[separator=active]:bg-ctp-blue",
+        "w-1 bg-ctp-surface0 transition-colors cursor-col-resize",
+        "[&[data-separator='hover']]:bg-ctp-blue [&[data-separator='active']]:bg-ctp-blue",
         className,
       )}
     />
