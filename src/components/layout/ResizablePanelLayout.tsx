@@ -49,7 +49,7 @@ export function ResizablePanel({
       defaultSize={defaultSizeStr}
       minSize={minSizeStr}
       maxSize={maxSizeStr}
-      className={cn("overflow-hidden", className)}
+      className={cn("overflow-clip", className)}
     >
       {children}
     </Panel>

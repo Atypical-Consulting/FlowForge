@@ -74,12 +74,10 @@ export function RepositoryView() {
                     <Plus className="w-3.5 h-3.5" />
                   </button>
                 </summary>
-                <div className="max-h-64 overflow-y-auto">
-                  <BranchList
-                    showCreateDialog={showBranchDialog}
-                    onCloseCreateDialog={() => setShowBranchDialog(false)}
-                  />
-                </div>
+                <BranchList
+                  showCreateDialog={showBranchDialog}
+                  onCloseCreateDialog={() => setShowBranchDialog(false)}
+                />
               </details>
 
               {/* Stash section */}
@@ -99,12 +97,10 @@ export function RepositoryView() {
                     <Plus className="w-3.5 h-3.5" />
                   </button>
                 </summary>
-                <div className="max-h-48 overflow-y-auto">
-                  <StashList
-                    showSaveDialog={showStashDialog}
-                    onCloseSaveDialog={() => setShowStashDialog(false)}
-                  />
-                </div>
+                <StashList
+                  showSaveDialog={showStashDialog}
+                  onCloseSaveDialog={() => setShowStashDialog(false)}
+                />
               </details>
 
               {/* Tags section */}
@@ -124,13 +120,11 @@ export function RepositoryView() {
                     <Plus className="w-3.5 h-3.5" />
                   </button>
                 </summary>
-                <div className="max-h-48 overflow-y-auto">
-                  <TagList
-                    showCreateDialog={showTagDialog}
-                    onCloseCreateDialog={() => setShowTagDialog(false)}
-                    onOpenCreateDialog={() => setShowTagDialog(true)}
-                  />
-                </div>
+                <TagList
+                  showCreateDialog={showTagDialog}
+                  onCloseCreateDialog={() => setShowTagDialog(false)}
+                  onOpenCreateDialog={() => setShowTagDialog(true)}
+                />
               </details>
 
               {/* Gitflow section */}
@@ -161,11 +155,9 @@ export function RepositoryView() {
                     <Plus className="w-3.5 h-3.5" />
                   </button>
                 </summary>
-                <div className="max-h-64 overflow-y-auto">
-                  <WorktreePanel
-                    onOpenDeleteDialog={(name) => setWorktreeToDelete(name)}
-                  />
-                </div>
+                <WorktreePanel
+                  onOpenDeleteDialog={(name) => setWorktreeToDelete(name)}
+                />
               </details>
             </div>
 
