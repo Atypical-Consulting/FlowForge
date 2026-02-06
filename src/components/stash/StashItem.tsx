@@ -1,6 +1,7 @@
 import { Archive, Download, Loader2, Play, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { StashEntry } from "../../bindings";
+import { parseStashMessage } from "../../lib/stash-utils";
 
 interface StashItemProps {
   stash: StashEntry;
@@ -34,15 +35,20 @@ export function StashItem({
     }
   };
 
+  const parsed = parseStashMessage(stash.message);
+
   return (
     <div className="group flex items-center justify-between px-2 py-1 rounded-md hover:bg-ctp-surface0">
       <div className="flex items-center gap-1.5 min-w-0 flex-1">
         <Archive className="w-3.5 h-3.5 shrink-0 text-ctp-overlay1" />
         <div className="min-w-0">
+          <p className="truncate text-sm text-ctp-text">{parsed.description}</p>
           <span className="text-xs text-ctp-overlay0">
             stash@{"{" + stash.index + "}"}
+            {parsed.branch && (
+              <span className="ml-1 text-ctp-overlay1">on {parsed.branch}</span>
+            )}
           </span>
-          <p className="truncate text-sm">{stash.message}</p>
         </div>
       </div>
       <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
