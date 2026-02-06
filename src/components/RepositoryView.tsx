@@ -12,6 +12,7 @@ import { useBladeNavigation } from "../hooks/useBladeNavigation";
 import { BranchList } from "./branches/BranchList";
 import { BladeContainer, BladePanel } from "./blades";
 import { CommitDetailsBlade } from "./commit/CommitDetailsBlade";
+import { DiffBlade } from "./commit/DiffBlade";
 import { CommitForm } from "./commit/CommitForm";
 import { GitflowPanel } from "./gitflow";
 import { ResizablePanelLayout, ResizablePanel, ResizeHandle } from "./layout";
@@ -61,13 +62,14 @@ export function RepositoryView() {
         case "commit-diff":
           return (
             <BladePanel
-              title={String(blade.props.filePath || "Diff")}
+              title={String(blade.props.filePath).split("/").pop() || "Diff"}
               showBack
               onBack={goBack}
             >
-              <div className="p-4 text-ctp-subtext0 text-sm">
-                Diff viewer placeholder
-              </div>
+              <DiffBlade
+                oid={String(blade.props.oid)}
+                filePath={String(blade.props.filePath)}
+              />
             </BladePanel>
           );
         default:
