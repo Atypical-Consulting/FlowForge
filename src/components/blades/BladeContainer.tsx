@@ -30,10 +30,10 @@ export function BladeContainer({ renderBlade }: BladeContainerProps) {
           <AnimatePresence mode="popLayout" key="active-blade">
             <motion.div
               key={blade.id}
-              initial={{ x: "100%", opacity: 0 }}
+              initial={{ x: 40, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: "100%", opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              exit={{ x: 40, opacity: 0 }}
+              transition={{ type: "tween", ease: "easeOut", duration: 0.2 }}
               className="flex-1 min-w-0"
             >
               {renderBlade(blade)}

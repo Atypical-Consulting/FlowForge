@@ -91,15 +91,15 @@ export const tabContent: Variants = {
 
 // Blade slide in from right
 export const bladeSlideIn: Variants = {
-  hidden: { x: "100%", opacity: 0 },
+  hidden: { x: 40, opacity: 0 },
   show: {
     x: 0,
     opacity: 1,
-    transition: { type: "spring", stiffness: 300, damping: 30 },
+    transition: { type: "tween", ease: "easeOut", duration: 0.2 },
   },
   exit: {
-    x: "100%",
+    x: 40,
     opacity: 0,
-    transition: { type: "spring", stiffness: 300, damping: 30 },
+    transition: { type: "tween", ease: "easeIn", duration: 0.15 },
   },
 };
