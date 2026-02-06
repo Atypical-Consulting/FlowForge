@@ -22,7 +22,10 @@ use git::{
     history::{get_commit_details, get_commit_history, search_commits},
     merge::{abort_merge, get_merge_status, merge_branch},
     remote::{fetch_from_remote, get_remotes, pull_from_remote, push_to_remote},
-    staging::{get_staging_status, stage_all, stage_file, unstage_all, unstage_file},
+    staging::{
+        get_staging_status, stage_all, stage_file, stage_files, unstage_all, unstage_file,
+        unstage_files,
+    },
     stash::{list_stashes, stash_apply, stash_drop, stash_pop, stash_save},
     tag::{create_tag, delete_tag, list_tags},
     undo::{get_undo_info, undo_last_operation},
@@ -55,6 +58,8 @@ pub fn run() {
         get_staging_status,
         stage_file,
         unstage_file,
+        stage_files,
+        unstage_files,
         stage_all,
         unstage_all,
         // Diff commands

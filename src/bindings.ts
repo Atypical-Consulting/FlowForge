@@ -103,6 +103,34 @@ async unstageFile(path: string) : Promise<Result<null, GitError>> {
 }
 },
 /**
+ * Stage multiple files for commit in a single operation.
+ * 
+ * More efficient than calling stage_file repeatedly — performs a single index write.
+ * Paths must be relative to the repository root.
+ */
+async stageFiles(paths: string[]) : Promise<Result<null, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("stage_files", { paths }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Unstage multiple files (remove from index, keep workdir changes).
+ * 
+ * More efficient than calling unstage_file repeatedly — performs a single reset.
+ * Paths must be relative to the repository root.
+ */
+async unstageFiles(paths: string[]) : Promise<Result<null, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("unstage_files", { paths }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * Stage all changed files.
  * 
  * Adds all modified, deleted, and new files to the index.

@@ -226,6 +226,81 @@ pub async fn unstage_file(path: String, state: State<'_, RepositoryState>) -> Re
     .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
 }
 
+/// Stage multiple files for commit in a single operation.
+///
+/// More efficient than calling stage_file repeatedly — performs a single index write.
+/// Paths must be relative to the repository root.
+#[tauri::command]
+#[specta::specta]
+pub async fn stage_files(
+    paths: Vec<String>,
+    state: State<'_, RepositoryState>,
+) -> Result<(), GitError> {
+    let repo_path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+
+    tokio::task::spawn_blocking(move || {
+        let repo = git2::Repository::open(&repo_path)?;
+        let mut index = repo.index()?;
+
+        let pathspecs: Vec<&str> = paths.iter().map(|s| s.as_str()).collect();
+
+        // add_all handles new and modified files
+        index.add_all(pathspecs.iter(), git2::IndexAddOption::DEFAULT, None)?;
+
+        // update_all handles deleted files
+        index.update_all(pathspecs.iter(), None)?;
+
+        index.write()?;
+        Ok(())
+    })
+    .await
+    .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}
+
+/// Unstage multiple files (remove from index, keep workdir changes).
+///
+/// More efficient than calling unstage_file repeatedly — performs a single reset.
+/// Paths must be relative to the repository root.
+#[tauri::command]
+#[specta::specta]
+pub async fn unstage_files(
+    paths: Vec<String>,
+    state: State<'_, RepositoryState>,
+) -> Result<(), GitError> {
+    let repo_path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+
+    tokio::task::spawn_blocking(move || {
+        let repo = git2::Repository::open(&repo_path)?;
+
+        match repo.head() {
+            Ok(head_ref) => {
+                let head_commit = head_ref.peel_to_commit()?;
+                let paths_iter = paths.iter().map(|s| Path::new(s.as_str()));
+                repo.reset_default(Some(&head_commit.into_object()), paths_iter)?;
+            }
+            Err(e) if e.code() == git2::ErrorCode::UnbornBranch => {
+                // Fresh repo with no commits — just remove from index
+                let mut index = repo.index()?;
+                for path in &paths {
+                    index.remove_path(Path::new(path))?;
+                }
+                index.write()?;
+            }
+            Err(e) => return Err(GitError::from(e)),
+        }
+
+        Ok(())
+    })
+    .await
+    .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}
+
 /// Stage all changed files.
 ///
 /// Adds all modified, deleted, and new files to the index.
