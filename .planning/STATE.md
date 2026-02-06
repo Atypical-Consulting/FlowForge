@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 Phase: 15 of 15 (Topology)
 Plan: Ready to plan
 Status: Phase 14 complete, ready for Phase 15
-Last activity: 2026-02-06 — Phase 14 UI Polish complete
+Last activity: 2026-02-06 — Completed quick task 024: bump version to v1.1.0
 
 Progress: ████████░░ 80% (v1.1.0)
 
@@ -77,6 +77,7 @@ None.
 |---|-------------|------|--------|-----------|
 | 022 | Fix vertical separator stuck on left - resizable panels | 2026-02-05 | e22f4ea | [022-fix-vertical-separator-stuck-left](./quick/022-fix-vertical-separator-stuck-left/) |
 | 023 | Fix app icon not filling circle on welcome page | 2026-02-05 | 65485a5 | [023-fix-app-icon-not-filling-circle-on-welco](./quick/023-fix-app-icon-not-filling-circle-on-welco/) |
+| 024 | Bump version to v1.1.0 | 2026-02-06 | dfc6d4e | [024-prepare-v110-version-bump](./quick/024-prepare-v110-version-bump/) |
 
 ## Phase 11 Summary
 
