@@ -47,6 +47,18 @@ export function StagingPanel({ onFileSelect }: StagingPanelProps = {}) {
       queryClient.invalidateQueries({ queryKey: ["stagingStatus"] }),
   });
 
+  const stageFolderMutation = useMutation({
+    mutationFn: (paths: string[]) => commands.stageFiles(paths),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["stagingStatus"] }),
+  });
+
+  const unstageFolderMutation = useMutation({
+    mutationFn: (paths: string[]) => commands.unstageFiles(paths),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["stagingStatus"] }),
+  });
+
   // Auto-select first file when data loads and no selection exists
   useEffect(() => {
     if (!selectedFile && result?.status === "ok") {
@@ -166,6 +178,7 @@ export function StagingPanel({ onFileSelect }: StagingPanelProps = {}) {
                   section="staged"
                   filter={searchFilter}
                   onFileSelect={onFileSelect}
+                  onStageFolder={(paths) => unstageFolderMutation.mutate(paths)}
                 />
               </div>
             )}
@@ -192,6 +205,7 @@ export function StagingPanel({ onFileSelect }: StagingPanelProps = {}) {
                   section="unstaged"
                   filter={searchFilter}
                   onFileSelect={onFileSelect}
+                  onStageFolder={(paths) => stageFolderMutation.mutate(paths)}
                 />
               </div>
             )}
@@ -218,6 +232,7 @@ export function StagingPanel({ onFileSelect }: StagingPanelProps = {}) {
                   section="untracked"
                   filter={searchFilter}
                   onFileSelect={onFileSelect}
+                  onStageFolder={(paths) => stageFolderMutation.mutate(paths)}
                 />
               </div>
             )}

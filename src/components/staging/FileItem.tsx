@@ -58,7 +58,7 @@ export function FileItem({
     ? file.path.split("/").pop() || file.path
     : file.path;
   const indentStyle =
-    depth > 0 ? { paddingLeft: `${depth * 12 + 12}px` } : undefined;
+    depth > 0 ? { paddingLeft: `${depth * 16 + 8}px` } : undefined;
 
   const handleAction = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -85,6 +85,7 @@ export function FileItem({
       )}
       style={indentStyle}
     >
+      {showFilenameOnly && <span className="w-4 shrink-0" aria-hidden="true" />}
       <div className="relative shrink-0">
         <FileTypeIcon path={file.path} className="w-4 h-4" />
         <span

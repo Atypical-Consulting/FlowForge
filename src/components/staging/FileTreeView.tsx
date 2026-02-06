@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { FileChange } from "../../bindings";
 import { cn } from "../../lib/utils";
@@ -13,6 +13,16 @@ interface FileTreeNode {
   file?: FileChange;
 }
 
+/** Recursively collect all leaf FileChange objects under a tree node. */
+function collectAllFiles(node: FileTreeNode): FileChange[] {
+  const files: FileChange[] = [];
+  if (node.file) files.push(node.file);
+  for (const child of node.children.values()) {
+    files.push(...collectAllFiles(child));
+  }
+  return files;
+}
+
 interface FileTreeViewProps {
   files: FileChange[];
   section: "staged" | "unstaged" | "untracked";
@@ -21,6 +31,7 @@ interface FileTreeViewProps {
     file: FileChange,
     section: "staged" | "unstaged" | "untracked",
   ) => void;
+  onStageFolder?: (paths: string[]) => void;
 }
 
 export function FileTreeView({
@@ -28,6 +39,7 @@ export function FileTreeView({
   section,
   filter = "",
   onFileSelect,
+  onStageFolder,
 }: FileTreeViewProps) {
   // Filter files based on search
   const filteredFiles = useMemo(() => {
@@ -87,6 +99,7 @@ export function FileTreeView({
           section={section}
           depth={0}
           onFileSelect={onFileSelect}
+          onStageFolder={onStageFolder}
         />
       ))}
     </div>
@@ -101,9 +114,10 @@ interface TreeNodeProps {
     file: FileChange,
     section: "staged" | "unstaged" | "untracked",
   ) => void;
+  onStageFolder?: (paths: string[]) => void;
 }
 
-// Indent guide component
+// Indent guide component — aligned with 16px step
 function IndentGuides({ depth }: { depth: number }) {
   return (
     <>
@@ -111,14 +125,20 @@ function IndentGuides({ depth }: { depth: number }) {
         <div
           key={i}
           className="absolute h-full w-px bg-ctp-surface1"
-          style={{ left: `${i * 12 + 14}px` }}
+          style={{ left: `${i * 16 + 16}px` }}
         />
       ))}
     </>
   );
 }
 
-function TreeNode({ node, section, depth, onFileSelect }: TreeNodeProps) {
+function TreeNode({
+  node,
+  section,
+  depth,
+  onFileSelect,
+  onStageFolder,
+}: TreeNodeProps) {
   const [expanded, setExpanded] = useState(true);
 
   if (!node.isDirectory && node.file) {
@@ -138,27 +158,77 @@ function TreeNode({ node, section, depth, onFileSelect }: TreeNodeProps) {
 
   const childNodes = Array.from(node.children.values());
 
+  const handleStageFolder = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const allFiles = collectAllFiles(node);
+    onStageFolder?.(allFiles.map((f) => f.path));
+  };
+
   return (
     <div>
-      <div className="relative">
+      <div className="relative group">
         <IndentGuides depth={depth} />
-        <button
-          type="button"
+        <div
+          role="button"
+          tabIndex={0}
           className={cn(
             "flex items-center gap-1 px-2 py-1 cursor-pointer",
             "hover:bg-ctp-surface0/50 text-sm text-ctp-subtext0 w-full text-left",
           )}
           onClick={() => setExpanded(!expanded)}
-          style={{ paddingLeft: `${depth * 12 + 8}px` }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setExpanded(!expanded);
+            }
+          }}
+          style={{ paddingLeft: `${depth * 16 + 8}px` }}
         >
-          {expanded ? (
-            <ChevronDown className="w-3 h-3" />
-          ) : (
-            <ChevronRight className="w-3 h-3" />
+          <span className="w-4 flex items-center justify-center shrink-0">
+            {expanded ? (
+              <ChevronDown className="w-3 h-3" />
+            ) : (
+              <ChevronRight className="w-3 h-3" />
+            )}
+          </span>
+          <span className="w-4 flex items-center justify-center shrink-0">
+            <FileTypeIcon path={node.path} isDirectory isOpen={expanded} />
+          </span>
+          <span className="ml-0.5 flex-1 truncate">{node.name}</span>
+          {onStageFolder && (
+            <button
+              type="button"
+              onClick={handleStageFolder}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const allFiles = collectAllFiles(node);
+                  onStageFolder(allFiles.map((f) => f.path));
+                }
+              }}
+              className={cn(
+                "p-0.5 rounded transition-all shrink-0",
+                "text-ctp-overlay0 opacity-0 group-hover:opacity-100",
+                section === "staged"
+                  ? "hover:bg-ctp-red/20 hover:text-ctp-red"
+                  : "hover:bg-ctp-green/20 hover:text-ctp-green",
+              )}
+              aria-label={`${section === "staged" ? "Unstage" : "Stage"} all files in ${node.name}`}
+              title={
+                section === "staged"
+                  ? "Unstage all files in folder"
+                  : "Stage all files in folder"
+              }
+            >
+              {section === "staged" ? (
+                <X className="w-3 h-3" />
+              ) : (
+                <Check className="w-3 h-3" />
+              )}
+            </button>
           )}
-          <FileTypeIcon path={node.path} isDirectory isOpen={expanded} />
-          <span>{node.name}</span>
-        </button>
+        </div>
       </div>
       {expanded && (
         <div>
@@ -169,6 +239,7 @@ function TreeNode({ node, section, depth, onFileSelect }: TreeNodeProps) {
               section={section}
               depth={depth + 1}
               onFileSelect={onFileSelect}
+              onStageFolder={onStageFolder}
             />
           ))}
         </div>
