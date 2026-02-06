@@ -86,7 +86,11 @@ Plans:
   3. Keyboard shortcut hints appear in relevant button tooltips
   4. Panel headers have frosted glass visual effect
   5. Dirty state indicator has subtle pulse animation
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 14-01-PLAN.md — Reusable UI components (EmptyState, ShortcutTooltip, Skeleton) + CSS + MotionConfig
+- [ ] 14-02-PLAN.md — Empty states in 4 panels + frosted glass on 5 sidebar headers
+- [ ] 14-03-PLAN.md — Button loading states + shortcut tooltips on 6 buttons + dirty pulse animation
 
 ### Phase 15: Topology
 
@@ -108,7 +112,7 @@ Plans:
 | 11. Foundation | 5/5 | Complete | 2026-02-05 |
 | 12. Workflows | 6/6 | Complete | 2026-02-05 |
 | 13. Navigation | 5/5 | Complete | 2026-02-06 |
-| 14. UI Polish | 0/TBD | Not started | - |
+| 14. UI Polish | 0/3 | Planned | - |
 | 15. Topology | 0/TBD | Not started | - |
 
 ---
