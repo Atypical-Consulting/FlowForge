@@ -1,4 +1,5 @@
 export { TopologyPanel } from "./TopologyPanel";
+export { TopologyRootBlade } from "./TopologyRootBlade";
 export { CommitBadge } from "./CommitBadge";
 export { BranchEdge } from "./BranchEdge";
 export { LaneHeader } from "./LaneHeader";

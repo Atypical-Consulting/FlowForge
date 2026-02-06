@@ -20,7 +20,7 @@ import { useRepositoryStore } from "../stores/repository";
 import { StagingPanel } from "./staging/StagingPanel";
 import { StashList } from "./stash/StashList";
 import { TagList } from "./tags/TagList";
-import { TopologyPanel } from "./topology";
+import { TopologyRootBlade } from "./topology/TopologyRootBlade";
 import { FileViewer } from "./viewers";
 import {
   CreateWorktreeDialog,
@@ -30,7 +30,7 @@ import {
 
 export function RepositoryView() {
   const { status } = useRepositoryStore();
-  const { goBack, openCommitDetails } = useBladeNavigation();
+  const { goBack } = useBladeNavigation();
   const [showBranchDialog, setShowBranchDialog] = useState(false);
   const [showStashDialog, setShowStashDialog] = useState(false);
   const [showTagDialog, setShowTagDialog] = useState(false);
@@ -52,7 +52,7 @@ export function RepositoryView() {
             </div>
           );
         case "topology-graph":
-          return <TopologyPanel onCommitSelect={openCommitDetails} />;
+          return <TopologyRootBlade />;
         case "commit-details":
           return (
             <BladePanel title="Commit" showBack onBack={goBack}>
@@ -76,7 +76,7 @@ export function RepositoryView() {
           return <div>Unknown blade type</div>;
       }
     },
-    [goBack, openCommitDetails],
+    [goBack],
   );
 
   if (!status) return null;

@@ -9,8 +9,9 @@ import { cn } from "../../lib/utils";
 import { CommitSearch } from "./CommitSearch";
 
 interface CommitHistoryProps {
-  onSelectCommit: (commit: CommitSummary) => void;
-  selectedOid: string | null;
+  onSelectCommit?: (commit: CommitSummary) => void;
+  selectedOid?: string | null;
+  onCommitSelect?: (oid: string) => void;
 }
 
 const PAGE_SIZE = 50;
@@ -19,6 +20,7 @@ const SEARCH_LIMIT = 100;
 export function CommitHistory({
   onSelectCommit,
   selectedOid,
+  onCommitSelect,
 }: CommitHistoryProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -69,12 +71,17 @@ export function CommitHistory({
     : historyQuery.isLoading;
   const error = isSearching ? searchQueryResult.error : historyQuery.error;
 
-  // Auto-select first commit when data loads and no selection exists
+  // Auto-select first commit when data loads and no selection exists (old mode only)
   useEffect(() => {
-    if (commits.length > 0 && !selectedOid) {
+    if (
+      onSelectCommit &&
+      !onCommitSelect &&
+      commits.length > 0 &&
+      !selectedOid
+    ) {
       onSelectCommit(commits[0]);
     }
-  }, [commits, selectedOid, onSelectCommit]);
+  }, [commits, selectedOid, onSelectCommit, onCommitSelect]);
 
   const handleSearchChange = useCallback((value: string) => {
     setSearchQuery(value);
@@ -136,7 +143,13 @@ export function CommitHistory({
               <button
                 type="button"
                 key={commit.oid}
-                onClick={() => onSelectCommit(commit)}
+                onClick={() => {
+                  if (onCommitSelect) {
+                    onCommitSelect(commit.oid);
+                  } else if (onSelectCommit) {
+                    onSelectCommit(commit);
+                  }
+                }}
                 className={cn(
                   "w-full text-left px-3 py-2 cursor-pointer border-b border-ctp-surface0",
                   "hover:bg-ctp-surface0/50 transition-colors",
