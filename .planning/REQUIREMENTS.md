@@ -61,11 +61,11 @@ Requirements for v1.1.0 release. Each maps to roadmap phases.
 - [x] **UI-02**: Toast notifications auto-dismiss after appropriate delay
 - [x] **UI-03**: Toast notifications can be manually dismissed
 - [x] **UI-04**: Error toasts persist until dismissed
-- [ ] **UI-05**: Empty states show helpful illustration and guidance (staging, stash, tags)
-- [ ] **UI-06**: Buttons show loading spinner during async operations
-- [ ] **UI-07**: Keyboard shortcut hints appear on relevant button tooltips
-- [ ] **UI-08**: Panel headers have frosted glass visual effect
-- [ ] **UI-09**: Dirty state indicator has subtle pulse animation
+- [x] **UI-05**: Empty states show helpful illustration and guidance (staging, stash, tags)
+- [x] **UI-06**: Buttons show loading spinner during async operations
+- [x] **UI-07**: Keyboard shortcut hints appear on relevant button tooltips
+- [x] **UI-08**: Panel headers have frosted glass visual effect
+- [x] **UI-09**: Dirty state indicator has subtle pulse animation
 
 ## Future Requirements (v1.2+)
 
@@ -139,11 +139,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UI-02 | Phase 11 | Complete |
 | UI-03 | Phase 11 | Complete |
 | UI-04 | Phase 11 | Complete |
-| UI-05 | Phase 14 | Pending |
-| UI-06 | Phase 14 | Pending |
-| UI-07 | Phase 14 | Pending |
-| UI-08 | Phase 14 | Pending |
-| UI-09 | Phase 14 | Pending |
+| UI-05 | Phase 14 | Complete |
+| UI-06 | Phase 14 | Complete |
+| UI-07 | Phase 14 | Complete |
+| UI-08 | Phase 14 | Complete |
+| UI-09 | Phase 14 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 34 total

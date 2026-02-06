@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-05)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Phase 14 - UI Polish (Empty states, spinners, tooltips)
+**Current focus:** Phase 15 - Topology (Ungit-style + History diff)
 
 ## Current Position
 
-Phase: 14 of 15 (UI Polish)
+Phase: 15 of 15 (Topology)
 Plan: Ready to plan
-Status: Phase 13 complete, ready for Phase 14
-Last activity: 2026-02-06 — Phase 13 Navigation complete
+Status: Phase 14 complete, ready for Phase 15
+Last activity: 2026-02-06 — Phase 14 UI Polish complete
 
-Progress: ██████░░░░ 60% (v1.1.0)
+Progress: ████████░░ 80% (v1.1.0)
 
 ## Milestone History
 
@@ -47,7 +47,7 @@ See `.planning/MILESTONES.md` for full history.
 - Phase 11: Foundation (Toast + Settings + Layout) ✓
 - Phase 12: Workflows (Clone + Gitflow Init + Amend) ✓
 - Phase 13: Navigation (Repo/Branch Switcher) ✓
-- Phase 14: UI Polish (Empty states, spinners, tooltips)
+- Phase 14: UI Polish (Empty states, spinners, tooltips) ✓
 - Phase 15: Topology (Ungit-style + History diff)
 
 **Requirements:** 34 total
@@ -116,10 +116,26 @@ None.
 - Header integration with repo switching (atomic open, last-branch restore, toast)
 - Branch switching with stash-and-switch confirmation for dirty trees
 
+## Phase 14 Summary
+
+**Completed:** 2026-02-06
+**Plans:** 3/3
+**Requirements:** 5 (UI-05/06/07/08/09)
+
+**Delivered:**
+- Reusable components: EmptyState, ShortcutTooltip, Skeleton
+- Empty states in StagingPanel, StashList, TagList, CommitHistory with line-art icons
+- Skeleton loaders replacing spinners during data fetch
+- Frosted glass headers on all 5 sidebar sections (backdrop-blur-lg)
+- Button loading/loadingText props with per-action spinners on sidebar items
+- ShortcutTooltip on 6 keyboard-shortcut buttons (Settings, Open, Fetch, Pull, Push, Amend)
+- dirty-pulse animation on BranchSwitcher dirty indicator
+- MotionConfig at app root respecting prefers-reduced-motion
+
 ## Next Steps
 
-Run `/gsd:plan-phase 14` to plan Phase 14 (UI Polish).
+Run `/gsd:discuss-phase 15` to gather context for Phase 15 (Topology).
 
 ---
-*State updated: 2026-02-05*
+*State updated: 2026-02-06*
 *Milestone: v1.1.0 Usability in progress*
