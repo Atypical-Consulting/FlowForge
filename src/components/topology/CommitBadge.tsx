@@ -62,7 +62,7 @@ export const CommitBadge = memo(({ data }: CommitBadgeProps) => {
       <Handle
         type="target"
         position={Position.Top}
-        className="!bg-transparent !border-0 !w-0 !h-0"
+        className="!bg-transparent !border-0 !w-1 !h-1 !min-w-0 !min-h-0"
       />
 
       <Icon className="w-3.5 h-3.5 text-ctp-overlay1 shrink-0" />
@@ -76,7 +76,7 @@ export const CommitBadge = memo(({ data }: CommitBadgeProps) => {
       <Handle
         type="source"
         position={Position.Bottom}
-        className="!bg-transparent !border-0 !w-0 !h-0"
+        className="!bg-transparent !border-0 !w-1 !h-1 !min-w-0 !min-h-0"
       />
     </div>
   );

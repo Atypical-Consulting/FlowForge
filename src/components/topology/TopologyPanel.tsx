@@ -4,11 +4,12 @@ import {
   Controls,
   type Edge,
   type Node,
+  type NodeMouseHandler,
   ReactFlow,
   useEdgesState,
   useNodesState,
 } from "@xyflow/react";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import "@xyflow/react/dist/style.css";
 
 import { Loader2 } from "lucide-react";
@@ -112,6 +113,15 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
     setEdges(edgesWithIndex);
   }, [nodesWithHandlers, edgesWithIndex, setNodes, setEdges]);
 
+  // Handle node clicks via React Flow's onNodeClick for reliable event handling
+  const handleNodeClick: NodeMouseHandler<Node<CommitNodeData>> = useCallback(
+    (_event, node) => {
+      selectCommit(node.data.oid);
+      onCommitSelect?.(node.data.oid);
+    },
+    [selectCommit, onCommitSelect],
+  );
+
   if (error) {
     return (
       <div className="flex items-center justify-center h-full bg-ctp-mantle text-ctp-red p-4">
@@ -148,6 +158,7 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          onNodeClick={handleNodeClick}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView
