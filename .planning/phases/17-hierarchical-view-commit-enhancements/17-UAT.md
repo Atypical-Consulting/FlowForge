@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 17-hierarchical-view-commit-enhancements
 source: 17-01-SUMMARY.md, 17-02-SUMMARY.md, 17-03-SUMMARY.md
 started: 2026-02-06T18:00:00Z
@@ -61,7 +61,13 @@ skipped: 0
   reason: "User reported: the vertical lines are broken and not coherent. You need to improve that part"
   severity: major
   test: 6
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "IndentGuides component uses absolute positioning (left: ${i * 16 + 16}px) but folder rows and file items use inline paddingLeft (depth * 16 + 8px) — the absolute guides don't shift with the padding, breaking visual continuity between nesting levels"
+  artifacts:
+    - path: "src/components/staging/FileTreeView.tsx"
+      issue: "IndentGuides absolute positioning misaligned with container padding (lines 121-133, 185)"
+    - path: "src/components/staging/FileItem.tsx"
+      issue: "File indent padding inconsistent with guide positions (lines 60-61, 86)"
+  missing:
+    - "Align indent guide positioning with actual content indentation"
+    - "Use consistent positioning strategy (padding-based or absolute) for both guides and content"
+  debug_session: ".planning/debug/tree-vertical-lines.md"
