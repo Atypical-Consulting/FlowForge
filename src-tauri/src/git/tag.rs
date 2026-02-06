@@ -21,6 +21,8 @@ pub struct TagInfo {
     pub tagger: Option<String>,
     /// True for annotated tags, false for lightweight
     pub is_annotated: bool,
+    /// Creation timestamp in milliseconds since epoch
+    pub created_at_ms: f64,
 }
 
 /// List all tags in the repository.
@@ -62,6 +64,10 @@ pub async fn list_tags(state: State<'_, RepositoryState>) -> Result<Vec<TagInfo>
                     message: tag.message().map(|m: &str| m.trim().to_string()),
                     tagger: tagger_info,
                     is_annotated: true,
+                    created_at_ms: tag
+                        .tagger()
+                        .map(|sig| (sig.when().seconds() as f64) * 1000.0)
+                        .unwrap_or_else(|| (target.time().seconds() as f64) * 1000.0),
                 }
             } else {
                 let commit = obj.peel_to_commit()?;
@@ -72,12 +78,17 @@ pub async fn list_tags(state: State<'_, RepositoryState>) -> Result<Vec<TagInfo>
                     message: None,
                     tagger: None,
                     is_annotated: false,
+                    created_at_ms: (commit.time().seconds() as f64) * 1000.0,
                 }
             };
             tags.push(tag_info);
         }
 
-        tags.sort_by(|a, b| a.name.cmp(&b.name));
+        tags.sort_by(|a, b| {
+            b.created_at_ms
+                .partial_cmp(&a.created_at_ms)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
         Ok(tags)
     })
     .await
@@ -140,6 +151,7 @@ pub async fn create_tag(
                 message: Some(msg.trim().to_string()),
                 tagger: Some(tagger_info),
                 is_annotated: true,
+                created_at_ms: (sig.when().seconds() as f64) * 1000.0,
             })
         } else {
             // Lightweight tag
@@ -151,6 +163,7 @@ pub async fn create_tag(
                 message: None,
                 tagger: None,
                 is_annotated: false,
+                created_at_ms: (target_commit.time().seconds() as f64) * 1000.0,
             })
         }
     })
