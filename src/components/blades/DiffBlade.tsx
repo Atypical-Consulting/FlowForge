@@ -31,8 +31,10 @@ export function DiffBlade({ source }: DiffBladeProps) {
 
   const queryFn =
     source.mode === "commit"
-      ? () => commands.getCommitFileDiff(source.oid, source.filePath, contextLines)
-      : () => commands.getFileDiff(source.filePath, source.staged, contextLines);
+      ? () =>
+          commands.getCommitFileDiff(source.oid, source.filePath, contextLines)
+      : () =>
+          commands.getFileDiff(source.filePath, source.staged, contextLines);
 
   const {
     data: result,
@@ -76,8 +78,27 @@ export function DiffBlade({ source }: DiffBladeProps) {
     <div className="flex-1 flex flex-col overflow-hidden h-full">
       {/* Toolbar */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-ctp-surface0 bg-ctp-crust shrink-0">
-        <span className="text-sm text-ctp-subtext1 truncate flex-1">
-          {source.filePath}
+        <span className="text-sm truncate flex-1">
+          {(() => {
+            const lastSlash = source.filePath.lastIndexOf("/");
+            if (lastSlash === -1) {
+              return (
+                <span className="font-semibold text-ctp-text">
+                  {source.filePath}
+                </span>
+              );
+            }
+            return (
+              <>
+                <span className="text-ctp-overlay1">
+                  {source.filePath.slice(0, lastSlash + 1)}
+                </span>
+                <span className="font-semibold text-ctp-text">
+                  {source.filePath.slice(lastSlash + 1)}
+                </span>
+              </>
+            );
+          })()}
         </span>
         <Button
           variant="ghost"

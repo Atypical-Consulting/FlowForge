@@ -11,6 +11,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { useRecentRepos } from "../hooks/useRecentRepos";
 import { useBranchStore } from "../stores/branches";
+import { useBladeStore } from "../stores/blades";
 import { useChangelogStore } from "../stores/changelogStore";
 import { useNavigationStore } from "../stores/navigation";
 import { useRepositoryStore } from "../stores/repository";
@@ -126,6 +127,7 @@ export function Header() {
 
         // Open new repository atomically (do NOT close first!)
         await openRepository(path);
+        useBladeStore.getState().resetStack();
         await addRecentRepo(path);
 
         // Check if there's a last active branch for this repo
