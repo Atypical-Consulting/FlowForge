@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 
 ## Current Position
 
-Phase: 16 of 19 (Quick Fixes & Visual Polish)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-06 — Roadmap created for v1.2.0
+Phase: 16 of 19 (Quick Fixes & Visual Polish) — COMPLETE
+Plan: 3 of 3 in current phase
+Status: Phase 16 complete, ready for Phase 17
+Last activity: 2026-02-06 — Phase 16 executed and verified
 
-Progress: ░░░░░░░░░░ 0%
+Progress: ██░░░░░░░░ 25%
 
 ## Milestone History
 
@@ -87,8 +87,9 @@ None.
 
 ## Next Steps
 
-Run `/gsd:plan-phase 16` to plan Quick Fixes & Visual Polish.
+Run `/gsd:plan-phase 17` to plan Hierarchical View & Commit Enhancements.
+(Phases 17, 18, 19 are independent — can execute in any order.)
 
 ---
 *State updated: 2026-02-06*
-*Milestone: v1.2.0 Bugfixing & Polish — roadmap created*
+*Milestone: v1.2.0 Bugfixing & Polish — Phase 16 complete*

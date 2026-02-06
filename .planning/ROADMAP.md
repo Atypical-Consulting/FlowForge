@@ -12,7 +12,7 @@ v1.2.0 addresses accumulated UX bugs, visual inconsistencies, and adds a command
 
 ## Phases
 
-- [ ] **Phase 16: Quick Fixes & Visual Polish** - Fix scattered bugs and cosmetic issues across the UI
+- [x] **Phase 16: Quick Fixes & Visual Polish** - Fix scattered bugs and cosmetic issues across the UI
 - [ ] **Phase 17: Hierarchical View & Commit Enhancements** - Improve staging tree and conventional commit visuals
 - [ ] **Phase 18: Command Palette & Discoverability** - Build registry-based command palette with shortcut tooltips
 - [ ] **Phase 19: Settings, Onboarding & File Icons** - Expand settings, add git init prompt, expand icon coverage
@@ -33,9 +33,9 @@ v1.2.0 addresses accumulated UX bugs, visual inconsistencies, and adds a command
   7. Switching to a different repository causes the blade view to reset and display correct content for the new repo
 **Plans**: 3 plans
 Plans:
-- [ ] 16-01-PLAN.md — Animation polish: fix modal flicker + subtler blade slide
-- [ ] 16-02-PLAN.md — Tag sorting: add timestamp, sort most recent first
-- [ ] 16-03-PLAN.md — Frontend quick fixes: stash labels, diff header, blade reset, topology verify
+- [x] 16-01-PLAN.md — Animation polish: fix modal flicker + subtler blade slide
+- [x] 16-02-PLAN.md — Tag sorting: add timestamp, sort most recent first
+- [x] 16-03-PLAN.md — Frontend quick fixes: stash labels, diff header, blade reset, topology verify
 
 ### Phase 17: Hierarchical View & Commit Enhancements
 **Goal**: Users can stage/unstage entire folders and see color-coded conventional commit types throughout the app
@@ -78,7 +78,7 @@ After Phase 16 completes, remaining phases can execute in any order.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|---------------|--------|-----------|
-| 16. Quick Fixes & Visual Polish | 0/3 | Not started | — |
+| 16. Quick Fixes & Visual Polish | 3/3 | ✅ Complete | 2026-02-06 |
 | 17. Hierarchical View & Commit Enhancements | 0/TBD | Not started | — |
 | 18. Command Palette & Discoverability | 0/TBD | Not started | — |
 | 19. Settings, Onboarding & File Icons | 0/TBD | Not started | — |

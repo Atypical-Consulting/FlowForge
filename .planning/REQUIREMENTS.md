@@ -88,23 +88,23 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | ONBR-01 | Phase 19 | Pending |
 | ICON-01 | Phase 19 | Pending |
-| STSH-01 | Phase 16 | Pending |
+| STSH-01 | Phase 16 | Complete |
 | CMPL-01 | Phase 18 | Pending |
 | CMPL-02 | Phase 18 | Pending |
 | CMPL-03 | Phase 18 | Pending |
 | DISC-01 | Phase 18 | Pending |
-| TOPO-01 | Phase 16 | Pending |
+| TOPO-01 | Phase 16 | Complete |
 | SETT-01 | Phase 19 | Pending |
 | SETT-02 | Phase 19 | Pending |
-| UIPX-01 | Phase 16 | Pending |
-| UIPX-02 | Phase 16 | Pending |
+| UIPX-01 | Phase 16 | Complete |
+| UIPX-02 | Phase 16 | Complete |
 | UIPX-03 | Phase 17 | Pending |
 | UIPX-04 | Phase 17 | Pending |
-| UIPX-05 | Phase 16 | Pending |
+| UIPX-05 | Phase 16 | Complete |
 | CCMT-01 | Phase 17 | Pending |
 | CCMT-02 | Phase 17 | Pending |
-| TAGS-01 | Phase 16 | Pending |
-| NAVG-01 | Phase 16 | Pending |
+| TAGS-01 | Phase 16 | Complete |
+| NAVG-01 | Phase 16 | Complete |
 
 **Coverage:**
 - v1.2.0 requirements: 19 total
