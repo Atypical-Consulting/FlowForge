@@ -11,6 +11,10 @@ interface FileItemProps {
   section: "staged" | "unstaged" | "untracked";
   depth?: number;
   showFilenameOnly?: boolean;
+  onFileSelect?: (
+    file: FileChange,
+    section: "staged" | "unstaged" | "untracked",
+  ) => void;
 }
 
 function getStatusDot(status: FileStatus): { color: string; title: string } {
@@ -31,6 +35,7 @@ export function FileItem({
   section,
   depth = 0,
   showFilenameOnly = false,
+  onFileSelect,
 }: FileItemProps) {
   const queryClient = useQueryClient();
   const { selectedFile, selectFile } = useStagingStore();
@@ -64,10 +69,15 @@ export function FileItem({
     }
   };
 
+  const handleSelect = () => {
+    selectFile(file, section);
+    onFileSelect?.(file, section);
+  };
+
   return (
     <div
-      onClick={() => selectFile(file, section)}
-      onKeyDown={(e) => e.key === "Enter" && selectFile(file, section)}
+      onClick={handleSelect}
+      onKeyDown={(e) => e.key === "Enter" && handleSelect()}
       className={cn(
         "flex items-center gap-2 px-3 py-1.5 cursor-pointer group",
         "hover:bg-ctp-surface0/50 transition-colors",

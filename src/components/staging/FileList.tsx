@@ -10,6 +10,10 @@ interface FileListProps {
   defaultExpanded?: boolean;
   onStageAll?: () => void;
   onUnstageAll?: () => void;
+  onFileSelect?: (
+    file: FileChange,
+    section: "staged" | "unstaged" | "untracked",
+  ) => void;
 }
 
 export function FileList({
@@ -19,6 +23,7 @@ export function FileList({
   defaultExpanded = true,
   onStageAll,
   onUnstageAll,
+  onFileSelect,
 }: FileListProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
 
@@ -70,7 +75,12 @@ export function FileList({
       {expanded && (
         <div className="border-l border-ctp-surface0 ml-3">
           {files.map((file) => (
-            <FileItem key={file.path} file={file} section={section} />
+            <FileItem
+              key={file.path}
+              file={file}
+              section={section}
+              onFileSelect={onFileSelect}
+            />
           ))}
         </div>
       )}

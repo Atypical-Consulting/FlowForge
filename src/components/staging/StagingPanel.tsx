@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileCheck, FolderTree, List, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import type { FileChange } from "../../bindings";
 import { commands } from "../../bindings";
 import { formatShortcut } from "../../hooks/useKeyboardShortcuts";
 import { cn } from "../../lib/utils";
@@ -12,7 +13,14 @@ import { FileList } from "./FileList";
 import { FileTreeSearch } from "./FileTreeSearch";
 import { FileTreeView } from "./FileTreeView";
 
-export function StagingPanel() {
+interface StagingPanelProps {
+  onFileSelect?: (
+    file: FileChange,
+    section: "staged" | "unstaged" | "untracked",
+  ) => void;
+}
+
+export function StagingPanel({ onFileSelect }: StagingPanelProps = {}) {
   const queryClient = useQueryClient();
   const { viewMode, setViewMode, selectedFile, selectFile } = useStagingStore();
   const [searchFilter, setSearchFilter] = useState("");
@@ -157,6 +165,7 @@ export function StagingPanel() {
                   files={status.staged}
                   section="staged"
                   filter={searchFilter}
+                  onFileSelect={onFileSelect}
                 />
               </div>
             )}
@@ -182,6 +191,7 @@ export function StagingPanel() {
                   files={status.unstaged}
                   section="unstaged"
                   filter={searchFilter}
+                  onFileSelect={onFileSelect}
                 />
               </div>
             )}
@@ -207,6 +217,7 @@ export function StagingPanel() {
                   files={status.untracked}
                   section="untracked"
                   filter={searchFilter}
+                  onFileSelect={onFileSelect}
                 />
               </div>
             )}
@@ -218,18 +229,21 @@ export function StagingPanel() {
               files={status.staged}
               section="staged"
               onUnstageAll={() => unstageAllMutation.mutate()}
+              onFileSelect={onFileSelect}
             />
             <FileList
               title="Changes"
               files={status.unstaged}
               section="unstaged"
               onStageAll={() => stageAllMutation.mutate()}
+              onFileSelect={onFileSelect}
             />
             <FileList
               title="Untracked Files"
               files={status.untracked}
               section="untracked"
               onStageAll={() => stageAllMutation.mutate()}
+              onFileSelect={onFileSelect}
             />
           </>
         )}

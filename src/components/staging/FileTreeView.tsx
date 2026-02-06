@@ -17,12 +17,17 @@ interface FileTreeViewProps {
   files: FileChange[];
   section: "staged" | "unstaged" | "untracked";
   filter?: string;
+  onFileSelect?: (
+    file: FileChange,
+    section: "staged" | "unstaged" | "untracked",
+  ) => void;
 }
 
 export function FileTreeView({
   files,
   section,
   filter = "",
+  onFileSelect,
 }: FileTreeViewProps) {
   // Filter files based on search
   const filteredFiles = useMemo(() => {
@@ -76,7 +81,13 @@ export function FileTreeView({
   return (
     <div className="pl-2">
       {Array.from(tree.children.values()).map((node) => (
-        <TreeNode key={node.path} node={node} section={section} depth={0} />
+        <TreeNode
+          key={node.path}
+          node={node}
+          section={section}
+          depth={0}
+          onFileSelect={onFileSelect}
+        />
       ))}
     </div>
   );
@@ -86,6 +97,10 @@ interface TreeNodeProps {
   node: FileTreeNode;
   section: "staged" | "unstaged" | "untracked";
   depth: number;
+  onFileSelect?: (
+    file: FileChange,
+    section: "staged" | "unstaged" | "untracked",
+  ) => void;
 }
 
 // Indent guide component
@@ -103,7 +118,7 @@ function IndentGuides({ depth }: { depth: number }) {
   );
 }
 
-function TreeNode({ node, section, depth }: TreeNodeProps) {
+function TreeNode({ node, section, depth, onFileSelect }: TreeNodeProps) {
   const [expanded, setExpanded] = useState(true);
 
   if (!node.isDirectory && node.file) {
@@ -115,6 +130,7 @@ function TreeNode({ node, section, depth }: TreeNodeProps) {
           section={section}
           depth={depth}
           showFilenameOnly
+          onFileSelect={onFileSelect}
         />
       </div>
     );
@@ -152,6 +168,7 @@ function TreeNode({ node, section, depth }: TreeNodeProps) {
               node={child}
               section={section}
               depth={depth + 1}
+              onFileSelect={onFileSelect}
             />
           ))}
         </div>
