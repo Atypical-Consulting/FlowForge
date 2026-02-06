@@ -143,6 +143,19 @@ async getFileDiff(path: string, staged: boolean, contextLines: number) : Promise
 }
 },
 /**
+ * Get the diff for a specific file at a given commit.
+ * 
+ * Shows the changes introduced by the commit (parent -> commit).
+ */
+async getCommitFileDiff(oid: string, path: string, contextLines: number) : Promise<Result<FileDiff, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_commit_file_diff", { oid, path, contextLines }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * Create a new commit from staged changes.
  * 
  * Creates a commit with the given message from the current index (staged changes).
