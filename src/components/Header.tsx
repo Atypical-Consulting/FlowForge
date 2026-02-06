@@ -22,6 +22,7 @@ import { useUndoStore } from "../stores/undo";
 import { BranchSwitcher } from "./navigation/BranchSwitcher";
 import { RepoSwitcher } from "./navigation/RepoSwitcher";
 import { SyncButtons } from "./sync/SyncButtons";
+import { ShortcutTooltip } from "./ui/ShortcutTooltip";
 import { Button } from "./ui/button";
 import { ThemeToggle } from "./ui/ThemeToggle";
 
@@ -246,14 +247,11 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={openSettings}
-            title="Settings (Ctrl+,)"
-          >
-            <Settings className="w-4 h-4" />
-          </Button>
+          <ShortcutTooltip shortcut="mod+," label="Settings">
+            <Button variant="ghost" size="sm" onClick={openSettings}>
+              <Settings className="w-4 h-4" />
+            </Button>
+          </ShortcutTooltip>
           <ThemeToggle />
           {status && undoInfo?.canUndo && (
             <Button
@@ -310,16 +308,18 @@ export function Header() {
             <GitFork className="w-4 h-4 mr-2" />
             Clone
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleOpenRepo}
-            disabled={isLoading}
-            className="text-ctp-subtext1 hover:text-ctp-text"
-          >
-            <FolderOpen className="w-4 h-4 mr-2" />
-            Open
-          </Button>
+          <ShortcutTooltip shortcut="mod+o" label="Open Repository">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleOpenRepo}
+              disabled={isLoading}
+              className="text-ctp-subtext1 hover:text-ctp-text"
+            >
+              <FolderOpen className="w-4 h-4 mr-2" />
+              Open
+            </Button>
+          </ShortcutTooltip>
         </div>
       </header>
 

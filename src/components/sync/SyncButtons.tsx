@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { type SyncProgress, commands } from "../../bindings";
 import { formatShortcut } from "../../hooks/useKeyboardShortcuts";
 import { toast } from "../../stores/toast";
+import { ShortcutTooltip } from "../ui/ShortcutTooltip";
 import { Button } from "../ui/button";
 import { SyncProgressDisplay } from "./SyncProgress";
 
@@ -95,47 +96,50 @@ export function SyncButtons() {
     <div className="flex items-center gap-1">
       {progress && <SyncProgressDisplay progress={progress} />}
 
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => fetchMutation.mutate()}
-        disabled={isLoading}
-        title={`Fetch (${formatShortcut("mod+shift+F")})`}
-      >
-        {fetchMutation.isPending ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          <CloudDownload className="w-4 h-4" />
-        )}
-      </Button>
+      <ShortcutTooltip shortcut="mod+shift+F" label="Fetch">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => fetchMutation.mutate()}
+          disabled={isLoading}
+        >
+          {fetchMutation.isPending ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <CloudDownload className="w-4 h-4" />
+          )}
+        </Button>
+      </ShortcutTooltip>
 
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => pullMutation.mutate()}
-        disabled={isLoading}
-        title={`Pull (${formatShortcut("mod+shift+L")})`}
-      >
-        {pullMutation.isPending ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          <ArrowDown className="w-4 h-4" />
-        )}
-      </Button>
+      <ShortcutTooltip shortcut="mod+shift+L" label="Pull">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => pullMutation.mutate()}
+          disabled={isLoading}
+        >
+          {pullMutation.isPending ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <ArrowDown className="w-4 h-4" />
+          )}
+        </Button>
+      </ShortcutTooltip>
 
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => pushMutation.mutate()}
-        disabled={isLoading}
-        title={`Push (${formatShortcut("mod+shift+P")})`}
-      >
-        {pushMutation.isPending ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          <ArrowUp className="w-4 h-4" />
-        )}
-      </Button>
+      <ShortcutTooltip shortcut="mod+shift+P" label="Push">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => pushMutation.mutate()}
+          disabled={isLoading}
+        >
+          {pushMutation.isPending ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <ArrowUp className="w-4 h-4" />
+          )}
+        </Button>
+      </ShortcutTooltip>
     </div>
   );
 }

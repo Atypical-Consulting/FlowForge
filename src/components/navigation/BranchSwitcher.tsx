@@ -172,7 +172,7 @@ export function BranchSwitcher({ onSelectBranch }: BranchSwitcherProps) {
           {currentBranch || "No branch"}
         </span>
         {isDirty && (
-          <Circle className="w-2 h-2 fill-ctp-yellow text-ctp-yellow shrink-0" />
+          <Circle className="w-2 h-2 fill-ctp-yellow text-ctp-yellow shrink-0 motion-safe:animate-dirty-pulse" />
         )}
         <ChevronDown
           className={cn(
@@ -190,7 +190,7 @@ export function BranchSwitcher({ onSelectBranch }: BranchSwitcherProps) {
             initial="hidden"
             animate="show"
             exit="exit"
-            className="absolute top-full left-0 z-40 mt-1 w-full min-w-[320px] max-w-[400px] bg-ctp-mantle border border-ctp-surface0 rounded-lg shadow-lg"
+            className="absolute top-full left-0 z-40 mt-1 w-full min-w-[320px] max-w-100 bg-ctp-mantle border border-ctp-surface0 rounded-lg shadow-lg"
             role="listbox"
             aria-label="Branch list"
             onKeyDown={handleKeyDown}
@@ -226,7 +226,7 @@ export function BranchSwitcher({ onSelectBranch }: BranchSwitcherProps) {
               </button>
             </div>
 
-            <div className="max-h-[380px] overflow-y-auto p-1">
+            <div className="max-h-95 overflow-y-auto p-1">
               {/* Recent branches section */}
               {recentBranches.length > 0 && (
                 <div>

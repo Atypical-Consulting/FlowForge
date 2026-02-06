@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { type SyncProgress, commands } from "../../bindings";
 import { cn } from "../../lib/utils";
 import { toast } from "../../stores/toast";
+import { ShortcutTooltip } from "../ui/ShortcutTooltip";
 import { Button } from "../ui/button";
 import { ConventionalCommitModal } from "./ConventionalCommitModal";
 
@@ -203,15 +204,21 @@ export function CommitForm() {
           {/* Character count and guidance */}
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
-              <label className="flex items-center gap-1.5 text-ctp-overlay1">
-                <input
-                  type="checkbox"
-                  checked={amend}
-                  onChange={(e) => handleAmendChange(e.target.checked)}
-                  className="rounded border-ctp-surface2"
-                />
-                Amend last commit
-              </label>
+              <ShortcutTooltip
+                shortcut="mod+shift+M"
+                label="Toggle Amend"
+                side="top"
+              >
+                <label className="flex items-center gap-1.5 text-ctp-overlay1 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={amend}
+                    onChange={(e) => handleAmendChange(e.target.checked)}
+                    className="rounded border-ctp-surface2"
+                  />
+                  <span className="text-xs">Amend last commit</span>
+                </label>
+              </ShortcutTooltip>
             </div>
 
             <span
