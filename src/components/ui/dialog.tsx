@@ -1,4 +1,5 @@
 import { type VariantProps, cva } from "class-variance-authority";
+import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import * as React from "react";
 import { cn } from "../../lib/utils";
@@ -36,7 +37,7 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
 
 // DialogContent variants
 const dialogContentVariants = cva(
-  "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-ctp-mantle border border-ctp-surface0 rounded-lg shadow-xl w-full p-6 animate-[dialog-content-show_150ms_ease-out]",
+  "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-ctp-mantle border border-ctp-surface0 rounded-lg shadow-xl w-full p-6",
   {
     variants: {
       size: {
@@ -58,6 +59,15 @@ interface DialogContentProps
 
 const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
   ({ className, size, children, ...props }, ref) => {
+    // Exclude HTML event handlers that conflict with framer-motion props
+    const {
+      onDrag: _1,
+      onDragStart: _2,
+      onDragEnd: _3,
+      onDragOver: _4,
+      onAnimationStart: _5,
+      ...safeProps
+    } = props;
     const { open, onOpenChange } = useDialogContext();
     const contentRef = React.useRef<HTMLDivElement>(null);
 
@@ -85,38 +95,48 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
       }
     }, [open]);
 
-    if (!open) return null;
-
     return (
-      <>
-        {/* Overlay */}
-        <div
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-[dialog-overlay-show_150ms_ease-out]"
-          onClick={() => onOpenChange(false)}
-          aria-hidden="true"
-        />
-        {/* Content */}
-        <div
-          ref={(node) => {
-            // Handle both refs
-            (
-              contentRef as React.MutableRefObject<HTMLDivElement | null>
-            ).current = node;
-            if (typeof ref === "function") {
-              ref(node);
-            } else if (ref) {
-              ref.current = node;
-            }
-          }}
-          role="dialog"
-          aria-modal="true"
-          className={cn(dialogContentVariants({ size, className }))}
-          onClick={(e) => e.stopPropagation()}
-          {...props}
-        >
-          {children}
-        </div>
-      </>
+      <AnimatePresence mode="wait">
+        {open && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+              onClick={() => onOpenChange(false)}
+              aria-hidden="true"
+            />
+            {/* Content */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              ref={(node) => {
+                // Handle both refs
+                (
+                  contentRef as React.MutableRefObject<HTMLDivElement | null>
+                ).current = node;
+                if (typeof ref === "function") {
+                  ref(node);
+                } else if (ref) {
+                  ref.current = node;
+                }
+              }}
+              role="dialog"
+              aria-modal="true"
+              className={cn(dialogContentVariants({ size, className }))}
+              onClick={(e) => e.stopPropagation()}
+              {...safeProps}
+            >
+              {children}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     );
   },
 );
