@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-06)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Planning next milestone
+**Current focus:** v1.2.0 Bugfixing & Polish
 
 ## Current Position
 
-Phase: Milestone complete
-Plan: N/A
-Status: v1.1.0 shipped, ready for next milestone
-Last activity: 2026-02-06 — Completed quick task 026: fix DMG damaged on macOS
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-06 — Milestone v1.2.0 started
 
-Progress: ██████████ 100% (v1.1.0)
+Progress: ░░░░░░░░░░ 0%
 
 ## Milestone History
 
@@ -22,6 +22,7 @@ Progress: ██████████ 100% (v1.1.0)
 |-----------|--------|---------|
 | v1.0 MVP | ✅ Complete | 2026-02-04 |
 | v1.1.0 Usability | ✅ Complete | 2026-02-06 |
+| v1.2.0 Bugfixing & Polish | ◆ In Progress | — |
 
 See `.planning/MILESTONES.md` for full history.
 
@@ -86,8 +87,8 @@ None.
 
 ## Next Steps
 
-Run `/gsd:new-milestone` to start the next milestone (v2.0).
+Define requirements, then create roadmap.
 
 ---
 *State updated: 2026-02-06*
-*Milestone: v1.1.0 Usability shipped*
+*Milestone: v1.2.0 Bugfixing & Polish started*

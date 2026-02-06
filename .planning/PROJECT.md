@@ -72,7 +72,28 @@ Each layer adds value; each inner layer stands without the outer ones.
 
 ### Active
 
-(No active requirements — next milestone needed)
+#### Current Milestone: v1.2.0 Bugfixing & Polish
+
+**Goal:** Fix bugs, improve UX consistency, and add a command palette with registry architecture.
+
+**Target features:**
+- Git init prompt for non-repository folders
+- Expanded Catppuccin file-type icon set
+- Human-friendly stash display format
+- Command palette with registry pattern (title, description, shortcut)
+- Tooltips and keyboard shortcuts for common actions
+- Topology branch ordering (main/develop before feature branches)
+- Settings: Integrations tab (external editor, shell)
+- Settings: Git tab (name, email, default branch)
+- Modal opening animation fix (no flicker/top-left flash)
+- Subtler blade opening animation
+- Folder-level stage/unstage in hierarchical view
+- Consistent spacing in hierarchical view
+- Compact diff blade header (path gray + filename bold)
+- Color-coded Conventional Commit icons
+- Conventional Commit icons in changelog generation
+- Tags list sorted most recent first
+- Blade refresh on repository switch
 
 ### Deferred to v2+
 
@@ -143,4 +164,4 @@ All 92 requirements implemented across 15 phases (80 plans) in two milestones.
 | Event-driven auto-refresh (v1.1) | "repository-changed" event triggers topology reload instead of polling | ✓ Good — efficient, reliable |
 
 ---
-*Last updated: 2026-02-06 after v1.1.0 milestone complete*
+*Last updated: 2026-02-06 after v1.2.0 milestone started*
