@@ -26,9 +26,7 @@ export function EmptyState({
     >
       <div className="mb-4 h-12 w-12 text-ctp-overlay0">{icon}</div>
       <p className="mb-1 text-sm font-medium text-ctp-subtext1">{title}</p>
-      <p className="mb-4 max-w-[200px] text-xs text-ctp-overlay0">
-        {description}
-      </p>
+      <p className="mb-4 max-w-50 text-xs text-ctp-overlay0">{description}</p>
       {action && (
         <Button variant="outline" size="sm" onClick={action.onClick}>
           {action.icon && <span className="mr-1.5">{action.icon}</span>}

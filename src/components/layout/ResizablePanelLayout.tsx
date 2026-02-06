@@ -61,7 +61,7 @@ export function ResizeHandle({ className }: { className?: string }) {
     <Separator
       className={cn(
         "w-1 bg-ctp-surface0 transition-colors cursor-col-resize",
-        "[&[data-separator='hover']]:bg-ctp-blue [&[data-separator='active']]:bg-ctp-blue",
+        "data-[separator='hover']:bg-ctp-blue data-[separator='active']:bg-ctp-blue",
         className,
       )}
     />

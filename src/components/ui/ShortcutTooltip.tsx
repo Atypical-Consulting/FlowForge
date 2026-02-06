@@ -80,7 +80,7 @@ export function ShortcutTooltip({
   const kbdElements = keys.map((key, i) => (
     <kbd
       key={`${key}-${i}`}
-      className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-mono font-medium rounded bg-ctp-surface0/80 text-ctp-subtext0"
+      className="inline-flex items-center justify-center min-w-4.5 h-4.5 px-1 text-[10px] font-mono font-medium rounded bg-ctp-surface0/80 text-ctp-subtext0"
     >
       {key}
     </kbd>

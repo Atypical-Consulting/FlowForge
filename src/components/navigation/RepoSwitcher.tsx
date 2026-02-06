@@ -192,11 +192,11 @@ export function RepoSwitcher({ onSelectRepo }: RepoSwitcherProps) {
             initial="hidden"
             animate="show"
             exit="exit"
-            className="absolute top-full left-0 z-40 mt-1 w-full min-w-[320px] max-w-[400px] bg-ctp-mantle border border-ctp-surface0 rounded-lg shadow-lg"
+            className="absolute top-full left-0 z-40 mt-1 w-full min-w-[320px] max-w-100 bg-ctp-mantle border border-ctp-surface0 rounded-lg shadow-lg"
             role="listbox"
             aria-label="Repository list"
           >
-            <div className="max-h-[400px] overflow-y-auto p-1">
+            <div className="max-h-100 overflow-y-auto p-1">
               {pinnedRepos.length > 0 && (
                 <div>
                   <div className="px-3 py-1.5 text-xs font-semibold text-ctp-overlay0 uppercase tracking-wider">
