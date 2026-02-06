@@ -59,7 +59,7 @@ export function RepositoryView() {
             <div className="flex-1 overflow-y-auto">
               {/* Branches section */}
               <details open className="border-b border-ctp-surface0">
-                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 bg-ctp-base z-10">
+                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
                   <GitBranch className="w-4 h-4" />
                   <span className="font-semibold text-sm flex-1">Branches</span>
                   <button
@@ -84,7 +84,7 @@ export function RepositoryView() {
 
               {/* Stash section */}
               <details className="border-b border-ctp-surface0">
-                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 bg-ctp-base z-10">
+                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
                   <Archive className="w-4 h-4" />
                   <span className="font-semibold text-sm flex-1">Stashes</span>
                   <button
@@ -109,7 +109,7 @@ export function RepositoryView() {
 
               {/* Tags section */}
               <details className="border-b border-ctp-surface0">
-                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 bg-ctp-base z-10">
+                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
                   <Tag className="w-4 h-4" />
                   <span className="font-semibold text-sm flex-1">Tags</span>
                   <button
@@ -128,13 +128,14 @@ export function RepositoryView() {
                   <TagList
                     showCreateDialog={showTagDialog}
                     onCloseCreateDialog={() => setShowTagDialog(false)}
+                    onOpenCreateDialog={() => setShowTagDialog(true)}
                   />
                 </div>
               </details>
 
               {/* Gitflow section */}
               <details className="border-b border-ctp-surface0">
-                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 bg-ctp-base z-10">
+                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
                   <GitMerge className="w-4 h-4" />
                   <span className="font-semibold text-sm flex-1">Gitflow</span>
                 </summary>
@@ -143,7 +144,7 @@ export function RepositoryView() {
 
               {/* Worktrees section */}
               <details className="border-b border-ctp-surface0">
-                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 bg-ctp-base z-10">
+                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
                   <FolderGit2 className="w-4 h-4" />
                   <span className="font-semibold text-sm flex-1">
                     Worktrees
