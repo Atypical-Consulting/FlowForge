@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-05)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Phase 13 - Navigation (Repo/Branch Switcher)
+**Current focus:** Phase 14 - UI Polish (Empty states, spinners, tooltips)
 
 ## Current Position
 
-Phase: 13 of 15 (Navigation)
+Phase: 14 of 15 (UI Polish)
 Plan: Ready to plan
-Status: Phase 12 complete, ready for Phase 13
-Last activity: 2026-02-05 — Phase 12 Workflows complete
+Status: Phase 13 complete, ready for Phase 14
+Last activity: 2026-02-06 — Phase 13 Navigation complete
 
-Progress: ████░░░░░░ 40% (v1.1.0)
+Progress: ██████░░░░ 60% (v1.1.0)
 
 ## Milestone History
 
@@ -46,7 +46,7 @@ See `.planning/MILESTONES.md` for full history.
 **Phases:**
 - Phase 11: Foundation (Toast + Settings + Layout) ✓
 - Phase 12: Workflows (Clone + Gitflow Init + Amend) ✓
-- Phase 13: Navigation (Repo/Branch Switcher)
+- Phase 13: Navigation (Repo/Branch Switcher) ✓
 - Phase 14: UI Polish (Empty states, spinners, tooltips)
 - Phase 15: Topology (Ungit-style + History diff)
 
@@ -102,9 +102,23 @@ None.
 - Amend commit with pre-fill and confirmation
 - Feature/release/hotfix name sanitization
 
+## Phase 13 Summary
+
+**Completed:** 2026-02-06
+**Plans:** 5/5
+**Requirements:** 5 (NAV-01/02/03/04/05)
+
+**Delivered:**
+- Rust backend: `list_all_branches` (local + remote) and `checkout_remote_branch` commands
+- Navigation Zustand store with Tauri Store persistence (pinned repos, recent branches, last active branch)
+- RepoSwitcher pill + dropdown (pinned & recent repos, pin/unpin, keyboard nav)
+- BranchSwitcher pill + dropdown (search, remote toggle, recent branches)
+- Header integration with repo switching (atomic open, last-branch restore, toast)
+- Branch switching with stash-and-switch confirmation for dirty trees
+
 ## Next Steps
 
-Run `/gsd:plan-phase 13` to plan Phase 13 (Navigation).
+Run `/gsd:plan-phase 14` to plan Phase 14 (UI Polish).
 
 ---
 *State updated: 2026-02-05*

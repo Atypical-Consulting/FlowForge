@@ -24,11 +24,11 @@ Requirements for v1.1.0 release. Each maps to roadmap phases.
 
 ### Navigation (NAV)
 
-- [ ] **NAV-01**: Top bar displays current repository name
-- [ ] **NAV-02**: Top bar displays current branch name
-- [ ] **NAV-03**: User can switch repositories from top bar dropdown
-- [ ] **NAV-04**: User can switch branches from top bar dropdown
-- [ ] **NAV-05**: Branch dropdown shows recent branches with search capability
+- [x] **NAV-01**: Top bar displays current repository name
+- [x] **NAV-02**: Top bar displays current branch name
+- [x] **NAV-03**: User can switch repositories from top bar dropdown
+- [x] **NAV-04**: User can switch branches from top bar dropdown
+- [x] **NAV-05**: Branch dropdown shows recent branches with search capability
 
 ### Git Workflows (FLOW)
 
@@ -114,11 +114,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DFLT-04 | Phase 12 | Complete |
 | DFLT-05 | Phase 11 | Complete |
 | DFLT-06 | Phase 11 | Complete |
-| NAV-01 | Phase 13 | Pending |
-| NAV-02 | Phase 13 | Pending |
-| NAV-03 | Phase 13 | Pending |
-| NAV-04 | Phase 13 | Pending |
-| NAV-05 | Phase 13 | Pending |
+| NAV-01 | Phase 13 | Complete |
+| NAV-02 | Phase 13 | Complete |
+| NAV-03 | Phase 13 | Complete |
+| NAV-04 | Phase 13 | Complete |
+| NAV-05 | Phase 13 | Complete |
 | FLOW-01 | Phase 12 | Complete |
 | FLOW-02 | Phase 12 | Complete |
 | FLOW-03 | Phase 12 | Complete |
