@@ -413,6 +413,38 @@ export const commands = {
     }
   },
   /**
+   * List all branches (local and optionally remote) in the repository.
+   */
+  async listAllBranches(
+    includeRemote: boolean,
+  ): Promise<Result<BranchInfo[], GitError>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("list_all_branches", { includeRemote }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Checkout a remote branch by creating a local tracking branch.
+   */
+  async checkoutRemoteBranch(
+    remoteBranch: string,
+  ): Promise<Result<null, GitError>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("checkout_remote_branch", { remoteBranch }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
    * List all stash entries in the repository.
    */
   async listStashes(): Promise<Result<StashEntry[], GitError>> {
@@ -890,11 +922,11 @@ export type ActiveFlow = {
   sourceBranch: string;
 };
 /**
- * Information about a local branch.
+ * Information about a branch (local or remote).
  */
 export type BranchInfo = {
   /**
-   * Branch name (e.g., "main", "feature/login")
+   * Branch name (e.g., "main", "feature/login", "origin/feature/x")
    */
   name: string;
   /**
@@ -913,6 +945,14 @@ export type BranchInfo = {
    * Whether branch is merged into HEAD (None if IS head)
    */
   isMerged: boolean | null;
+  /**
+   * True for remote tracking branches, false for local
+   */
+  isRemote: boolean;
+  /**
+   * Remote name (e.g., "origin") for remote branches, None for local
+   */
+  remoteName: string | null;
 };
 /**
  * Branch type classification for Gitflow-based coloring.
@@ -1616,7 +1656,7 @@ export type SyncResult = {
   message: string;
   commitsTransferred: number;
 };
-// TAURI_CHANNEL stub removed - using real import from @tauri-apps/api/core
+export type TAURI_CHANNEL<TSend> = null;
 /**
  * Information about a git tag.
  */

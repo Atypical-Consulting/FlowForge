@@ -5,7 +5,10 @@ use std::sync::Mutex;
 
 use git::{
     RepositoryState, WatcherState,
-    branch::{checkout_branch, create_branch, delete_branch, list_branches},
+    branch::{
+        checkout_branch, checkout_remote_branch, create_branch, delete_branch, list_all_branches,
+        list_branches,
+    },
     changelog::generate_changelog_cmd,
     clone::clone_repository,
     commands::{close_repository, get_repository_status, is_git_repository, open_repository},
@@ -26,8 +29,8 @@ use git::{
     worktree::{create_worktree, delete_worktree, list_worktrees},
 };
 use gitflow::{
-    abort_gitflow, finish_feature, finish_hotfix, finish_release, get_gitflow_status,
-    init_gitflow, start_feature, start_hotfix, start_release,
+    abort_gitflow, finish_feature, finish_hotfix, finish_release, get_gitflow_status, init_gitflow,
+    start_feature, start_hotfix, start_release,
 };
 use specta_typescript::Typescript;
 use tauri::Manager;
@@ -75,6 +78,8 @@ pub fn run() {
         create_branch,
         checkout_branch,
         delete_branch,
+        list_all_branches,
+        checkout_remote_branch,
         // Stash commands
         list_stashes,
         stash_save,
