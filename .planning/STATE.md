@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 Phase: Milestone complete
 Plan: N/A
 Status: v1.1.0 shipped, ready for next milestone
-Last activity: 2026-02-06 — Completed quick task 025: fix TAURI_CHANNEL CI pipeline
+Last activity: 2026-02-06 — Completed quick task 026: fix DMG damaged on macOS
 
 Progress: ██████████ 100% (v1.1.0)
 
@@ -82,6 +82,7 @@ None.
 | 023 | Fix app icon not filling circle on welcome page | 2026-02-05 | 65485a5 | [023-fix-app-icon-not-filling-circle-on-welco](./quick/023-fix-app-icon-not-filling-circle-on-welco/) |
 | 024 | Bump version to v1.1.0 | 2026-02-06 | dfc6d4e | [024-prepare-v110-version-bump](./quick/024-prepare-v110-version-bump/) |
 | 025 | Fix TAURI_CHANNEL CI pipeline failure | 2026-02-06 | c6bafb2 | [025-fix-tauri-channel-ci-pipeline](./quick/025-fix-tauri-channel-ci-pipeline/) |
+| 026 | Fix DMG damaged on macOS (signing + workaround) | 2026-02-06 | 2b46b07 | [026-fix-dmg-damaged-macos-signing](./quick/026-fix-dmg-damaged-macos-signing/) |
 
 ## Next Steps
 
