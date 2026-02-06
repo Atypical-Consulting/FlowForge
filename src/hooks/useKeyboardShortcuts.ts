@@ -2,8 +2,10 @@ import { Channel } from "@tauri-apps/api/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useHotkeys } from "react-hotkeys-hook";
 import { type SyncProgress, commands } from "../bindings";
+import { useBladeStore } from "../stores/blades";
 import { useRepositoryStore } from "../stores/repository";
 import { useSettingsStore } from "../stores/settings";
+import { useTopologyStore } from "../stores/topology";
 import { toast } from "../stores/toast";
 
 /**
@@ -168,6 +170,39 @@ export function useKeyboardShortcuts() {
       }
     },
     { preventDefault: true, enabled: !!status },
+  );
+
+  // Escape - close current blade (pop blade stack)
+  useHotkeys(
+    "escape",
+    () => {
+      const bladeStore = useBladeStore.getState();
+      if (bladeStore.bladeStack.length > 1) {
+        bladeStore.popBlade();
+      }
+    },
+    { enableOnFormTags: false },
+  );
+
+  // Enter - open details for selected commit in topology
+  useHotkeys(
+    "enter",
+    () => {
+      const bladeStore = useBladeStore.getState();
+      const topologyStore = useTopologyStore.getState();
+      if (
+        bladeStore.activeProcess === "topology" &&
+        topologyStore.selectedCommit &&
+        bladeStore.bladeStack.length === 1
+      ) {
+        bladeStore.pushBlade({
+          type: "commit-details",
+          title: "Commit",
+          props: { oid: topologyStore.selectedCommit },
+        });
+      }
+    },
+    { enableOnFormTags: false, enabled: !!status },
   );
 
   // Return loading states for UI feedback
