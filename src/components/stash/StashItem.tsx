@@ -46,7 +46,7 @@ export function StashItem({
           <span className="text-xs text-ctp-overlay0">
             stash@{"{" + stash.index + "}"}
             {parsed.branch && (
-              <span className="ml-1 text-ctp-overlay1">on {parsed.branch}</span>
+              <span className="text-ctp-overlay1"> on {parsed.branch}</span>
             )}
           </span>
         </div>
