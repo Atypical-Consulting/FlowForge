@@ -964,6 +964,10 @@ commitType: string;
  */
 title: string; 
 /**
+ * Emoji for the commit type (e.g., sparkles for feat).
+ */
+emoji: string; 
+/**
  * Commits in this group.
  */
 commits: ChangelogCommit[] }

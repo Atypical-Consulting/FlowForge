@@ -62,6 +62,8 @@ pub struct CommitGroup {
     pub commit_type: String,
     /// Display title (e.g., "Features", "Bug Fixes").
     pub title: String,
+    /// Emoji for the commit type (e.g., sparkles for feat).
+    pub emoji: String,
     /// Commits in this group.
     pub commits: Vec<ChangelogCommit>,
 }
@@ -112,7 +114,7 @@ impl From<tera::Error> for ChangelogError {
 const DEFAULT_TEMPLATE: &str = r#"# Changelog
 
 {% for group in groups %}
-## {{ group.title }}
+## {{ group.emoji }} {{ group.title }}
 
 {% for commit in group.commits %}
 - {% if commit.scope %}**{{ commit.scope }}:** {% endif %}{{ commit.description }}{% if commit.breaking %} **BREAKING**{% endif %} ([{{ commit.hash }}])
@@ -127,7 +129,7 @@ const VERSIONED_TEMPLATE: &str = r#"# Changelog
 ## {% if version %}{{ version }}{% else %}Unreleased{% endif %}{% if date %} ({{ date }}){% endif %}
 
 {% for group in groups %}
-### {{ group.title }}
+### {{ group.emoji }} {{ group.title }}
 
 {% for commit in group.commits %}
 - {% if commit.scope %}**{{ commit.scope }}:** {% endif %}{{ commit.description }}{% if commit.breaking %} **BREAKING**{% endif %}
@@ -155,6 +157,24 @@ fn get_type_title(commit_type: &str) -> &'static str {
         "ci" => "Continuous Integration",
         "build" => "Build System",
         _ => "Other Changes",
+    }
+}
+
+/// Get the emoji for a commit type.
+fn get_type_emoji(commit_type: &str) -> &'static str {
+    match commit_type {
+        "feat" => "\u{2728}",
+        "fix" => "\u{1F41B}",
+        "perf" => "\u{26A1}",
+        "refactor" => "\u{1F528}",
+        "docs" => "\u{1F4DD}",
+        "style" => "\u{1F3A8}",
+        "test" => "\u{1F9EA}",
+        "chore" => "\u{2699}\u{FE0F}",
+        "ci" => "\u{1F680}",
+        "build" => "\u{1F4E6}",
+        "revert" => "\u{21A9}\u{FE0F}",
+        _ => "\u{1F4CB}",
     }
 }
 
@@ -355,6 +375,7 @@ pub fn generate_changelog(
         .into_iter()
         .map(|(commit_type, commits)| CommitGroup {
             title: get_type_title(&commit_type).to_string(),
+            emoji: get_type_emoji(&commit_type).to_string(),
             commit_type,
             commits,
         })
@@ -482,16 +503,19 @@ mod tests {
             CommitGroup {
                 commit_type: "chore".to_string(),
                 title: "Chores".to_string(),
+                emoji: get_type_emoji("chore").to_string(),
                 commits: commits.clone(),
             },
             CommitGroup {
                 commit_type: "feat".to_string(),
                 title: "Features".to_string(),
+                emoji: get_type_emoji("feat").to_string(),
                 commits: commits.clone(),
             },
             CommitGroup {
                 commit_type: "fix".to_string(),
                 title: "Bug Fixes".to_string(),
+                emoji: get_type_emoji("fix").to_string(),
                 commits,
             },
         ];
@@ -522,6 +546,7 @@ mod tests {
         let groups = vec![CommitGroup {
             commit_type: "feat".to_string(),
             title: "Features".to_string(),
+            emoji: get_type_emoji("feat").to_string(),
             commits: vec![ChangelogCommit {
                 hash: "abc1234".to_string(),
                 scope: Some("api".to_string()),
@@ -541,7 +566,8 @@ mod tests {
 
         let result = tera.render("changelog", &context).unwrap();
         assert!(result.contains("# Changelog"));
-        assert!(result.contains("## Features"));
+        assert!(result.contains("Features"));
+        assert!(result.contains("\u{2728}")); // sparkles emoji
         assert!(result.contains("**api:**"));
         assert!(result.contains("add new endpoint"));
     }
@@ -551,6 +577,7 @@ mod tests {
         let groups = vec![CommitGroup {
             commit_type: "fix".to_string(),
             title: "Bug Fixes".to_string(),
+            emoji: get_type_emoji("fix").to_string(),
             commits: vec![ChangelogCommit {
                 hash: "def5678".to_string(),
                 scope: None,
@@ -572,7 +599,8 @@ mod tests {
 
         let result = tera.render("changelog", &context).unwrap();
         assert!(result.contains("## v1.0.0 (2024-01-15)"));
-        assert!(result.contains("### Bug Fixes"));
+        assert!(result.contains("Bug Fixes"));
+        assert!(result.contains("\u{1F41B}")); // bug emoji
         assert!(result.contains("**BREAKING**"));
     }
 }
