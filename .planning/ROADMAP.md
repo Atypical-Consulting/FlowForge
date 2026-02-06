@@ -104,7 +104,15 @@ Plans:
   3. Topology graph renders with clear Gitflow lanes (Ungit-inspired style)
   4. Topology auto-refreshes after commits (fixes v1.0 tech debt)
   5. User can select commits in History view and inspect their diffs
-**Plans**: TBD
+**Plans:** 7 plans
+Plans:
+- [ ] 15-01-PLAN.md — Backend commit file diff command (Rust + bindings)
+- [ ] 15-02-PLAN.md — Blade navigation system (store + container + process nav)
+- [ ] 15-03-PLAN.md — Topology graph restyle (badges, edges, lane colors)
+- [ ] 15-04-PLAN.md — Layout integration (RepositoryView + Header + auto-refresh)
+- [ ] 15-05-PLAN.md — Commit details blade + file tree
+- [ ] 15-06-PLAN.md — Diff blade + history integration + keyboard shortcuts
+- [ ] 15-07-PLAN.md — Human verification
 
 ## Progress
 
@@ -114,7 +122,7 @@ Plans:
 | 12. Workflows | 6/6 | Complete | 2026-02-05 |
 | 13. Navigation | 5/5 | Complete | 2026-02-06 |
 | 14. UI Polish | 4/4 | Complete | 2026-02-06 |
-| 15. Topology | 0/TBD | Not started | - |
+| 15. Topology | 0/7 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-05*
