@@ -57,8 +57,6 @@ export function FileItem({
   const displayName = showFilenameOnly
     ? file.path.split("/").pop() || file.path
     : file.path;
-  const indentStyle =
-    depth > 0 ? { paddingLeft: `${depth * 16 + 8}px` } : undefined;
 
   const handleAction = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -79,13 +77,12 @@ export function FileItem({
       onClick={handleSelect}
       onKeyDown={(e) => e.key === "Enter" && handleSelect()}
       className={cn(
-        "flex items-center gap-2 px-3 py-1.5 cursor-pointer group",
+        "flex items-center cursor-pointer group",
         "hover:bg-ctp-surface0/50 transition-colors",
+        showFilenameOnly ? "gap-1 px-2 py-1" : "gap-2 px-3 py-1.5",
         isSelected && "bg-ctp-blue/20 border-l-2 border-ctp-blue",
       )}
-      style={indentStyle}
     >
-      {showFilenameOnly && <span className="w-4 shrink-0" aria-hidden="true" />}
       <div className="relative shrink-0">
         <FileTypeIcon path={file.path} className="w-4 h-4" />
         <span

@@ -41,7 +41,6 @@ export function FileTreeView({
   onFileSelect,
   onStageFolder,
 }: FileTreeViewProps) {
-  // Filter files based on search
   const filteredFiles = useMemo(() => {
     if (!filter) return files;
     const lowerFilter = filter.toLowerCase();
@@ -91,7 +90,7 @@ export function FileTreeView({
   }
 
   return (
-    <div className="pl-2">
+    <div className="pl-1">
       {Array.from(tree.children.values()).map((node) => (
         <TreeNode
           key={node.path}
@@ -106,6 +105,30 @@ export function FileTreeView({
   );
 }
 
+/*
+ * Layout geometry:
+ *
+ * Parent folder row (px-2 gap-1):
+ *   [8px pad] [16px chevron] [4px gap] [16px icon] [4px gap] [text...]
+ *   Chevron center = 8 + 8 = 16px from left edge
+ *
+ * To place the vertical guide line under the chevron center:
+ *   margin-left on children wrapper = 15px (border at 15.5px ≈ 16px center)
+ *
+ * The horizontal branch extends from the vertical line rightward.
+ * Child content is pushed right by BRANCH_WIDTH, then has its own px-2 (8px).
+ * The branch should visually connect the vertical line to the child's first element.
+ *
+ * Total indent per level = GUIDE_INDENT + BRANCH_WIDTH = 15 + 9 = 24px
+ */
+const GUIDE_INDENT = 15;
+const BRANCH_WIDTH = 9;
+const CURVE_RADIUS = 6;
+const GUIDE_COLOR = "var(--catppuccin-color-surface1)";
+
+/** Row height center: py-1 (4px) + ~16px content / 2 = 12px from top */
+const ROW_CENTER = 12;
+
 interface TreeNodeProps {
   node: FileTreeNode;
   section: "staged" | "unstaged" | "untracked";
@@ -117,21 +140,6 @@ interface TreeNodeProps {
   onStageFolder?: (paths: string[]) => void;
 }
 
-// Indent guide component — aligned with 16px step
-function IndentGuides({ depth }: { depth: number }) {
-  return (
-    <>
-      {Array.from({ length: depth }).map((_, i) => (
-        <div
-          key={i}
-          className="absolute h-full w-px bg-ctp-surface1"
-          style={{ left: `${i * 16 + 16}px` }}
-        />
-      ))}
-    </>
-  );
-}
-
 function TreeNode({
   node,
   section,
@@ -141,18 +149,16 @@ function TreeNode({
 }: TreeNodeProps) {
   const [expanded, setExpanded] = useState(true);
 
+  // Leaf file node
   if (!node.isDirectory && node.file) {
     return (
-      <div className="relative">
-        <IndentGuides depth={depth} />
-        <FileItem
-          file={node.file}
-          section={section}
-          depth={depth}
-          showFilenameOnly
-          onFileSelect={onFileSelect}
-        />
-      </div>
+      <FileItem
+        file={node.file}
+        section={section}
+        depth={depth}
+        showFilenameOnly
+        onFileSelect={onFileSelect}
+      />
     );
   }
 
@@ -166,8 +172,8 @@ function TreeNode({
 
   return (
     <div>
-      <div className="relative group">
-        <IndentGuides depth={depth} />
+      {/* Folder row */}
+      <div className="group">
         <div
           role="button"
           tabIndex={0}
@@ -182,7 +188,6 @@ function TreeNode({
               setExpanded(!expanded);
             }
           }}
-          style={{ paddingLeft: `${depth * 16 + 8}px` }}
         >
           <span className="w-4 flex items-center justify-center shrink-0">
             {expanded ? (
@@ -230,20 +235,110 @@ function TreeNode({
           )}
         </div>
       </div>
-      {expanded && (
-        <div>
-          {childNodes.map((child) => (
-            <TreeNode
-              key={child.path}
-              node={child}
-              section={section}
-              depth={depth + 1}
-              onFileSelect={onFileSelect}
-              onStageFolder={onStageFolder}
-            />
-          ))}
+
+      {/* Children with indent guide */}
+      {expanded && childNodes.length > 0 && (
+        <div style={{ marginLeft: `${GUIDE_INDENT}px` }}>
+          {childNodes.map((child, index) => {
+            const isLastChild = index === childNodes.length - 1;
+            return (
+              <ConnectorRow key={child.path} isLast={isLastChild}>
+                {child.isDirectory ? (
+                  <TreeNode
+                    node={child}
+                    section={section}
+                    depth={depth + 1}
+                    onFileSelect={onFileSelect}
+                    onStageFolder={onStageFolder}
+                  />
+                ) : child.file ? (
+                  <FileItem
+                    file={child.file}
+                    section={section}
+                    depth={0}
+                    showFilenameOnly
+                    onFileSelect={onFileSelect}
+                  />
+                ) : null}
+              </ConnectorRow>
+            );
+          })}
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * ConnectorRow renders tree branch graphics for a single child.
+ *
+ * Structure:
+ *   <div>                     ← border-left for vertical line (non-last only)
+ *     <svg/>                  ← connector: ├── or ╰──
+ *     <div pl={BRANCH_WIDTH}> ← content pushed right
+ *       {children}
+ *     </div>
+ *   </div>
+ *
+ * The SVG is positioned absolutely at left: -1px so it overlays the border-left.
+ * For last children, border-left is removed and the SVG draws the vertical
+ * segment + curve + horizontal branch.
+ */
+function ConnectorRow({
+  isLast,
+  children,
+}: {
+  isLast: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className="relative"
+      style={{
+        borderLeft: isLast ? "none" : `1px solid ${GUIDE_COLOR}`,
+        marginLeft: isLast ? "1px" : "0px",
+      }}
+    >
+      {/* SVG connector */}
+      <svg
+        className="absolute pointer-events-none"
+        style={{
+          left: "-1px",
+          top: 0,
+          width: `${BRANCH_WIDTH + 1}px`,
+          height: "100%",
+          overflow: "visible",
+        }}
+        aria-hidden="true"
+      >
+        {isLast ? (
+          /* ╰── curved connector for last child */
+          <path
+            d={[
+              `M 0.5 0`,
+              `L 0.5 ${ROW_CENTER - CURVE_RADIUS}`,
+              `Q 0.5 ${ROW_CENTER} ${CURVE_RADIUS + 0.5} ${ROW_CENTER}`,
+              `L ${BRANCH_WIDTH + 0.5} ${ROW_CENTER}`,
+            ].join(" ")}
+            fill="none"
+            stroke={GUIDE_COLOR}
+            strokeWidth="1"
+          />
+        ) : (
+          /* ├── T-connector for non-last child */
+          <line
+            x1="0.5"
+            y1={ROW_CENTER}
+            x2={BRANCH_WIDTH + 0.5}
+            y2={ROW_CENTER}
+            stroke={GUIDE_COLOR}
+            strokeWidth="1"
+          />
+        )}
+      </svg>
+
+      {/* Content pushed right past the connector */}
+      <div style={{ paddingLeft: `${BRANCH_WIDTH}px` }}>{children}</div>
     </div>
   );
 }
