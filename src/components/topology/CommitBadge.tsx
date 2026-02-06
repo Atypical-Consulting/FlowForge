@@ -52,7 +52,7 @@ export const CommitBadge = memo(({ data }: CommitBadgeProps) => {
     <div
       className={cn(
         "px-2.5 py-1.5 rounded-lg border cursor-pointer transition-all",
-        "min-w-[200px] h-[40px] flex items-center gap-2",
+        "w-[240px] h-[40px] flex items-center gap-2",
         badgeStyle,
         data.isSelected &&
           `ring-2 ${ringColor} ring-offset-1 ring-offset-ctp-base shadow-lg`,
