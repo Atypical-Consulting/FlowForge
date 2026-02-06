@@ -17,7 +17,7 @@ use git::{
         get_scope_suggestions, infer_scope_from_staged, suggest_commit_type,
         validate_conventional_commit,
     },
-    diff::{get_commit_file_diff, get_file_diff},
+    diff::{get_commit_file_base64, get_commit_file_diff, get_file_base64, get_file_diff},
     graph::get_commit_graph,
     history::{get_commit_details, get_commit_history, search_commits},
     merge::{abort_merge, get_merge_status, merge_branch},
@@ -60,6 +60,8 @@ pub fn run() {
         // Diff commands
         get_file_diff,
         get_commit_file_diff,
+        get_file_base64,
+        get_commit_file_base64,
         // Commit commands
         create_commit,
         get_last_commit_message,

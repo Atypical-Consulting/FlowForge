@@ -980,6 +980,7 @@ dependencies = [
 name = "flowforge"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
  "chrono",
  "git-conventional",
  "git2",

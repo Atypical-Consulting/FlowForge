@@ -1,29 +1,60 @@
-import { convertFileSrc } from "@tauri-apps/api/core";
-import { ImageIcon } from "lucide-react";
-import { useMemo, useState } from "react";
-import { useRepositoryStore } from "../../stores/repository";
+import { ImageIcon, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { commands } from "../../bindings";
+import { getErrorMessage } from "../../lib/errors";
 
 interface ViewerImageBladeProps {
   filePath: string;
+  /** If provided, load image from this commit; otherwise load from working tree */
+  oid?: string;
 }
 
-export function ViewerImageBlade({ filePath }: ViewerImageBladeProps) {
-  const repoPath = useRepositoryStore((s) => s.status?.repoPath);
-  const [loadError, setLoadError] = useState(false);
+export function ViewerImageBlade({ filePath, oid }: ViewerImageBladeProps) {
+  const [src, setSrc] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Build an asset URL from the absolute file path
-  const src = useMemo(() => {
-    if (!repoPath) return null;
-    const absPath = `${repoPath}/${filePath}`;
-    return convertFileSrc(absPath);
-  }, [repoPath, filePath]);
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    setSrc(null);
 
-  if (!src || loadError) {
+    const load = async () => {
+      const result = oid
+        ? await commands.getCommitFileBase64(oid, filePath)
+        : await commands.getFileBase64(filePath);
+
+      if (cancelled) return;
+
+      if (result.status === "ok") {
+        setSrc(result.data);
+      } else {
+        setError(getErrorMessage(result.error));
+      }
+      setLoading(false);
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [filePath, oid]);
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-ctp-mantle">
+        <Loader2 className="w-6 h-6 animate-spin text-ctp-overlay0" />
+      </div>
+    );
+  }
+
+  if (error || !src) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-ctp-mantle gap-2">
         <ImageIcon className="w-8 h-8 text-ctp-overlay0" />
         <p className="text-ctp-overlay1 text-sm">
-          {loadError ? "Failed to load image" : "Image preview not available"}
+          {error || "Image preview not available"}
         </p>
         <p className="text-ctp-overlay0 text-xs">{filePath}</p>
       </div>
@@ -46,7 +77,6 @@ export function ViewerImageBlade({ filePath }: ViewerImageBladeProps) {
           src={src}
           alt={filePath.split("/").pop() || "Image"}
           className="max-w-full max-h-full object-contain rounded shadow-lg"
-          onError={() => setLoadError(true)}
         />
       </div>
     </div>

@@ -156,6 +156,32 @@ async getCommitFileDiff(oid: string, path: string, contextLines: number) : Promi
 }
 },
 /**
+ * Get a file's binary content as a base64 data URI from the working tree.
+ * 
+ * Returns a data URI like `data:image/png;base64,...` for use in `<img>` tags.
+ */
+async getFileBase64(filePath: string) : Promise<Result<string, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_file_base64", { filePath }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Get a file's binary content as a base64 data URI from a specific commit.
+ * 
+ * Extracts the blob from the commit's tree and returns it as a data URI.
+ */
+async getCommitFileBase64(oid: string, filePath: string) : Promise<Result<string, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_commit_file_base64", { oid, filePath }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * Create a new commit from staged changes.
  * 
  * Creates a commit with the given message from the current index (staged changes).

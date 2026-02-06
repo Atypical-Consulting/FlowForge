@@ -87,7 +87,14 @@ export function RepositoryView() {
               showBack
               onBack={goBack}
             >
-              <ViewerImageBlade filePath={String(blade.props.filePath)} />
+              <ViewerImageBlade
+                filePath={String(blade.props.filePath)}
+                oid={
+                  blade.props.mode === "commit"
+                    ? String(blade.props.oid)
+                    : undefined
+                }
+              />
             </BladePanel>
           );
         default:

@@ -1,3 +1,4 @@
+use base64::Engine as _;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use std::path::Path;
@@ -351,6 +352,87 @@ pub async fn get_commit_file_diff(
     })
     .await
     .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}
+
+/// Get a file's binary content as a base64 data URI from the working tree.
+///
+/// Returns a data URI like `data:image/png;base64,...` for use in `<img>` tags.
+#[tauri::command]
+#[specta::specta]
+pub async fn get_file_base64(
+    file_path: String,
+    state: State<'_, RepositoryState>,
+) -> Result<String, GitError> {
+    let repo_path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+
+    let abs_path = repo_path.join(&file_path);
+    let data = tokio::fs::read(&abs_path)
+        .await
+        .map_err(|e| GitError::OperationFailed(format!("Failed to read file: {}", e)))?;
+
+    let mime = mime_from_extension(&file_path);
+    let b64 = base64::engine::general_purpose::STANDARD.encode(&data);
+    Ok(format!("data:{};base64,{}", mime, b64))
+}
+
+/// Get a file's binary content as a base64 data URI from a specific commit.
+///
+/// Extracts the blob from the commit's tree and returns it as a data URI.
+#[tauri::command]
+#[specta::specta]
+pub async fn get_commit_file_base64(
+    oid: String,
+    file_path: String,
+    state: State<'_, RepositoryState>,
+) -> Result<String, GitError> {
+    let repo_path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+
+    tokio::task::spawn_blocking(move || {
+        let repo = git2::Repository::open(&repo_path)?;
+        let commit_oid = git2::Oid::from_str(&oid)
+            .map_err(|e| GitError::OperationFailed(format!("Invalid OID: {}", e)))?;
+        let commit = repo.find_commit(commit_oid)?;
+        let tree = commit.tree()?;
+
+        let entry = tree
+            .get_path(Path::new(&file_path))
+            .map_err(|_| GitError::NotFound(format!("File not found in commit: {}", file_path)))?;
+        let blob = repo.find_blob(entry.id())?;
+
+        let mime = mime_from_extension(&file_path);
+        let b64 = base64::engine::general_purpose::STANDARD.encode(blob.content());
+        Ok(format!("data:{};base64,{}", mime, b64))
+    })
+    .await
+    .map_err(|e| GitError::OperationFailed(format!("Task join error: {}", e)))?
+}
+
+/// Guess MIME type from file extension.
+fn mime_from_extension(path: &str) -> &'static str {
+    let lower = path.to_lowercase();
+    if lower.ends_with(".png") {
+        "image/png"
+    } else if lower.ends_with(".jpg") || lower.ends_with(".jpeg") {
+        "image/jpeg"
+    } else if lower.ends_with(".gif") {
+        "image/gif"
+    } else if lower.ends_with(".webp") {
+        "image/webp"
+    } else if lower.ends_with(".svg") {
+        "image/svg+xml"
+    } else if lower.ends_with(".ico") {
+        "image/x-icon"
+    } else if lower.ends_with(".bmp") {
+        "image/bmp"
+    } else {
+        "application/octet-stream"
+    }
 }
 
 /// Get blob content from a tree by path.
