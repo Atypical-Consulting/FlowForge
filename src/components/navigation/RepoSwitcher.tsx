@@ -8,32 +8,21 @@ import { useRepositoryStore } from "../../stores/repository";
 import { RepoSwitcherItem, type RepoItemData } from "./RepoSwitcherItem";
 
 const slideDown = {
-  hidden: { opacity: 0, height: 0, overflow: "hidden" as const },
+  hidden: { opacity: 0, y: -8 },
   show: {
     opacity: 1,
-    height: "auto",
-    overflow: "hidden" as const,
-    transition: { duration: 0.2, ease: "easeOut" as const },
+    y: 0,
+    transition: { duration: 0.15, ease: "easeOut" as const },
   },
   exit: {
     opacity: 0,
-    height: 0,
-    overflow: "hidden" as const,
-    transition: { duration: 0.15, ease: "easeIn" as const },
+    y: -8,
+    transition: { duration: 0.1, ease: "easeIn" as const },
   },
 };
 
 interface RepoSwitcherProps {
   onSelectRepo: (path: string) => void;
-}
-
-function abbreviateRepoPath(fullPath: string): string {
-  const home = fullPath.startsWith("/Users/")
-    ? fullPath.replace(/^\/Users\/[^/]+/, "~")
-    : fullPath;
-  const segments = home.split("/").filter(Boolean);
-  if (segments.length <= 3) return home;
-  return segments[0] + "/.../" + segments.slice(-1)[0];
 }
 
 export function RepoSwitcher({ onSelectRepo }: RepoSwitcherProps) {
@@ -180,11 +169,6 @@ export function RepoSwitcher({ onSelectRepo }: RepoSwitcherProps) {
         <span className="text-sm text-ctp-subtext1 font-medium">
           {currentName}
         </span>
-        {currentPath && (
-          <span className="text-xs text-ctp-overlay0 hidden sm:inline">
-            {abbreviateRepoPath(currentPath)}
-          </span>
-        )}
         <ChevronDown
           className={cn(
             "w-3.5 h-3.5 text-ctp-overlay0 transition-all",

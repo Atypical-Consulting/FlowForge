@@ -10,18 +10,16 @@ import { BranchSwitcherItem } from "./BranchSwitcherItem";
 import { SwitcherSearch } from "./SwitcherSearch";
 
 const slideDown = {
-  hidden: { opacity: 0, height: 0, overflow: "hidden" as const },
+  hidden: { opacity: 0, y: -8 },
   show: {
     opacity: 1,
-    height: "auto",
-    overflow: "hidden" as const,
-    transition: { duration: 0.2, ease: "easeOut" as const },
+    y: 0,
+    transition: { duration: 0.15, ease: "easeOut" as const },
   },
   exit: {
     opacity: 0,
-    height: 0,
-    overflow: "hidden" as const,
-    transition: { duration: 0.15, ease: "easeIn" as const },
+    y: -8,
+    transition: { duration: 0.1, ease: "easeIn" as const },
   },
 };
 
