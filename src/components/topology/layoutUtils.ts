@@ -1,103 +1,37 @@
-import type { Edge, Node } from "@xyflow/react";
 import type { BranchType, GraphEdge, GraphNode } from "../../bindings";
 
-export const NODE_WIDTH = 240;
-export const NODE_HEIGHT = 40;
-const LANE_WIDTH = 280; // horizontal spacing between lane centers
-const ROW_HEIGHT = 70; // vertical spacing between commit rows
+// ── Layout constants (Ungit-inspired) ──
 
-export interface CommitNodeData extends Record<string, unknown> {
-  oid: string;
-  shortOid: string;
-  message: string;
-  author: string;
-  timestampMs: number;
-  parents: string[];
-  branchType: BranchType;
-  column: number;
-  branchNames: string[];
-  isSelected?: boolean;
-  onSelect?: (oid: string) => void;
-}
+/** X position of the main (HEAD ancestry) lane */
+export const MAIN_LANE_X = 60;
+/** Horizontal spacing between branch lanes */
+export const LANE_SPACING = 90;
+/** Vertical spacing between consecutive HEAD-ancestor commits */
+export const MAIN_ROW_HEIGHT = 90;
+/** Vertical spacing between side-branch or mixed commits */
+export const SIDE_ROW_HEIGHT = 60;
+/** Circle radius for HEAD-ancestor commits */
+export const MAIN_RADIUS = 12;
+/** Circle radius for side-branch commits */
+export const SIDE_RADIUS = 8;
+/** Width of commit detail badge (DOM overlay) */
+export const BADGE_WIDTH = 240;
+/** Height of commit detail badge (DOM overlay) */
+export const BADGE_HEIGHT = 32;
 
-export interface CommitEdgeData extends Record<string, unknown> {
-  branchType: BranchType;
-  index?: number;
-}
+// ── Color mapping ──
 
-/**
- * Layout commit graph using lane-based positioning.
- *
- * X position: determined by the commit's `column` (lane) from the backend.
- * Y position: determined by topological order (array index) — commits come
- *             pre-sorted from the backend revwalk (TOPOLOGICAL | TIME).
- *
- * This produces a clean git-graph style layout where each branch stays in
- * its own vertical lane, unlike dagre which optimizes for generic DAG layout.
- */
-export function layoutGraph(
-  graphNodes: GraphNode[],
-  graphEdges: GraphEdge[],
-): { nodes: Node<CommitNodeData>[]; edges: Edge<CommitEdgeData>[] } {
-  // Build a set of visible node OIDs for fast lookup
-  const visibleOids = new Set(graphNodes.map((n) => n.oid));
-
-  // Position nodes: column → x, row index → y
-  const nodes: Node<CommitNodeData>[] = graphNodes.map((node, index) => ({
-    id: node.oid,
-    type: "commit",
-    position: {
-      x: node.column * LANE_WIDTH,
-      y: index * ROW_HEIGHT,
-    },
-    data: {
-      oid: node.oid,
-      shortOid: node.shortOid,
-      message: node.message,
-      author: node.author,
-      timestampMs: node.timestampMs,
-      parents: node.parents,
-      branchType: node.branchType,
-      column: node.column,
-      branchNames: node.branchNames,
-    },
-  }));
-
-  // Filter edges: only include edges where BOTH source and target exist
-  const validEdges = graphEdges.filter(
-    (edge) => visibleOids.has(edge.from) && visibleOids.has(edge.to),
-  );
-
-  const edges: Edge<CommitEdgeData>[] = validEdges.map((edge, i) => {
-    const sourceNode = graphNodes.find((n) => n.oid === edge.from);
-    return {
-      id: `e-${i}`,
-      source: edge.from,
-      target: edge.to,
-      type: "gitflow",
-      data: {
-        branchType: sourceNode?.branchType || "other",
-      },
-    };
-  });
-
-  return { nodes, edges };
-}
-
-// Catppuccin Mocha color mapping using CSS variables
-export const GITFLOW_COLORS: Record<BranchType, string> = {
-  main: "var(--ctp-blue)",
-  develop: "var(--ctp-green)",
-  feature: "var(--ctp-mauve)",
-  release: "var(--ctp-peach)",
-  hotfix: "var(--ctp-red)",
-  other: "var(--ctp-overlay0)",
+/** Catppuccin Mocha hex colors for SVG rendering */
+export const BRANCH_HEX_COLORS: Record<BranchType, string> = {
+  main: "#89b4fa",
+  develop: "#a6e3a1",
+  feature: "#cba6f7",
+  release: "#fab387",
+  hotfix: "#f38ba8",
+  other: "#6c7086",
 };
 
-export function getBranchColor(branchType: BranchType): string {
-  return GITFLOW_COLORS[branchType] || GITFLOW_COLORS.other;
-}
-
+/** Tailwind-compatible CSS color classes per branch type */
 export const BRANCH_BADGE_STYLES: Record<BranchType, string> = {
   main: "border-ctp-blue bg-ctp-blue/10 hover:bg-ctp-blue/20",
   develop: "border-ctp-green bg-ctp-green/10 hover:bg-ctp-green/20",
@@ -116,14 +50,115 @@ export const BRANCH_RING_COLORS: Record<BranchType, string> = {
   other: "ring-ctp-overlay0",
 };
 
-export const BRANCH_LANE_BG: Record<BranchType, string> = {
-  main: "bg-ctp-blue/5",
-  develop: "bg-ctp-green/5",
-  feature: "bg-ctp-mauve/5",
-  release: "bg-ctp-peach/5",
-  hotfix: "bg-ctp-red/5",
-  other: "bg-ctp-overlay0/5",
-};
+// ── Positioned node type ──
+
+export interface PositionedNode {
+  /** Original graph node data */
+  node: GraphNode;
+  /** Center X of the circle */
+  cx: number;
+  /** Center Y of the circle */
+  cy: number;
+  /** Circle radius */
+  r: number;
+  /** Hex color for SVG fill/stroke */
+  color: string;
+}
+
+export interface PositionedEdge {
+  /** Source node OID (child) */
+  from: string;
+  /** Target node OID (parent) */
+  to: string;
+  /** SVG path data (M...L) */
+  path: string;
+  /** Hex color for SVG stroke */
+  color: string;
+}
+
+// ── Layout function ──
+
+/**
+ * Compute positioned nodes and edges for SVG rendering.
+ *
+ * Uses Ungit-style layout:
+ * - HEAD-ancestor nodes are large, in column 0, with wider spacing
+ * - Side-branch nodes are smaller, offset right, with tighter spacing
+ * - Edges are straight lines between node centers
+ */
+export function computeLayout(
+  graphNodes: GraphNode[],
+  graphEdges: GraphEdge[],
+): {
+  nodes: PositionedNode[];
+  edges: PositionedEdge[];
+  totalHeight: number;
+  totalWidth: number;
+} {
+  if (graphNodes.length === 0) {
+    return { nodes: [], edges: [], totalHeight: 0, totalWidth: 0 };
+  }
+
+  // Position nodes
+  const positionedNodes: PositionedNode[] = [];
+  const nodeMap = new Map<string, PositionedNode>();
+  let currentY = 40; // Start 40px from top
+  let maxX = 0;
+
+  for (let i = 0; i < graphNodes.length; i++) {
+    const gn = graphNodes[i];
+    const isHead = gn.isHeadAncestor;
+    const r = isHead ? MAIN_RADIUS : SIDE_RADIUS;
+    const cx = MAIN_LANE_X + gn.column * LANE_SPACING;
+    const cy = currentY;
+    const color = BRANCH_HEX_COLORS[gn.branchType] || BRANCH_HEX_COLORS.other;
+
+    const pn: PositionedNode = { node: gn, cx, cy, r, color };
+    positionedNodes.push(pn);
+    nodeMap.set(gn.oid, pn);
+
+    if (cx > maxX) maxX = cx;
+
+    // Determine spacing to next node
+    const nextNode = graphNodes[i + 1];
+    if (nextNode) {
+      const nextIsHead = nextNode.isHeadAncestor;
+      // Use larger spacing when both are on the main line
+      if (isHead && nextIsHead) {
+        currentY += MAIN_ROW_HEIGHT;
+      } else {
+        currentY += SIDE_ROW_HEIGHT;
+      }
+    }
+  }
+
+  const totalHeight = currentY + 60;
+  const totalWidth = maxX + LANE_SPACING + BADGE_WIDTH + 20;
+
+  // Build visible OID set
+  const visibleOids = new Set(graphNodes.map((n) => n.oid));
+
+  // Position edges as straight lines
+  const positionedEdges: PositionedEdge[] = [];
+  for (const edge of graphEdges) {
+    const source = nodeMap.get(edge.from);
+    const target = nodeMap.get(edge.to);
+    if (!source || !target) continue; // Skip edges to nodes outside visible set
+    if (!visibleOids.has(edge.from) || !visibleOids.has(edge.to)) continue;
+
+    const path = `M ${source.cx},${source.cy} L ${target.cx},${target.cy}`;
+    const color = source.color;
+
+    positionedEdges.push({ from: edge.from, to: edge.to, path, color });
+  }
+
+  return {
+    nodes: positionedNodes,
+    edges: positionedEdges,
+    totalHeight,
+    totalWidth,
+  };
+}
 
 export function parseConventionalType(message: string): string | null {
   const match = message.match(

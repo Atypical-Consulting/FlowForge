@@ -1,40 +1,21 @@
-import {
-  Background,
-  BackgroundVariant,
-  Controls,
-  type Edge,
-  type Node,
-  type NodeMouseHandler,
-  ReactFlow,
-  ReactFlowProvider,
-  useEdgesState,
-  useNodesState,
-  useReactFlow,
-} from "@xyflow/react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import "@xyflow/react/dist/style.css";
-
+import { useCallback, useMemo, useRef } from "react";
 import { Loader2 } from "lucide-react";
-import type { BranchType } from "../../bindings";
 import { useCommitGraph } from "../../hooks/useCommitGraph";
-import { BranchEdge } from "./BranchEdge";
-import { CommitBadge } from "./CommitBadge";
 import { LaneHeader } from "./LaneHeader";
+import { CommitBadge } from "./CommitBadge";
 import {
-  NODE_WIDTH,
-  type CommitEdgeData,
-  type CommitNodeData,
-  layoutGraph,
+  BADGE_HEIGHT,
+  BADGE_WIDTH,
+  type PositionedEdge,
+  type PositionedNode,
+  computeLayout,
 } from "./layoutUtils";
-
-const nodeTypes = { commit: CommitBadge };
-const edgeTypes = { gitflow: BranchEdge };
 
 interface TopologyPanelProps {
   onCommitSelect?: (oid: string) => void;
 }
 
-function TopologyPanelInner({ onCommitSelect }: TopologyPanelProps) {
+export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
   const {
     nodes: graphNodes,
     edges: graphEdges,
@@ -46,56 +27,31 @@ function TopologyPanelInner({ onCommitSelect }: TopologyPanelProps) {
     loadMore,
   } = useCommitGraph();
 
-  const { setViewport } = useReactFlow();
   const containerRef = useRef<HTMLDivElement>(null);
-  const hasSetInitialViewport = useRef(false);
 
-  // Layout nodes using lane-based positioning
-  const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(() => {
-    if (graphNodes.length === 0) {
-      return {
-        nodes: [] as Node<CommitNodeData>[],
-        edges: [] as Edge<CommitEdgeData>[],
-      };
-    }
-    return layoutGraph(graphNodes, graphEdges);
-  }, [graphNodes, graphEdges]);
+  // Compute layout
+  const { nodes, edges, totalHeight, totalWidth } = useMemo(
+    () => computeLayout(graphNodes, graphEdges),
+    [graphNodes, graphEdges],
+  );
 
-  // Add selection state to nodes
-  const nodesWithHandlers = useMemo(() => {
-    return layoutedNodes.map((node) => ({
-      ...node,
-      data: {
-        ...node.data,
-        isSelected: node.id === selectedCommit,
-      },
-    }));
-  }, [layoutedNodes, selectedCommit]);
-
-  // Add index to edges for staggered animation
-  const edgesWithIndex = useMemo(() => {
-    return layoutedEdges.map((edge, index) => ({
-      ...edge,
-      data: {
-        branchType: edge.data?.branchType || "other",
-        index,
-      } as CommitEdgeData,
-    }));
-  }, [layoutedEdges]);
-
-  // Extract unique branch lanes for the lane header
+  // Extract unique branch lanes for header
   const laneInfo = useMemo(() => {
     const seen = new Map<
       string,
-      { column: number; branchName: string; branchType: BranchType }
+      {
+        column: number;
+        branchName: string;
+        branchType: import("../../bindings").BranchType;
+      }
     >();
-    for (const node of graphNodes) {
-      for (const name of node.branchNames) {
+    for (const gn of graphNodes) {
+      for (const name of gn.branchNames) {
         if (!seen.has(name)) {
           seen.set(name, {
-            column: node.column,
+            column: gn.column,
             branchName: name,
-            branchType: node.branchType,
+            branchType: gn.branchType,
           });
         }
       }
@@ -103,51 +59,10 @@ function TopologyPanelInner({ onCommitSelect }: TopologyPanelProps) {
     return Array.from(seen.values());
   }, [graphNodes]);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node<CommitNodeData>>(
-    [] as Node<CommitNodeData>[],
-  );
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge<CommitEdgeData>>(
-    [] as Edge<CommitEdgeData>[],
-  );
-
-  // Update nodes when data changes
-  useEffect(() => {
-    setNodes(nodesWithHandlers);
-    setEdges(edgesWithIndex);
-  }, [nodesWithHandlers, edgesWithIndex, setNodes, setEdges]);
-
-  // Center viewport on first commit after initial load
-  useEffect(() => {
-    if (
-      hasSetInitialViewport.current ||
-      layoutedNodes.length === 0 ||
-      !containerRef.current
-    )
-      return;
-
-    hasSetInitialViewport.current = true;
-
-    // Wait a tick for React Flow to measure
-    requestAnimationFrame(() => {
-      const container = containerRef.current;
-      if (!container) return;
-
-      const containerWidth = container.clientWidth;
-      const firstNode = layoutedNodes[0];
-      // Center the first node horizontally, 20px from top
-      const nodeCenterX = firstNode.position.x + NODE_WIDTH / 2;
-      const x = containerWidth / 2 - nodeCenterX;
-      const y = -firstNode.position.y + 20;
-
-      setViewport({ x, y, zoom: 1 }, { duration: 0 });
-    });
-  }, [layoutedNodes, setViewport]);
-
-  // Handle node clicks via React Flow's onNodeClick
-  const handleNodeClick: NodeMouseHandler<Node<CommitNodeData>> = useCallback(
-    (_event, node) => {
-      selectCommit(node.data.oid);
-      onCommitSelect?.(node.data.oid);
+  const handleNodeClick = useCallback(
+    (oid: string) => {
+      selectCommit(oid);
+      onCommitSelect?.(oid);
     },
     [selectCommit, onCommitSelect],
   );
@@ -182,38 +97,69 @@ function TopologyPanelInner({ onCommitSelect }: TopologyPanelProps) {
   return (
     <div className="h-full w-full relative bg-ctp-mantle flex flex-col">
       <LaneHeader lanes={laneInfo} />
-      <div className="flex-1 min-h-0 relative" ref={containerRef}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onNodeClick={handleNodeClick}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          defaultViewport={{ x: 0, y: 0, zoom: 1 }}
-          minZoom={0.1}
-          maxZoom={2}
-          nodesDraggable={false}
-          nodesConnectable={false}
-          elementsSelectable={false}
-          zoomOnScroll
-          zoomOnPinch
-          panOnScroll={false}
-          panOnDrag
-          style={{ background: "transparent" }}
+      <div className="flex-1 min-h-0 overflow-auto" ref={containerRef}>
+        <div
+          className="relative"
+          style={{ width: totalWidth, height: totalHeight, minWidth: "100%" }}
         >
-          <Background
-            variant={BackgroundVariant.Dots}
-            gap={20}
-            size={1}
-            color="var(--ctp-surface0, #313244)"
-          />
-          <Controls showInteractive={false} />
-        </ReactFlow>
+          {/* SVG layer: edges and node circles */}
+          <svg
+            className="absolute inset-0 pointer-events-none"
+            width={totalWidth}
+            height={totalHeight}
+          >
+            {/* Edges (rendered behind nodes) */}
+            {edges.map((edge: PositionedEdge) => (
+              <path
+                key={`${edge.from}-${edge.to}`}
+                d={edge.path}
+                stroke={edge.color}
+                strokeWidth={2.5}
+                strokeOpacity={0.5}
+                fill="none"
+              />
+            ))}
+            {/* Node circles */}
+            {nodes.map((pn: PositionedNode) => (
+              <circle
+                key={pn.node.oid}
+                cx={pn.cx}
+                cy={pn.cy}
+                r={pn.r}
+                fill={pn.color}
+                fillOpacity={0.9}
+                stroke={pn.node.oid === selectedCommit ? "#ffffff" : pn.color}
+                strokeWidth={pn.node.oid === selectedCommit ? 3 : 1.5}
+                strokeOpacity={pn.node.oid === selectedCommit ? 1 : 0.6}
+                className="cursor-pointer pointer-events-auto"
+                onClick={() => handleNodeClick(pn.node.oid)}
+              />
+            ))}
+          </svg>
+
+          {/* DOM layer: commit badges */}
+          {nodes.map((pn: PositionedNode) => (
+            <div
+              key={`badge-${pn.node.oid}`}
+              className="absolute pointer-events-auto"
+              style={{
+                left: pn.cx + pn.r + 12,
+                top: pn.cy - BADGE_HEIGHT / 2,
+                width: BADGE_WIDTH,
+                height: BADGE_HEIGHT,
+              }}
+            >
+              <CommitBadge
+                node={pn.node}
+                isSelected={pn.node.oid === selectedCommit}
+                onClick={() => handleNodeClick(pn.node.oid)}
+              />
+            </div>
+          ))}
+        </div>
 
         {hasMore && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+          <div className="flex justify-center py-4">
             <button
               onClick={loadMore}
               disabled={isLoading}
@@ -225,13 +171,5 @@ function TopologyPanelInner({ onCommitSelect }: TopologyPanelProps) {
         )}
       </div>
     </div>
-  );
-}
-
-export function TopologyPanel(props: TopologyPanelProps) {
-  return (
-    <ReactFlowProvider>
-      <TopologyPanelInner {...props} />
-    </ReactFlowProvider>
   );
 }

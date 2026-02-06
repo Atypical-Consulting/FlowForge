@@ -1194,7 +1194,15 @@ column: number;
 /**
  * Branch names pointing to this commit
  */
-branchNames: string[] }
+branchNames: string[]; 
+/**
+ * Whether this commit is a first-parent ancestor of HEAD
+ */
+isHeadAncestor: boolean; 
+/**
+ * The "ideological branch" name that owns this commit for coloring
+ */
+ideologicalBranch: string }
 /**
  * Last commit message with subject and body parsed separately.
  * 

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use specta::Type;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use tauri::State;
 
@@ -47,6 +47,10 @@ pub struct GraphNode {
     pub column: u32,
     /// Branch names pointing to this commit
     pub branch_names: Vec<String>,
+    /// Whether this commit is a first-parent ancestor of HEAD
+    pub is_head_ancestor: bool,
+    /// The "ideological branch" name that owns this commit for coloring
+    pub ideological_branch: String,
 }
 
 /// An edge in the commit graph connecting parent and child commits.
@@ -124,12 +128,10 @@ async fn get_commit_graph_impl(
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
 
-        // Build branch-to-commit mapping
+        // ── 1. Collect all branch refs with their tip OIDs ──
         // Maps commit OID -> list of branch names pointing to it
         let mut branch_map: HashMap<git2::Oid, Vec<String>> = HashMap::new();
-
-        // Collect all branch tips for the revwalk
-        let mut branch_tips: Vec<git2::Oid> = Vec::new();
+        let mut branch_tips: Vec<(git2::Oid, String)> = Vec::new();
 
         for branch_result in repo.branches(Some(git2::BranchType::Local))? {
             let (branch, _) = branch_result?;
@@ -137,78 +139,51 @@ async fn get_commit_graph_impl(
                 if let Ok(reference) = branch.get().resolve() {
                     if let Some(oid) = reference.target() {
                         branch_map.entry(oid).or_default().push(name.to_string());
-                        branch_tips.push(oid);
+                        branch_tips.push((oid, name.to_string()));
                     }
                 }
             }
         }
 
-        // Create revwalk with topological + time sorting
+        // ── 2. Identify HEAD and first-parent ancestors ──
+        let head_oid = repo.head().ok().and_then(|h| h.target());
+        let mut head_ancestors: HashSet<git2::Oid> = HashSet::new();
+        if let Some(head) = head_oid {
+            // Walk first-parent chain from HEAD
+            let mut current = head;
+            loop {
+                head_ancestors.insert(current);
+                if let Ok(commit) = repo.find_commit(current) {
+                    if let Ok(parent) = commit.parent_id(0) {
+                        current = parent;
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+        }
+
+        // ── 3. Revwalk to collect commits ──
         let mut revwalk = repo.revwalk()?;
         revwalk.set_sorting(git2::Sort::TOPOLOGICAL | git2::Sort::TIME)?;
 
-        // Push HEAD first
-        if let Ok(head) = repo.head() {
-            if let Some(oid) = head.target() {
-                let _ = revwalk.push(oid);
-            }
+        if let Some(head) = head_oid {
+            let _ = revwalk.push(head);
         }
-
-        // Push all branch tips to get the full graph
-        for tip in &branch_tips {
+        for (tip, _) in &branch_tips {
             let _ = revwalk.push(*tip);
         }
 
-        // Determine branch type for a commit based on branches pointing to it
-        let determine_branch_type = |branches: &[String]| -> BranchType {
-            // Prioritize: Main > Develop > Release > Hotfix > Feature > Other
-            let mut best_type = BranchType::Other;
-            for branch in branches {
-                let branch_type = classify_branch(branch);
-                match branch_type {
-                    BranchType::Main => return BranchType::Main,
-                    BranchType::Develop if best_type != BranchType::Main => {
-                        best_type = BranchType::Develop;
-                    }
-                    BranchType::Release
-                        if best_type != BranchType::Main && best_type != BranchType::Develop =>
-                    {
-                        best_type = BranchType::Release;
-                    }
-                    BranchType::Hotfix
-                        if best_type != BranchType::Main
-                            && best_type != BranchType::Develop
-                            && best_type != BranchType::Release =>
-                    {
-                        best_type = BranchType::Hotfix;
-                    }
-                    BranchType::Feature if best_type == BranchType::Other => {
-                        best_type = BranchType::Feature;
-                    }
-                    _ => {}
-                }
-            }
-            best_type
-        };
-
-        // Collect commits with pagination
         let mut nodes: Vec<GraphNode> = Vec::new();
         let mut edges: Vec<GraphEdge> = Vec::new();
-
-        // Track which branch a commit belongs to (for commits without direct branch refs)
-        let mut commit_branch_type: HashMap<git2::Oid, BranchType> = HashMap::new();
-
-        // Pre-populate with known branch tips
-        for (oid, branches) in &branch_map {
-            commit_branch_type.insert(*oid, determine_branch_type(branches));
-        }
+        let mut oid_to_index: HashMap<String, usize> = HashMap::new();
 
         for (idx, oid_result) in revwalk.enumerate() {
-            // Skip offset commits
             if idx < offset {
                 continue;
             }
-            // Stop after collecting limit commits
             if nodes.len() >= limit {
                 break;
             }
@@ -218,38 +193,17 @@ async fn get_commit_graph_impl(
                     let author = commit.author();
                     let parent_oids: Vec<String> =
                         commit.parent_ids().map(|id| id.to_string()).collect();
-
-                    // Get branch names if this commit has any
                     let branch_names = branch_map.get(&oid).cloned().unwrap_or_default();
 
-                    // Determine branch type
-                    let branch_type = if !branch_names.is_empty() {
-                        determine_branch_type(&branch_names)
-                    } else if let Some(&bt) = commit_branch_type.get(&oid) {
-                        bt
-                    } else {
-                        // Inherit from first parent if available
-                        commit
-                            .parent_id(0)
-                            .ok()
-                            .and_then(|parent_oid| commit_branch_type.get(&parent_oid).copied())
-                            .unwrap_or(BranchType::Other)
-                    };
-
-                    // Propagate branch type to parents
-                    for parent_id in commit.parent_ids() {
-                        if !commit_branch_type.contains_key(&parent_id) {
-                            commit_branch_type.insert(parent_id, branch_type);
-                        }
-                    }
-
-                    // Build edges for parent relationships
                     for parent_oid in &parent_oids {
                         edges.push(GraphEdge {
                             from: oid.to_string(),
                             to: parent_oid.clone(),
                         });
                     }
+
+                    let node_index = nodes.len();
+                    oid_to_index.insert(oid.to_string(), node_index);
 
                     nodes.push(GraphNode {
                         oid: oid.to_string(),
@@ -258,16 +212,90 @@ async fn get_commit_graph_impl(
                         author: author.name().unwrap_or("Unknown").to_string(),
                         timestamp_ms: (commit.time().seconds() as f64) * 1000.0,
                         parents: parent_oids,
-                        branch_type,
-                        column: 0, // Will be assigned by lane algorithm
+                        branch_type: BranchType::Other, // Will be set by ideological assignment
+                        column: 0,                      // Will be set by lane algorithm
                         branch_names,
+                        is_head_ancestor: head_ancestors.contains(&oid),
+                        ideological_branch: String::new(), // Will be set below
                     });
                 }
             }
         }
 
-        // Assign lanes for visual layout
-        assign_lanes(&mut nodes);
+        // ── 4. Ideological branch assignment (Ungit-style) ──
+        // Sort refs by priority: local branches first, then by Gitflow priority.
+        // Each ref traverses all parents depth-first; the first ref to reach
+        // a node "owns" it for coloring and lane purposes.
+        let mut sorted_refs: Vec<(String, BranchType)> = branch_tips
+            .iter()
+            .map(|(_, name)| (name.clone(), classify_branch(name)))
+            .collect();
+
+        // Priority: Main(0) > Develop(1) > Release(2) > Hotfix(3) > Feature(4) > Other(5)
+        fn branch_priority(bt: &BranchType) -> u8 {
+            match bt {
+                BranchType::Main => 0,
+                BranchType::Develop => 1,
+                BranchType::Release => 2,
+                BranchType::Hotfix => 3,
+                BranchType::Feature => 4,
+                BranchType::Other => 5,
+            }
+        }
+        sorted_refs.sort_by(|a, b| branch_priority(&a.1).cmp(&branch_priority(&b.1)));
+
+        // Build parent lookup within our visible nodes
+        let mut children_map: HashMap<String, Vec<String>> = HashMap::new();
+        for node in &nodes {
+            for parent in &node.parents {
+                children_map
+                    .entry(parent.clone())
+                    .or_default()
+                    .push(node.oid.clone());
+            }
+        }
+
+        let mut stamped: HashSet<String> = HashSet::new();
+
+        for (ref_name, ref_type) in &sorted_refs {
+            // Find the tip commit for this ref in our node set
+            let tip_oid = branch_tips
+                .iter()
+                .find(|(_, name)| name == ref_name)
+                .map(|(oid, _)| oid.to_string());
+
+            if let Some(tip) = tip_oid {
+                // DFS through parents, stamping each node with this ref
+                let mut stack = vec![tip];
+                while let Some(current) = stack.pop() {
+                    if stamped.contains(&current) {
+                        continue;
+                    }
+                    if let Some(&idx) = oid_to_index.get(&current) {
+                        stamped.insert(current.clone());
+                        nodes[idx].ideological_branch = ref_name.clone();
+                        nodes[idx].branch_type = *ref_type;
+                        // Push parents to continue traversal
+                        for parent in &nodes[idx].parents {
+                            if !stamped.contains(parent) {
+                                stack.push(parent.clone());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Any unstamped nodes (orphans) get "other"
+        for node in &mut nodes {
+            if node.ideological_branch.is_empty() {
+                node.ideological_branch = "other".to_string();
+                node.branch_type = BranchType::Other;
+            }
+        }
+
+        // ── 5. Assign lanes for visual layout ──
+        assign_lanes(&mut nodes, &head_ancestors);
 
         Ok(CommitGraph { nodes, edges })
     })
@@ -275,85 +303,37 @@ async fn get_commit_graph_impl(
     .map_err(|e| GitError::OperationFailed(format!("Task join error: {}", e)))?
 }
 
-/// Assign lane/column positions to commits for visual layout.
+/// Assign lane/column positions to commits for visual layout (Ungit-style).
 ///
-/// Algorithm overview:
-/// Nodes arrive in topological order (children before parents from the revwalk).
-/// We process them in order and propagate column assignments downward:
-///
-/// 1. Each node gets a column: either an existing reservation or a new lane.
-/// 2. The node's first parent inherits the node's column (continuing the branch line).
-/// 3. Additional parents (merge sources) get their own lane if not already assigned.
-/// 4. When a merge is encountered, the secondary branch's lane is freed.
-///
-/// This produces the classic git-graph layout where main/develop stay in the
-/// leftmost lanes and feature branches fork to the right.
-fn assign_lanes(nodes: &mut [GraphNode]) {
+/// Algorithm: HEAD ancestors always get column 0. Side branches get columns
+/// assigned per ideological branch — all commits belonging to the same branch
+/// share the same column. Columns are allocated left-to-right as new branches
+/// are first encountered in topological order.
+fn assign_lanes(nodes: &mut [GraphNode], _head_ancestors: &HashSet<git2::Oid>) {
     if nodes.is_empty() {
         return;
     }
 
-    // Maps commit OID to its pre-assigned column (reserved by a child)
-    let mut reserved_column: HashMap<String, u32> = HashMap::new();
-
-    // Active columns: true = occupied, false = free
-    let mut active_columns: Vec<bool> = Vec::new();
-
-    // Find or create a free column
-    fn alloc_column(active: &mut Vec<bool>) -> u32 {
-        for (i, occupied) in active.iter().enumerate() {
-            if !occupied {
-                active[i] = true;
-                return i as u32;
-            }
-        }
-        let col = active.len() as u32;
-        active.push(true);
-        col
-    }
-
-    fn free_column(active: &mut Vec<bool>, col: u32) {
-        if (col as usize) < active.len() {
-            active[col as usize] = false;
-        }
-    }
+    // Map ideological branch name -> assigned column
+    let mut branch_column: HashMap<String, u32> = HashMap::new();
+    // Column 0 is always reserved for HEAD ancestry line
+    let mut next_column: u32 = 1;
 
     for node in nodes.iter_mut() {
-        // Step 1: Determine this node's column
-        let column = if let Some(col) = reserved_column.remove(&node.oid) {
-            // A child already reserved a column for us
-            col
+        if node.is_head_ancestor {
+            // HEAD ancestors always go in column 0
+            node.column = 0;
         } else {
-            // New branch head (tip commit) — allocate a new lane
-            alloc_column(&mut active_columns)
-        };
-
-        node.column = column;
-
-        // Step 2: Reserve columns for parents
-        if !node.parents.is_empty() {
-            // First parent continues in this node's column
-            let first_parent = &node.parents[0];
-            if !reserved_column.contains_key(first_parent) {
-                reserved_column.insert(first_parent.clone(), column);
+            // Side-branch commits: assign a column per ideological branch
+            let col = if let Some(&col) = branch_column.get(&node.ideological_branch) {
+                col
             } else {
-                // First parent already has a column from another child (convergence).
-                // Free our column since the parent doesn't need it.
-                free_column(&mut active_columns, column);
-            }
-
-            // Additional parents (merge sources) get their own lanes
-            for parent in node.parents.iter().skip(1) {
-                if !reserved_column.contains_key(parent) {
-                    let parent_col = alloc_column(&mut active_columns);
-                    reserved_column.insert(parent.clone(), parent_col);
-                }
-                // If parent already has a column, it will use it when we reach it.
-                // The merge lane will be freed when the parent is processed.
-            }
-        } else {
-            // Root commit — free the column (end of branch)
-            free_column(&mut active_columns, column);
+                let col = next_column;
+                next_column += 1;
+                branch_column.insert(node.ideological_branch.clone(), col);
+                col
+            };
+            node.column = col;
         }
     }
 }
@@ -407,71 +387,111 @@ mod tests {
         assert_eq!(classify_branch("feat-login"), BranchType::Other);
     }
 
+    fn make_node(oid: &str, parents: Vec<&str>, is_head: bool, branch: &str) -> GraphNode {
+        GraphNode {
+            oid: oid.to_string(),
+            short_oid: oid[..7.min(oid.len())].to_string(),
+            message: format!("Commit {}", oid),
+            author: "Test".to_string(),
+            timestamp_ms: 0.0,
+            parents: parents.into_iter().map(String::from).collect(),
+            branch_type: classify_branch(branch),
+            column: 0,
+            branch_names: vec![],
+            is_head_ancestor: is_head,
+            ideological_branch: branch.to_string(),
+        }
+    }
+
     #[test]
     fn test_assign_lanes_empty() {
         let mut nodes: Vec<GraphNode> = vec![];
-        assign_lanes(&mut nodes);
+        let head_ancestors = HashSet::new();
+        assign_lanes(&mut nodes, &head_ancestors);
         assert!(nodes.is_empty());
     }
 
     #[test]
     fn test_assign_lanes_single_commit() {
-        let mut nodes = vec![GraphNode {
-            oid: "abc1234".to_string(),
-            short_oid: "abc1234".to_string(),
-            message: "Initial commit".to_string(),
-            author: "Test".to_string(),
-            timestamp_ms: 0.0,
-            parents: vec![],
-            branch_type: BranchType::Main,
-            column: 0,
-            branch_names: vec!["main".to_string()],
-        }];
-        assign_lanes(&mut nodes);
+        let oid = git2::Oid::from_str("abc1234abc1234abc1234abc1234abc1234abc12").unwrap();
+        let mut head_ancestors = HashSet::new();
+        head_ancestors.insert(oid);
+        let mut nodes = vec![make_node(
+            "abc1234abc1234abc1234abc1234abc1234abc12",
+            vec![],
+            true,
+            "main",
+        )];
+        assign_lanes(&mut nodes, &head_ancestors);
         assert_eq!(nodes[0].column, 0);
     }
 
     #[test]
     fn test_assign_lanes_linear_history() {
+        let oid3 = git2::Oid::from_str("3333333333333333333333333333333333333333").unwrap();
+        let oid2 = git2::Oid::from_str("2222222222222222222222222222222222222222").unwrap();
+        let oid1 = git2::Oid::from_str("1111111111111111111111111111111111111111").unwrap();
+        let mut head_ancestors = HashSet::new();
+        head_ancestors.insert(oid3);
+        head_ancestors.insert(oid2);
+        head_ancestors.insert(oid1);
         let mut nodes = vec![
-            GraphNode {
-                oid: "commit3".to_string(),
-                short_oid: "commit3".to_string(),
-                message: "Third".to_string(),
-                author: "Test".to_string(),
-                timestamp_ms: 3000.0,
-                parents: vec!["commit2".to_string()],
-                branch_type: BranchType::Main,
-                column: 0,
-                branch_names: vec!["main".to_string()],
-            },
-            GraphNode {
-                oid: "commit2".to_string(),
-                short_oid: "commit2".to_string(),
-                message: "Second".to_string(),
-                author: "Test".to_string(),
-                timestamp_ms: 2000.0,
-                parents: vec!["commit1".to_string()],
-                branch_type: BranchType::Main,
-                column: 0,
-                branch_names: vec![],
-            },
-            GraphNode {
-                oid: "commit1".to_string(),
-                short_oid: "commit1".to_string(),
-                message: "First".to_string(),
-                author: "Test".to_string(),
-                timestamp_ms: 1000.0,
-                parents: vec![],
-                branch_type: BranchType::Main,
-                column: 0,
-                branch_names: vec![],
-            },
+            make_node(
+                "3333333333333333333333333333333333333333",
+                vec!["2222222222222222222222222222222222222222"],
+                true,
+                "main",
+            ),
+            make_node(
+                "2222222222222222222222222222222222222222",
+                vec!["1111111111111111111111111111111111111111"],
+                true,
+                "main",
+            ),
+            make_node(
+                "1111111111111111111111111111111111111111",
+                vec![],
+                true,
+                "main",
+            ),
         ];
-        assign_lanes(&mut nodes);
-        // All commits should be in the same column for linear history
+        assign_lanes(&mut nodes, &head_ancestors);
+        // All HEAD ancestors should be in column 0
         assert_eq!(nodes[0].column, 0);
         assert_eq!(nodes[1].column, 0);
         assert_eq!(nodes[2].column, 0);
+    }
+
+    #[test]
+    fn test_assign_lanes_branch() {
+        let oid_head = git2::Oid::from_str("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").unwrap();
+        let oid_base = git2::Oid::from_str("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb").unwrap();
+        let mut head_ancestors = HashSet::new();
+        head_ancestors.insert(oid_head);
+        head_ancestors.insert(oid_base);
+        let mut nodes = vec![
+            make_node(
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                vec!["bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"],
+                true,
+                "main",
+            ),
+            make_node(
+                "cccccccccccccccccccccccccccccccccccccccc",
+                vec!["bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"],
+                false,
+                "feature/login",
+            ),
+            make_node(
+                "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                vec![],
+                true,
+                "main",
+            ),
+        ];
+        assign_lanes(&mut nodes, &head_ancestors);
+        assert_eq!(nodes[0].column, 0); // HEAD ancestor = column 0
+        assert_eq!(nodes[1].column, 1); // feature branch = column 1
+        assert_eq!(nodes[2].column, 0); // HEAD ancestor = column 0
     }
 }

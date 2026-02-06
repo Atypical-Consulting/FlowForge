@@ -1,5 +1,5 @@
 import type { BranchType } from "../../bindings";
-import { GITFLOW_COLORS } from "./layoutUtils";
+import { BRANCH_HEX_COLORS } from "./layoutUtils";
 
 interface LaneBgInfo {
   column: number;
@@ -23,7 +23,7 @@ export function LaneBackground({ lanes, height }: LaneBackgroundProps) {
           y={0}
           width={lane.width}
           height={height}
-          fill={GITFLOW_COLORS[lane.branchType] || GITFLOW_COLORS.other}
+          fill={BRANCH_HEX_COLORS[lane.branchType] || BRANCH_HEX_COLORS.other}
           opacity={0.04}
         />
       ))}

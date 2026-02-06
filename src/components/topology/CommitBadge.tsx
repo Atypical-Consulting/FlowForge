@@ -1,4 +1,3 @@
-import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
 import {
   Bug,
   FileText,
@@ -15,11 +14,11 @@ import {
 } from "lucide-react";
 import { memo } from "react";
 import type { ElementType } from "react";
+import type { GraphNode } from "../../bindings";
 import { cn } from "../../lib/utils";
 import {
   BRANCH_BADGE_STYLES,
   BRANCH_RING_COLORS,
-  type CommitNodeData,
   parseConventionalType,
 } from "./layoutUtils";
 
@@ -37,48 +36,43 @@ const ICON_MAP: Record<string, ElementType> = {
   revert: Undo,
 };
 
-type CommitBadgeProps = NodeProps<Node<CommitNodeData>>;
+interface CommitBadgeProps {
+  node: GraphNode;
+  isSelected: boolean;
+  onClick: () => void;
+}
 
-export const CommitBadge = memo(({ data }: CommitBadgeProps) => {
-  const badgeStyle =
-    BRANCH_BADGE_STYLES[data.branchType] || BRANCH_BADGE_STYLES.other;
-  const ringColor =
-    BRANCH_RING_COLORS[data.branchType] || BRANCH_RING_COLORS.other;
+export const CommitBadge = memo(
+  ({ node, isSelected, onClick }: CommitBadgeProps) => {
+    const badgeStyle =
+      BRANCH_BADGE_STYLES[node.branchType] || BRANCH_BADGE_STYLES.other;
+    const ringColor =
+      BRANCH_RING_COLORS[node.branchType] || BRANCH_RING_COLORS.other;
 
-  const commitType = parseConventionalType(data.message);
-  const Icon = (commitType && ICON_MAP[commitType]) || GitCommit;
+    const commitType = parseConventionalType(node.message);
+    const Icon = (commitType && ICON_MAP[commitType]) || GitCommit;
 
-  return (
-    <div
-      className={cn(
-        "px-2.5 py-1.5 rounded-lg border cursor-pointer transition-all",
-        "w-[240px] h-[40px] flex items-center gap-2",
-        badgeStyle,
-        data.isSelected &&
-          `ring-2 ${ringColor} ring-offset-1 ring-offset-ctp-base shadow-lg`,
-      )}
-    >
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="!bg-transparent !border-0 !w-1 !h-1 !min-w-0 !min-h-0"
-      />
-
-      <Icon className="w-3.5 h-3.5 text-ctp-overlay1 shrink-0" />
-      <span className="text-xs text-ctp-text truncate flex-1">
-        {data.message}
-      </span>
-      <span className="text-[11px] font-mono text-ctp-overlay0 shrink-0">
-        {data.shortOid}
-      </span>
-
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="!bg-transparent !border-0 !w-1 !h-1 !min-w-0 !min-h-0"
-      />
-    </div>
-  );
-});
+    return (
+      <div
+        onClick={onClick}
+        className={cn(
+          "px-2 py-1 rounded-md border cursor-pointer transition-all",
+          "h-full flex items-center gap-1.5 text-xs",
+          badgeStyle,
+          isSelected &&
+            `ring-2 ${ringColor} ring-offset-1 ring-offset-ctp-base shadow-lg`,
+        )}
+      >
+        <Icon className="w-3 h-3 text-ctp-overlay1 shrink-0" />
+        <span className="text-ctp-text truncate flex-1 leading-tight">
+          {node.message}
+        </span>
+        <span className="text-[10px] font-mono text-ctp-overlay0 shrink-0">
+          {node.shortOid}
+        </span>
+      </div>
+    );
+  },
+);
 
 CommitBadge.displayName = "CommitBadge";
