@@ -50,6 +50,19 @@ sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget libssl-dev libg
 
 ## Installation
 
+### Pre-built Releases
+
+Download the latest release from the [Releases page](https://github.com/Atypical-Consulting/FlowForge/releases).
+
+- **macOS (Apple Silicon):** Download the `.dmg` file and drag FlowForge to your Applications folder.
+- **Windows:** Download the `.msi` installer and run it.
+- **Linux:** Download the `.deb` package or `.AppImage` file.
+
+> **macOS users:** FlowForge is not code-signed with an Apple Developer certificate. macOS Gatekeeper will show a "damaged" error when you first open the app. To fix this, run the following command in Terminal after installing:
+> ```bash
+> xattr -cr /Applications/FlowForge.app
+> ```
+
 ### From Source
 
 1. Clone the repository:
