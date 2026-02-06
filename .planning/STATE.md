@@ -60,7 +60,7 @@ See `.planning/MILESTONES.md` for full history.
 - defaultTab setting not wired in blade store initialization
 - Topology lacks EmptyState for repos with zero commits
 - Orphaned v1.0 code: greet command, getMergeStatus, CollapsibleSidebar, AnimatedList, FadeIn
-- Pre-existing TS2440 in auto-generated bindings.ts (TAURI_CHANNEL conflict fixed with post-export strip)
+- Pre-existing TS2440 in auto-generated bindings.ts (TAURI_CHANNEL conflict fixed with post-export strip in lib.rs)
 
 ### Key Decisions
 
@@ -82,7 +82,7 @@ None.
 | 023 | Fix app icon not filling circle on welcome page | 2026-02-05 | 65485a5 | [023-fix-app-icon-not-filling-circle-on-welco](./quick/023-fix-app-icon-not-filling-circle-on-welco/) |
 | 024 | Bump version to v1.1.0 | 2026-02-06 | dfc6d4e | [024-prepare-v110-version-bump](./quick/024-prepare-v110-version-bump/) |
 | 025 | Fix TAURI_CHANNEL CI pipeline failure | 2026-02-06 | c6bafb2 | [025-fix-tauri-channel-ci-pipeline](./quick/025-fix-tauri-channel-ci-pipeline/) |
-| 026 | Fix DMG damaged on macOS (signing + workaround) | 2026-02-06 | 2b46b07 | [026-fix-dmg-damaged-macos-signing](./quick/026-fix-dmg-damaged-macos-signing/) |
+| 026 | Fix DMG damaged on macOS (revert broken signing vars) | 2026-02-06 | 27011ba | [026-fix-dmg-damaged-macos-signing](./quick/026-fix-dmg-damaged-macos-signing/) |
 
 ## Next Steps
 
