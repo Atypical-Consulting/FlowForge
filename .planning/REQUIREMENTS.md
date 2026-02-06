@@ -86,31 +86,31 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ONBR-01 | — | Pending |
-| ICON-01 | — | Pending |
-| STSH-01 | — | Pending |
-| CMPL-01 | — | Pending |
-| CMPL-02 | — | Pending |
-| CMPL-03 | — | Pending |
-| DISC-01 | — | Pending |
-| TOPO-01 | — | Pending |
-| SETT-01 | — | Pending |
-| SETT-02 | — | Pending |
-| UIPX-01 | — | Pending |
-| UIPX-02 | — | Pending |
-| UIPX-03 | — | Pending |
-| UIPX-04 | — | Pending |
-| UIPX-05 | — | Pending |
-| CCMT-01 | — | Pending |
-| CCMT-02 | — | Pending |
-| TAGS-01 | — | Pending |
-| NAVG-01 | — | Pending |
+| ONBR-01 | Phase 19 | Pending |
+| ICON-01 | Phase 19 | Pending |
+| STSH-01 | Phase 16 | Pending |
+| CMPL-01 | Phase 18 | Pending |
+| CMPL-02 | Phase 18 | Pending |
+| CMPL-03 | Phase 18 | Pending |
+| DISC-01 | Phase 18 | Pending |
+| TOPO-01 | Phase 16 | Pending |
+| SETT-01 | Phase 19 | Pending |
+| SETT-02 | Phase 19 | Pending |
+| UIPX-01 | Phase 16 | Pending |
+| UIPX-02 | Phase 16 | Pending |
+| UIPX-03 | Phase 17 | Pending |
+| UIPX-04 | Phase 17 | Pending |
+| UIPX-05 | Phase 16 | Pending |
+| CCMT-01 | Phase 17 | Pending |
+| CCMT-02 | Phase 17 | Pending |
+| TAGS-01 | Phase 16 | Pending |
+| NAVG-01 | Phase 16 | Pending |
 
 **Coverage:**
 - v1.2.0 requirements: 19 total
-- Mapped to phases: 0
-- Unmapped: 19 ⚠️
+- Mapped to phases: 19
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-06*
-*Last updated: 2026-02-06 after initial definition*
+*Last updated: 2026-02-06 after roadmap creation*

@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-06 — Milestone v1.2.0 started
+Phase: 16 of 19 (Quick Fixes & Visual Polish)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-02-06 — Roadmap created for v1.2.0
 
 Progress: ░░░░░░░░░░ 0%
 
@@ -87,8 +87,8 @@ None.
 
 ## Next Steps
 
-Define requirements, then create roadmap.
+Run `/gsd:plan-phase 16` to plan Quick Fixes & Visual Polish.
 
 ---
 *State updated: 2026-02-06*
-*Milestone: v1.2.0 Bugfixing & Polish started*
+*Milestone: v1.2.0 Bugfixing & Polish — roadmap created*
