@@ -30,7 +30,7 @@ import {
 
 export function RepositoryView() {
   const { status } = useRepositoryStore();
-  const { goBack } = useBladeNavigation();
+  const { goBack, openStagingDiff } = useBladeNavigation();
   const [showBranchDialog, setShowBranchDialog] = useState(false);
   const [showStashDialog, setShowStashDialog] = useState(false);
   const [showTagDialog, setShowTagDialog] = useState(false);
@@ -41,15 +41,16 @@ export function RepositoryView() {
     (blade: Blade) => {
       switch (blade.type) {
         case "staging-changes":
+          return <StagingPanel onFileSelect={openStagingDiff} />;
+        case "staging-diff":
           return (
-            <div className="flex h-full">
-              <div className="w-[300px] shrink-0 border-r border-ctp-surface0 overflow-hidden">
-                <StagingPanel />
-              </div>
-              <div className="flex-1 min-w-0">
-                <FileViewer />
-              </div>
-            </div>
+            <BladePanel
+              title={String(blade.props.filePath).split("/").pop() || "Diff"}
+              showBack
+              onBack={goBack}
+            >
+              <FileViewer />
+            </BladePanel>
           );
         case "topology-graph":
           return <TopologyRootBlade />;
@@ -76,7 +77,7 @@ export function RepositoryView() {
           return <div>Unknown blade type</div>;
       }
     },
-    [goBack],
+    [goBack, openStagingDiff],
   );
 
   if (!status) return null;
