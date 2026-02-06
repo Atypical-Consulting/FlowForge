@@ -3,8 +3,8 @@ import { graphlib } from "dagre-d3-es";
 import { layout } from "dagre-d3-es/src/dagre/index.js";
 import type { BranchType, GraphEdge, GraphNode } from "../../bindings";
 
-const NODE_WIDTH = 220;
-const NODE_HEIGHT = 60;
+const NODE_WIDTH = 200;
+const NODE_HEIGHT = 40;
 
 export interface CommitNodeData extends Record<string, unknown> {
   oid: string;
@@ -88,14 +88,48 @@ export function layoutGraph(
 
 // Catppuccin Mocha color mapping using CSS variables
 export const GITFLOW_COLORS: Record<BranchType, string> = {
-  main: "var(--ctp-peach)",
+  main: "var(--ctp-blue)",
   develop: "var(--ctp-green)",
-  feature: "var(--ctp-blue)",
-  release: "var(--ctp-mauve)",
+  feature: "var(--ctp-mauve)",
+  release: "var(--ctp-peach)",
   hotfix: "var(--ctp-red)",
   other: "var(--ctp-overlay0)",
 };
 
 export function getBranchColor(branchType: BranchType): string {
   return GITFLOW_COLORS[branchType] || GITFLOW_COLORS.other;
+}
+
+export const BRANCH_BADGE_STYLES: Record<BranchType, string> = {
+  main: "border-ctp-blue bg-ctp-blue/10 hover:bg-ctp-blue/20",
+  develop: "border-ctp-green bg-ctp-green/10 hover:bg-ctp-green/20",
+  feature: "border-ctp-mauve bg-ctp-mauve/10 hover:bg-ctp-mauve/20",
+  release: "border-ctp-peach bg-ctp-peach/10 hover:bg-ctp-peach/20",
+  hotfix: "border-ctp-red bg-ctp-red/10 hover:bg-ctp-red/20",
+  other: "border-ctp-overlay0 bg-ctp-surface0/50 hover:bg-ctp-surface1/50",
+};
+
+export const BRANCH_RING_COLORS: Record<BranchType, string> = {
+  main: "ring-ctp-blue",
+  develop: "ring-ctp-green",
+  feature: "ring-ctp-mauve",
+  release: "ring-ctp-peach",
+  hotfix: "ring-ctp-red",
+  other: "ring-ctp-overlay0",
+};
+
+export const BRANCH_LANE_BG: Record<BranchType, string> = {
+  main: "bg-ctp-blue/5",
+  develop: "bg-ctp-green/5",
+  feature: "bg-ctp-mauve/5",
+  release: "bg-ctp-peach/5",
+  hotfix: "bg-ctp-red/5",
+  other: "bg-ctp-overlay0/5",
+};
+
+export function parseConventionalType(message: string): string | null {
+  const match = message.match(
+    /^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\(.+?\))?(!)?:/,
+  );
+  return match ? match[1] : null;
 }
