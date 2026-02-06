@@ -11,6 +11,7 @@ import type { Blade } from "../stores/blades";
 import { useBladeNavigation } from "../hooks/useBladeNavigation";
 import { BranchList } from "./branches/BranchList";
 import { BladeContainer, BladePanel } from "./blades";
+import { CommitDetailsBlade } from "./commit/CommitDetailsBlade";
 import { CommitForm } from "./commit/CommitForm";
 import { GitflowPanel } from "./gitflow";
 import { ResizablePanelLayout, ResizablePanel, ResizeHandle } from "./layout";
@@ -54,9 +55,7 @@ export function RepositoryView() {
         case "commit-details":
           return (
             <BladePanel title="Commit" showBack onBack={goBack}>
-              <div className="p-4 text-ctp-subtext0 text-sm">
-                Commit details for {String(blade.props.oid).substring(0, 7)}
-              </div>
+              <CommitDetailsBlade oid={String(blade.props.oid)} />
             </BladePanel>
           );
         case "commit-diff":
