@@ -12,6 +12,7 @@ import { useNavigationStore } from "./stores/navigation";
 import { useRepositoryStore } from "./stores/repository";
 import { useSettingsStore } from "./stores/settings";
 import { useThemeStore } from "./stores/theme";
+import { useTopologyStore } from "./stores/topology";
 import { useUndoStore } from "./stores/undo";
 
 function App() {
@@ -48,6 +49,12 @@ function App() {
 
         // Also refresh undo info
         loadUndoInfo();
+
+        // Auto-refresh topology if it has been loaded
+        const topologyState = useTopologyStore.getState();
+        if (topologyState.nodes.length > 0) {
+          topologyState.loadGraph();
+        }
       },
     );
 

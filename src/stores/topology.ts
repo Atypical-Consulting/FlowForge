@@ -16,6 +16,7 @@ interface TopologyState {
   isLoading: boolean;
   error: string | null;
   hasMore: boolean;
+  lastRefreshTimestamp: number;
 
   // Pagination
   currentOffset: number;
@@ -35,6 +36,7 @@ export const useTopologyStore = create<TopologyState>((set, get) => ({
   isLoading: false,
   error: null,
   hasMore: true,
+  lastRefreshTimestamp: 0,
   currentOffset: 0,
 
   loadGraph: async () => {
@@ -48,6 +50,7 @@ export const useTopologyStore = create<TopologyState>((set, get) => ({
           isLoading: false,
           hasMore: result.data.nodes.length === INITIAL_LIMIT,
           currentOffset: result.data.nodes.length,
+          lastRefreshTimestamp: Date.now(),
         });
       } else {
         set({ error: getErrorMessage(result.error), isLoading: false });
@@ -93,6 +96,7 @@ export const useTopologyStore = create<TopologyState>((set, get) => ({
       isLoading: false,
       error: null,
       hasMore: true,
+      lastRefreshTimestamp: 0,
       currentOffset: 0,
     }),
 

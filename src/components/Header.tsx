@@ -19,6 +19,7 @@ import { useStashStore } from "../stores/stash";
 import { useTagStore } from "../stores/tags";
 import { toast } from "../stores/toast";
 import { useUndoStore } from "../stores/undo";
+import { ProcessNavigation } from "./blades";
 import { BranchSwitcher } from "./navigation/BranchSwitcher";
 import { RepoSwitcher } from "./navigation/RepoSwitcher";
 import { SyncButtons } from "./sync/SyncButtons";
@@ -244,6 +245,7 @@ export function Header() {
               <BranchSwitcher onSelectBranch={handleBranchSwitch} />
             </>
           )}
+          {status && <ProcessNavigation className="ml-4" />}
         </div>
 
         <div className="flex items-center gap-2">
