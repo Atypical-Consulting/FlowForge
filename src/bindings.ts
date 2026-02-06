@@ -1375,7 +1375,6 @@ export type SyncProgress = { event: "started"; data: { operation: string } } | {
  * Result of a sync operation (push/pull/fetch).
  */
 export type SyncResult = { success: boolean; message: string; commitsTransferred: number }
-export type TAURI_CHANNEL<TSend> = null
 /**
  * Information about a git tag.
  */

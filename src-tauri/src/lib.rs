@@ -125,9 +125,19 @@ pub fn run() {
     ]);
 
     #[cfg(debug_assertions)]
-    builder
-        .export(Typescript::default(), "../src/bindings.ts")
-        .expect("Failed to export TypeScript bindings");
+    {
+        builder
+            .export(Typescript::default(), "../src/bindings.ts")
+            .expect("Failed to export TypeScript bindings");
+
+        // Fix tauri-specta bug: generated `export type TAURI_CHANNEL<TSend> = null`
+        // conflicts with the `Channel as TAURI_CHANNEL` import it also generates.
+        let bindings_path = std::path::Path::new("../src/bindings.ts");
+        if let Ok(content) = std::fs::read_to_string(bindings_path) {
+            let fixed = content.replace("export type TAURI_CHANNEL<TSend> = null\n", "");
+            std::fs::write(bindings_path, fixed).ok();
+        }
+    }
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
