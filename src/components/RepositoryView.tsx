@@ -1,5 +1,7 @@
 import {
+  AlignJustify,
   Archive,
+  Columns,
   FolderGit2,
   GitBranch,
   GitMerge,
@@ -20,6 +22,7 @@ import {
   ViewerNupkgBlade,
 } from "./blades";
 import { BranchList } from "./branches/BranchList";
+import { Button } from "./ui/button";
 import { CommitForm } from "./commit/CommitForm";
 import { GitflowPanel } from "./gitflow";
 import { ResizablePanelLayout, ResizablePanel, ResizeHandle } from "./layout";
@@ -40,6 +43,7 @@ export function RepositoryView() {
   const [showTagDialog, setShowTagDialog] = useState(false);
   const [showWorktreeDialog, setShowWorktreeDialog] = useState(false);
   const [worktreeToDelete, setWorktreeToDelete] = useState<string | null>(null);
+  const [diffInline, setDiffInline] = useState(true);
 
   const renderBlade = useCallback(
     (blade: Blade) => {
@@ -54,10 +58,44 @@ export function RepositoryView() {
               <CommitDetailsBlade oid={String(blade.props.oid)} />
             </BladePanel>
           );
-        case "diff":
+        case "diff": {
+          const filePath = String(blade.props.filePath);
+          const lastSlash = filePath.lastIndexOf("/");
+          const titleNode =
+            lastSlash === -1 ? (
+              <span className="text-sm font-semibold text-ctp-text truncate">
+                {filePath}
+              </span>
+            ) : (
+              <span className="text-sm truncate">
+                <span className="text-ctp-overlay1">
+                  {filePath.slice(0, lastSlash + 1)}
+                </span>
+                <span className="font-semibold text-ctp-text">
+                  {filePath.slice(lastSlash + 1)}
+                </span>
+              </span>
+            );
           return (
             <BladePanel
-              title={String(blade.props.filePath).split("/").pop() || "Diff"}
+              title="Diff"
+              titleContent={titleNode}
+              trailing={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDiffInline((v) => !v)}
+                  title={
+                    diffInline ? "Switch to side-by-side" : "Switch to inline"
+                  }
+                >
+                  {diffInline ? (
+                    <Columns className="w-4 h-4" />
+                  ) : (
+                    <AlignJustify className="w-4 h-4" />
+                  )}
+                </Button>
+              }
               showBack
               onBack={goBack}
             >
@@ -67,9 +105,11 @@ export function RepositoryView() {
                     | { mode: "commit"; oid: string; filePath: string }
                     | { mode: "staging"; filePath: string; staged: boolean }
                 }
+                inline={diffInline}
               />
             </BladePanel>
           );
+        }
         case "viewer-nupkg":
           return (
             <BladePanel
@@ -101,7 +141,7 @@ export function RepositoryView() {
           return <div>Unknown blade type</div>;
       }
     },
-    [goBack],
+    [goBack, diffInline],
   );
 
   if (!status) return null;

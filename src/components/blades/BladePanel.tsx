@@ -4,11 +4,22 @@ import type { ReactNode } from "react";
 interface BladePanelProps {
   children: ReactNode;
   title: string;
+  /** Optional ReactNode rendered as the title instead of the plain string. */
+  titleContent?: ReactNode;
+  /** Optional trailing element rendered at the end of the title bar. */
+  trailing?: ReactNode;
   onBack?: () => void;
   showBack?: boolean;
 }
 
-export function BladePanel({ children, title, onBack, showBack }: BladePanelProps) {
+export function BladePanel({
+  children,
+  title,
+  titleContent,
+  trailing,
+  onBack,
+  showBack,
+}: BladePanelProps) {
   return (
     <div className="flex flex-col h-full">
       <div className="h-10 px-3 flex items-center gap-2 border-b border-ctp-surface0 bg-ctp-crust shrink-0">
@@ -21,9 +32,12 @@ export function BladePanel({ children, title, onBack, showBack }: BladePanelProp
             <ArrowLeft className="w-4 h-4 text-ctp-subtext1" />
           </button>
         )}
-        <span className="text-sm font-medium text-ctp-subtext1 truncate">
-          {title}
-        </span>
+        {titleContent ?? (
+          <span className="text-sm font-medium text-ctp-subtext1 truncate">
+            {title}
+          </span>
+        )}
+        {trailing && <div className="ml-auto shrink-0">{trailing}</div>}
       </div>
       <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
     </div>
