@@ -8,6 +8,7 @@ import { ChangelogDialog } from "./components/changelog";
 import { SettingsWindow } from "./components/settings";
 import { ToastContainer } from "./components/ui/ToastContainer";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { useNavigationStore } from "./stores/navigation";
 import { useRepositoryStore } from "./stores/repository";
 import { useSettingsStore } from "./stores/settings";
 import { useThemeStore } from "./stores/theme";
@@ -18,16 +19,18 @@ function App() {
   const { status } = useRepositoryStore();
   const initTheme = useThemeStore((s) => s.initTheme);
   const initSettings = useSettingsStore((s) => s.initSettings);
+  const initNavigation = useNavigationStore((s) => s.initNavigation);
   const loadUndoInfo = useUndoStore((s) => s.loadUndoInfo);
 
   // Register global keyboard shortcuts
   useKeyboardShortcuts();
 
-  // Initialize theme and settings on mount
+  // Initialize theme, settings, and navigation on mount
   useEffect(() => {
     initTheme();
     initSettings();
-  }, [initTheme, initSettings]);
+    initNavigation();
+  }, [initTheme, initSettings, initNavigation]);
 
   // Listen for file watcher events
   useEffect(() => {
