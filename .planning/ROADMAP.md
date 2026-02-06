@@ -31,7 +31,11 @@ v1.2.0 addresses accumulated UX bugs, visual inconsistencies, and adds a command
   5. Main/master and dev/develop branch labels appear before feature branches in the topology graph
   6. Diff blade header shows path in gray + filename in bold as a single merged line
   7. Switching to a different repository causes the blade view to reset and display correct content for the new repo
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 16-01-PLAN.md — Animation polish: fix modal flicker + subtler blade slide
+- [ ] 16-02-PLAN.md — Tag sorting: add timestamp, sort most recent first
+- [ ] 16-03-PLAN.md — Frontend quick fixes: stash labels, diff header, blade reset, topology verify
 
 ### Phase 17: Hierarchical View & Commit Enhancements
 **Goal**: Users can stage/unstage entire folders and see color-coded conventional commit types throughout the app
@@ -74,7 +78,7 @@ After Phase 16 completes, remaining phases can execute in any order.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|---------------|--------|-----------|
-| 16. Quick Fixes & Visual Polish | 0/TBD | Not started | — |
+| 16. Quick Fixes & Visual Polish | 0/3 | Not started | — |
 | 17. Hierarchical View & Commit Enhancements | 0/TBD | Not started | — |
 | 18. Command Palette & Discoverability | 0/TBD | Not started | — |
 | 19. Settings, Onboarding & File Icons | 0/TBD | Not started | — |
