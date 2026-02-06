@@ -1,40 +1,55 @@
 import { open } from "@tauri-apps/plugin-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  Circle,
   FileText,
   FolderOpen,
-  GitBranch,
   GitFork,
   RefreshCw,
   Settings,
   Undo2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRecentRepos } from "../hooks/useRecentRepos";
 import { useBranchStore } from "../stores/branches";
 import { useChangelogStore } from "../stores/changelogStore";
+import { useNavigationStore } from "../stores/navigation";
 import { useRepositoryStore } from "../stores/repository";
 import { useSettingsStore } from "../stores/settings";
 import { useStashStore } from "../stores/stash";
 import { useTagStore } from "../stores/tags";
+import { toast } from "../stores/toast";
 import { useUndoStore } from "../stores/undo";
+import { BranchSwitcher } from "./navigation/BranchSwitcher";
+import { RepoSwitcher } from "./navigation/RepoSwitcher";
 import { SyncButtons } from "./sync/SyncButtons";
 import { Button } from "./ui/button";
 import { ThemeToggle } from "./ui/ThemeToggle";
 
+interface StashConfirmTarget {
+  branchName: string;
+  isRemote: boolean;
+}
+
 export function Header() {
   const queryClient = useQueryClient();
-  const { status, isLoading, openRepository, closeRepository } =
+  const { status, isLoading, openRepository, closeRepository, refreshStatus } =
     useRepositoryStore();
-  const { loadBranches, isLoading: branchesLoading } = useBranchStore();
-  const { loadStashes, isLoading: stashesLoading } = useStashStore();
+  const {
+    loadBranches,
+    checkoutBranch,
+    checkoutRemoteBranch,
+    isLoading: branchesLoading,
+  } = useBranchStore();
+  const { loadStashes, saveStash, isLoading: stashesLoading } = useStashStore();
   const { loadTags, isLoading: tagsLoading } = useTagStore();
   const { undoInfo, isUndoing, loadUndoInfo, performUndo } = useUndoStore();
   const openChangelog = useChangelogStore((s) => s.openDialog);
   const openSettings = useSettingsStore((s) => s.openSettings);
   const { addRecentRepo } = useRecentRepos();
+  const navigationStore = useNavigationStore();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [stashConfirmTarget, setStashConfirmTarget] =
+    useState<StashConfirmTarget | null>(null);
 
   // Load undo info when repo opens
   useEffect(() => {
@@ -81,7 +96,6 @@ export function Header() {
   const handleUndo = async () => {
     if (!undoInfo?.canUndo) return;
 
-    // Confirm before undo
     const confirmed = window.confirm(
       `Are you sure you want to undo?\n\n${undoInfo.description}`,
     );
@@ -89,7 +103,6 @@ export function Header() {
     if (confirmed) {
       const success = await performUndo();
       if (success) {
-        // Invalidate relevant queries to refresh UI
         queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
         queryClient.invalidateQueries({ queryKey: ["stagingStatus"] });
         queryClient.invalidateQueries({ queryKey: ["repositoryStatus"] });
@@ -97,107 +110,246 @@ export function Header() {
     }
   };
 
+  // Repo switching: open new repo atomically, restore last branch, show toast
+  const handleRepoSwitch = useCallback(
+    async (path: string) => {
+      try {
+        // Save current branch as last active for current repo
+        if (status) {
+          await navigationStore.setLastActiveBranch(
+            status.repoPath,
+            status.branchName,
+          );
+        }
+
+        // Open new repository atomically (do NOT close first!)
+        await openRepository(path);
+        await addRecentRepo(path);
+
+        // Check if there's a last active branch for this repo
+        const lastBranch = navigationStore.getLastActiveBranch(path);
+        if (lastBranch) {
+          try {
+            await checkoutBranch(lastBranch);
+          } catch {
+            // Branch may have been deleted — stay on current
+          }
+        }
+
+        // Refresh all data for new repo
+        await Promise.all([
+          loadBranches(),
+          loadStashes(),
+          loadTags(),
+          loadUndoInfo(),
+        ]);
+
+        const repoName = path.split(/[/\\]/).filter(Boolean).pop() || path;
+        toast.success(`Switched to ${repoName}`);
+      } catch (e) {
+        toast.error(
+          `Failed to switch repository: ${e instanceof Error ? e.message : String(e)}`,
+        );
+      }
+    },
+    [
+      status,
+      navigationStore,
+      openRepository,
+      addRecentRepo,
+      checkoutBranch,
+      loadBranches,
+      loadStashes,
+      loadTags,
+      loadUndoInfo,
+    ],
+  );
+
+  // Perform the actual branch switch (local or remote)
+  const performBranchSwitch = useCallback(
+    async (branchName: string, isRemote: boolean) => {
+      try {
+        let success: boolean;
+        if (isRemote) {
+          success = await checkoutRemoteBranch(branchName);
+        } else {
+          success = await checkoutBranch(branchName);
+        }
+
+        if (success) {
+          const localName = isRemote
+            ? branchName.replace(/^[^/]+\//, "")
+            : branchName;
+          if (status) {
+            await navigationStore.addRecentBranch(status.repoPath, localName);
+          }
+          await refreshStatus();
+          toast.info(`Switched to ${localName}`);
+        }
+      } catch (e) {
+        toast.error(
+          `Failed to switch branch: ${e instanceof Error ? e.message : String(e)}`,
+        );
+      }
+    },
+    [
+      checkoutBranch,
+      checkoutRemoteBranch,
+      status,
+      navigationStore,
+      refreshStatus,
+    ],
+  );
+
+  // Branch switching: check dirty state first
+  const handleBranchSwitch = useCallback(
+    async (branchName: string, isRemote: boolean) => {
+      if (status?.isDirty) {
+        setStashConfirmTarget({ branchName, isRemote });
+        return;
+      }
+      await performBranchSwitch(branchName, isRemote);
+    },
+    [status, performBranchSwitch],
+  );
+
+  // Stash-and-switch handler
+  const handleStashAndSwitch = useCallback(async () => {
+    if (!stashConfirmTarget) return;
+    const { branchName, isRemote } = stashConfirmTarget;
+    setStashConfirmTarget(null);
+
+    const stashed = await saveStash(
+      `Auto-stash before switching to ${branchName}`,
+      true,
+    );
+
+    if (stashed) {
+      await performBranchSwitch(branchName, isRemote);
+    } else {
+      toast.error("Failed to stash changes");
+    }
+  }, [stashConfirmTarget, saveStash, performBranchSwitch]);
+
   return (
-    <header className="flex items-center justify-between h-14 px-4 border-b border-ctp-surface0 bg-ctp-mantle/80 backdrop-blur-md select-none sticky top-0 z-50">
-      <div className="flex items-center gap-4">
-        <h1 className="text-lg font-semibold text-ctp-text">FlowForge</h1>
-        {status && (
-          <>
-            <span className="text-ctp-overlay0">/</span>
-            <span className="text-sm text-ctp-subtext1">{status.repoName}</span>
-          </>
-        )}
+    <>
+      <header className="flex items-center justify-between h-14 px-4 border-b border-ctp-surface0 bg-ctp-mantle/80 backdrop-blur-md select-none sticky top-0 z-50">
+        <div className="flex items-center gap-2">
+          <h1 className="text-lg font-semibold text-ctp-text">FlowForge</h1>
+          {status && (
+            <>
+              <div className="w-px h-6 bg-ctp-surface1" />
+              <RepoSwitcher onSelectRepo={handleRepoSwitch} />
+              <BranchSwitcher onSelectBranch={handleBranchSwitch} />
+            </>
+          )}
+        </div>
 
-        {status && (
-          <div className="flex items-center gap-2 px-3 py-1 rounded-md bg-ctp-surface0">
-            <GitBranch className="w-4 h-4 text-ctp-subtext0" />
-            <span className="text-sm text-ctp-text font-medium font-mono">
-              {status.branchName}
-            </span>
-            {status.isDirty && (
-              <Circle
-                className="w-2 h-2 fill-ctp-yellow text-ctp-yellow"
-                aria-label="Uncommitted changes"
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={openSettings}
+            title="Settings (Ctrl+,)"
+          >
+            <Settings className="w-4 h-4" />
+          </Button>
+          <ThemeToggle />
+          {status && undoInfo?.canUndo && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleUndo}
+              disabled={isUndoing}
+              title={undoInfo.description || "Undo last operation"}
+            >
+              <Undo2 className={`w-4 h-4 ${isUndoing ? "animate-spin" : ""}`} />
+            </Button>
+          )}
+          {status && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefreshAll}
+              disabled={isAnyLoading}
+              title="Refresh branches, stashes, and tags"
+            >
+              <RefreshCw
+                className={`w-4 h-4 ${isAnyLoading ? "animate-spin" : ""}`}
               />
-            )}
-          </div>
-        )}
-      </div>
+            </Button>
+          )}
+          {status && <SyncButtons />}
+          {status && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={openChangelog}
+              title="Generate Changelog"
+            >
+              <FileText className="w-4 h-4" />
+            </Button>
+          )}
+          {status && (
+            <Button variant="ghost" size="sm" onClick={handleClose}>
+              Close
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              document.dispatchEvent(
+                new CustomEvent("clone-repository-dialog"),
+              );
+            }}
+            disabled={isLoading}
+            className="text-ctp-subtext1 hover:text-ctp-text"
+            title="Clone Repository"
+          >
+            <GitFork className="w-4 h-4 mr-2" />
+            Clone
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleOpenRepo}
+            disabled={isLoading}
+            className="text-ctp-subtext1 hover:text-ctp-text"
+          >
+            <FolderOpen className="w-4 h-4 mr-2" />
+            Open
+          </Button>
+        </div>
+      </header>
 
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={openSettings}
-          title="Settings (Ctrl+,)"
-        >
-          <Settings className="w-4 h-4" />
-        </Button>
-        <ThemeToggle />
-        {status && undoInfo?.canUndo && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleUndo}
-            disabled={isUndoing}
-            title={undoInfo.description || "Undo last operation"}
-          >
-            <Undo2 className={`w-4 h-4 ${isUndoing ? "animate-spin" : ""}`} />
-          </Button>
-        )}
-        {status && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleRefreshAll}
-            disabled={isAnyLoading}
-            title="Refresh branches, stashes, and tags"
-          >
-            <RefreshCw
-              className={`w-4 h-4 ${isAnyLoading ? "animate-spin" : ""}`}
-            />
-          </Button>
-        )}
-        {status && <SyncButtons />}
-        {status && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={openChangelog}
-            title="Generate Changelog"
-          >
-            <FileText className="w-4 h-4" />
-          </Button>
-        )}
-        {status && (
-          <Button variant="ghost" size="sm" onClick={handleClose}>
-            Close
-          </Button>
-        )}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            document.dispatchEvent(new CustomEvent("clone-repository-dialog"));
-          }}
-          disabled={isLoading}
-          className="text-ctp-subtext1 hover:text-ctp-text"
-          title="Clone Repository"
-        >
-          <GitFork className="w-4 h-4 mr-2" />
-          Clone
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleOpenRepo}
-          disabled={isLoading}
-          className="text-ctp-subtext1 hover:text-ctp-text"
-        >
-          <FolderOpen className="w-4 h-4 mr-2" />
-          Open
-        </Button>
-      </div>
-    </header>
+      {/* Stash-and-switch confirmation dialog */}
+      {stashConfirmTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-ctp-base rounded-lg p-6 max-w-md shadow-xl border border-ctp-surface0">
+            <h3 className="text-lg font-semibold text-ctp-text">
+              Uncommitted Changes
+            </h3>
+            <p className="text-sm text-ctp-subtext0 mt-2">
+              You have uncommitted changes. Would you like to stash them before
+              switching to{" "}
+              <span className="font-mono font-medium text-ctp-text">
+                {stashConfirmTarget.branchName}
+              </span>
+              ?
+            </p>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button
+                variant="ghost"
+                onClick={() => setStashConfirmTarget(null)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleStashAndSwitch}>Stash and Switch</Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
