@@ -1,7 +1,9 @@
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
+import type { ConventionalCommitType } from "../../lib/commit-type-theme";
 import { cn } from "../../lib/utils";
 import type { ChangelogOutput } from "../../stores/changelogStore";
+import { CommitTypeIcon } from "../icons/CommitTypeIcon";
 
 interface ChangelogPreviewProps {
   changelog: ChangelogOutput;
@@ -57,18 +59,58 @@ export function ChangelogPreview({ changelog }: ChangelogPreviewProps) {
 
       {/* Group breakdown */}
       {changelog.groups.length > 0 && (
-        <div className="space-y-2">
+        <div className="space-y-3">
           <h4 className="text-sm font-medium text-ctp-subtext1">Breakdown</h4>
+          {/* Summary grid */}
           <div className="grid grid-cols-2 gap-2 text-sm">
             {changelog.groups.map((group) => (
               <div
                 key={group.commitType}
-                className="flex justify-between p-2 bg-ctp-surface0/50 rounded"
+                className="flex items-center gap-2 p-2 bg-ctp-surface0/50 rounded"
+                title={`${group.commits.length} ${group.commitType} commit${group.commits.length !== 1 ? "s" : ""}`}
               >
-                <span className="text-ctp-subtext1">{group.title}</span>
+                <CommitTypeIcon
+                  commitType={group.commitType as ConventionalCommitType}
+                  className="w-4 h-4 shrink-0"
+                />
+                <span className="flex-1 text-ctp-subtext1">{group.title}</span>
                 <span className="text-ctp-overlay0">
                   {group.commits.length}
                 </span>
+              </div>
+            ))}
+          </div>
+          {/* Detailed commit list per group */}
+          <div className="space-y-2 text-sm">
+            {changelog.groups.map((group) => (
+              <div key={group.commitType}>
+                <div className="flex items-center gap-1.5 text-ctp-subtext0 mb-1">
+                  <CommitTypeIcon
+                    commitType={group.commitType as ConventionalCommitType}
+                    className="w-3.5 h-3.5"
+                  />
+                  <span className="font-medium">{group.title}</span>
+                </div>
+                <div className="pl-5 space-y-0.5">
+                  {group.commits.map((commit) => (
+                    <div
+                      key={commit.hash}
+                      className="flex items-start gap-1.5 text-ctp-overlay1"
+                    >
+                      <span className="text-ctp-overlay0 font-mono text-xs mt-0.5">
+                        {commit.hash}
+                      </span>
+                      <span>
+                        {commit.scope && (
+                          <strong className="text-ctp-subtext1">
+                            {commit.scope}:{" "}
+                          </strong>
+                        )}
+                        {commit.description}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
