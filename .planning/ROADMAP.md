@@ -46,7 +46,11 @@ Plans:
   2. All items in the hierarchical file tree have uniform icon widths and consistent icon-to-text spacing regardless of nesting depth
   3. Each conventional commit type (feat, fix, docs, etc.) displays its icon in a distinct, recognizable color
   4. Generated changelogs include the conventional commit type icon next to each entry
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 17-01-PLAN.md — Shared commit type theme module + colored icons in topology and history
+- [ ] 17-02-PLAN.md — Batch staging commands + folder stage/unstage in tree view + icon spacing fixes
+- [ ] 17-03-PLAN.md — Changelog emoji in Rust templates + ChangelogPreview colored icons
 
 ### Phase 18: Command Palette & Discoverability
 **Goal**: Users can discover and invoke any registered action through a searchable command palette or shortcut tooltips
@@ -79,7 +83,7 @@ After Phase 16 completes, remaining phases can execute in any order.
 | Phase | Plans Complete | Status | Completed |
 |-------|---------------|--------|-----------|
 | 16. Quick Fixes & Visual Polish | 3/3 | ✅ Complete | 2026-02-06 |
-| 17. Hierarchical View & Commit Enhancements | 0/TBD | Not started | — |
+| 17. Hierarchical View & Commit Enhancements | 0/3 | Not started | — |
 | 18. Command Palette & Discoverability | 0/TBD | Not started | — |
 | 19. Settings, Onboarding & File Icons | 0/TBD | Not started | — |
 
