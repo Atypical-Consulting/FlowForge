@@ -162,9 +162,9 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView
-          fitViewOptions={{ padding: 0.3, maxZoom: 1 }}
-          minZoom={0.2}
-          maxZoom={1.5}
+          fitViewOptions={{ padding: 0.15, maxZoom: 0.85, minZoom: 0.3 }}
+          minZoom={0.1}
+          maxZoom={2}
           nodesDraggable={false}
           nodesConnectable={false}
           elementsSelectable={false}

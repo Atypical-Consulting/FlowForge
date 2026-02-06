@@ -32,13 +32,21 @@ export function layoutGraph(
   const g = new graphlib.Graph().setDefaultEdgeLabel(() => ({}));
   g.setGraph({ rankdir: "TB", nodesep: 80, ranksep: 60 });
 
+  // Build a set of visible node OIDs for fast lookup
+  const visibleOids = new Set(graphNodes.map((n) => n.oid));
+
   // Add nodes to graph
   graphNodes.forEach((node) => {
     g.setNode(node.oid, { width: NODE_WIDTH, height: NODE_HEIGHT });
   });
 
+  // Filter edges: only include edges where BOTH source and target exist in the visible set
+  const validEdges = graphEdges.filter(
+    (edge) => visibleOids.has(edge.from) && visibleOids.has(edge.to),
+  );
+
   // Add edges to graph
-  graphEdges.forEach((edge) => {
+  validEdges.forEach((edge) => {
     g.setEdge(edge.from, edge.to);
   });
 
@@ -69,7 +77,7 @@ export function layoutGraph(
     };
   });
 
-  const edges: Edge<CommitEdgeData>[] = graphEdges.map((edge, i) => {
+  const edges: Edge<CommitEdgeData>[] = validEdges.map((edge, i) => {
     // Find source node to get branch type for coloring
     const sourceNode = graphNodes.find((n) => n.oid === edge.from);
     return {

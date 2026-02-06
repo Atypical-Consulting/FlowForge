@@ -54,6 +54,7 @@ fn detect_language(path: &str) -> String {
         "c" | "h" => "c",
         "cpp" | "hpp" | "cc" | "cxx" => "cpp",
         "cs" => "csharp",
+        "razor" | "cshtml" => "razor",
         "rb" => "ruby",
         "php" => "php",
         "swift" => "swift",

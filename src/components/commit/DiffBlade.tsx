@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AlignJustify, Columns, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { commands } from "../../bindings";
+import "../../lib/monacoTheme";
 import { Button } from "../ui/button";
 
 interface DiffBladeProps {

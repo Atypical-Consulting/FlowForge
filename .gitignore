@@ -32,3 +32,4 @@ src-tauri/gen/
 
 # Generated bindings
 src/bindings.ts
+screenshots/
