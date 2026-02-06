@@ -1,13 +1,25 @@
-import { Tag, Trash2 } from "lucide-react";
+import { Loader2, Tag, Trash2 } from "lucide-react";
+import { useState } from "react";
 import type { TagInfo } from "../../bindings";
 
 interface TagItemProps {
   tag: TagInfo;
-  onDelete: () => void;
+  onDelete: () => Promise<void> | void;
   disabled?: boolean;
 }
 
 export function TagItem({ tag, onDelete, disabled }: TagItemProps) {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await onDelete();
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="group flex items-center justify-between px-2 py-1 rounded-md hover:bg-ctp-surface0">
       <div className="flex items-center gap-1.5 min-w-0 flex-1">
@@ -27,12 +39,16 @@ export function TagItem({ tag, onDelete, disabled }: TagItemProps) {
       <div className="opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           type="button"
-          onClick={onDelete}
-          disabled={disabled}
+          onClick={handleDelete}
+          disabled={disabled || isDeleting}
           className="p-1 hover:bg-ctp-surface1 rounded text-ctp-overlay1 hover:text-ctp-red"
           title="Delete tag"
         >
-          <Trash2 className="w-3.5 h-3.5" />
+          {isDeleting ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Trash2 className="w-3.5 h-3.5" />
+          )}
         </button>
       </div>
     </div>

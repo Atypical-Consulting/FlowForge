@@ -1,12 +1,13 @@
-import { Check, GitBranch, GitMerge, Trash2 } from "lucide-react";
+import { Check, GitBranch, GitMerge, Loader2, Trash2 } from "lucide-react";
+import { useState } from "react";
 import type { BranchInfo } from "../../bindings";
 import { cn } from "../../lib/utils";
 
 interface BranchItemProps {
   branch: BranchInfo;
-  onCheckout: () => void;
-  onDelete: () => void;
-  onMerge: () => void;
+  onCheckout: () => Promise<unknown> | void;
+  onDelete: () => Promise<unknown> | void;
+  onMerge: () => Promise<unknown> | void;
   disabled?: boolean;
 }
 
@@ -17,6 +18,22 @@ export function BranchItem({
   onMerge,
   disabled,
 }: BranchItemProps) {
+  const [loadingAction, setLoadingAction] = useState<
+    "checkout" | "merge" | "delete" | null
+  >(null);
+  const isAnyLoading = loadingAction !== null;
+
+  const handleAction = async (
+    action: "checkout" | "merge" | "delete",
+    fn: () => Promise<unknown> | void,
+  ) => {
+    setLoadingAction(action);
+    try {
+      await fn();
+    } finally {
+      setLoadingAction(null);
+    }
+  };
   return (
     <div
       className={cn(
@@ -44,30 +61,42 @@ export function BranchItem({
           <>
             <button
               type="button"
-              onClick={onCheckout}
-              disabled={disabled}
+              onClick={() => handleAction("checkout", onCheckout)}
+              disabled={disabled || isAnyLoading}
               className="p-1 hover:bg-ctp-surface1 rounded text-ctp-overlay1 hover:text-ctp-text"
               title="Switch to branch"
             >
-              <Check className="w-3.5 h-3.5" />
+              {loadingAction === "checkout" ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Check className="w-3.5 h-3.5" />
+              )}
             </button>
             <button
               type="button"
-              onClick={onMerge}
-              disabled={disabled}
+              onClick={() => handleAction("merge", onMerge)}
+              disabled={disabled || isAnyLoading}
               className="p-1 hover:bg-ctp-surface1 rounded text-ctp-overlay1 hover:text-ctp-text"
               title="Merge into current branch"
             >
-              <GitMerge className="w-3.5 h-3.5" />
+              {loadingAction === "merge" ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <GitMerge className="w-3.5 h-3.5" />
+              )}
             </button>
             <button
               type="button"
-              onClick={onDelete}
-              disabled={disabled}
+              onClick={() => handleAction("delete", onDelete)}
+              disabled={disabled || isAnyLoading}
               className="p-1 hover:bg-ctp-surface1 rounded text-ctp-overlay1 hover:text-ctp-red"
               title="Delete branch"
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              {loadingAction === "delete" ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="w-3.5 h-3.5" />
+              )}
             </button>
           </>
         )}
