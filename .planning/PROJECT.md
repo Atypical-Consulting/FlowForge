@@ -49,25 +49,30 @@ Each layer adds value; each inner layer stands without the outer ones.
 - ✓ Undo Git operations via reflog — v1.0
 - ✓ File watcher for external change detection — v1.0
 
+- ✓ Left panel readability (text size, action icons not overlapping) — v1.1
+- ✓ Conventional Commits checkbox unchecked by default — v1.1
+- ✓ Conventional Commits panel not covering changes list — v1.1
+- ✓ Repository/branch switcher in top bar (GitHub Desktop style) — v1.1
+- ✓ Settings grouped into dedicated settings window — v1.1
+- ✓ Clone repository from within app — v1.1
+- ✓ Ungit-style topology graph with SVG+DOM hybrid, lane guides, step-path edges — v1.1
+- ✓ Topology center panel shows commit details on selection — v1.1
+- ✓ Amend commit reloads previous commit message — v1.1
+- ✓ Initialize Gitflow from app for non-Gitflow repos — v1.1
+- ✓ Inspect diffs of previous commits in History view — v1.1
+- ✓ Toast notification system with queue, stacking, auto-dismiss — v1.1
+- ✓ Empty state illustrations for staging, stash, tags, commit history — v1.1
+- ✓ Keyboard shortcut tooltips on 6 buttons — v1.1
+- ✓ Button loading spinners with per-action states — v1.1
+- ✓ Panel header frosted glass effect on 5 sidebar sections — v1.1
+- ✓ Dirty state pulse animation on branch switcher — v1.1
+- ✓ Blade navigation system with commit details, file tree, diff viewer — v1.1
+- ✓ Topology auto-refresh after commits (fixed v1.0 tech debt) — v1.1
+- ✓ Skeleton loaders replacing spinners during data fetch — v1.1
+
 ### Active
 
-- [ ] Left panel readability (text size, action icons not overlapping)
-- [ ] Conventional Commits checkbox unchecked by default
-- [ ] Conventional Commits panel not covering changes list
-- [ ] Repository/branch switcher in top bar (GitHub Desktop style)
-- [ ] Settings grouped into modal/dedicated view
-- [ ] Clone repository from within app
-- [ ] Ungit-style topology graph improvements
-- [ ] Topology center panel shows commit details on selection
-- [ ] Amend commit reloads previous commit message
-- [ ] Initialize Gitflow from app for non-Gitflow repos
-- [ ] Inspect diffs of previous commits in History view
-- [ ] Toast notification system
-- [ ] Empty state illustrations
-- [ ] Keyboard shortcut tooltips
-- [ ] Button loading spinners
-- [ ] Panel header frosted glass effect
-- [ ] Dirty state pulse animation
+(No active requirements — next milestone needed)
 
 ### Deferred to v2+
 
@@ -95,26 +100,15 @@ Each layer adds value; each inner layer stands without the outer ones.
 
 ## Context
 
-**Current state:** Shipped v1.0 with ~16,355 LOC (6,518 Rust + 9,837 TypeScript).
-Tech stack: Tauri 2.x, React 19, Zustand, React Query, React Flow, Monaco Editor.
-All 58 v1 requirements implemented across 10 phases (53 plans).
+**Current state:** Shipped v1.1.0 with ~21,559 LOC (7,622 Rust + 13,937 TypeScript).
+Tech stack: Tauri 2.x, React 19, Zustand, React Query, Monaco Editor, framer-motion.
+All 92 requirements implemented across 15 phases (80 plans) in two milestones.
 
 **Known tech debt:**
-- Topology graph requires manual tab switch to refresh after commits (addressed in v1.1 topology rework)
-- Orphaned code: greet command, getMergeStatus, some unused animation components
-
-## Current Milestone: v1.1.0 Usability
-
-**Goal:** Fix UX pain points and enhance the topology visualization to match Ungit's intuitive approach.
-
-**Target features:**
-- Fix layout issues (left panel readability, conventional commits panel overlap)
-- Better defaults (conventional commits off by default, amend reloads message)
-- Navigation improvements (repo/branch switcher, settings modal)
-- New workflows (clone repo, initialize Gitflow)
-- Ungit-style topology with commit details in center panel
-- History view with diff inspection
-- Quick wins (toasts, empty states, loading spinners, frosted headers, tooltips)
+- defaultTab setting not wired in blade store initialization (hard-coded to "staging")
+- Topology lacks EmptyState for repos with zero commits
+- Orphaned v1.0 code: greet command, getMergeStatus, CollapsibleSidebar, AnimatedList, FadeIn
+- Pre-existing TS2440 in auto-generated bindings.ts
 
 **v2 vision:** MCP server exposing repository state (branches, worktrees, commit history, diffs, Gitflow context) as structured resources and tools. Tiered autonomy model:
 - **Tier 1 (full autonomy):** Reversible, local, convention-clear operations
@@ -142,6 +136,11 @@ All 58 v1 requirements implemented across 10 phases (53 plans).
 | React Flow + dagre for topology | Standard graph visualization with good layout algorithm | ✓ Good — clear visualization |
 | Catppuccin for theming | Modern, cohesive palette with dark/light variants | ✓ Good — polished appearance |
 | Zustand + React Query | Simple state management, powerful async handling | ✓ Good — clean architecture |
+| SVG+DOM hybrid for topology (v1.1) | React Flow too rigid for Ungit-style; custom SVG gives full layout control | ✓ Good — lane guides + step-path edges |
+| Blade navigation pattern (v1.1) | Stack-based navigation for commit details/diff viewing; breadcrumb-like UX | ✓ Good — clean push/pop semantics |
+| Monaco DiffEditor for diffs (v1.1) | Professional diff rendering with syntax highlighting, inline/side-by-side toggle | ✓ Good — high-quality diff UX |
+| framer-motion for animations (v1.1) | MotionConfig with reducedMotion="user" for accessibility | ✓ Good — respects OS preferences |
+| Event-driven auto-refresh (v1.1) | "repository-changed" event triggers topology reload instead of polling | ✓ Good — efficient, reliable |
 
 ---
-*Last updated: 2026-02-05 after v1.1.0 milestone start*
+*Last updated: 2026-02-06 after v1.1.0 milestone complete*
