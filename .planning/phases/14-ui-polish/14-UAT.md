@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 14-ui-polish
 source: 14-01-SUMMARY.md, 14-02-SUMMARY.md, 14-03-SUMMARY.md
 started: 2026-02-06T12:00:00Z
@@ -75,9 +75,15 @@ skipped: 0
   reason: "User reported: blur effect is not visible"
   severity: cosmetic
   test: 5
-  root_cause: ""
-  artifacts: []
-  missing: []
+  root_cause: "ResizablePanel applies overflow-hidden which clips backdrop-blur. Section content scrolls in individual max-h containers, so nothing actually scrolls behind sticky headers for blur to operate on."
+  artifacts:
+    - path: "src/components/layout/ResizablePanelLayout.tsx"
+      issue: "overflow-hidden on Panel clips backdrop-blur rendering"
+    - path: "src/components/RepositoryView.tsx"
+      issue: "Each section has individual overflow-y-auto containers; content doesn't scroll behind sticky headers"
+  missing:
+    - "Remove individual max-h/overflow-y-auto from section content so content scrolls continuously behind sticky headers"
+    - "Ensure ResizablePanel overflow doesn't clip backdrop-blur"
   debug_session: ""
 
 - truth: "Shortcut tooltips display correctly positioned and visually consistent with the UI"
@@ -85,7 +91,14 @@ skipped: 0
   reason: "User reported: the tooltip for Open button is outside the windows screen. having other kind of tooltips for the other actions seems ugly"
   severity: major
   test: 9
-  root_cause: ""
-  artifacts: []
-  missing: []
+  root_cause: "ShortcutTooltip uses left-1/2 -translate-x-1/2 centering with no viewport boundary detection. Open button is near right edge so tooltip overflows. Styling is heavy (solid border, dark bg, 3D kbd shadows) compared to rest of UI."
+  artifacts:
+    - path: "src/components/ui/ShortcutTooltip.tsx"
+      issue: "No viewport boundary detection; heavy styling with solid borders, bg-ctp-crust, shadow-lg, 3D kbd elements"
+    - path: "src/components/Header.tsx"
+      issue: "Open button ShortcutTooltip missing side prop; positioned near right edge"
+  missing:
+    - "Add viewport boundary detection to prevent off-screen rendering"
+    - "Lighten tooltip styling to match UI aesthetic (semi-transparent bg, reduce border/shadow)"
+    - "Simplify kbd element styling (remove 3D shadow effect)"
   debug_session: ""

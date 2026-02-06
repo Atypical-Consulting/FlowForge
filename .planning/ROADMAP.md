@@ -14,7 +14,7 @@ v1.1.0 focuses on UX improvements and Ungit-style topology visualization. Starti
 - [x] **Phase 11: Foundation** - Toast notifications, settings window, layout fixes
 - [x] **Phase 12: Workflows** - Clone repository, Gitflow initialization, amend commit
 - [x] **Phase 13: Navigation** - Repository/branch switcher in top bar
-- [x] **Phase 14: UI Polish** - Empty states, loading spinners, tooltips, animations
+- [ ] **Phase 14: UI Polish** - Empty states, loading spinners, tooltips, animations
 - [ ] **Phase 15: Topology** - Ungit-style visualization with commit details and history diff
 
 ## Phase Details
@@ -86,11 +86,12 @@ Plans:
   3. Keyboard shortcut hints appear in relevant button tooltips
   4. Panel headers have frosted glass visual effect
   5. Dirty state indicator has subtle pulse animation
-**Plans:** 3 plans
+**Plans:** 4 plans
 Plans:
 - [x] 14-01-PLAN.md — Reusable UI components (EmptyState, ShortcutTooltip, Skeleton) + CSS + MotionConfig
 - [x] 14-02-PLAN.md — Empty states in 4 panels + frosted glass on 5 sidebar headers
 - [x] 14-03-PLAN.md — Button loading states + shortcut tooltips on 6 buttons + dirty pulse animation
+- [ ] 14-04-PLAN.md — Gap closure: frosted glass scroll fix + tooltip viewport detection and restyle
 
 ### Phase 15: Topology
 
@@ -112,7 +113,7 @@ Plans:
 | 11. Foundation | 5/5 | Complete | 2026-02-05 |
 | 12. Workflows | 6/6 | Complete | 2026-02-05 |
 | 13. Navigation | 5/5 | Complete | 2026-02-06 |
-| 14. UI Polish | 3/3 | Complete | 2026-02-06 |
+| 14. UI Polish | 3/4 | Gap closure | 2026-02-06 |
 | 15. Topology | 0/TBD | Not started | - |
 
 ---
