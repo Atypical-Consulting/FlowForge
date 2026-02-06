@@ -1,46 +1,54 @@
-import type { Edge, EdgeProps } from "@xyflow/react";
+import {
+  BaseEdge,
+  type Edge,
+  type EdgeProps,
+  getSmoothStepPath,
+} from "@xyflow/react";
 import { memo } from "react";
+import type { BranchType } from "../../bindings";
 import type { CommitEdgeData } from "./layoutUtils";
-import { GITFLOW_COLORS } from "./layoutUtils";
 
-function getAngledEdgePath(
-  sourceX: number,
-  sourceY: number,
-  targetX: number,
-  targetY: number,
-): string {
-  if (Math.abs(sourceX - targetX) < 1) {
-    return `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`;
-  }
-  const midY = sourceY + (targetY - sourceY) * 0.5;
-  return `M ${sourceX} ${sourceY} L ${sourceX} ${midY} L ${targetX} ${midY} L ${targetX} ${targetY}`;
-}
+// Hex colors for SVG stroke — CSS variables don't reliably resolve in SVG
+const EDGE_COLORS: Record<BranchType, string> = {
+  main: "#89b4fa", // ctp-blue
+  develop: "#a6e3a1", // ctp-green
+  feature: "#cba6f7", // ctp-mauve
+  release: "#fab387", // ctp-peach
+  hotfix: "#f38ba8", // ctp-red
+  other: "#6c7086", // ctp-overlay0
+};
 
 type BranchEdgeProps = EdgeProps<Edge<CommitEdgeData>>;
 
 export const BranchEdge = memo(
-  ({ sourceX, sourceY, targetX, targetY, data }: BranchEdgeProps) => {
-    const edgePath = getAngledEdgePath(sourceX, sourceY, targetX, targetY);
-    const color =
-      GITFLOW_COLORS[data?.branchType || "other"] || GITFLOW_COLORS.other;
+  ({
+    id,
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+    data,
+  }: BranchEdgeProps) => {
+    const [edgePath] = getSmoothStepPath({
+      sourceX,
+      sourceY,
+      sourcePosition,
+      targetX,
+      targetY,
+      targetPosition,
+      borderRadius: 8,
+    });
+
+    const color = EDGE_COLORS[data?.branchType || "other"] || EDGE_COLORS.other;
 
     return (
-      <g>
-        <path
-          d={edgePath}
-          fill="none"
-          stroke={color}
-          strokeWidth={3}
-          strokeOpacity={0.15}
-        />
-        <path
-          d={edgePath}
-          fill="none"
-          stroke={color}
-          strokeWidth={2}
-          strokeOpacity={0.8}
-        />
-      </g>
+      <BaseEdge
+        id={id}
+        path={edgePath}
+        style={{ stroke: color, strokeWidth: 2, strokeOpacity: 0.7 }}
+      />
     );
   },
 );
