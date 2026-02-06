@@ -5,14 +5,17 @@ import { getErrorMessage } from "../lib/errors";
 
 interface BranchState {
   branches: BranchInfo[];
+  allBranches: BranchInfo[];
   isLoading: boolean;
   error: string | null;
   mergeInProgress: boolean;
   lastMergeResult: MergeResult | null;
 
   loadBranches: () => Promise<void>;
+  loadAllBranches: (includeRemote: boolean) => Promise<void>;
   createBranch: (name: string, checkout: boolean) => Promise<BranchInfo | null>;
   checkoutBranch: (name: string) => Promise<boolean>;
+  checkoutRemoteBranch: (remoteBranch: string) => Promise<boolean>;
   deleteBranch: (name: string, force: boolean) => Promise<boolean>;
   mergeBranch: (sourceBranch: string) => Promise<MergeResult | null>;
   abortMerge: () => Promise<boolean>;
@@ -22,6 +25,7 @@ interface BranchState {
 
 export const useBranchStore = create<BranchState>((set, get) => ({
   branches: [],
+  allBranches: [],
   isLoading: false,
   error: null,
   mergeInProgress: false,
@@ -32,6 +36,16 @@ export const useBranchStore = create<BranchState>((set, get) => ({
     const result = await commands.listBranches();
     if (result.status === "ok") {
       set({ branches: result.data, isLoading: false });
+    } else {
+      set({ error: getErrorMessage(result.error), isLoading: false });
+    }
+  },
+
+  loadAllBranches: async (includeRemote: boolean) => {
+    set({ isLoading: true, error: null });
+    const result = await commands.listAllBranches(includeRemote);
+    if (result.status === "ok") {
+      set({ allBranches: result.data, isLoading: false });
     } else {
       set({ error: getErrorMessage(result.error), isLoading: false });
     }
@@ -51,6 +65,17 @@ export const useBranchStore = create<BranchState>((set, get) => ({
   checkoutBranch: async (name) => {
     set({ isLoading: true, error: null });
     const result = await commands.checkoutBranch(name);
+    if (result.status === "ok") {
+      await get().loadBranches();
+      return true;
+    }
+    set({ error: getErrorMessage(result.error), isLoading: false });
+    return false;
+  },
+
+  checkoutRemoteBranch: async (remoteBranch: string) => {
+    set({ isLoading: true, error: null });
+    const result = await commands.checkoutRemoteBranch(remoteBranch);
     if (result.status === "ok") {
       await get().loadBranches();
       return true;
