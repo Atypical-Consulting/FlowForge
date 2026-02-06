@@ -6,23 +6,42 @@ import { commands } from "../../bindings";
 import "../../lib/monacoTheme";
 import { Button } from "../ui/button";
 
+/**
+ * Blade input: diff source configuration.
+ *
+ * - "commit" mode: fetches diff for a file at a specific commit OID
+ * - "staging" mode: fetches diff for a working-tree file (staged or unstaged)
+ */
+type DiffSource =
+  | { mode: "commit"; oid: string; filePath: string }
+  | { mode: "staging"; filePath: string; staged: boolean };
+
 interface DiffBladeProps {
-  oid: string;
-  filePath: string;
+  source: DiffSource;
 }
 
-export function DiffBlade({ oid, filePath }: DiffBladeProps) {
+export function DiffBlade({ source }: DiffBladeProps) {
   const [inline, setInline] = useState(true);
   const contextLines = 3;
+
+  const queryKey =
+    source.mode === "commit"
+      ? ["commitFileDiff", source.oid, source.filePath, contextLines]
+      : ["fileDiff", source.filePath, source.staged, contextLines];
+
+  const queryFn =
+    source.mode === "commit"
+      ? () => commands.getCommitFileDiff(source.oid, source.filePath, contextLines)
+      : () => commands.getFileDiff(source.filePath, source.staged, contextLines);
 
   const {
     data: result,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["commitFileDiff", oid, filePath, contextLines],
-    queryFn: () => commands.getCommitFileDiff(oid, filePath, contextLines),
-    staleTime: 60000,
+    queryKey,
+    queryFn,
+    staleTime: source.mode === "commit" ? 60000 : undefined,
   });
 
   if (isLoading) {
@@ -58,7 +77,7 @@ export function DiffBlade({ oid, filePath }: DiffBladeProps) {
       {/* Toolbar */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-ctp-surface0 bg-ctp-crust shrink-0">
         <span className="text-sm text-ctp-subtext1 truncate flex-1">
-          {filePath}
+          {source.filePath}
         </span>
         <Button
           variant="ghost"

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { cn } from "../../lib/utils";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
 import { CommitHistory } from "../commit/CommitHistory";
-import { TopologyPanel } from "./TopologyPanel";
+import { TopologyPanel } from "../topology/TopologyPanel";
 
 type TopologyView = "graph" | "history";
 

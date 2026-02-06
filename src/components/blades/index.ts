@@ -1,4 +1,9 @@
 export { BladeContainer } from "./BladeContainer";
 export { BladePanel } from "./BladePanel";
 export { BladeStrip } from "./BladeStrip";
+export { CommitDetailsBlade } from "./CommitDetailsBlade";
+export { DiffBlade } from "./DiffBlade";
+export { FileTreeBlade } from "./FileTreeBlade";
 export { ProcessNavigation } from "./ProcessNavigation";
+export { StagingChangesBlade } from "./StagingChangesBlade";
+export { TopologyRootBlade } from "./TopologyRootBlade";

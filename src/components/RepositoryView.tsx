@@ -9,19 +9,21 @@ import {
 import { useCallback, useState } from "react";
 import type { Blade } from "../stores/blades";
 import { useBladeNavigation } from "../hooks/useBladeNavigation";
+import {
+  BladeContainer,
+  BladePanel,
+  CommitDetailsBlade,
+  DiffBlade,
+  StagingChangesBlade,
+  TopologyRootBlade,
+} from "./blades";
 import { BranchList } from "./branches/BranchList";
-import { BladeContainer, BladePanel } from "./blades";
-import { CommitDetailsBlade } from "./commit/CommitDetailsBlade";
-import { DiffBlade } from "./commit/DiffBlade";
 import { CommitForm } from "./commit/CommitForm";
 import { GitflowPanel } from "./gitflow";
 import { ResizablePanelLayout, ResizablePanel, ResizeHandle } from "./layout";
 import { useRepositoryStore } from "../stores/repository";
-import { StagingPanel } from "./staging/StagingPanel";
 import { StashList } from "./stash/StashList";
 import { TagList } from "./tags/TagList";
-import { TopologyRootBlade } from "./topology/TopologyRootBlade";
-import { FileViewer } from "./viewers";
 import {
   CreateWorktreeDialog,
   DeleteWorktreeDialog,
@@ -30,7 +32,7 @@ import {
 
 export function RepositoryView() {
   const { status } = useRepositoryStore();
-  const { goBack, openStagingDiff } = useBladeNavigation();
+  const { goBack } = useBladeNavigation();
   const [showBranchDialog, setShowBranchDialog] = useState(false);
   const [showStashDialog, setShowStashDialog] = useState(false);
   const [showTagDialog, setShowTagDialog] = useState(false);
@@ -41,17 +43,7 @@ export function RepositoryView() {
     (blade: Blade) => {
       switch (blade.type) {
         case "staging-changes":
-          return <StagingPanel onFileSelect={openStagingDiff} />;
-        case "staging-diff":
-          return (
-            <BladePanel
-              title={String(blade.props.filePath).split("/").pop() || "Diff"}
-              showBack
-              onBack={goBack}
-            >
-              <FileViewer />
-            </BladePanel>
-          );
+          return <StagingChangesBlade />;
         case "topology-graph":
           return <TopologyRootBlade />;
         case "commit-details":
@@ -60,7 +52,7 @@ export function RepositoryView() {
               <CommitDetailsBlade oid={String(blade.props.oid)} />
             </BladePanel>
           );
-        case "commit-diff":
+        case "diff":
           return (
             <BladePanel
               title={String(blade.props.filePath).split("/").pop() || "Diff"}
@@ -68,8 +60,11 @@ export function RepositoryView() {
               onBack={goBack}
             >
               <DiffBlade
-                oid={String(blade.props.oid)}
-                filePath={String(blade.props.filePath)}
+                source={
+                  blade.props as
+                    | { mode: "commit"; oid: string; filePath: string }
+                    | { mode: "staging"; filePath: string; staged: boolean }
+                }
               />
             </BladePanel>
           );
@@ -77,7 +72,7 @@ export function RepositoryView() {
           return <div>Unknown blade type</div>;
       }
     },
-    [goBack, openStagingDiff],
+    [goBack],
   );
 
   if (!status) return null;

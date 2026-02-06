@@ -12,25 +12,27 @@ export function useBladeNavigation() {
     });
   };
 
+  /** Push a diff blade for a historical commit file */
   const openDiff = (oid: string, filePath: string) => {
     store.pushBlade({
-      type: "commit-diff",
+      type: "diff",
       title: filePath.split("/").pop() || filePath,
-      props: { oid, filePath },
+      props: { mode: "commit", oid, filePath },
     });
   };
 
+  /** Push a diff blade for a staging (working-tree) file */
   const openStagingDiff = (
     file: FileChange,
     section: "staged" | "unstaged" | "untracked",
   ) => {
     store.pushBlade({
-      type: "staging-diff",
+      type: "diff",
       title: file.path.split("/").pop() || file.path,
       props: {
+        mode: "staging",
         filePath: file.path,
-        section,
-        file: JSON.parse(JSON.stringify(file)),
+        staged: section === "staged",
       },
     });
   };
