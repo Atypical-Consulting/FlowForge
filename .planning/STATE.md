@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 
 ## Current Position
 
-Phase: 16 of 19 (Quick Fixes & Visual Polish) — COMPLETE
+Phase: 17 of 19 (Hierarchical View & Commit Enhancements) — COMPLETE
 Plan: 3 of 3 in current phase
-Status: Phase 16 complete, ready for Phase 17
-Last activity: 2026-02-06 — Phase 16 executed and verified
+Status: Phase 17 complete, ready for Phase 18 or 19
+Last activity: 2026-02-06 — Phase 17 executed and verified
 
-Progress: ██░░░░░░░░ 25%
+Progress: ████░░░░░░ 50%
 
 ## Milestone History
 
@@ -87,9 +87,9 @@ None.
 
 ## Next Steps
 
-Run `/gsd:plan-phase 17` to plan Hierarchical View & Commit Enhancements.
-(Phases 17, 18, 19 are independent — can execute in any order.)
+Run `/gsd:discuss-phase 18` or `/gsd:plan-phase 18` to plan Command Palette & Discoverability.
+(Phases 18 and 19 are independent — can execute in any order.)
 
 ---
 *State updated: 2026-02-06*
-*Milestone: v1.2.0 Bugfixing & Polish — Phase 16 complete*
+*Milestone: v1.2.0 Bugfixing & Polish — Phase 17 complete*

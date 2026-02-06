@@ -42,14 +42,14 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 - [ ] **UIPX-01**: Modals open without flickering or appearing briefly in top-left corner
 - [ ] **UIPX-02**: Blade opening animation is subtler (less aggressive right-to-left slide)
-- [ ] **UIPX-03**: Hierarchical view supports folder-level stage/unstage
-- [ ] **UIPX-04**: Hierarchical view has consistent spacing (icon width and icon-to-text padding aligned)
+- [x] **UIPX-03**: Hierarchical view supports folder-level stage/unstage
+- [x] **UIPX-04**: Hierarchical view has consistent spacing (icon width and icon-to-text padding aligned)
 - [ ] **UIPX-05**: Diff blade header shows path in gray + filename in bold as single merged line
 
 ### Conventional Commits
 
-- [ ] **CCMT-01**: Conventional Commit type icons use distinct colors per type
-- [ ] **CCMT-02**: Changelog generation includes Conventional Commit type icons
+- [x] **CCMT-01**: Conventional Commit type icons use distinct colors per type
+- [x] **CCMT-02**: Changelog generation includes Conventional Commit type icons
 
 ### Tags
 
@@ -98,11 +98,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SETT-02 | Phase 19 | Pending |
 | UIPX-01 | Phase 16 | Complete |
 | UIPX-02 | Phase 16 | Complete |
-| UIPX-03 | Phase 17 | Pending |
-| UIPX-04 | Phase 17 | Pending |
+| UIPX-03 | Phase 17 | Complete |
+| UIPX-04 | Phase 17 | Complete |
 | UIPX-05 | Phase 16 | Complete |
-| CCMT-01 | Phase 17 | Pending |
-| CCMT-02 | Phase 17 | Pending |
+| CCMT-01 | Phase 17 | Complete |
+| CCMT-02 | Phase 17 | Complete |
 | TAGS-01 | Phase 16 | Complete |
 | NAVG-01 | Phase 16 | Complete |
 
