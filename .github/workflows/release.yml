@@ -53,6 +53,12 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "FlowForge ${{ github.ref_name }}"
@@ -64,6 +70,11 @@ jobs:
             ### Installation
 
             **macOS (Apple Silicon):** Download the `.dmg` file and drag FlowForge to your Applications folder.
+
+            > **Note:** If macOS shows "FlowForge.app is damaged and can't be opened", the app is not yet code-signed. Run this command in Terminal to bypass Gatekeeper:
+            > ```
+            > xattr -cr /Applications/FlowForge.app
+            > ```
 
             **Windows:** Download the `.msi` installer and run it.
 
