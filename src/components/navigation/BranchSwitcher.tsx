@@ -80,8 +80,10 @@ export function BranchSwitcher({ onSelectBranch }: BranchSwitcherProps) {
     [recentBranches, filteredBranches],
   );
 
-  // Click-outside dismissal
+  // Click-outside dismissal — use "click" (not "mousedown") so React
+  // has time to reconcile the DOM before we check `contains`.
   useEffect(() => {
+    if (!isOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (
         containerRef.current &&
@@ -90,9 +92,9 @@ export function BranchSwitcher({ onSelectBranch }: BranchSwitcherProps) {
         closePanels();
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [closePanels]);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [isOpen, closePanels]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -145,7 +147,8 @@ export function BranchSwitcher({ onSelectBranch }: BranchSwitcherProps) {
     [onSelectBranch, closePanels],
   );
 
-  const handleToggleRemote = useCallback(() => {
+  const handleToggleRemote = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
     setIncludeRemote((prev) => !prev);
   }, []);
 
@@ -207,7 +210,7 @@ export function BranchSwitcher({ onSelectBranch }: BranchSwitcherProps) {
                 type="button"
                 onClick={handleToggleRemote}
                 className={cn(
-                  "w-8 h-4 rounded-full transition-colors relative",
+                  "w-9 h-5 rounded-full transition-colors relative shrink-0",
                   includeRemote ? "bg-ctp-blue" : "bg-ctp-surface1",
                 )}
                 role="switch"
@@ -216,8 +219,8 @@ export function BranchSwitcher({ onSelectBranch }: BranchSwitcherProps) {
               >
                 <span
                   className={cn(
-                    "absolute top-0.5 w-3 h-3 rounded-full bg-ctp-text transition-transform",
-                    includeRemote ? "translate-x-4" : "translate-x-0.5",
+                    "absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-ctp-text transition-transform",
+                    includeRemote ? "translate-x-4" : "translate-x-0",
                   )}
                 />
               </button>

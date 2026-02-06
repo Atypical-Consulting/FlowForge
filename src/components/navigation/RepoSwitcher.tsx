@@ -40,7 +40,7 @@ export function RepoSwitcher({ onSelectRepo }: RepoSwitcherProps) {
     isPinned,
   } = useNavigationStore();
 
-  const { recentRepos } = useRecentRepos();
+  const { recentRepos, refresh: refreshRecentRepos } = useRecentRepos();
 
   const currentPath = status?.repoPath ?? "";
   const currentName = status?.repoName ?? "No repo";
@@ -70,13 +70,20 @@ export function RepoSwitcher({ onSelectRepo }: RepoSwitcherProps) {
     [pinnedRepos, recentRepoItems],
   );
 
-  // Reset highlight when panel opens/closes
+  // Reset highlight and refresh recent repos when panel opens
   useEffect(() => {
     setHighlightedIndex(-1);
-  }, [isOpen]);
+    if (isOpen) {
+      refreshRecentRepos();
+    }
+  }, [isOpen, refreshRecentRepos]);
 
-  // Click-outside dismissal
+  // Click-outside dismissal — use "click" (not "mousedown") so React
+  // has time to reconcile the DOM before we check `contains`. This
+  // prevents the dropdown from closing when an internal action (pin,
+  // select) causes a re-render that removes the event target node.
   useEffect(() => {
+    if (!isOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (
         containerRef.current &&
@@ -85,9 +92,9 @@ export function RepoSwitcher({ onSelectRepo }: RepoSwitcherProps) {
         closePanels();
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [closePanels]);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [isOpen, closePanels]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
