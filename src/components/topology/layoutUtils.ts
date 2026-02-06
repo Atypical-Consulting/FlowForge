@@ -50,60 +50,60 @@ export const BRANCH_RING_COLORS: Record<BranchType, string> = {
   other: "ring-ctp-overlay0",
 };
 
-// ── Positioned node type ──
+// ── Positioned types ──
 
 export interface PositionedNode {
-  /** Original graph node data */
   node: GraphNode;
-  /** Center X of the circle */
   cx: number;
-  /** Center Y of the circle */
   cy: number;
-  /** Circle radius */
   r: number;
-  /** Hex color for SVG fill/stroke */
   color: string;
 }
 
 export interface PositionedEdge {
-  /** Source node OID (child) */
   from: string;
-  /** Target node OID (parent) */
   to: string;
-  /** SVG path data (M...L) */
   path: string;
-  /** Hex color for SVG stroke */
+  color: string;
+  /** Whether this edge stays in the same lane (straight line) */
+  isSameLane: boolean;
+}
+
+/** A continuous vertical lane guide line */
+export interface LaneLine {
+  x: number;
+  yStart: number;
+  yEnd: number;
   color: string;
 }
 
 // ── Layout function ──
 
-/**
- * Compute positioned nodes and edges for SVG rendering.
- *
- * Uses Ungit-style layout:
- * - HEAD-ancestor nodes are large, in column 0, with wider spacing
- * - Side-branch nodes are smaller, offset right, with tighter spacing
- * - Edges are straight lines between node centers
- */
 export function computeLayout(
   graphNodes: GraphNode[],
   graphEdges: GraphEdge[],
 ): {
   nodes: PositionedNode[];
   edges: PositionedEdge[];
+  laneLines: LaneLine[];
   totalHeight: number;
   totalWidth: number;
 } {
   if (graphNodes.length === 0) {
-    return { nodes: [], edges: [], totalHeight: 0, totalWidth: 0 };
+    return {
+      nodes: [],
+      edges: [],
+      laneLines: [],
+      totalHeight: 0,
+      totalWidth: 0,
+    };
   }
 
-  // Position nodes
+  // ── Position nodes ──
   const positionedNodes: PositionedNode[] = [];
   const nodeMap = new Map<string, PositionedNode>();
-  let currentY = 40; // Start 40px from top
-  let maxX = 0;
+  let currentY = 40;
+  let maxColumn = 0;
 
   for (let i = 0; i < graphNodes.length; i++) {
     const gn = graphNodes[i];
@@ -117,44 +117,87 @@ export function computeLayout(
     positionedNodes.push(pn);
     nodeMap.set(gn.oid, pn);
 
-    if (cx > maxX) maxX = cx;
+    if (gn.column > maxColumn) maxColumn = gn.column;
 
-    // Determine spacing to next node
+    // Spacing to next node
     const nextNode = graphNodes[i + 1];
     if (nextNode) {
-      const nextIsHead = nextNode.isHeadAncestor;
-      // Use larger spacing when both are on the main line
-      if (isHead && nextIsHead) {
-        currentY += MAIN_ROW_HEIGHT;
-      } else {
-        currentY += SIDE_ROW_HEIGHT;
-      }
+      currentY +=
+        isHead && nextNode.isHeadAncestor ? MAIN_ROW_HEIGHT : SIDE_ROW_HEIGHT;
     }
   }
 
   const totalHeight = currentY + 60;
-  const totalWidth = maxX + LANE_SPACING + BADGE_WIDTH + 20;
+  const totalWidth =
+    MAIN_LANE_X + (maxColumn + 1) * LANE_SPACING + BADGE_WIDTH + 20;
 
-  // Build visible OID set
-  const visibleOids = new Set(graphNodes.map((n) => n.oid));
+  // ── Build lane guide lines ──
+  // For each column, find the first and last node and draw a vertical line
+  const laneExtents = new Map<
+    number,
+    { yStart: number; yEnd: number; color: string }
+  >();
+  for (const pn of positionedNodes) {
+    const col = pn.node.column;
+    const existing = laneExtents.get(col);
+    if (!existing) {
+      laneExtents.set(col, { yStart: pn.cy, yEnd: pn.cy, color: pn.color });
+    } else {
+      existing.yEnd = pn.cy;
+    }
+  }
+  const laneLines: LaneLine[] = [];
+  for (const [col, ext] of laneExtents) {
+    if (ext.yStart !== ext.yEnd) {
+      laneLines.push({
+        x: MAIN_LANE_X + col * LANE_SPACING,
+        yStart: ext.yStart,
+        yEnd: ext.yEnd,
+        color: ext.color,
+      });
+    }
+  }
 
-  // Position edges as straight lines
+  // ── Position edges ──
   const positionedEdges: PositionedEdge[] = [];
   for (const edge of graphEdges) {
     const source = nodeMap.get(edge.from);
     const target = nodeMap.get(edge.to);
-    if (!source || !target) continue; // Skip edges to nodes outside visible set
-    if (!visibleOids.has(edge.from) || !visibleOids.has(edge.to)) continue;
+    if (!source || !target) continue;
 
-    const path = `M ${source.cx},${source.cy} L ${target.cx},${target.cy}`;
-    const color = source.color;
+    const isSameLane = source.cx === target.cx;
+    let path: string;
 
-    positionedEdges.push({ from: edge.from, to: edge.to, path, color });
+    if (isSameLane) {
+      // Same lane: straight vertical line
+      path = `M ${source.cx},${source.cy} L ${target.cx},${target.cy}`;
+    } else {
+      // Cross-lane: step path — go down from source, then horizontal, then down to target.
+      // The horizontal step happens at the midpoint Y.
+      const midY = source.cy + (target.cy - source.cy) * 0.3;
+      path = `M ${source.cx},${source.cy} L ${source.cx},${midY} L ${target.cx},${midY} L ${target.cx},${target.cy}`;
+    }
+
+    positionedEdges.push({
+      from: edge.from,
+      to: edge.to,
+      path,
+      color: source.color,
+      isSameLane,
+    });
   }
+
+  // Sort: same-lane edges first (behind), cross-lane edges on top
+  positionedEdges.sort((a, b) => {
+    if (a.isSameLane && !b.isSameLane) return -1;
+    if (!a.isSameLane && b.isSameLane) return 1;
+    return 0;
+  });
 
   return {
     nodes: positionedNodes,
     edges: positionedEdges,
+    laneLines,
     totalHeight,
     totalWidth,
   };

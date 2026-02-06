@@ -6,6 +6,7 @@ import { CommitBadge } from "./CommitBadge";
 import {
   BADGE_HEIGHT,
   BADGE_WIDTH,
+  type LaneLine,
   type PositionedEdge,
   type PositionedNode,
   computeLayout,
@@ -30,7 +31,7 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Compute layout
-  const { nodes, edges, totalHeight, totalWidth } = useMemo(
+  const { nodes, edges, laneLines, totalHeight, totalWidth } = useMemo(
     () => computeLayout(graphNodes, graphEdges),
     [graphNodes, graphEdges],
   );
@@ -102,20 +103,33 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
           className="relative"
           style={{ width: totalWidth, height: totalHeight, minWidth: "100%" }}
         >
-          {/* SVG layer: edges and node circles */}
+          {/* SVG layer: lane lines, edges, and node circles */}
           <svg
             className="absolute inset-0 pointer-events-none"
             width={totalWidth}
             height={totalHeight}
           >
-            {/* Edges (rendered behind nodes) */}
+            {/* Lane guide lines (continuous vertical stripes) */}
+            {laneLines.map((lane: LaneLine) => (
+              <line
+                key={`lane-${lane.x}`}
+                x1={lane.x}
+                y1={lane.yStart}
+                x2={lane.x}
+                y2={lane.yEnd}
+                stroke={lane.color}
+                strokeWidth={2}
+                strokeOpacity={0.12}
+              />
+            ))}
+            {/* Edges (sorted: same-lane behind, cross-lane on top) */}
             {edges.map((edge: PositionedEdge) => (
               <path
                 key={`${edge.from}-${edge.to}`}
                 d={edge.path}
                 stroke={edge.color}
-                strokeWidth={2.5}
-                strokeOpacity={0.5}
+                strokeWidth={edge.isSameLane ? 2.5 : 2}
+                strokeOpacity={edge.isSameLane ? 0.5 : 0.35}
                 fill="none"
               />
             ))}
