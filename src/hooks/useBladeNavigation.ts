@@ -1,3 +1,4 @@
+import type { FileChange } from "../bindings";
 import { useBladeStore } from "../stores/blades";
 
 export function useBladeNavigation() {
@@ -19,6 +20,21 @@ export function useBladeNavigation() {
     });
   };
 
+  const openStagingDiff = (
+    file: FileChange,
+    section: "staged" | "unstaged" | "untracked",
+  ) => {
+    store.pushBlade({
+      type: "staging-diff",
+      title: file.path.split("/").pop() || file.path,
+      props: {
+        filePath: file.path,
+        section,
+        file: JSON.parse(JSON.stringify(file)),
+      },
+    });
+  };
+
   const goBack = () => store.popBlade();
   const goToRoot = () => store.resetStack();
 
@@ -26,6 +42,7 @@ export function useBladeNavigation() {
     ...store,
     openCommitDetails,
     openDiff,
+    openStagingDiff,
     goBack,
     goToRoot,
   };

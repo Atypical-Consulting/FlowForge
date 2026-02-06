@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 export type BladeType =
   | "staging-changes"
+  | "staging-diff"
   | "topology-graph"
   | "commit-details"
   | "commit-diff";
@@ -45,10 +46,7 @@ export const useBladeStore = create<BladeState>((set) => ({
 
   pushBlade: (blade) =>
     set((state) => ({
-      bladeStack: [
-        ...state.bladeStack,
-        { ...blade, id: crypto.randomUUID() },
-      ],
+      bladeStack: [...state.bladeStack, { ...blade, id: crypto.randomUUID() }],
     })),
 
   popBlade: () =>
