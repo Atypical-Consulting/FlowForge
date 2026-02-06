@@ -3,7 +3,7 @@ import { graphlib } from "dagre-d3-es";
 import { layout } from "dagre-d3-es/src/dagre/index.js";
 import type { BranchType, GraphEdge, GraphNode } from "../../bindings";
 
-const NODE_WIDTH = 200;
+const NODE_WIDTH = 240;
 const NODE_HEIGHT = 40;
 
 export interface CommitNodeData extends Record<string, unknown> {
@@ -30,7 +30,7 @@ export function layoutGraph(
   graphEdges: GraphEdge[],
 ): { nodes: Node<CommitNodeData>[]; edges: Edge<CommitEdgeData>[] } {
   const g = new graphlib.Graph().setDefaultEdgeLabel(() => ({}));
-  g.setGraph({ rankdir: "TB", nodesep: 50, ranksep: 80 });
+  g.setGraph({ rankdir: "TB", nodesep: 80, ranksep: 60 });
 
   // Add nodes to graph
   graphNodes.forEach((node) => {
