@@ -162,14 +162,16 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView
-          fitViewOptions={{ padding: 0.2 }}
-          minZoom={0.1}
-          maxZoom={2}
+          fitViewOptions={{ padding: 0.3, maxZoom: 1 }}
+          minZoom={0.2}
+          maxZoom={1.5}
           nodesDraggable={false}
           nodesConnectable={false}
           elementsSelectable={false}
-          panOnScroll
           zoomOnScroll
+          zoomOnPinch
+          panOnScroll={false}
+          panOnDrag
           style={{ background: "transparent" }}
         >
           <Background
