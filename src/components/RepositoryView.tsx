@@ -16,6 +16,8 @@ import {
   DiffBlade,
   StagingChangesBlade,
   TopologyRootBlade,
+  ViewerImageBlade,
+  ViewerNupkgBlade,
 } from "./blades";
 import { BranchList } from "./branches/BranchList";
 import { CommitForm } from "./commit/CommitForm";
@@ -66,6 +68,26 @@ export function RepositoryView() {
                     | { mode: "staging"; filePath: string; staged: boolean }
                 }
               />
+            </BladePanel>
+          );
+        case "viewer-nupkg":
+          return (
+            <BladePanel
+              title={String(blade.props.filePath).split("/").pop() || "Package"}
+              showBack
+              onBack={goBack}
+            >
+              <ViewerNupkgBlade filePath={String(blade.props.filePath)} />
+            </BladePanel>
+          );
+        case "viewer-image":
+          return (
+            <BladePanel
+              title={String(blade.props.filePath).split("/").pop() || "Image"}
+              showBack
+              onBack={goBack}
+            >
+              <ViewerImageBlade filePath={String(blade.props.filePath)} />
             </BladePanel>
           );
         default:

@@ -7,3 +7,5 @@ export { FileTreeBlade } from "./FileTreeBlade";
 export { ProcessNavigation } from "./ProcessNavigation";
 export { StagingChangesBlade } from "./StagingChangesBlade";
 export { TopologyRootBlade } from "./TopologyRootBlade";
+export { ViewerImageBlade } from "./ViewerImageBlade";
+export { ViewerNupkgBlade } from "./ViewerNupkgBlade";

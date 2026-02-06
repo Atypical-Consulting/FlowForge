@@ -277,71 +277,83 @@ async fn get_commit_graph_impl(
 
 /// Assign lane/column positions to commits for visual layout.
 ///
-/// Algorithm:
-/// 1. Process commits in topological order (as they come from the revwalk)
-/// 2. Track active columns (which OID occupies each column)
-/// 3. Assign commits to columns based on their first parent's column
-/// 4. New branches fork to the first available column on the right
+/// Algorithm overview:
+/// Nodes arrive in topological order (children before parents from the revwalk).
+/// We process them in order and propagate column assignments downward:
+///
+/// 1. Each node gets a column: either an existing reservation or a new lane.
+/// 2. The node's first parent inherits the node's column (continuing the branch line).
+/// 3. Additional parents (merge sources) get their own lane if not already assigned.
+/// 4. When a merge is encountered, the secondary branch's lane is freed.
+///
+/// This produces the classic git-graph layout where main/develop stay in the
+/// leftmost lanes and feature branches fork to the right.
 fn assign_lanes(nodes: &mut [GraphNode]) {
     if nodes.is_empty() {
         return;
     }
 
-    // Maps commit OID to its assigned column
-    let mut oid_to_column: HashMap<String, u32> = HashMap::new();
+    // Maps commit OID to its pre-assigned column (reserved by a child)
+    let mut reserved_column: HashMap<String, u32> = HashMap::new();
 
-    // Active columns: Some(oid) means column is occupied by that branch line
-    // None means column is free
-    let mut active_columns: Vec<Option<String>> = Vec::new();
+    // Active columns: true = occupied, false = free
+    let mut active_columns: Vec<bool> = Vec::new();
 
-    // Find or create a column for a branch line
-    fn find_free_column(active: &mut Vec<Option<String>>) -> u32 {
-        for (i, slot) in active.iter().enumerate() {
-            if slot.is_none() {
+    // Find or create a free column
+    fn alloc_column(active: &mut Vec<bool>) -> u32 {
+        for (i, occupied) in active.iter().enumerate() {
+            if !occupied {
+                active[i] = true;
                 return i as u32;
             }
         }
-        // No free column, add a new one
         let col = active.len() as u32;
-        active.push(None);
+        active.push(true);
         col
     }
 
+    fn free_column(active: &mut Vec<bool>, col: u32) {
+        if (col as usize) < active.len() {
+            active[col as usize] = false;
+        }
+    }
+
     for node in nodes.iter_mut() {
-        let column = if node.parents.is_empty() {
-            // Root commit - assign to first free column
-            let col = find_free_column(&mut active_columns);
-            if (col as usize) < active_columns.len() {
-                active_columns[col as usize] = Some(node.oid.clone());
-            }
+        // Step 1: Determine this node's column
+        let column = if let Some(col) = reserved_column.remove(&node.oid) {
+            // A child already reserved a column for us
             col
-        } else if let Some(&parent_col) = node.parents.first().and_then(|p| oid_to_column.get(p)) {
-            // Has a parent we've seen - try to use parent's column
-            parent_col
         } else {
-            // First commit we see on a new branch line
-            let col = find_free_column(&mut active_columns);
-            if (col as usize) >= active_columns.len() {
-                active_columns.push(None);
-            }
-            active_columns[col as usize] = Some(node.oid.clone());
-            col
+            // New branch head (tip commit) — allocate a new lane
+            alloc_column(&mut active_columns)
         };
 
         node.column = column;
-        oid_to_column.insert(node.oid.clone(), column);
 
-        // If this is a merge commit (multiple parents), mark secondary parent columns
-        // as potentially freeable after this point
-        if node.parents.len() > 1 {
-            for parent in node.parents.iter().skip(1) {
-                if let Some(&parent_col) = oid_to_column.get(parent) {
-                    // The merged branch's column can be freed
-                    if (parent_col as usize) < active_columns.len() {
-                        active_columns[parent_col as usize] = None;
-                    }
-                }
+        // Step 2: Reserve columns for parents
+        if !node.parents.is_empty() {
+            // First parent continues in this node's column
+            let first_parent = &node.parents[0];
+            if !reserved_column.contains_key(first_parent) {
+                reserved_column.insert(first_parent.clone(), column);
+            } else {
+                // First parent already has a column from another child (convergence).
+                // Free our column since the parent doesn't need it.
+                free_column(&mut active_columns, column);
             }
+
+            // Additional parents (merge sources) get their own lanes
+            for parent in node.parents.iter().skip(1) {
+                if !reserved_column.contains_key(parent) {
+                    let parent_col = alloc_column(&mut active_columns);
+                    reserved_column.insert(parent.clone(), parent_col);
+                }
+                // If parent already has a column, it will use it when we reach it.
+                // The merge lane will be freed when the parent is processed.
+            }
+        } else {
+            // Root commit — free the column (end of branch)
+            free_column(&mut active_columns, column);
         }
     }
 }

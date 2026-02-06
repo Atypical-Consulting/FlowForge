@@ -57,7 +57,6 @@ export const CommitBadge = memo(({ data }: CommitBadgeProps) => {
         data.isSelected &&
           `ring-2 ${ringColor} ring-offset-1 ring-offset-ctp-base shadow-lg`,
       )}
-      onClick={() => data.onSelect?.(data.oid)}
     >
       <Handle
         type="target"

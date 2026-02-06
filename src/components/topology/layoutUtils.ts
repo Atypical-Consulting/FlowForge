@@ -1,10 +1,10 @@
 import type { Edge, Node } from "@xyflow/react";
-import { graphlib } from "dagre-d3-es";
-import { layout } from "dagre-d3-es/src/dagre/index.js";
 import type { BranchType, GraphEdge, GraphNode } from "../../bindings";
 
-const NODE_WIDTH = 240;
-const NODE_HEIGHT = 40;
+export const NODE_WIDTH = 240;
+export const NODE_HEIGHT = 40;
+const LANE_WIDTH = 280; // horizontal spacing between lane centers
+const ROW_HEIGHT = 70; // vertical spacing between commit rows
 
 export interface CommitNodeData extends Record<string, unknown> {
   oid: string;
@@ -25,60 +25,50 @@ export interface CommitEdgeData extends Record<string, unknown> {
   index?: number;
 }
 
+/**
+ * Layout commit graph using lane-based positioning.
+ *
+ * X position: determined by the commit's `column` (lane) from the backend.
+ * Y position: determined by topological order (array index) — commits come
+ *             pre-sorted from the backend revwalk (TOPOLOGICAL | TIME).
+ *
+ * This produces a clean git-graph style layout where each branch stays in
+ * its own vertical lane, unlike dagre which optimizes for generic DAG layout.
+ */
 export function layoutGraph(
   graphNodes: GraphNode[],
   graphEdges: GraphEdge[],
 ): { nodes: Node<CommitNodeData>[]; edges: Edge<CommitEdgeData>[] } {
-  const g = new graphlib.Graph().setDefaultEdgeLabel(() => ({}));
-  g.setGraph({ rankdir: "TB", nodesep: 80, ranksep: 60 });
-
   // Build a set of visible node OIDs for fast lookup
   const visibleOids = new Set(graphNodes.map((n) => n.oid));
 
-  // Add nodes to graph
-  graphNodes.forEach((node) => {
-    g.setNode(node.oid, { width: NODE_WIDTH, height: NODE_HEIGHT });
-  });
+  // Position nodes: column → x, row index → y
+  const nodes: Node<CommitNodeData>[] = graphNodes.map((node, index) => ({
+    id: node.oid,
+    type: "commit",
+    position: {
+      x: node.column * LANE_WIDTH,
+      y: index * ROW_HEIGHT,
+    },
+    data: {
+      oid: node.oid,
+      shortOid: node.shortOid,
+      message: node.message,
+      author: node.author,
+      timestampMs: node.timestampMs,
+      parents: node.parents,
+      branchType: node.branchType,
+      column: node.column,
+      branchNames: node.branchNames,
+    },
+  }));
 
-  // Filter edges: only include edges where BOTH source and target exist in the visible set
+  // Filter edges: only include edges where BOTH source and target exist
   const validEdges = graphEdges.filter(
     (edge) => visibleOids.has(edge.from) && visibleOids.has(edge.to),
   );
 
-  // Add edges to graph
-  validEdges.forEach((edge) => {
-    g.setEdge(edge.from, edge.to);
-  });
-
-  // Run layout
-  layout(g, undefined);
-
-  // Convert to React Flow format
-  const nodes: Node<CommitNodeData>[] = graphNodes.map((node) => {
-    const dagreNode = g.node(node.oid);
-    return {
-      id: node.oid,
-      type: "commit",
-      position: {
-        x: dagreNode.x - NODE_WIDTH / 2,
-        y: dagreNode.y - NODE_HEIGHT / 2,
-      },
-      data: {
-        oid: node.oid,
-        shortOid: node.shortOid,
-        message: node.message,
-        author: node.author,
-        timestampMs: node.timestampMs,
-        parents: node.parents,
-        branchType: node.branchType,
-        column: node.column,
-        branchNames: node.branchNames,
-      },
-    };
-  });
-
   const edges: Edge<CommitEdgeData>[] = validEdges.map((edge, i) => {
-    // Find source node to get branch type for coloring
     const sourceNode = graphNodes.find((n) => n.oid === edge.from);
     return {
       id: `e-${i}`,

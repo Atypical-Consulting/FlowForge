@@ -4,7 +4,9 @@ export type BladeType =
   | "staging-changes"
   | "topology-graph"
   | "commit-details"
-  | "diff";
+  | "diff"
+  | "viewer-nupkg"
+  | "viewer-image";
 
 export type ProcessType = "staging" | "topology";
 

@@ -6,10 +6,12 @@ import {
   type Node,
   type NodeMouseHandler,
   ReactFlow,
+  ReactFlowProvider,
   useEdgesState,
   useNodesState,
+  useReactFlow,
 } from "@xyflow/react";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import "@xyflow/react/dist/style.css";
 
 import { Loader2 } from "lucide-react";
@@ -19,6 +21,7 @@ import { BranchEdge } from "./BranchEdge";
 import { CommitBadge } from "./CommitBadge";
 import { LaneHeader } from "./LaneHeader";
 import {
+  NODE_WIDTH,
   type CommitEdgeData,
   type CommitNodeData,
   layoutGraph,
@@ -31,7 +34,7 @@ interface TopologyPanelProps {
   onCommitSelect?: (oid: string) => void;
 }
 
-export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
+function TopologyPanelInner({ onCommitSelect }: TopologyPanelProps) {
   const {
     nodes: graphNodes,
     edges: graphEdges,
@@ -43,7 +46,11 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
     loadMore,
   } = useCommitGraph();
 
-  // Layout nodes using dagre
+  const { setViewport } = useReactFlow();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const hasSetInitialViewport = useRef(false);
+
+  // Layout nodes using lane-based positioning
   const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(() => {
     if (graphNodes.length === 0) {
       return {
@@ -54,20 +61,16 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
     return layoutGraph(graphNodes, graphEdges);
   }, [graphNodes, graphEdges]);
 
-  // Add selection state and handlers to nodes
+  // Add selection state to nodes
   const nodesWithHandlers = useMemo(() => {
     return layoutedNodes.map((node) => ({
       ...node,
       data: {
         ...node.data,
         isSelected: node.id === selectedCommit,
-        onSelect: (oid: string) => {
-          selectCommit(oid);
-          onCommitSelect?.(oid);
-        },
       },
     }));
-  }, [layoutedNodes, selectedCommit, selectCommit, onCommitSelect]);
+  }, [layoutedNodes, selectedCommit]);
 
   // Add index to edges for staggered animation
   const edgesWithIndex = useMemo(() => {
@@ -113,7 +116,34 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
     setEdges(edgesWithIndex);
   }, [nodesWithHandlers, edgesWithIndex, setNodes, setEdges]);
 
-  // Handle node clicks via React Flow's onNodeClick for reliable event handling
+  // Center viewport on first commit after initial load
+  useEffect(() => {
+    if (
+      hasSetInitialViewport.current ||
+      layoutedNodes.length === 0 ||
+      !containerRef.current
+    )
+      return;
+
+    hasSetInitialViewport.current = true;
+
+    // Wait a tick for React Flow to measure
+    requestAnimationFrame(() => {
+      const container = containerRef.current;
+      if (!container) return;
+
+      const containerWidth = container.clientWidth;
+      const firstNode = layoutedNodes[0];
+      // Center the first node horizontally, 20px from top
+      const nodeCenterX = firstNode.position.x + NODE_WIDTH / 2;
+      const x = containerWidth / 2 - nodeCenterX;
+      const y = -firstNode.position.y + 20;
+
+      setViewport({ x, y, zoom: 1 }, { duration: 0 });
+    });
+  }, [layoutedNodes, setViewport]);
+
+  // Handle node clicks via React Flow's onNodeClick
   const handleNodeClick: NodeMouseHandler<Node<CommitNodeData>> = useCallback(
     (_event, node) => {
       selectCommit(node.data.oid);
@@ -152,7 +182,7 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
   return (
     <div className="h-full w-full relative bg-ctp-mantle flex flex-col">
       <LaneHeader lanes={laneInfo} />
-      <div className="flex-1 min-h-0 relative">
+      <div className="flex-1 min-h-0 relative" ref={containerRef}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -161,7 +191,7 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
           onNodeClick={handleNodeClick}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
-          defaultViewport={{ x: 0, y: 0, zoom: 0.85 }}
+          defaultViewport={{ x: 0, y: 0, zoom: 1 }}
           minZoom={0.1}
           maxZoom={2}
           nodesDraggable={false}
@@ -195,5 +225,13 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
         )}
       </div>
     </div>
+  );
+}
+
+export function TopologyPanel(props: TopologyPanelProps) {
+  return (
+    <ReactFlowProvider>
+      <TopologyPanelInner {...props} />
+    </ReactFlowProvider>
   );
 }
