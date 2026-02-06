@@ -119,7 +119,7 @@ None.
 ## Phase 14 Summary
 
 **Completed:** 2026-02-06
-**Plans:** 3/3
+**Plans:** 4/4 (including gap closure)
 **Requirements:** 5 (UI-05/06/07/08/09)
 
 **Delivered:**
@@ -131,6 +131,7 @@ None.
 - ShortcutTooltip on 6 keyboard-shortcut buttons (Settings, Open, Fetch, Pull, Push, Amend)
 - dirty-pulse animation on BranchSwitcher dirty indicator
 - MotionConfig at app root respecting prefers-reduced-motion
+- Gap closure: single-scroll sidebar for visible frosted glass blur, tooltip viewport detection and lighter styling
 
 ## Next Steps
 
