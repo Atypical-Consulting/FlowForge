@@ -1,40 +1,16 @@
-import {
-  Bug,
-  FileText,
-  GitCommit,
-  Hammer,
-  Package,
-  Paintbrush,
-  Rocket,
-  Settings,
-  Sparkles,
-  TestTube,
-  Undo,
-  Zap,
-} from "lucide-react";
+import { GitCommit } from "lucide-react";
 import { memo } from "react";
-import type { ElementType } from "react";
 import type { GraphNode } from "../../bindings";
+import {
+  COMMIT_TYPE_THEME,
+  type ConventionalCommitType,
+} from "../../lib/commit-type-theme";
 import { cn } from "../../lib/utils";
 import {
   BRANCH_BADGE_STYLES,
   BRANCH_RING_COLORS,
   parseConventionalType,
 } from "./layoutUtils";
-
-const ICON_MAP: Record<string, ElementType> = {
-  feat: Sparkles,
-  fix: Bug,
-  docs: FileText,
-  style: Paintbrush,
-  refactor: Hammer,
-  perf: Zap,
-  test: TestTube,
-  chore: Settings,
-  ci: Rocket,
-  build: Package,
-  revert: Undo,
-};
 
 interface CommitBadgeProps {
   node: GraphNode;
@@ -50,7 +26,11 @@ export const CommitBadge = memo(
       BRANCH_RING_COLORS[node.branchType] || BRANCH_RING_COLORS.other;
 
     const commitType = parseConventionalType(node.message);
-    const Icon = (commitType && ICON_MAP[commitType]) || GitCommit;
+    const theme = commitType
+      ? COMMIT_TYPE_THEME[commitType as ConventionalCommitType]
+      : null;
+    const Icon = theme?.icon ?? GitCommit;
+    const iconColor = theme ? theme.color : "text-ctp-overlay1";
 
     return (
       <div
@@ -63,7 +43,7 @@ export const CommitBadge = memo(
             `ring-2 ${ringColor} ring-offset-1 ring-offset-ctp-base shadow-lg`,
         )}
       >
-        <Icon className="w-3 h-3 text-ctp-overlay1 shrink-0" />
+        <Icon className={cn("w-3 h-3 shrink-0", iconColor)} />
         <span className="text-ctp-text truncate flex-1 leading-tight">
           {node.message}
         </span>

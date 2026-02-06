@@ -1,48 +1,8 @@
 import { motion } from "framer-motion";
-import {
-  Bug,
-  FileText,
-  Hammer,
-  Package,
-  Paintbrush,
-  Rocket,
-  Settings,
-  Sparkles,
-  TestTube,
-  Undo,
-  Zap,
-} from "lucide-react";
 import type { TypeSuggestion } from "../../bindings";
+import { COMMIT_TYPE_THEME } from "../../lib/commit-type-theme";
 import { cn } from "../../lib/utils";
 import { COMMIT_TYPES, type CommitType } from "../../stores/conventional";
-
-const TYPE_ICONS: Record<CommitType, React.ElementType> = {
-  feat: Sparkles,
-  fix: Bug,
-  docs: FileText,
-  style: Paintbrush,
-  refactor: Hammer,
-  perf: Zap,
-  test: TestTube,
-  chore: Settings,
-  ci: Rocket,
-  build: Package,
-  revert: Undo,
-};
-
-const TYPE_COLORS: Record<CommitType, string> = {
-  feat: "text-ctp-green bg-ctp-green/10 border-ctp-green/30",
-  fix: "text-ctp-red bg-ctp-red/10 border-ctp-red/30",
-  docs: "text-ctp-blue bg-ctp-blue/10 border-ctp-blue/30",
-  style: "text-ctp-pink bg-ctp-pink/10 border-ctp-pink/30",
-  refactor: "text-ctp-peach bg-ctp-peach/10 border-ctp-peach/30",
-  perf: "text-ctp-yellow bg-ctp-yellow/10 border-ctp-yellow/30",
-  test: "text-ctp-teal bg-ctp-teal/10 border-ctp-teal/30",
-  chore: "text-ctp-lavender bg-ctp-lavender/10 border-ctp-lavender/30",
-  ci: "text-ctp-sky bg-ctp-sky/10 border-ctp-sky/30",
-  build: "text-ctp-maroon bg-ctp-maroon/10 border-ctp-maroon/30",
-  revert: "text-ctp-mauve bg-ctp-mauve/10 border-ctp-mauve/30",
-};
 
 interface TypeSelectorProps {
   value: CommitType | "";
@@ -88,7 +48,8 @@ export function TypeSelector({
       {/* Type grid */}
       <div className="grid grid-cols-4 gap-2">
         {COMMIT_TYPES.map((type) => {
-          const Icon = TYPE_ICONS[type];
+          const theme = COMMIT_TYPE_THEME[type];
+          const Icon = theme.icon;
           const isSelected = value === type;
           return (
             <motion.button
@@ -100,7 +61,7 @@ export function TypeSelector({
               className={cn(
                 "flex flex-col items-center gap-1 p-2 rounded-lg border transition-colors",
                 isSelected
-                  ? TYPE_COLORS[type]
+                  ? theme.badgeClasses
                   : "border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-overlay0 hover:text-ctp-subtext1",
               )}
             >

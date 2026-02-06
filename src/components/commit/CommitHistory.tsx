@@ -6,6 +6,7 @@ import { Skeleton } from "../ui/Skeleton";
 import { Virtuoso } from "react-virtuoso";
 import { type CommitSummary, commands } from "../../bindings";
 import { cn } from "../../lib/utils";
+import { CommitTypeIcon } from "../icons/CommitTypeIcon";
 import { CommitSearch } from "./CommitSearch";
 
 interface CommitHistoryProps {
@@ -157,7 +158,10 @@ export function CommitHistory({
                 )}
               >
                 <div className="flex items-start gap-2">
-                  <GitCommit className="w-4 h-4 text-ctp-overlay0 mt-0.5 shrink-0" />
+                  <CommitTypeIcon
+                    message={commit.messageSubject}
+                    className="mt-0.5"
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-ctp-subtext1 truncate">
                       {commit.messageSubject}
