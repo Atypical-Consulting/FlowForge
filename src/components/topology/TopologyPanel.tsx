@@ -26,7 +26,11 @@ import {
 const nodeTypes = { commit: CommitBadge };
 const edgeTypes = { gitflow: BranchEdge };
 
-export function TopologyPanel() {
+interface TopologyPanelProps {
+  onCommitSelect?: (oid: string) => void;
+}
+
+export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
   const {
     nodes: graphNodes,
     edges: graphEdges,
@@ -56,10 +60,13 @@ export function TopologyPanel() {
       data: {
         ...node.data,
         isSelected: node.id === selectedCommit,
-        onSelect: selectCommit,
+        onSelect: (oid: string) => {
+          selectCommit(oid);
+          onCommitSelect?.(oid);
+        },
       },
     }));
-  }, [layoutedNodes, selectedCommit, selectCommit]);
+  }, [layoutedNodes, selectedCommit, selectCommit, onCommitSelect]);
 
   // Add index to edges for staggered animation
   const edgesWithIndex = useMemo(() => {
