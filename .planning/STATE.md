@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 Phase: Milestone complete
 Plan: N/A
 Status: v1.1.0 shipped, ready for next milestone
-Last activity: 2026-02-06 — v1.1.0 milestone complete
+Last activity: 2026-02-06 — Completed quick task 025: fix TAURI_CHANNEL CI pipeline
 
 Progress: ██████████ 100% (v1.1.0)
 
@@ -60,7 +60,7 @@ See `.planning/MILESTONES.md` for full history.
 - defaultTab setting not wired in blade store initialization
 - Topology lacks EmptyState for repos with zero commits
 - Orphaned v1.0 code: greet command, getMergeStatus, CollapsibleSidebar, AnimatedList, FadeIn
-- Pre-existing TS2440 in auto-generated bindings.ts
+- Pre-existing TS2440 in auto-generated bindings.ts (TAURI_CHANNEL conflict fixed with post-export strip)
 
 ### Key Decisions
 
@@ -81,6 +81,7 @@ None.
 | 022 | Fix vertical separator stuck on left - resizable panels | 2026-02-05 | e22f4ea | [022-fix-vertical-separator-stuck-left](./quick/022-fix-vertical-separator-stuck-left/) |
 | 023 | Fix app icon not filling circle on welcome page | 2026-02-05 | 65485a5 | [023-fix-app-icon-not-filling-circle-on-welco](./quick/023-fix-app-icon-not-filling-circle-on-welco/) |
 | 024 | Bump version to v1.1.0 | 2026-02-06 | dfc6d4e | [024-prepare-v110-version-bump](./quick/024-prepare-v110-version-bump/) |
+| 025 | Fix TAURI_CHANNEL CI pipeline failure | 2026-02-06 | c6bafb2 | [025-fix-tauri-channel-ci-pipeline](./quick/025-fix-tauri-channel-ci-pipeline/) |
 
 ## Next Steps
 
