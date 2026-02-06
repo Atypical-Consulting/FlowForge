@@ -251,6 +251,107 @@ fn get_unstaged_diff(
     Ok((old_content, new_content, hunks, false))
 }
 
+/// Get the diff for a specific file at a given commit.
+///
+/// Shows the changes introduced by the commit (parent -> commit).
+#[tauri::command]
+#[specta::specta]
+pub async fn get_commit_file_diff(
+    oid: String,
+    path: String,
+    context_lines: u32,
+    state: State<'_, RepositoryState>,
+) -> Result<FileDiff, GitError> {
+    let repo_path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+
+    let file_path = path.clone();
+    let language = detect_language(&path);
+
+    tokio::task::spawn_blocking(move || {
+        let repo = git2::Repository::open(&repo_path)?;
+
+        let commit_oid = git2::Oid::from_str(&oid)
+            .map_err(|e| GitError::OperationFailed(format!("Invalid OID '{}': {}", oid, e)))?;
+        let commit = repo.find_commit(commit_oid)?;
+        let commit_tree = commit.tree()?;
+
+        let parent_tree = if commit.parent_count() > 0 {
+            Some(commit.parent(0)?.tree()?)
+        } else {
+            None
+        };
+
+        // Get old content from parent tree
+        let old_content = if let Some(ref tree) = parent_tree {
+            get_blob_content(&repo, tree, &file_path)?
+        } else {
+            String::new()
+        };
+
+        // Get new content from commit tree
+        let new_content = get_blob_content(&repo, &commit_tree, &file_path)?;
+
+        // Generate hunks
+        let mut diff_opts = git2::DiffOptions::new();
+        diff_opts.context_lines(context_lines).pathspec(&file_path);
+
+        let diff = repo.diff_tree_to_tree(
+            parent_tree.as_ref(),
+            Some(&commit_tree),
+            Some(&mut diff_opts),
+        )?;
+
+        let mut is_binary = false;
+        let mut hunks = Vec::new();
+
+        diff.foreach(
+            &mut |delta, _| {
+                if delta.flags().is_binary() {
+                    is_binary = true;
+                }
+                true
+            },
+            None,
+            Some(&mut |_delta, hunk| {
+                hunks.push(DiffHunk {
+                    old_start: hunk.old_start(),
+                    old_lines: hunk.old_lines(),
+                    new_start: hunk.new_start(),
+                    new_lines: hunk.new_lines(),
+                    header: String::from_utf8_lossy(hunk.header()).to_string(),
+                });
+                true
+            }),
+            None,
+        )?;
+
+        if is_binary {
+            return Ok(FileDiff {
+                path: file_path,
+                old_content: String::new(),
+                new_content: String::new(),
+                hunks,
+                is_binary: true,
+                language,
+            });
+        }
+
+        Ok(FileDiff {
+            path: file_path,
+            old_content,
+            new_content,
+            hunks,
+            is_binary,
+            language,
+        })
+    })
+    .await
+    .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}
+
 /// Get blob content from a tree by path.
 fn get_blob_content(
     repo: &git2::Repository,
