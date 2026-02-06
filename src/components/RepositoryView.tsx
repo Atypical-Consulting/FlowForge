@@ -1,29 +1,24 @@
 import {
   Archive,
-  Files,
   FolderGit2,
   GitBranch,
   GitMerge,
-  History,
-  Network,
   Plus,
   Tag,
 } from "lucide-react";
-import { useState } from "react";
-import type { CommitSummary } from "../bindings";
-import { cn } from "../lib/utils";
-import { useRepositoryStore } from "../stores/repository";
-import { useTopologyStore } from "../stores/topology";
+import { useCallback, useState } from "react";
+import type { Blade } from "../stores/blades";
+import { useBladeNavigation } from "../hooks/useBladeNavigation";
 import { BranchList } from "./branches/BranchList";
-import { CommitDetails } from "./commit/CommitDetails";
+import { BladeContainer, BladePanel } from "./blades";
 import { CommitForm } from "./commit/CommitForm";
-import { CommitHistory } from "./commit/CommitHistory";
 import { GitflowPanel } from "./gitflow";
 import { ResizablePanelLayout, ResizablePanel, ResizeHandle } from "./layout";
+import { useRepositoryStore } from "../stores/repository";
 import { StagingPanel } from "./staging/StagingPanel";
 import { StashList } from "./stash/StashList";
 import { TagList } from "./tags/TagList";
-import { TopologyCommitDetails, TopologyPanel } from "./topology";
+import { TopologyPanel } from "./topology";
 import { FileViewer } from "./viewers";
 import {
   CreateWorktreeDialog,
@@ -31,21 +26,57 @@ import {
   WorktreePanel,
 } from "./worktree";
 
-type Tab = "changes" | "history" | "topology";
-
 export function RepositoryView() {
   const { status } = useRepositoryStore();
-  const topologySelectedCommit = useTopologyStore((s) => s.selectedCommit);
-  const clearTopologySelection = useTopologyStore((s) => s.selectCommit);
-  const [activeTab, setActiveTab] = useState<Tab>("changes");
-  const [selectedCommit, setSelectedCommit] = useState<CommitSummary | null>(
-    null,
-  );
+  const { goBack, openCommitDetails } = useBladeNavigation();
   const [showBranchDialog, setShowBranchDialog] = useState(false);
   const [showStashDialog, setShowStashDialog] = useState(false);
   const [showTagDialog, setShowTagDialog] = useState(false);
   const [showWorktreeDialog, setShowWorktreeDialog] = useState(false);
   const [worktreeToDelete, setWorktreeToDelete] = useState<string | null>(null);
+
+  const renderBlade = useCallback(
+    (blade: Blade) => {
+      switch (blade.type) {
+        case "staging-changes":
+          return (
+            <div className="flex h-full">
+              <div className="w-[300px] shrink-0 border-r border-ctp-surface0 overflow-hidden">
+                <StagingPanel />
+              </div>
+              <div className="flex-1 min-w-0">
+                <FileViewer />
+              </div>
+            </div>
+          );
+        case "topology-graph":
+          return <TopologyPanel onCommitSelect={openCommitDetails} />;
+        case "commit-details":
+          return (
+            <BladePanel title="Commit" showBack onBack={goBack}>
+              <div className="p-4 text-ctp-subtext0 text-sm">
+                Commit details for {String(blade.props.oid).substring(0, 7)}
+              </div>
+            </BladePanel>
+          );
+        case "commit-diff":
+          return (
+            <BladePanel
+              title={String(blade.props.filePath || "Diff")}
+              showBack
+              onBack={goBack}
+            >
+              <div className="p-4 text-ctp-subtext0 text-sm">
+                Diff viewer placeholder
+              </div>
+            </BladePanel>
+          );
+        default:
+          return <div>Unknown blade type</div>;
+      }
+    },
+    [goBack, openCommitDetails],
+  );
 
   if (!status) return null;
 
@@ -170,106 +201,9 @@ export function RepositoryView() {
 
         <ResizeHandle />
 
-        {/* Middle panel - Changes/History */}
-        <ResizablePanel id="middle" defaultSize={25} minSize={20} maxSize={40}>
-          <div className="h-full border-r border-ctp-surface0 bg-ctp-base overflow-hidden flex flex-col">
-            {/* Tabs */}
-            <div className="flex border-b border-ctp-surface0">
-              <button
-                type="button"
-                onClick={() => setActiveTab("changes")}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm",
-                  "transition-colors border-b-2",
-                  activeTab === "changes"
-                    ? "text-ctp-text border-ctp-blue bg-ctp-surface0/50"
-                    : "text-ctp-subtext0 border-transparent hover:text-ctp-subtext1",
-                )}
-              >
-                <Files className="w-4 h-4" />
-                Changes
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab("history");
-                }}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm",
-                  "transition-colors border-b-2",
-                  activeTab === "history"
-                    ? "text-ctp-text border-ctp-blue bg-ctp-surface0/50"
-                    : "text-ctp-subtext0 border-transparent hover:text-ctp-subtext1",
-                )}
-              >
-                <History className="w-4 h-4" />
-                History
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab("topology");
-                }}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm",
-                  "transition-colors border-b-2",
-                  activeTab === "topology"
-                    ? "text-ctp-text border-ctp-blue bg-ctp-surface0/50"
-                    : "text-ctp-subtext0 border-transparent hover:text-ctp-subtext1",
-                )}
-              >
-                <Network className="w-4 h-4" />
-                Topology
-              </button>
-            </div>
-
-            {/* Tab content */}
-            {activeTab === "changes" ? (
-              <div className="flex-1 overflow-hidden">
-                <StagingPanel />
-              </div>
-            ) : activeTab === "history" ? (
-              <div className="flex-1 overflow-hidden">
-                <CommitHistory
-                  onSelectCommit={setSelectedCommit}
-                  selectedOid={selectedCommit?.oid ?? null}
-                />
-              </div>
-            ) : null}
-          </div>
-        </ResizablePanel>
-
-        <ResizeHandle />
-
-        {/* Right panel - Diff/Commit Details/Topology */}
-        <ResizablePanel id="main" defaultSize={55}>
-          <div className="h-full bg-ctp-mantle flex flex-col">
-            {activeTab === "changes" ? (
-              <FileViewer />
-            ) : activeTab === "topology" ? (
-              <div className="flex h-full">
-                <div className={topologySelectedCommit ? "flex-1" : "w-full"}>
-                  <TopologyPanel />
-                </div>
-                {topologySelectedCommit && (
-                  <div className="w-80 shrink-0">
-                    <TopologyCommitDetails
-                      oid={topologySelectedCommit}
-                      onClose={() => clearTopologySelection(null)}
-                    />
-                  </div>
-                )}
-              </div>
-            ) : selectedCommit ? (
-              <CommitDetails commit={selectedCommit} />
-            ) : (
-              <div className="h-full flex items-center justify-center">
-                <p className="text-ctp-subtext0 text-sm">
-                  Select a commit to view details
-                </p>
-              </div>
-            )}
-          </div>
+        {/* Main area - Blade Container */}
+        <ResizablePanel id="blades" defaultSize={80}>
+          <BladeContainer renderBlade={renderBlade} />
         </ResizablePanel>
       </ResizablePanelLayout>
 
