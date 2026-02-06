@@ -1402,7 +1402,11 @@ tagger: string | null;
 /**
  * True for annotated tags, false for lightweight
  */
-isAnnotated: boolean }
+isAnnotated: boolean; 
+/**
+ * Creation timestamp in milliseconds since epoch
+ */
+createdAtMs: number }
 /**
  * A suggested commit type based on file analysis.
  */
