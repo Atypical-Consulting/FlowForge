@@ -1,16 +1,20 @@
+import { Plus, Tag } from "lucide-react";
 import { useEffect } from "react";
 import { useTagStore } from "../../stores/tags";
+import { EmptyState } from "../ui/EmptyState";
 import { CreateTagDialog } from "./CreateTagDialog";
 import { TagItem } from "./TagItem";
 
 interface TagListProps {
   showCreateDialog: boolean;
   onCloseCreateDialog: () => void;
+  onOpenCreateDialog?: () => void;
 }
 
 export function TagList({
   showCreateDialog,
   onCloseCreateDialog,
+  onOpenCreateDialog,
 }: TagListProps) {
   const { tags, isLoading, error, loadTags, deleteTag, clearError } =
     useTagStore();
@@ -37,7 +41,20 @@ export function TagList({
 
       <div className="p-2 space-y-1">
         {tags.length === 0 ? (
-          <p className="text-ctp-overlay0 text-sm p-2">No tags</p>
+          <EmptyState
+            icon={<Tag className="w-full h-full" />}
+            title="No tags yet"
+            description="Tags mark important points in history like releases."
+            action={
+              onOpenCreateDialog
+                ? {
+                    label: "Create Tag",
+                    onClick: onOpenCreateDialog,
+                    icon: <Plus className="w-3.5 h-3.5" />,
+                  }
+                : undefined
+            }
+          />
         ) : (
           tags.map((tag) => (
             <TagItem

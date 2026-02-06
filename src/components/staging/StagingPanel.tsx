@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FolderTree, List, Loader2 } from "lucide-react";
+import { FileCheck, FolderTree, List, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { commands } from "../../bindings";
 import { formatShortcut } from "../../hooks/useKeyboardShortcuts";
 import { cn } from "../../lib/utils";
 import { useStagingStore } from "../../stores/staging";
+import { EmptyState } from "../ui/EmptyState";
+import { Skeleton } from "../ui/Skeleton";
 import { Button } from "../ui/button";
 import { FileList } from "./FileList";
 import { FileTreeSearch } from "./FileTreeSearch";
@@ -53,8 +55,18 @@ export function StagingPanel() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-4">
-        <Loader2 className="w-5 h-5 animate-spin text-ctp-subtext0" />
+      <div className="p-3 space-y-3">
+        <Skeleton className="h-4 w-24" />
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-3/4" />
+        </div>
+        <Skeleton className="h-4 w-20" />
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-5/6" />
+        </div>
       </div>
     );
   }
@@ -81,9 +93,11 @@ export function StagingPanel() {
 
   if (!hasChanges) {
     return (
-      <div className="p-4 text-ctp-overlay0 text-sm text-center">
-        No changes to commit
-      </div>
+      <EmptyState
+        icon={<FileCheck className="w-full h-full" />}
+        title="All clear!"
+        description="No changes to commit. Edit some files and they'll show up here."
+      />
     );
   }
 

@@ -1,6 +1,8 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { GitCommit, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { EmptyState } from "../ui/EmptyState";
+import { Skeleton } from "../ui/Skeleton";
 import { Virtuoso } from "react-virtuoso";
 import { type CommitSummary, commands } from "../../bindings";
 import { cn } from "../../lib/utils";
@@ -88,16 +90,35 @@ export function CommitHistory({
       {/* Results */}
       <div className="flex-1 min-h-0">
         {isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <Loader2 className="w-5 h-5 animate-spin text-ctp-subtext0" />
+          <div className="p-3 space-y-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={`skeleton-${i}`}
+                className="flex items-start gap-2 px-3 py-2"
+              >
+                <Skeleton className="w-4 h-4 rounded-full shrink-0 mt-0.5" />
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="h-3.5 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : error ? (
           <div className="flex items-center justify-center h-full text-ctp-red text-sm">
             Failed to load history
           </div>
         ) : commits.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-ctp-overlay0 text-sm">
-            {isSearching ? "No matching commits" : "No commits yet"}
+          <div className="flex items-center justify-center h-full">
+            <EmptyState
+              icon={<GitCommit className="w-full h-full" />}
+              title={isSearching ? "No matching commits" : "Fresh start!"}
+              description={
+                isSearching
+                  ? "Try a different search term."
+                  : "Make your first commit and it will appear here."
+              }
+            />
           </div>
         ) : (
           <Virtuoso

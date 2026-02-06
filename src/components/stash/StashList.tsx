@@ -1,5 +1,7 @@
+import { Archive } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useStashStore } from "../../stores/stash";
+import { EmptyState } from "../ui/EmptyState";
 import { StashDialog } from "./StashDialog";
 import { StashItem } from "./StashItem";
 
@@ -46,7 +48,11 @@ export function StashList({
 
       <div className="p-2 space-y-1">
         {stashes.length === 0 ? (
-          <p className="text-ctp-overlay0 text-sm p-2">No stashes</p>
+          <EmptyState
+            icon={<Archive className="w-full h-full" />}
+            title="Nothing stashed!"
+            description="Stash changes when you need a clean working tree without committing."
+          />
         ) : (
           stashes.map((stash) => (
             <StashItem
