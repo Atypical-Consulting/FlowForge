@@ -62,32 +62,32 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| BLADE-01 | TBD | Pending |
-| BLADE-02 | TBD | Pending |
-| BLADE-03 | TBD | Pending |
-| BLADE-04 | TBD | Pending |
-| CONTENT-01 | TBD | Pending |
-| CONTENT-02 | TBD | Pending |
-| CONTENT-03 | TBD | Pending |
-| CONTENT-04 | TBD | Pending |
-| CONTENT-05 | TBD | Pending |
-| CONTENT-06 | TBD | Pending |
-| BRANCH-01 | TBD | Pending |
-| BRANCH-02 | TBD | Pending |
-| BRANCH-03 | TBD | Pending |
-| BRANCH-04 | TBD | Pending |
-| BRANCH-05 | TBD | Pending |
-| BRANCH-06 | TBD | Pending |
-| UX-01 | TBD | Pending |
-| UX-02 | TBD | Pending |
-| UX-03 | TBD | Pending |
-| UX-04 | TBD | Pending |
-| INFRA-01 | TBD | Pending |
-| INFRA-02 | TBD | Pending |
-| INFRA-03 | TBD | Pending |
-| INFRA-04 | TBD | Pending |
-| INFRA-05 | TBD | Pending |
+| INFRA-01 | Phase 20 | Pending |
+| INFRA-02 | Phase 20 | Pending |
+| INFRA-03 | Phase 20 | Pending |
+| INFRA-04 | Phase 20 | Pending |
+| INFRA-05 | Phase 20 | Pending |
+| BLADE-01 | Phase 20 | Pending |
+| BLADE-02 | Phase 20 | Pending |
+| BLADE-03 | Phase 20 | Pending |
+| BLADE-04 | Phase 20 | Pending |
+| UX-01 | Phase 21 | Pending |
+| UX-02 | Phase 21 | Pending |
+| CONTENT-01 | Phase 22 | Pending |
+| CONTENT-02 | Phase 22 | Pending |
+| CONTENT-03 | Phase 22 | Pending |
+| CONTENT-04 | Phase 22 | Pending |
+| CONTENT-05 | Phase 22 | Pending |
+| CONTENT-06 | Phase 22 | Pending |
+| BRANCH-01 | Phase 23 | Pending |
+| BRANCH-02 | Phase 23 | Pending |
+| BRANCH-03 | Phase 23 | Pending |
+| BRANCH-04 | Phase 23 | Pending |
+| BRANCH-05 | Phase 23 | Pending |
+| BRANCH-06 | Phase 23 | Pending |
+| UX-03 | Phase 24 | Pending |
+| UX-04 | Phase 24 | Pending |
 
 ---
 *25 requirements across 5 categories*
-*Last updated: 2026-02-07*
+*Last updated: 2026-02-07 -- Traceability mapped to phases 20-24*

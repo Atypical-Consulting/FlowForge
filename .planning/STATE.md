@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-07 — Milestone v1.3.0 started
+Phase: 20 — Blade Infrastructure & Modal Migration
+Plan: Not started
+Status: Roadmap created, awaiting phase planning
+Last activity: 2026-02-07 — Roadmap created for v1.3.0
 
 Progress: ░░░░░░░░░░ 0%
 
@@ -20,39 +20,21 @@ Progress: ░░░░░░░░░░ 0%
 
 | Milestone | Status | Shipped |
 |-----------|--------|---------|
-| v1.0 MVP | ✅ Complete | 2026-02-04 |
-| v1.1.0 Usability | ✅ Complete | 2026-02-06 |
-| v1.2.0 Bugfixing & Polish | ✅ Complete | 2026-02-07 |
+| v1.0 MVP | Complete | 2026-02-04 |
+| v1.1.0 Usability | Complete | 2026-02-06 |
+| v1.2.0 Bugfixing & Polish | Complete | 2026-02-07 |
 
 See `.planning/MILESTONES.md` for full history.
 
-## v1.0 Summary
+## v1.3.0 Phase Overview
 
-**Delivered:** Cross-platform desktop Git client with enforced Gitflow workflows, conventional commits, topology visualization, and worktree management.
-
-**Stats:**
-- 10 phases, 53 plans, 58 requirements
-- ~16,355 LOC (6,518 Rust + 9,837 TypeScript)
-- 2 days from initialization to ship
-
-**Archives:**
-- `milestones/v1.0-ROADMAP.md` — Full phase details
-- `milestones/v1.0-REQUIREMENTS.md` — All requirements
-- `milestones/v1.0-MILESTONE-AUDIT.md` — Audit report
-
-## v1.1.0 Summary
-
-**Delivered:** UX overhaul with toast notifications, clone workflow, repo/branch switcher, UI polish suite, and Ungit-style topology with blade navigation and diff viewing.
-
-**Stats:**
-- 5 phases, 27 plans, 34 requirements
-- ~21,559 LOC (7,622 Rust + 13,937 TypeScript)
-- 112 commits, 2 days (2026-02-05 to 2026-02-06)
-
-**Archives:**
-- `milestones/v1.1.0-ROADMAP.md` — Full phase details
-- `milestones/v1.1.0-REQUIREMENTS.md` — All requirements
-- `milestones/v1.1.0-MILESTONE-AUDIT.md` — Audit report
+| Phase | Name | Requirements | Status |
+|-------|------|-------------|--------|
+| 20 | Blade Infrastructure & Modal Migration | 9 | Pending |
+| 21 | Two-Column Staging & Inline Diff | 2 | Pending |
+| 22 | New Content Blades | 6 | Pending |
+| 23 | Branch Management | 6 | Pending |
+| 24 | Code Review Guidance & Documentation | 2 | Pending |
 
 ## Accumulated Context
 
@@ -62,10 +44,19 @@ See `.planning/MILESTONES.md` for full history.
 - Topology lacks EmptyState for repos with zero commits
 - Orphaned v1.0 code: greet command, getMergeStatus, CollapsibleSidebar, AnimatedList, FadeIn
 - Pre-existing TS2440 in auto-generated bindings.ts (TAURI_CHANNEL conflict fixed with post-export strip in lib.rs)
+- closeRepository() does not call resetStack() (stale blade content in memory after close)
 
 ### Key Decisions
 
 All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
+
+### Research Flags (v1.3.0)
+
+- P1: Blade stack state corruption during modal-to-blade migration — address in Phase 20
+- P2: WebGL context loss in Tauri WebViews for 3D viewer — address in Phase 22
+- P3: XSS via repository markdown content — address in Phase 22 before markdown rendering ships
+- P4: File browser performance on large repos — address in Phase 22 with virtualization
+- P5: Keyboard focus management across blade transitions — address in Phase 20
 
 ### Pending Todos
 
@@ -87,8 +78,8 @@ None.
 
 ## Next Steps
 
-Run `/gsd:plan-phase 20` to plan the first phase of v1.3.0.
+Run `/gsd:plan-phase 20` to plan Phase 20: Blade Infrastructure & Modal Migration.
 
 ---
 *State updated: 2026-02-07*
-*Milestone: v1.3.0 Blades Blades Blades — Requirements definition*
+*Milestone: v1.3.0 Blades Blades Blades — Roadmap created*

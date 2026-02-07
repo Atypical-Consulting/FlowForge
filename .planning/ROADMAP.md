@@ -2,13 +2,120 @@
 
 ## Milestones
 
-- ✅ **v1.0 MVP** - Phases 1-10 (shipped 2026-02-04) → [archive](milestones/v1.0-ROADMAP.md)
-- ✅ **v1.1.0 Usability** - Phases 11-15 (shipped 2026-02-06) → [archive](milestones/v1.1.0-ROADMAP.md)
-- ✅ **v1.2.0 Bugfixing & Polish** - Phases 16-19 (shipped 2026-02-07) → [archive](milestones/v1.2.0-ROADMAP.md)
+- **v1.0 MVP** - Phases 1-10 (shipped 2026-02-04) -> [archive](milestones/v1.0-ROADMAP.md)
+- **v1.1.0 Usability** - Phases 11-15 (shipped 2026-02-06) -> [archive](milestones/v1.1.0-ROADMAP.md)
+- **v1.2.0 Bugfixing & Polish** - Phases 16-19 (shipped 2026-02-07) -> [archive](milestones/v1.2.0-ROADMAP.md)
+- **v1.3.0 Blades Blades Blades** - Phases 20-24 (active)
 
-## Next Milestone
+## Active Milestone: v1.3.0 Blades Blades Blades
 
-To be defined. Run `/gsd:new-milestone` to start the next milestone cycle.
+### Overview
+
+v1.3.0 expands the blade navigation system into FlowForge's primary interaction model. Modals are migrated to blades, new content blades add rich file previews (markdown, 3D models, repo browser, Gitflow reference), staging gets a two-column layout, and branch management gains quick-access features and bulk cleanup. The milestone delivers 7 new blade types, removes 3 modal dialogs, and adds 4 lazy-loaded production dependencies while keeping startup impact at zero.
+
+### Phase 20: Blade Infrastructure & Modal Migration
+
+**Goal**: Users interact with settings, changelogs, and commit composition through blades instead of modal dialogs, with all new blade types registered and routable
+
+**Depends on**: v1.2.0 complete
+
+**Requirements**: INFRA-01, INFRA-02, INFRA-03, INFRA-04, INFRA-05, BLADE-01, BLADE-02, BLADE-03, BLADE-04
+
+**Success Criteria**:
+1. User can open Settings from the header and it appears as a blade with back-navigation via the blade strip (not a modal overlay)
+2. User can compose a conventional commit inline in the commit form area without a separate modal appearing
+3. User can generate and preview a changelog in a blade that supports push/pop navigation alongside other blades
+4. App.tsx contains zero modal mounts for SettingsWindow, ChangelogDialog, or ConventionalCommitModal
+5. All 7 new blade types (settings, changelog, conventional-commit, viewer-markdown, viewer-3d, repo-browser, gitflow-cheatsheet) are registered in BladeType, renderBlade, and useBladeNavigation
+
+**Plans:** TBD
 
 ---
-*Last updated: 2026-02-07 after v1.2.0 completion*
+
+### Phase 21: Two-Column Staging & Inline Diff
+
+**Goal**: Users can see their changed files and a diff preview side-by-side without losing context by navigating away from the staging view
+
+**Depends on**: Phase 20 (blade infrastructure must be stable)
+
+**Requirements**: UX-01, UX-02
+
+**Success Criteria**:
+1. User sees Changes and Staged Changes in a resizable two-column layout with a file list on the left and inline diff preview on the right
+2. User can click any file in the list and immediately see its diff in the adjacent panel without pushing a new blade
+3. User can click an expand button on the inline diff to open a full-screen diff blade
+
+**Plans:** TBD
+
+---
+
+### Phase 22: New Content Blades
+
+**Goal**: Users can preview markdown files, browse the repository file tree, view 3D models, and reference Gitflow workflows -- all within the blade navigation system
+
+**Depends on**: Phase 20 (blade types registered and routable)
+
+**Requirements**: CONTENT-01, CONTENT-02, CONTENT-03, CONTENT-04, CONTENT-05, CONTENT-06
+
+**Success Criteria**:
+1. User can view a rendered markdown file with GitHub Flavored Markdown support (tables, task lists, syntax-highlighted code blocks) inside a blade
+2. User can toggle between raw diff view and rendered markdown preview when viewing a .md file from the diff blade
+3. User can preview a .glb or .gltf 3D model with orbit controls and auto-lighting inside a blade
+4. User can browse the repository file tree at HEAD, navigate into directories via breadcrumbs, and open files in the appropriate viewer blade
+5. User can open a Gitflow cheat sheet blade that shows workflow diagrams, branch type descriptions, and a "You are here" indicator based on the current branch
+
+**Plans:** TBD
+
+---
+
+### Phase 23: Branch Management
+
+**Goal**: Users can quickly access, organize, and clean up branches with pinning, recent-branch tracking, bulk cleanup, and visual distinction for feature branches
+
+**Depends on**: Phase 20 (no direct blade dependency, but infrastructure should be stable)
+
+**Requirements**: BRANCH-01, BRANCH-02, BRANCH-03, BRANCH-04, BRANCH-05, BRANCH-06
+
+**Success Criteria**:
+1. User sees a "Last used branches" section showing recently checked-out branches in the branch list
+2. User can pin/favorite branches that appear in a persistent "Quick Access" section at the top of the branch list
+3. User can switch between Local, Remote, and Last Used views from a unified branch scope selector
+4. User can select multiple merged branches and delete them in bulk, with Gitflow branches (main/develop) protected from deletion
+5. Feature branch tags appear in purple across both the topology graph and branch list views
+6. Clone button shows a contextually appropriate action (e.g., "Open in Explorer" or similar) when user is already inside a repository
+
+**Plans:** TBD
+
+---
+
+### Phase 24: Code Review Guidance & Documentation
+
+**Goal**: Users receive lightweight review guidance during Gitflow merges, and new users can discover FlowForge through a published documentation website
+
+**Depends on**: Phase 20 (blade system for checklist display)
+
+**Requirements**: UX-03, UX-04
+
+**Success Criteria**:
+1. User sees a pre-merge review checklist when finishing a Gitflow feature, release, or hotfix, with configurable checklist items
+2. Documentation website is live on GitHub Pages with a getting-started guide, feature overview, and keyboard shortcuts reference
+
+**Plans:** TBD
+
+---
+
+## Progress
+
+| Phase | Name | Requirements | Status |
+|-------|------|-------------|--------|
+| 20 | Blade Infrastructure & Modal Migration | 9 | Pending |
+| 21 | Two-Column Staging & Inline Diff | 2 | Pending |
+| 22 | New Content Blades | 6 | Pending |
+| 23 | Branch Management | 6 | Pending |
+| 24 | Code Review Guidance & Documentation | 2 | Pending |
+
+**Total:** 25 requirements across 5 phases
+
+---
+*Created: 2026-02-07*
+*Milestone: v1.3.0 Blades Blades Blades*
