@@ -5,6 +5,7 @@ import { Dialog, DialogContent } from "../ui/dialog";
 import { AppearanceSettings } from "./AppearanceSettings";
 import { GeneralSettings } from "./GeneralSettings";
 import { GitSettings } from "./GitSettings";
+import { IntegrationsSettings } from "./IntegrationsSettings";
 
 interface SettingsTab {
   id: SettingsCategory;
@@ -27,22 +28,18 @@ const settingsTabs: SettingsTab[] = [
     panel: <GitSettings />,
   },
   {
+    id: "integrations",
+    label: "Integrations",
+    icon: <Wrench className="w-4 h-4" />,
+    panel: <IntegrationsSettings />,
+  },
+  {
     id: "appearance",
     label: "Appearance",
     icon: <Palette className="w-4 h-4" />,
     panel: <AppearanceSettings />,
   },
-  // Uncomment when Plan 19-04 is complete:
-  // {
-  //   id: "integrations" as SettingsCategory,
-  //   label: "Integrations",
-  //   icon: <Wrench className="w-4 h-4" />,
-  //   panel: null,
-  // },
 ];
-
-// Wrench is imported for the Integrations tab (Plan 19-04)
-void Wrench;
 
 export function SettingsWindow() {
   const { isOpen, closeSettings, activeCategory, setCategory } =
