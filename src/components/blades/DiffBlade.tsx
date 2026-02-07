@@ -262,7 +262,7 @@ export function DiffBlade({ source }: DiffBladeProps) {
       {/* Content: diff editor or markdown preview */}
       {showPreview && isMarkdown ? (
         <div className="flex-1 min-h-0 overflow-y-auto bg-ctp-base">
-          <div className="p-6 max-w-3xl mx-auto">
+          <div className="p-6 mx-auto w-full">
             <Suspense fallback={<BladeLoadingFallback />}>
               <MarkdownRenderer
                 content={diff.newContent}
@@ -272,7 +272,7 @@ export function DiffBlade({ source }: DiffBladeProps) {
           </div>
         </div>
       ) : (
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 h-full overflow-hidden">
           <DiffEditor
             original={diff.oldContent}
             modified={diff.newContent}
