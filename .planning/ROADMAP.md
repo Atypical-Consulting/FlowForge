@@ -105,11 +105,11 @@ Plans:
 - [x] 22-09-PLAN.md -- W3: Gitflow Cheatsheet Blade (SVG diagram, "You Are Here", action cards, branch reference)
 - [x] 22-10-PLAN.md -- W4: Integration & Polish (cross-blade nav, header entry points, accessibility audit)
 - [x] 22-11-PLAN.md -- W5: Human Verification Checkpoint (UAT — 6 gaps identified)
-- [ ] 22-12-PLAN.md -- W5: Gap Closure — DiffBlade preview width and Monaco height
-- [ ] 22-13-PLAN.md -- W5: Gap Closure — 3D model loading and error diagnostics
-- [ ] 22-14-PLAN.md -- W5: Gap Closure — Backspace navigation in repo browser
-- [ ] 22-15-PLAN.md -- W5: Gap Closure — Gitflow cheatsheet entry points
-- [ ] 22-16-PLAN.md -- W6: Gap Closure — Unified breadcrumb UX across all blades
+- [x] 22-12-PLAN.md -- W5: Gap Closure — DiffBlade preview width and Monaco height
+- [x] 22-13-PLAN.md -- W5: Gap Closure — 3D model loading and error diagnostics
+- [x] 22-14-PLAN.md -- W5: Gap Closure — Backspace navigation in repo browser
+- [x] 22-15-PLAN.md -- W5: Gap Closure — Gitflow cheatsheet entry points
+- [x] 22-16-PLAN.md -- W6: Gap Closure — Unified breadcrumb UX across all blades
 
 ---
 
@@ -156,7 +156,7 @@ Plans:
 | 20 | Blade Infrastructure & Modal Migration | 9 | Complete |
 | 20.1 | Blade Extensibility Refactoring | 5 | Complete |
 | 21 | Two-Column Staging & Inline Diff | 2 | Complete |
-| 22 | New Content Blades | 6 | Gap Closure |
+| 22 | New Content Blades | 6 | Gap Closure Complete |
 | 23 | Branch Management | 6 | Pending |
 | 24 | Code Review Guidance & Documentation | 2 | Pending |
 

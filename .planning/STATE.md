@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 22 — New Content Blades
-Plan: 22-11 (UAT — non-autonomous, requires human verification)
-Status: Plans 22-01 through 22-10 executed (10/10 autonomous plans complete), UAT pending
-Last activity: 2026-02-07 — Phase 22 execution complete, awaiting UAT
+Plan: 22-16 (all gap closure plans complete)
+Status: All 16 plans executed (10 autonomous + 1 UAT + 5 gap closure), re-verification pending
+Last activity: 2026-02-07 — Gap closure plans 22-12 through 22-16 executed
 
 Progress: ██████░░░░ 60%
 
@@ -33,7 +33,7 @@ See `.planning/MILESTONES.md` for full history.
 | 20 | Blade Infrastructure & Modal Migration | 9 | Complete |
 | 20.1 | Blade Extensibility Refactoring | 5 | Complete |
 | 21 | Two-Column Staging & Inline Diff | 2 | Complete |
-| 22 | New Content Blades | 6 | UAT Pending |
+| 22 | New Content Blades | 6 | Gap Closure Complete |
 | 23 | Branch Management | 6 | Pending |
 | 24 | Code Review Guidance & Documentation | 2 | Pending |
 
@@ -79,8 +79,8 @@ None.
 
 ## Next Steps
 
-Run `/gsd:verify-work` to perform Phase 22 UAT (plan 22-11). All 10 autonomous plans (22-01 through 22-10) are implemented and verified. 34 manual tests across 6 CONTENT requirements + 5 regression tests.
+Gap closure plans 22-12 through 22-16 executed. Run `/gsd:verify-work 22` to re-run UAT on the 6 previously-failing tests + breadcrumb unification.
 
 ---
 *State updated: 2026-02-07*
-*Milestone: v1.3.0 Blades Blades Blades — Phase 22 execution complete, UAT pending*
+*Milestone: v1.3.0 Blades Blades Blades — Phase 22 gap closure complete, re-verification pending*
