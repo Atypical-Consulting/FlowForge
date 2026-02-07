@@ -32,6 +32,20 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
     setModelReady(false);
     setContextLost(false);
 
+    // WebGL capability check
+    try {
+      const testCanvas = document.createElement("canvas");
+      const gl = testCanvas.getContext("webgl2") || testCanvas.getContext("webgl");
+      if (!gl) {
+        setFetchError("WebGL is not supported by your browser or GPU");
+        setLoading(false);
+        return;
+      }
+    } catch {
+      // WebGL detection itself failed — continue anyway, model-viewer will handle it
+      console.warn("[Viewer3dBlade] WebGL detection failed, proceeding anyway");
+    }
+
     try {
       const result = await commands.readRepoFile(filePath);
       if (result.status !== "ok") {
@@ -51,18 +65,29 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
         const url = URL.createObjectURL(blob);
         setBlobUrl(url);
       } else {
-        // Binary (.glb) — use fetch-based base64 decode (handles large files)
+        // Binary (.glb) — decode base64 via atob + Uint8Array (avoids fetch('data:...') which fails in Tauri WKWebView)
         const ext = filePath.split(".").pop()?.toLowerCase();
         const mime = ext === "gltf" ? "model/gltf+json" : "model/gltf-binary";
-        const dataUri = `data:${mime};base64,${content}`;
-        const response = await fetch(dataUri);
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        setBlobUrl(url);
+        try {
+          const binaryString = atob(content);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          const blob = new Blob([bytes], { type: mime });
+          const url = URL.createObjectURL(blob);
+          setBlobUrl(url);
+        } catch (decodeErr) {
+          console.error("[Viewer3dBlade] Base64 decode failed:", decodeErr);
+          setFetchError(decodeErr instanceof Error ? decodeErr.message : "Base64 decode failed");
+          setLoading(false);
+          return;
+        }
       }
 
       setLoading(false);
     } catch (err) {
+      console.error("[Viewer3dBlade] Model load failed:", err);
       setFetchError(err instanceof Error ? err.message : "Failed to load model");
       setLoading(false);
     }

@@ -39,7 +39,7 @@ export function useBladeNavigation() {
     const type = bladeTypeForFile(filePath);
     const title = filePath.split("/").pop() || filePath;
 
-    if (type === "diff") {
+    if (type === "diff" || type === "viewer-markdown") {
       openBlade("diff", { source: { mode: "commit", oid, filePath } }, title);
     } else if (type === "viewer-image") {
       openBlade("viewer-image", { filePath, oid }, title);
@@ -56,7 +56,7 @@ export function useBladeNavigation() {
     const type = bladeTypeForFile(file.path);
     const title = file.path.split("/").pop() || file.path;
 
-    if (type === "diff") {
+    if (type === "diff" || type === "viewer-markdown") {
       openBlade(
         "diff",
         { source: { mode: "staging", filePath: file.path, staged: section === "staged" } },
