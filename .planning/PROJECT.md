@@ -70,30 +70,22 @@ Each layer adds value; each inner layer stands without the outer ones.
 - ✓ Topology auto-refresh after commits (fixed v1.0 tech debt) — v1.1
 - ✓ Skeleton loaders replacing spinners during data fetch — v1.1
 
+- ✓ VS Code-style command palette with registry pattern and fuzzy search — v1.2
+- ✓ Git identity and integrations settings tabs — v1.2
+- ✓ Git init onboarding prompt for non-repo folders — v1.2
+- ✓ Folder-level stage/unstage in hierarchical view — v1.2
+- ✓ Color-coded conventional commit type icons across all views — v1.2
+- ✓ Changelog generation with commit type emoji — v1.2
+- ✓ Expanded Catppuccin file-type icon set (image, font, archive, env) — v1.2
+- ✓ Visual polish: modal flicker fix, subtler blade animation, tag sorting, stash labels — v1.2
+- ✓ Shortcut tooltips on toolbar buttons — v1.2
+- ✓ Topology branch ordering (main/develop first) — v1.2
+- ✓ Diff header formatting (path gray + filename bold) — v1.2
+- ✓ Blade refresh on repository switch — v1.2
+
 ### Active
 
-#### Current Milestone: v1.2.0 Bugfixing & Polish
-
-**Goal:** Fix bugs, improve UX consistency, and add a command palette with registry architecture.
-
-**Target features:**
-- Git init prompt for non-repository folders
-- Expanded Catppuccin file-type icon set
-- Human-friendly stash display format
-- Command palette with registry pattern (title, description, shortcut)
-- Tooltips and keyboard shortcuts for common actions
-- Topology branch ordering (main/develop before feature branches)
-- Settings: Integrations tab (external editor, shell)
-- Settings: Git tab (name, email, default branch)
-- Modal opening animation fix (no flicker/top-left flash)
-- Subtler blade opening animation
-- Folder-level stage/unstage in hierarchical view
-- Consistent spacing in hierarchical view
-- Compact diff blade header (path gray + filename bold)
-- Color-coded Conventional Commit icons
-- Conventional Commit icons in changelog generation
-- Tags list sorted most recent first
-- Blade refresh on repository switch
+No active milestone. Run `/gsd:new-milestone` to start the next cycle.
 
 ### Deferred to v2+
 
@@ -121,11 +113,12 @@ Each layer adds value; each inner layer stands without the outer ones.
 
 ## Context
 
-**Current state:** Shipped v1.1.0 with ~21,559 LOC (7,622 Rust + 13,937 TypeScript).
+**Current state:** Shipped v1.2.0 with ~23,964 LOC (7,919 Rust + 16,045 TypeScript).
 Tech stack: Tauri 2.x, React 19, Zustand, React Query, Monaco Editor, framer-motion.
-All 92 requirements implemented across 15 phases (80 plans) in two milestones.
+All 111 requirements implemented across 19 phases (97 plans) in three milestones.
 
 **Known tech debt:**
+- closeRepository() does not call resetStack() (stale blade content in memory after close)
 - defaultTab setting not wired in blade store initialization (hard-coded to "staging")
 - Topology lacks EmptyState for repos with zero commits
 - Orphaned v1.0 code: greet command, getMergeStatus, CollapsibleSidebar, AnimatedList, FadeIn
@@ -162,6 +155,9 @@ All 92 requirements implemented across 15 phases (80 plans) in two milestones.
 | Monaco DiffEditor for diffs (v1.1) | Professional diff rendering with syntax highlighting, inline/side-by-side toggle | ✓ Good — high-quality diff UX |
 | framer-motion for animations (v1.1) | MotionConfig with reducedMotion="user" for accessibility | ✓ Good — respects OS preferences |
 | Event-driven auto-refresh (v1.1) | "repository-changed" event triggers topology reload instead of polling | ✓ Good — efficient, reliable |
+| Command registry pattern (v1.2) | Centralized command definitions enable palette, shortcuts, and tooltips from single source | ✓ Good — 14 commands, single registration |
+| Shared commit type theme (v1.2) | Single COMMIT_TYPE_THEME module used by 4 consumers instead of per-component definitions | ✓ Good — no duplication |
+| git-cliff for changelogs (v1.2) | Automated changelog generation from conventional commits in CI/CD | ✓ Good — release notes auto-generated |
 
 ---
-*Last updated: 2026-02-06 after v1.2.0 milestone started*
+*Last updated: 2026-02-07 after v1.2.0 milestone completed*

@@ -86,9 +86,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate changelog
+      - name: Generate full changelog
         uses: orhun/git-cliff-action@v4
-        id: git-cliff
+        id: git-cliff-full
         with:
           config: cliff.toml
           args: --verbose
@@ -96,9 +96,35 @@ jobs:
           OUTPUT: CHANGELOG.md
           GITHUB_REPO: ${{ github.repository }}
 
-      - name: Upload changelog to release
+      - name: Generate release notes for current version
+        uses: orhun/git-cliff-action@v4
+        id: git-cliff-release
+        with:
+          config: cliff.toml
+          args: --verbose --latest --strip header
+        env:
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Update release body with changelog
         uses: softprops/action-gh-release@v2
         with:
+          body: |
+            ${{ steps.git-cliff-release.outputs.content }}
+
+            ---
+
+            ### Installation
+
+            **macOS (Apple Silicon):** Download the `.dmg` file and drag FlowForge to your Applications folder.
+
+            > **Note:** If macOS shows "FlowForge.app is damaged and can't be opened", the app is not yet code-signed. Run this command in Terminal to bypass Gatekeeper:
+            > ```
+            > xattr -cr /Applications/FlowForge.app
+            > ```
+
+            **Windows:** Download the `.msi` installer and run it.
+
+            **Linux:** Download the `.deb` package or `.AppImage` file.
           files: CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
