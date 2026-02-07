@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   FileText,
   FolderOpen,
+  FolderTree,
   GitFork,
   RefreshCw,
   Search,
@@ -291,6 +292,17 @@ export function Header() {
             </Button>
           )}
           {status && <SyncButtons />}
+          {status && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => openBlade("repo-browser", {})}
+              title="Browse repository files"
+              aria-label="Browse repository files"
+            >
+              <FolderTree className="w-4 h-4" />
+            </Button>
+          )}
           {status && (
             <Button
               variant="ghost"

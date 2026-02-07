@@ -12,6 +12,7 @@ import {
 import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { commands } from "../../bindings";
+import { MONACO_COMMON_OPTIONS, MONACO_THEME } from "../../lib/monacoConfig";
 import "../../lib/monacoTheme";
 import { useBladeStore } from "../../stores/blades";
 import { useStagingStore } from "../../stores/staging";
@@ -276,23 +277,11 @@ export function DiffBlade({ source }: DiffBladeProps) {
             original={diff.oldContent}
             modified={diff.newContent}
             language={diff.language}
-            theme="flowforge-dark"
+            theme={MONACO_THEME}
             options={{
-              readOnly: true,
+              ...MONACO_COMMON_OPTIONS,
               renderSideBySide: !inline,
               originalEditable: false,
-              automaticLayout: true,
-              scrollBeyondLastLine: false,
-              minimap: { enabled: false },
-              fontSize: 13,
-              lineNumbers: "on",
-              folding: true,
-              wordWrap: "off",
-              renderLineHighlight: "all",
-              scrollbar: {
-                verticalScrollbarSize: 10,
-                horizontalScrollbarSize: 10,
-              },
             }}
           />
         </div>
