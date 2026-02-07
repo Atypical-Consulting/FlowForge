@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { getStore } from "../lib/store";
 
-export type SettingsCategory = "general" | "git" | "appearance";
+export type SettingsCategory = "general" | "git" | "appearance" | "integrations";
 
 export interface GeneralSettings {
   defaultTab: "changes" | "history" | "topology";
@@ -12,9 +12,15 @@ export interface GitSettings {
   autoFetchInterval: number | null;
 }
 
+export interface IntegrationsSettings {
+  editor: string;
+  terminal: string;
+}
+
 export interface Settings {
   general: GeneralSettings;
   git: GitSettings;
+  integrations: IntegrationsSettings;
 }
 
 interface SettingsState {
@@ -41,7 +47,21 @@ const defaultSettings: Settings = {
     defaultRemote: "origin",
     autoFetchInterval: null,
   },
+  integrations: {
+    editor: "",
+    terminal: "",
+  },
 };
+
+function mergeSettings(saved: Partial<Settings>): Settings {
+  const merged = { ...defaultSettings };
+  for (const key of Object.keys(defaultSettings) as (keyof Settings)[]) {
+    if (saved[key]) {
+      merged[key] = { ...defaultSettings[key], ...saved[key] } as Settings[typeof key];
+    }
+  }
+  return merged;
+}
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
   isOpen: false,
@@ -77,14 +97,10 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   initSettings: async () => {
     try {
       const store = await getStore();
-      const saved = await store.get<Settings>("settings");
+      const saved = await store.get<Partial<Settings>>("settings");
 
       if (saved) {
-        const merged: Settings = {
-          general: { ...defaultSettings.general, ...saved.general },
-          git: { ...defaultSettings.git, ...saved.git },
-        };
-        set({ settings: merged });
+        set({ settings: mergeSettings(saved) });
       }
     } catch (e) {
       console.error("Failed to initialize settings:", e);
