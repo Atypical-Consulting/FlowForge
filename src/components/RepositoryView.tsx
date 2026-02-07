@@ -8,7 +8,7 @@ import {
   Plus,
   Tag,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Blade } from "../stores/blades";
 import { useBladeNavigation } from "../hooks/useBladeNavigation";
 import {
@@ -44,6 +44,13 @@ export function RepositoryView() {
   const [showWorktreeDialog, setShowWorktreeDialog] = useState(false);
   const [worktreeToDelete, setWorktreeToDelete] = useState<string | null>(null);
   const [diffInline, setDiffInline] = useState(true);
+
+  // Listen for create-branch-dialog event from command palette
+  useEffect(() => {
+    const handler = () => setShowBranchDialog(true);
+    document.addEventListener("create-branch-dialog", handler);
+    return () => document.removeEventListener("create-branch-dialog", handler);
+  }, []);
 
   const renderBlade = useCallback(
     (blade: Blade) => {
