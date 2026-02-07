@@ -91,7 +91,20 @@ Plans:
 4. User can browse the repository file tree at HEAD, navigate into directories via breadcrumbs, and open files in the appropriate viewer blade
 5. User can open a Gitflow cheat sheet blade that shows workflow diagrams, branch type descriptions, and a "You are here" indicator based on the current branch
 
-**Plans:** TBD
+**Plans:** 11 plans in 5 waves
+
+Plans:
+- [x] 22-01-PLAN.md -- W1: Extensibility Refactoring (type safety, auto-registration, file dispatch)
+- [x] 22-02-PLAN.md -- W1: Shared Utilities (useRepoFile, BladeContent components, BladeToolbar, renderPathTitle, Monaco config, branchClassifier)
+- [x] 22-03-PLAN.md -- W1: Dependencies & Theme (rehype-sanitize, @catppuccin/highlightjs, gentle-pulse animation, model-viewer types)
+- [x] 22-04-PLAN.md -- W2: Viewer-Markdown Blade (GFM, syntax highlighting, copy code, link/image handling)
+- [x] 22-05-PLAN.md -- W2: Viewer-Code Blade (Monaco read-only, language auto-detection)
+- [x] 22-06-PLAN.md -- W2: Repo Browser Blade (file tree at HEAD, breadcrumbs, smart dispatch, keyboard nav)
+- [x] 22-07-PLAN.md -- W3: DiffBlade Markdown Toggle (segmented diff/preview control)
+- [x] 22-08-PLAN.md -- W3: Viewer-3D Blade (model-viewer, orbit controls, progress bar, WebGL fallback)
+- [x] 22-09-PLAN.md -- W3: Gitflow Cheatsheet Blade (SVG diagram, "You Are Here", action cards, branch reference)
+- [x] 22-10-PLAN.md -- W4: Integration & Polish (cross-blade nav, header entry points, accessibility audit)
+- [ ] 22-11-PLAN.md -- W5: Human Verification Checkpoint (UAT)
 
 ---
 
@@ -138,7 +151,7 @@ Plans:
 | 20 | Blade Infrastructure & Modal Migration | 9 | Complete |
 | 20.1 | Blade Extensibility Refactoring | 5 | Complete |
 | 21 | Two-Column Staging & Inline Diff | 2 | Complete |
-| 22 | New Content Blades | 6 | Pending |
+| 22 | New Content Blades | 6 | UAT Pending |
 | 23 | Branch Management | 6 | Pending |
 | 24 | Code Review Guidance & Documentation | 2 | Pending |
 

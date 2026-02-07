@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 22 — New Content Blades
-Plan: Not yet planned
-Status: Phase 21 complete (UAT 15/15 passed), Phase 22 pending
-Last activity: 2026-02-07 — Phase 21 UAT passed
+Plan: 22-11 (UAT — non-autonomous, requires human verification)
+Status: Plans 22-01 through 22-10 executed (10/10 autonomous plans complete), UAT pending
+Last activity: 2026-02-07 — Phase 22 execution complete, awaiting UAT
 
-Progress: ████░░░░░░ 50%
+Progress: ██████░░░░ 60%
 
 ## Milestone History
 
@@ -33,7 +33,7 @@ See `.planning/MILESTONES.md` for full history.
 | 20 | Blade Infrastructure & Modal Migration | 9 | Complete |
 | 20.1 | Blade Extensibility Refactoring | 5 | Complete |
 | 21 | Two-Column Staging & Inline Diff | 2 | Complete |
-| 22 | New Content Blades | 6 | Pending |
+| 22 | New Content Blades | 6 | UAT Pending |
 | 23 | Branch Management | 6 | Pending |
 | 24 | Code Review Guidance & Documentation | 2 | Pending |
 
@@ -54,9 +54,9 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 ### Research Flags (v1.3.0)
 
 - ~~P1: Blade stack state corruption during modal-to-blade migration — addressed in Phase 20 (settings/changelog push onto existing stack, back navigates naturally)~~
-- P2: WebGL context loss in Tauri WebViews for 3D viewer — address in Phase 22
-- P3: XSS via repository markdown content — address in Phase 22 before markdown rendering ships
-- P4: File browser performance on large repos — address in Phase 22 with virtualization
+- ~~P2: WebGL context loss in Tauri WebViews for 3D viewer — addressed in Phase 22 (Viewer3dBlade detects context loss via Shadow DOM canvas, shows retry UI)~~
+- ~~P3: XSS via repository markdown content — addressed in Phase 22 (rehype-sanitize strips dangerous tags, hljs class allowlist)~~
+- P4: File browser performance on large repos — Phase 22 uses react-query with staleTime; virtualization deferred to future phase if needed
 - ~~P5: Keyboard focus management across blade transitions — addressed in Phase 20 (Escape pops blade, standard tabbing works)~~
 
 ### Pending Todos
@@ -79,8 +79,8 @@ None.
 
 ## Next Steps
 
-Run `/gsd:plan-phase 22` to plan Phase 22: New Content Blades.
+Run `/gsd:verify-work` to perform Phase 22 UAT (plan 22-11). All 10 autonomous plans (22-01 through 22-10) are implemented and verified. 34 manual tests across 6 CONTENT requirements + 5 regression tests.
 
 ---
 *State updated: 2026-02-07*
-*Milestone: v1.3.0 Blades Blades Blades — Phase 21 complete*
+*Milestone: v1.3.0 Blades Blades Blades — Phase 22 execution complete, UAT pending*
