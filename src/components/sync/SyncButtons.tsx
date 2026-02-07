@@ -126,7 +126,7 @@ export function SyncButtons() {
         </Button>
       </ShortcutTooltip>
 
-      <ShortcutTooltip shortcut="mod+shift+P" label="Push">
+      <ShortcutTooltip shortcut="mod+shift+U" label="Push">
         <Button
           variant="ghost"
           size="sm"

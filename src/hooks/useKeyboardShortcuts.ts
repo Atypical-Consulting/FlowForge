@@ -15,7 +15,7 @@ import { toast } from "../stores/toast";
  * - Cmd/Ctrl+O: Open repository
  * - Cmd/Ctrl+,: Open settings
  * - Cmd/Ctrl+Shift+A: Stage all files
- * - Cmd/Ctrl+Shift+P: Push
+ * - Cmd/Ctrl+Shift+U: Push (Upload)
  * - Cmd/Ctrl+Shift+L: Pull (L for "pull Latest")
  * - Cmd/Ctrl+Shift+F: Fetch
  * - Cmd/Ctrl+Shift+M: Toggle amend commit
@@ -124,9 +124,9 @@ export function useKeyboardShortcuts() {
     { preventDefault: true, enabled: !!status },
   );
 
-  // Push shortcut
+  // Push shortcut (Upload mnemonic)
   useHotkeys(
-    "mod+shift+p",
+    "mod+shift+u",
     (e) => {
       e.preventDefault();
       if (status) {
