@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useMemo, useState } from "react";
+import { type FocusEvent, useCallback, useMemo, useRef, useState } from "react";
 import type { FileChange } from "../../bindings";
 import { commands } from "../../bindings";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
@@ -14,6 +14,15 @@ export function StagingChangesBlade() {
   const queryClient = useQueryClient();
   const { selectedFile, selectedSection, selectFile } = useStagingStore();
   const [fileListFocused, setFileListFocused] = useState(false);
+  const fileListRef = useRef<HTMLDivElement>(null);
+
+  const handleFocus = useCallback(() => setFileListFocused(true), []);
+  const handleBlur = useCallback((e: FocusEvent<HTMLDivElement>) => {
+    // Only mark as unfocused if focus truly left the container
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setFileListFocused(false);
+    }
+  }, []);
 
   // Share the staging status query (same cache as StagingPanel)
   const { data: statusResult } = useQuery({
@@ -91,11 +100,12 @@ export function StagingChangesBlade() {
       detailMinSize={30}
       primary={
         <div
+          ref={fileListRef}
           tabIndex={0}
           role="region"
           aria-label="Changed files"
-          onFocus={() => setFileListFocused(true)}
-          onBlur={() => setFileListFocused(false)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           className="h-full outline-none"
         >
           <StagingPanel />

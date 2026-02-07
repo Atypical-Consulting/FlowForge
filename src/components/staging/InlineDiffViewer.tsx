@@ -62,14 +62,28 @@ export function InlineDiffViewer({
     enabled: !!debouncedFilePath,
   });
 
+  // Dispose Monaco scroll listener on unmount
+  const scrollDisposableRef = useRef<{ dispose: () => void } | null>(null);
+
+  useEffect(() => {
+    return () => {
+      scrollDisposableRef.current?.dispose();
+      scrollDisposableRef.current = null;
+      editorRef.current = null;
+    };
+  }, []);
+
   const handleMount: DiffOnMount = (editor) => {
     editorRef.current = editor;
-    if (initialScrollTop) {
+    if (initialScrollTop && initialScrollTop > 0) {
       editor.getModifiedEditor().setScrollTop(initialScrollTop);
     }
-    editor.getModifiedEditor().onDidScrollChange((e) => {
-      onScrollPositionChange?.(e.scrollTop);
-    });
+    scrollDisposableRef.current?.dispose();
+    scrollDisposableRef.current = editor
+      .getModifiedEditor()
+      .onDidScrollChange((e) => {
+        onScrollPositionChange?.(e.scrollTop);
+      });
   };
 
   if (error) {

@@ -34,7 +34,7 @@ export function useStagingKeyboard({
       }
     },
     { enabled, enableOnFormTags: false },
-    [currentIndex, allFiles],
+    [currentIndex, allFiles, selectFile],
   );
 
   useHotkeys(
@@ -47,7 +47,7 @@ export function useStagingKeyboard({
       }
     },
     { enabled, enableOnFormTags: false },
-    [currentIndex, allFiles],
+    [currentIndex, allFiles, selectFile],
   );
 
   useHotkeys(
@@ -60,7 +60,7 @@ export function useStagingKeyboard({
       }
     },
     { enabled, enableOnFormTags: false },
-    [currentIndex, allFiles],
+    [currentIndex, allFiles, selectFile],
   );
 
   useHotkeys(
@@ -73,7 +73,7 @@ export function useStagingKeyboard({
       }
     },
     { enabled, enableOnFormTags: false },
-    [currentIndex, allFiles],
+    [currentIndex, allFiles, selectFile],
   );
 
   useHotkeys(

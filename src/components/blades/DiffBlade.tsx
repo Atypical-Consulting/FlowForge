@@ -7,7 +7,7 @@ import {
   Columns,
   Loader2,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { commands } from "../../bindings";
 import "../../lib/monacoTheme";
@@ -59,35 +59,38 @@ function StagingDiffNavigation({
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex < allFiles.length - 1;
 
-  const navigateTo = (index: number) => {
-    const entry = allFiles[index];
-    if (!entry) return;
-    selectFile(entry.file, entry.section);
-    store.replaceBlade({
-      type: "diff",
-      title: entry.file.path.split("/").pop() || entry.file.path,
-      props: {
-        source: {
-          mode: "staging",
-          filePath: entry.file.path,
-          staged: entry.section === "staged",
+  const navigateTo = useCallback(
+    (index: number) => {
+      const entry = allFiles[index];
+      if (!entry) return;
+      selectFile(entry.file, entry.section);
+      store.replaceBlade({
+        type: "diff",
+        title: entry.file.path.split("/").pop() || entry.file.path,
+        props: {
+          source: {
+            mode: "staging",
+            filePath: entry.file.path,
+            staged: entry.section === "staged",
+          },
         },
-      },
-    });
-  };
+      });
+    },
+    [allFiles, selectFile, store],
+  );
 
   useHotkeys(
     "alt+up",
     () => hasPrev && navigateTo(currentIndex - 1),
     { enabled: hasPrev, enableOnFormTags: false, preventDefault: true },
-    [currentIndex, allFiles],
+    [currentIndex, hasPrev, navigateTo],
   );
 
   useHotkeys(
     "alt+down",
     () => hasNext && navigateTo(currentIndex + 1),
     { enabled: hasNext, enableOnFormTags: false, preventDefault: true },
-    [currentIndex, allFiles],
+    [currentIndex, hasNext, navigateTo],
   );
 
   if (allFiles.length <= 1) return null;
