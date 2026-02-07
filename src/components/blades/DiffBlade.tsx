@@ -10,7 +10,7 @@ import "../../lib/monacoTheme";
  * - "commit" mode: fetches diff for a file at a specific commit OID
  * - "staging" mode: fetches diff for a working-tree file (staged or unstaged)
  */
-type DiffSource =
+export type DiffSource =
   | { mode: "commit"; oid: string; filePath: string }
   | { mode: "staging"; filePath: string; staged: boolean };
 
