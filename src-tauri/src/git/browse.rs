@@ -12,7 +12,7 @@ pub struct RepoFileEntry {
     pub name: String,
     pub path: String,
     pub is_dir: bool,
-    pub size: u64,
+    pub size: u32,
 }
 
 /// File content read from the repository at HEAD.
@@ -21,7 +21,7 @@ pub struct RepoFileEntry {
 pub struct RepoFileContent {
     pub content: String,
     pub is_binary: bool,
-    pub size: u64,
+    pub size: u32,
 }
 
 /// List files and directories at a given path within the repository at HEAD.
@@ -90,7 +90,7 @@ pub async fn list_repo_files(
                     let size = entry
                         .to_object(&repo)
                         .ok()
-                        .and_then(|o| o.as_blob().map(|b| b.size() as u64))
+                        .and_then(|o| o.as_blob().map(|b| b.size() as u32))
                         .unwrap_or(0);
 
                     files.push(RepoFileEntry {
@@ -153,7 +153,7 @@ pub async fn read_repo_file(
             .as_blob()
             .ok_or_else(|| GitError::OperationFailed(format!("Path is not a file: {}", file_path)))?;
 
-        let size = blob.size() as u64;
+        let size = blob.size() as u32;
         let data = blob.content();
 
         // Binary detection: check first 8000 bytes for null byte

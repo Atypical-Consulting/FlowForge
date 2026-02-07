@@ -800,6 +800,34 @@ async gitInit(path: string, defaultBranch: string | null) : Promise<Result<InitR
 }
 },
 /**
+ * List files and directories at a given path within the repository at HEAD.
+ * 
+ * Pass an empty string for `path` to list the root directory.
+ * Returns directories first, then files, both sorted alphabetically.
+ */
+async listRepoFiles(path: string) : Promise<Result<RepoFileEntry[], GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("list_repo_files", { path }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Read file content from the repository at HEAD.
+ * 
+ * Binary files are returned as base64-encoded content.
+ * Text files are returned as UTF-8 strings.
+ */
+async readRepoFile(filePath: string) : Promise<Result<RepoFileContent, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("read_repo_file", { filePath }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * Read the user's global git configuration.
  * 
  * Returns None for any value that is not set. Never errors —
@@ -1418,6 +1446,14 @@ conflictedFiles: string[] }
  * Information about a configured remote.
  */
 export type RemoteInfo = { name: string; url: string }
+/**
+ * File content read from the repository at HEAD.
+ */
+export type RepoFileContent = { content: string; isBinary: boolean; size: number }
+/**
+ * A single entry in a repository directory listing.
+ */
+export type RepoFileEntry = { name: string; path: string; isDir: boolean; size: number }
 /**
  * Repository status information sent to frontend.
  * 

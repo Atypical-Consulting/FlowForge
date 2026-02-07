@@ -65,14 +65,14 @@ v1.3.0 expands the blade navigation system into FlowForge's primary interaction 
 2. User can click any file in the list and immediately see its diff in the adjacent panel without pushing a new blade
 3. User can click an expand button on the inline diff to open a full-screen diff blade
 
-**Plans:** 5 plans in 4 waves
+**Plans:** 5 plans in 4 waves (all complete)
 
 Plans:
-- [ ] 21-01-PLAN.md -- Foundation: SplitPaneLayout, staging store extension, preview registry, file type utilities
-- [ ] 21-02-PLAN.md -- Diff preview components: InlineDiffViewer, DiffPreviewHeader, NonTextPlaceholder, StagingDiffPreview
-- [ ] 21-03-PLAN.md -- Integration: StagingChangesBlade two-column refactor, StagingPanel/FileItem mods, keyboard navigation
-- [ ] 21-04-PLAN.md -- Full-screen diff navigation: next/prev file arrows in DiffBlade, state preservation
-- [ ] 21-05-PLAN.md -- Human verification checkpoint
+- [x] 21-01-PLAN.md -- Foundation: SplitPaneLayout, staging store extension, preview registry, file type utilities
+- [x] 21-02-PLAN.md -- Diff preview components: InlineDiffViewer, DiffPreviewHeader, NonTextPlaceholder, StagingDiffPreview
+- [x] 21-03-PLAN.md -- Integration: StagingChangesBlade two-column refactor, StagingPanel/FileItem mods, keyboard navigation
+- [x] 21-04-PLAN.md -- Full-screen diff navigation: next/prev file arrows in DiffBlade, state preservation
+- [x] 21-05-PLAN.md -- Human verification checkpoint (UAT 15/15 passed)
 
 ---
 
@@ -137,7 +137,7 @@ Plans:
 |-------|------|-------------|--------|
 | 20 | Blade Infrastructure & Modal Migration | 9 | Complete |
 | 20.1 | Blade Extensibility Refactoring | 5 | Complete |
-| 21 | Two-Column Staging & Inline Diff | 2 | Pending |
+| 21 | Two-Column Staging & Inline Diff | 2 | Complete |
 | 22 | New Content Blades | 6 | Pending |
 | 23 | Branch Management | 6 | Pending |
 | 24 | Code Review Guidance & Documentation | 2 | Pending |
