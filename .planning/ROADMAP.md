@@ -64,10 +64,10 @@ Plans:
   4. Hovering over common toolbar buttons shows a tooltip with the action name and its keyboard shortcut
 **Plans**: 4 plans
 Plans:
-- [ ] 18-01-PLAN.md — Command registry infrastructure, fuzzy search utility, and palette Zustand store
-- [ ] 18-02-PLAN.md — Reassign Push shortcut from mod+shift+p to mod+shift+u
-- [ ] 18-03-PLAN.md — Register all 14 commands across category files
-- [ ] 18-04-PLAN.md — CommandPalette overlay UI, App integration, shortcut wiring, tooltip expansion
+- [x] 18-01-PLAN.md — Command registry infrastructure, fuzzy search utility, and palette Zustand store
+- [x] 18-02-PLAN.md — Reassign Push shortcut from mod+shift+p to mod+shift+u
+- [x] 18-03-PLAN.md — Register all 14 commands across category files
+- [x] 18-04-PLAN.md — CommandPalette overlay UI, App integration, shortcut wiring, tooltip expansion
 
 ### Phase 19: Settings, Onboarding & File Icons
 **Goal**: Users can configure Git identity and external tools, get prompted to initialize repos, and see rich file-type icons
@@ -90,7 +90,7 @@ After Phase 16 completes, remaining phases can execute in any order.
 |-------|---------------|--------|-----------|
 | 16. Quick Fixes & Visual Polish | 3/3 | ✅ Complete | 2026-02-06 |
 | 17. Hierarchical View & Commit Enhancements | 4/4 | ✅ Complete | 2026-02-07 |
-| 18. Command Palette & Discoverability | 0/4 | Not started | — |
+| 18. Command Palette & Discoverability | 4/4 | ✅ Complete | 2026-02-07 |
 | 19. Settings, Onboarding & File Icons | 0/TBD | Not started | — |
 
 ---

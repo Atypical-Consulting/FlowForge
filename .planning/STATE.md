@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 
 ## Current Position
 
-Phase: 17 of 19 (Hierarchical View & Commit Enhancements) — VERIFIED
-Plan: 4 of 4 in current phase (gap closure complete)
-Status: Phase 17 fully verified, ready for Phase 18 or 19
-Last activity: 2026-02-07 — Phase 17 gap closure executed and re-verified
+Phase: 18 of 19 (Command Palette & Discoverability) — VERIFIED
+Plan: 4 of 4 in current phase
+Status: Phase 18 verified, ready for Phase 19
+Last activity: 2026-02-07 — Phase 18 command palette executed and verified
 
-Progress: ████░░░░░░ 50%
+Progress: ███████░░░ 75%
 
 ## Milestone History
 
@@ -87,9 +87,8 @@ None.
 
 ## Next Steps
 
-Run `/gsd:discuss-phase 18` or `/gsd:plan-phase 18` to plan Command Palette & Discoverability.
-(Phases 18 and 19 are independent — can execute in any order.)
+Run `/gsd:discuss-phase 19` or `/gsd:plan-phase 19` to plan Settings, Onboarding & File Icons.
 
 ---
 *State updated: 2026-02-07*
-*Milestone: v1.2.0 Bugfixing & Polish — Phase 17 verified (gap closure complete)*
+*Milestone: v1.2.0 Bugfixing & Polish — Phase 18 verified*

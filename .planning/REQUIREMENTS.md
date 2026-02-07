@@ -21,13 +21,13 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Command Palette
 
-- [ ] **CMPL-01**: User can open a VS Code-style command palette via keyboard shortcut
-- [ ] **CMPL-02**: Command palette uses a registry pattern where commands declare title, description, and shortcut
-- [ ] **CMPL-03**: Core actions (Clone, Open, etc.) are registered as palette commands
+- [x] **CMPL-01**: User can open a VS Code-style command palette via keyboard shortcut
+- [x] **CMPL-02**: Command palette uses a registry pattern where commands declare title, description, and shortcut
+- [x] **CMPL-03**: Core actions (Clone, Open, etc.) are registered as palette commands
 
 ### Discoverability
 
-- [ ] **DISC-01**: Common actions have tooltips showing name and keyboard shortcut
+- [x] **DISC-01**: Common actions have tooltips showing name and keyboard shortcut
 
 ### Topology
 
@@ -89,10 +89,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ONBR-01 | Phase 19 | Pending |
 | ICON-01 | Phase 19 | Pending |
 | STSH-01 | Phase 16 | Complete |
-| CMPL-01 | Phase 18 | Pending |
-| CMPL-02 | Phase 18 | Pending |
-| CMPL-03 | Phase 18 | Pending |
-| DISC-01 | Phase 18 | Pending |
+| CMPL-01 | Phase 18 | Complete |
+| CMPL-02 | Phase 18 | Complete |
+| CMPL-03 | Phase 18 | Complete |
+| DISC-01 | Phase 18 | Complete |
 | TOPO-01 | Phase 16 | Complete |
 | SETT-01 | Phase 19 | Pending |
 | SETT-02 | Phase 19 | Pending |
