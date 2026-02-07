@@ -1,5 +1,6 @@
 export { BladeContainer } from "./BladeContainer";
 export { BladePanel } from "./BladePanel";
+export { ChangelogBlade } from "./ChangelogBlade";
 export { BladeStrip } from "./BladeStrip";
 export { CommitDetailsBlade } from "./CommitDetailsBlade";
 export { DiffBlade } from "./DiffBlade";

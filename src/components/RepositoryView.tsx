@@ -14,6 +14,7 @@ import { useBladeNavigation } from "../hooks/useBladeNavigation";
 import {
   BladeContainer,
   BladePanel,
+  ChangelogBlade,
   CommitDetailsBlade,
   DiffBlade,
   SettingsBlade,
@@ -154,7 +155,7 @@ export function RepositoryView() {
         case "changelog":
           return (
             <BladePanel title="Generate Changelog" showBack onBack={goBack}>
-              <div className="p-4 text-ctp-subtext0">Changelog blade — coming in 20-06</div>
+              <ChangelogBlade />
             </BladePanel>
           );
         case "viewer-markdown":

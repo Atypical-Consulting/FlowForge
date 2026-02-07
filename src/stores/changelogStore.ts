@@ -17,16 +17,10 @@ interface ChangelogState {
   isGenerating: boolean;
   error: string | null;
 
-  // Dialog
-  isDialogOpen: boolean;
-
   // Actions
   setFromRef: (ref: string) => void;
   setToRef: (ref: string) => void;
   setVersion: (version: string) => void;
-
-  openDialog: () => void;
-  closeDialog: () => void;
 
   generate: () => Promise<void>;
   reset: () => void;
@@ -40,15 +34,11 @@ export const useChangelogStore = create<ChangelogState>((set, get) => ({
   changelog: null,
   isGenerating: false,
   error: null,
-  isDialogOpen: false,
 
   // Setters
   setFromRef: (ref) => set({ fromRef: ref }),
   setToRef: (ref) => set({ toRef: ref }),
   setVersion: (version) => set({ version }),
-
-  openDialog: () => set({ isDialogOpen: true }),
-  closeDialog: () => set({ isDialogOpen: false }),
 
   generate: async () => {
     const { fromRef, toRef, version } = get();
