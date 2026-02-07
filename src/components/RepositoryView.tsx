@@ -16,6 +16,7 @@ import {
   BladePanel,
   CommitDetailsBlade,
   DiffBlade,
+  SettingsBlade,
   StagingChangesBlade,
   TopologyRootBlade,
   ViewerImageBlade,
@@ -147,7 +148,7 @@ export function RepositoryView() {
         case "settings":
           return (
             <BladePanel title="Settings" showBack onBack={goBack}>
-              <div className="p-4 text-ctp-subtext0">Settings blade — coming in 20-04</div>
+              <SettingsBlade />
             </BladePanel>
           );
         case "changelog":

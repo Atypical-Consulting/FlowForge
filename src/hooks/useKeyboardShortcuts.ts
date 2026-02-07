@@ -5,7 +5,6 @@ import { type SyncProgress, commands } from "../bindings";
 import { useBladeStore } from "../stores/blades";
 import { useCommandPaletteStore } from "../stores/commandPalette";
 import { useRepositoryStore } from "../stores/repository";
-import { useSettingsStore } from "../stores/settings";
 import { useTopologyStore } from "../stores/topology";
 import { toast } from "../stores/toast";
 
@@ -25,7 +24,6 @@ import { toast } from "../stores/toast";
 export function useKeyboardShortcuts() {
   const queryClient = useQueryClient();
   const { status } = useRepositoryStore();
-  const openSettings = useSettingsStore((s) => s.openSettings);
 
   // Stage all mutation
   const stageAllMutation = useMutation({
@@ -109,7 +107,11 @@ export function useKeyboardShortcuts() {
     "mod+,",
     (e) => {
       e.preventDefault();
-      openSettings();
+      useBladeStore.getState().pushBlade({
+        type: "settings",
+        title: "Settings",
+        props: {},
+      });
     },
     { preventDefault: true },
   );

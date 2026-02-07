@@ -5,6 +5,7 @@ export { CommitDetailsBlade } from "./CommitDetailsBlade";
 export { DiffBlade } from "./DiffBlade";
 export { FileTreeBlade } from "./FileTreeBlade";
 export { ProcessNavigation } from "./ProcessNavigation";
+export { SettingsBlade } from "./SettingsBlade";
 export { StagingChangesBlade } from "./StagingChangesBlade";
 export { TopologyRootBlade } from "./TopologyRootBlade";
 export { ViewerImageBlade } from "./ViewerImageBlade";

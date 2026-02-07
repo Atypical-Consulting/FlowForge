@@ -20,7 +20,7 @@ Progress: ░░░░░░░░░░ 0%
 
 | Milestone | Status | Shipped |
 |-----------|--------|---------|
-| v1.0 MVP | Complete | 2026-02-04 |
+| v1.0.0 MVP | Complete | 2026-02-04 |
 | v1.1.0 Usability | Complete | 2026-02-06 |
 | v1.2.0 Bugfixing & Polish | Complete | 2026-02-07 |
 
