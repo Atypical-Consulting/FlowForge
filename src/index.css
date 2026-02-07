@@ -90,6 +90,15 @@
     }
 }
 
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
 /* Color scheme meta for browser UI (scrollbars, etc.) */
 html.mocha {
     color-scheme: dark;
