@@ -51,16 +51,12 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
         const url = URL.createObjectURL(blob);
         setBlobUrl(url);
       } else {
-        // Binary (.glb) — decode base64 to ArrayBuffer
-        const binaryString = atob(content);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-
+        // Binary (.glb) — use fetch-based base64 decode (handles large files)
         const ext = filePath.split(".").pop()?.toLowerCase();
         const mime = ext === "gltf" ? "model/gltf+json" : "model/gltf-binary";
-        const blob = new Blob([bytes.buffer], { type: mime });
+        const dataUri = `data:${mime};base64,${content}`;
+        const response = await fetch(dataUri);
+        const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         setBlobUrl(url);
       }
@@ -106,8 +102,11 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
       }
     };
 
-    const onError = () => {
-      setFetchError("Failed to render 3D model");
+    const onError = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      const sourceError = detail?.sourceError;
+      const msg = sourceError?.message || detail?.type || "Failed to render 3D model";
+      setFetchError(msg);
     };
 
     viewer.addEventListener("progress", onProgress);
@@ -284,7 +283,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
         camera-controls
         auto-rotate
         shadow-intensity="1"
-        environment-image="neutral"
+
         style={{
           width: "100%",
           height: "100%",
