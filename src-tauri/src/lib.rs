@@ -12,12 +12,14 @@ use git::{
     changelog::generate_changelog_cmd,
     clone::clone_repository,
     commands::{close_repository, get_repository_status, is_git_repository, open_repository},
+    config::{get_git_global_config, set_git_global_config},
     commit::{create_commit, get_last_commit_message},
     conventional::{
         get_scope_suggestions, infer_scope_from_staged, suggest_commit_type,
         validate_conventional_commit,
     },
     diff::{get_commit_file_base64, get_commit_file_diff, get_file_base64, get_file_diff},
+    init::git_init,
     graph::get_commit_graph,
     history::{get_commit_details, get_commit_history, search_commits},
     merge::{abort_merge, get_merge_status, merge_branch},
@@ -127,6 +129,11 @@ pub fn run() {
         undo_last_operation,
         // Clone commands
         clone_repository,
+        // Init commands
+        git_init,
+        // Config commands
+        get_git_global_config,
+        set_git_global_config,
     ]);
 
     #[cfg(debug_assertions)]
