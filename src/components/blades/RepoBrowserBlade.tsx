@@ -45,7 +45,7 @@ export function RepoBrowserBlade({ path = "" }: RepoBrowserBladeProps) {
   // Focus the item when focusedIndex changes
   useEffect(() => {
     itemRefs.current[focusedIndex]?.focus();
-  }, [focusedIndex]);
+  }, [focusedIndex, entries]);
 
   const navigateToDirectory = useCallback(
     (dirPath: string) => {
@@ -157,6 +157,7 @@ export function RepoBrowserBlade({ path = "" }: RepoBrowserBladeProps) {
           aria-label={`Files in ${path || "repository root"}`}
           className="flex-1 overflow-y-auto"
           onKeyDown={handleKeyDown}
+          tabIndex={0}
         >
           {entries.map((entry, index) => (
             <FileRow
