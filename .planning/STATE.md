@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 
 ## Current Position
 
-Phase: 18 of 19 (Command Palette & Discoverability) — VERIFIED
-Plan: 4 of 4 in current phase
-Status: Phase 18 verified, ready for Phase 19
-Last activity: 2026-02-07 — Phase 18 command palette executed and verified
+Phase: 19 of 19 (Settings, Onboarding & File Icons) — VERIFIED
+Plan: 6 of 6 in current phase
+Status: Phase 19 complete and verified (4/4 must-haves passed)
+Last activity: 2026-02-07 — Phase 19 executed and verified
 
-Progress: ███████░░░ 75%
+Progress: ██████████ 100%
 
 ## Milestone History
 
@@ -22,7 +22,7 @@ Progress: ███████░░░ 75%
 |-----------|--------|---------|
 | v1.0 MVP | ✅ Complete | 2026-02-04 |
 | v1.1.0 Usability | ✅ Complete | 2026-02-06 |
-| v1.2.0 Bugfixing & Polish | ◆ In Progress | — |
+| v1.2.0 Bugfixing & Polish | ✅ Complete | 2026-02-07 |
 
 See `.planning/MILESTONES.md` for full history.
 
@@ -87,8 +87,8 @@ None.
 
 ## Next Steps
 
-Run `/gsd:discuss-phase 19` or `/gsd:plan-phase 19` to plan Settings, Onboarding & File Icons.
+Run `/gsd:audit-milestone` to audit v1.2.0 completion.
 
 ---
 *State updated: 2026-02-07*
-*Milestone: v1.2.0 Bugfixing & Polish — Phase 18 verified*
+*Milestone: v1.2.0 Bugfixing & Polish — Phase 19 verified, all phases complete*

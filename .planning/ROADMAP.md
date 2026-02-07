@@ -8,14 +8,14 @@ v1.2.0 addresses accumulated UX bugs, visual inconsistencies, and adds a command
 
 - ✅ **v1.0 MVP** - Phases 1-10 (shipped 2026-02-04)
 - ✅ **v1.1.0 Usability** - Phases 11-15 (shipped 2026-02-06)
-- ◆ **v1.2.0 Bugfixing & Polish** - Phases 16-19 (in progress)
+- ✅ **v1.2.0 Bugfixing & Polish** - Phases 16-19 (shipped 2026-02-07)
 
 ## Phases
 
 - [x] **Phase 16: Quick Fixes & Visual Polish** - Fix scattered bugs and cosmetic issues across the UI
 - [x] **Phase 17: Hierarchical View & Commit Enhancements** - Improve staging tree and conventional commit visuals (verified)
-- [ ] **Phase 18: Command Palette & Discoverability** - Build registry-based command palette with shortcut tooltips
-- [ ] **Phase 19: Settings, Onboarding & File Icons** - Expand settings, add git init prompt, expand icon coverage
+- [x] **Phase 18: Command Palette & Discoverability** - Build registry-based command palette with shortcut tooltips
+- [x] **Phase 19: Settings, Onboarding & File Icons** - Expand settings, add git init prompt, expand icon coverage
 
 ## Phase Details
 
@@ -78,7 +78,14 @@ Plans:
   2. Settings window has a Git tab where user can set name, email, and default branch name
   3. Opening a folder that is not a Git repository shows a prompt offering to run `git init`
   4. File tree displays distinct Catppuccin-themed icons for common file types (.ts, .rs, .json, .md, .toml, images, etc.)
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+- [x] 19-01-PLAN.md — Rust backend: git_init + git config commands
+- [x] 19-02-PLAN.md — Settings store schema + platform utility + tab refactor
+- [x] 19-03-PLAN.md — Git settings expansion (identity fields)
+- [x] 19-04-PLAN.md — Integrations settings tab (editor/terminal dropdowns)
+- [x] 19-05-PLAN.md — Git init flow in WelcomeView
+- [x] 19-06-PLAN.md — File icon expansion with new SVGs
 
 ## Progress
 
@@ -91,7 +98,7 @@ After Phase 16 completes, remaining phases can execute in any order.
 | 16. Quick Fixes & Visual Polish | 3/3 | ✅ Complete | 2026-02-06 |
 | 17. Hierarchical View & Commit Enhancements | 4/4 | ✅ Complete | 2026-02-07 |
 | 18. Command Palette & Discoverability | 4/4 | ✅ Complete | 2026-02-07 |
-| 19. Settings, Onboarding & File Icons | 0/TBD | Not started | — |
+| 19. Settings, Onboarding & File Icons | 6/6 | ✅ Complete | 2026-02-07 |
 
 ---
 *Roadmap created: 2026-02-06*

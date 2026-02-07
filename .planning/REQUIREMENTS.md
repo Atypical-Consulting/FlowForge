@@ -9,15 +9,15 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Onboarding
 
-- [ ] **ONBR-01**: User is prompted to initialize a Git repository when opening a non-repo folder
+- [x] **ONBR-01**: User is prompted to initialize a Git repository when opening a non-repo folder
 
 ### File Icons
 
-- [ ] **ICON-01**: File tree uses expanded Catppuccin icon set covering common file types
+- [x] **ICON-01**: File tree uses expanded Catppuccin icon set covering common file types
 
 ### Stash
 
-- [ ] **STSH-01**: Stash entries display human-friendly format instead of `stash@{0}`
+- [x] **STSH-01**: Stash entries display human-friendly format instead of `stash@{0}`
 
 ### Command Palette
 
@@ -31,20 +31,20 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Topology
 
-- [ ] **TOPO-01**: Main/master and dev/develop branch labels appear before feature branches in graph
+- [x] **TOPO-01**: Main/master and dev/develop branch labels appear before feature branches in graph
 
 ### Settings
 
-- [ ] **SETT-01**: Integrations tab in Settings with external editor and shell configuration
-- [ ] **SETT-02**: Git tab in Settings to configure user name, email, and default branch name
+- [x] **SETT-01**: Integrations tab in Settings with external editor and shell configuration
+- [x] **SETT-02**: Git tab in Settings to configure user name, email, and default branch name
 
 ### UI Polish
 
-- [ ] **UIPX-01**: Modals open without flickering or appearing briefly in top-left corner
-- [ ] **UIPX-02**: Blade opening animation is subtler (less aggressive right-to-left slide)
+- [x] **UIPX-01**: Modals open without flickering or appearing briefly in top-left corner
+- [x] **UIPX-02**: Blade opening animation is subtler (less aggressive right-to-left slide)
 - [x] **UIPX-03**: Hierarchical view supports folder-level stage/unstage
 - [x] **UIPX-04**: Hierarchical view has consistent spacing (icon width and icon-to-text padding aligned)
-- [ ] **UIPX-05**: Diff blade header shows path in gray + filename in bold as single merged line
+- [x] **UIPX-05**: Diff blade header shows path in gray + filename in bold as single merged line
 
 ### Conventional Commits
 
@@ -53,11 +53,11 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Tags
 
-- [ ] **TAGS-01**: Tags list is sorted with most recent tag first
+- [x] **TAGS-01**: Tags list is sorted with most recent tag first
 
 ### Navigation
 
-- [ ] **NAVG-01**: Blade view refreshes correctly when switching repositories
+- [x] **NAVG-01**: Blade view refreshes correctly when switching repositories
 
 ## Future Requirements
 
@@ -86,16 +86,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ONBR-01 | Phase 19 | Pending |
-| ICON-01 | Phase 19 | Pending |
+| ONBR-01 | Phase 19 | Complete |
+| ICON-01 | Phase 19 | Complete |
 | STSH-01 | Phase 16 | Complete |
 | CMPL-01 | Phase 18 | Complete |
 | CMPL-02 | Phase 18 | Complete |
 | CMPL-03 | Phase 18 | Complete |
 | DISC-01 | Phase 18 | Complete |
 | TOPO-01 | Phase 16 | Complete |
-| SETT-01 | Phase 19 | Pending |
-| SETT-02 | Phase 19 | Pending |
+| SETT-01 | Phase 19 | Complete |
+| SETT-02 | Phase 19 | Complete |
 | UIPX-01 | Phase 16 | Complete |
 | UIPX-02 | Phase 16 | Complete |
 | UIPX-03 | Phase 17 | Complete |
