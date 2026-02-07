@@ -21,6 +21,7 @@ import { toast } from "../stores/toast";
  * - Cmd/Ctrl+Shift+L: Pull (L for "pull Latest")
  * - Cmd/Ctrl+Shift+F: Fetch
  * - Cmd/Ctrl+Shift+M: Toggle amend commit
+ * - Backspace: Pop blade (navigate back)
  */
 export function useKeyboardShortcuts() {
   const queryClient = useQueryClient();
@@ -188,6 +189,19 @@ export function useKeyboardShortcuts() {
     "escape",
     () => {
       // Don't pop blade if command palette is open (palette handles its own Escape)
+      if (useCommandPaletteStore.getState().isOpen) return;
+      const bladeStore = useBladeStore.getState();
+      if (bladeStore.bladeStack.length > 1) {
+        bladeStore.popBlade();
+      }
+    },
+    { enableOnFormTags: false },
+  );
+
+  // Backspace - navigate back (pop blade stack)
+  useHotkeys(
+    "backspace",
+    () => {
       if (useCommandPaletteStore.getState().isOpen) return;
       const bladeStore = useBladeStore.getState();
       if (bladeStore.bladeStack.length > 1) {

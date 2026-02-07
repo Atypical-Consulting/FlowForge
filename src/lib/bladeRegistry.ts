@@ -19,7 +19,7 @@ export interface BladeRegistration<TProps = Record<string, never>> {
 const registry = new Map<BladeType, BladeRegistration<any>>();
 
 export function registerBlade<TProps>(config: BladeRegistration<TProps>): void {
-  if (import.meta.env.DEV && registry.has(config.type)) {
+  if (import.meta.env.DEV && registry.has(config.type) && !import.meta.hot) {
     console.warn(`[BladeRegistry] Duplicate registration for "${config.type}"`);
   }
   registry.set(config.type, config);

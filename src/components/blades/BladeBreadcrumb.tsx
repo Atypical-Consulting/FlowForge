@@ -20,20 +20,56 @@ export function BladeBreadcrumb({ path, navigable = true }: BladeBreadcrumbProps
 
   const navigateTo = (dirPath: string) => {
     if (!navigable) return;
-    store.replaceBlade({
-      type: "repo-browser",
-      title: dirPath.split("/").pop() || "Repository Browser",
-      props: { path: dirPath },
-    });
+    const stack = store.bladeStack;
+    // Find the last repo-browser ancestor (excluding current top blade)
+    let repoBrowserIndex = -1;
+    for (let i = stack.length - 2; i >= 0; i--) {
+      if (stack[i].type === "repo-browser") {
+        repoBrowserIndex = i;
+        break;
+      }
+    }
+    if (repoBrowserIndex >= 0) {
+      // Pop to ancestor, then replace it atomically
+      store.popToIndex(repoBrowserIndex);
+      store.replaceBlade({
+        type: "repo-browser",
+        title: dirPath.split("/").pop() || "Repository Browser",
+        props: { path: dirPath },
+      });
+    } else {
+      store.replaceBlade({
+        type: "repo-browser",
+        title: dirPath.split("/").pop() || "Repository Browser",
+        props: { path: dirPath },
+      });
+    }
   };
 
   const navigateToRoot = () => {
     if (!navigable) return;
-    store.replaceBlade({
-      type: "repo-browser",
-      title: "Repository Browser",
-      props: { path: "" },
-    });
+    const stack = store.bladeStack;
+    let repoBrowserIndex = -1;
+    for (let i = stack.length - 2; i >= 0; i--) {
+      if (stack[i].type === "repo-browser") {
+        repoBrowserIndex = i;
+        break;
+      }
+    }
+    if (repoBrowserIndex >= 0) {
+      store.popToIndex(repoBrowserIndex);
+      store.replaceBlade({
+        type: "repo-browser",
+        title: "Repository Browser",
+        props: { path: "" },
+      });
+    } else {
+      store.replaceBlade({
+        type: "repo-browser",
+        title: "Repository Browser",
+        props: { path: "" },
+      });
+    }
   };
 
   return (
