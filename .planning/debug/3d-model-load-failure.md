@@ -1,16 +1,16 @@
 ---
-status: diagnosed
-trigger: "Investigate why opening a .glb file from the repo browser shows 'Failed to load 3D model'"
+status: investigating
+trigger: "Investigate why opening a .glb file from the repo browser shows 'Failed to load 3D model' — post fix 22-13"
 created: 2026-02-07T00:00:00Z
-updated: 2026-02-07T00:10:00Z
+updated: 2026-02-08T12:00:00Z
 ---
 
 ## Current Focus
 
-hypothesis: CONFIRMED - model-viewer fires error event during updateSource; error detail is swallowed by handler
-test: Full code trace from Rust backend through IPC to blob URL to model-viewer internals
-expecting: N/A - root cause confirmed with two contributing issues
-next_action: Return diagnosis
+hypothesis: Multiple remaining failure paths exist after 22-13 fix, requiring deeper investigation
+test: Full code trace through all three layers (data pipeline, model-viewer internals, environment)
+expecting: Identify which specific layer fails and under what conditions
+next_action: Return comprehensive diagnosis with all remaining issues
 
 ## Symptoms
 
@@ -18,7 +18,7 @@ expected: Opening a .glb file from repo browser should display a 3D model
 actual: Shows "Failed to load 3D model"
 errors: "Failed to load 3D model"
 reproduction: Open any .glb file from the repo browser
-started: Unknown
+started: Unknown — may have never worked
 
 ## Eliminated
 
@@ -47,8 +47,20 @@ started: Unknown
   timestamp: 2026-02-07T00:04:00Z
 
 - hypothesis: atob()+charCodeAt() pattern is broken
-  evidence: Standard widely-used pattern; charCodeAt() correctly returns 0-255 for atob() Latin-1 output
+  evidence: Standard widely-used pattern — but now replaced by fetch-based approach in 22-13
   timestamp: 2026-02-07T00:04:30Z
+
+- hypothesis: Error handler swallows diagnostic info
+  evidence: Fixed in 22-13 — handler now captures detail.sourceError.message
+  timestamp: 2026-02-08T12:00:00Z
+
+- hypothesis: environment-image="neutral" causes failure
+  evidence: Attribute removed in 22-13 — but environment generation STILL runs (see evidence below)
+  timestamp: 2026-02-08T12:01:00Z
+
+- hypothesis: Duplicate blade registration causes 3D viewer malfunction
+  evidence: HMR re-executes registration modules causing warnings, but registry.set() overwrites correctly. Functionally harmless — cosmetic DEV warning only.
+  timestamp: 2026-02-08T12:02:00Z
 
 ## Evidence
 
@@ -58,74 +70,155 @@ started: Unknown
   implication: Backend data pipeline is correct
 
 - timestamp: 2026-02-07T00:01:00Z
-  checked: Viewer3dBlade.tsx error event handler (lines 109-111)
-  found: Handler sets generic "Failed to render 3D model" without examining the event object. model-viewer dispatches error events with detail.type='loadfailure' and detail.sourceError=<Error object> (confirmed in model-viewer-base.js line 501). All diagnostic information is discarded.
-  implication: Cannot determine exact failure cause from user-facing error. This is the primary diagnostic bug.
+  checked: Viewer3dBlade.tsx error event handler (lines 105-110)
+  found: Post-fix handler now captures detail.sourceError.message and detail.type. Correct implementation.
+  implication: Error diagnostics are now available in the detail text
 
 - timestamp: 2026-02-07T00:02:00Z
   checked: model-viewer-base.js updateSource method (lines 464-506)
-  found: updateSource runs Promise.all([srcUpdated, envUpdated]) at line 484. If EITHER the model source loading OR the environment update fails, the catch fires the error event. environment update can throw from environment.js line 118 if WebGL environment generation fails.
-  implication: Error may not be from model data at all -- could be environment/WebGL initialization failure
+  found: updateSource runs Promise.all([srcUpdated, envUpdated]) at line 484. BOTH must succeed. catch block (line 500-502) dispatches error event with type='loadfailure' and sourceError containing the actual Error object.
+  implication: Either src loading or environment generation failure triggers same error event
 
-- timestamp: 2026-02-07T00:03:00Z
-  checked: environment.js lines 87-124
-  found: $updateEnvironment calls textureUtils.generateEnvironmentMapAndSkybox() with "neutral" as environmentImage. If this throws, the error re-throws (line 118) and propagates to the error event dispatch.
-  implication: environment-image="neutral" could be the trigger if WebGL setup fails in Tauri WebView
+- timestamp: 2026-02-08T12:00:00Z
+  checked: environment.js $updateEnvironment (lines 87-124) and TextureUtils.js (lines 120-151)
+  found: Even with environment-image attribute REMOVED, $updateEnvironment STILL runs during $updateSource (line 483). It falls through to loadGeneratedEnvironmentMapAlt() (line 200-204) which generates a procedural "neutral" environment map using WebGL cube rendering (GenerateEnvironmentMap at line 162-183). If this returns null, line 148 throws "Failed to load environment map."
+  implication: Removing the attribute did NOT eliminate the environment failure path — it just changed which code path generates the map
 
-- timestamp: 2026-02-07T00:04:00Z
-  checked: model-viewer shouldAttemptPreload (base line 419)
-  found: Requires this[$isElementInViewport] to be true (uses IntersectionObserver). If element is not detected as visible, model won't attempt to load at all (no error, just never loads).
-  implication: If IntersectionObserver fails in Tauri WebView, model stays in loading state, NOT error state
+- timestamp: 2026-02-08T12:01:00Z
+  checked: Renderer.js constructor (lines 114-137)
+  found: textureUtils is set to null when canRender is false (line 136-137). canRender checks this.threeRenderer != null. If WebGL context creation fails (try/catch at line 114-134), threeRenderer stays null, canRender is false, textureUtils is null.
+  implication: If WebGL context fails to create, textureUtils is null, and $updateEnvironment returns early (line 94-96) — environment generation is skipped entirely. This is actually a safe path.
 
-- timestamp: 2026-02-07T00:05:00Z
-  checked: MarkdownImage.tsx (working comparison)
-  found: Uses data URI approach: `data:${mime};base64,${content}`. Does NOT use atob()/charCodeAt()/Blob/ObjectURL chain. Works correctly for binary images from same backend.
-  implication: Alternative approach exists and is proven to work with this backend
+- timestamp: 2026-02-08T12:02:00Z
+  checked: Three.js FileLoader.js (used by GLTFLoader for model loading)
+  found: FileLoader.load() uses the fetch() API (line 88) to load the source URL. When model-viewer receives a blob URL, Three.js fetches it. fetch() with blob: URLs should work from any origin (same-origin policy applies to blob URLs).
+  implication: The blob URL fetch itself should work, but any failure would surface as an error in the setSource promise
+
+- timestamp: 2026-02-08T12:03:00Z
+  checked: fetch('data:...') compatibility in Tauri v2 WKWebView on macOS
+  found: Tauri v2 on macOS serves the frontend via a custom protocol scheme. WKWebView is known to restrict fetch() from pages served via custom schemes. While data: and blob: URIs are generally same-origin exempt, there are edge cases. In DEV mode (devUrl: "http://localhost:1420"), fetch('data:...') should work since the page is served over HTTP. In PRODUCTION mode (custom tauri:// protocol), fetch('data:...') might fail.
+  implication: The data URI fetch approach may fail in production Tauri builds but work in development
+
+- timestamp: 2026-02-08T12:04:00Z
+  checked: Event listener timing in Viewer3dBlade.tsx
+  found: useEffect at line 84 registers error/load/progress listeners AFTER React renders the model-viewer with the new src. React renders synchronously, then useEffect runs. model-viewer's Lit updated() fires during render and calls $updateSource(). However, $updateSource is async (awaits Promise.all), so the error event fires after the useEffect has registered listeners. TIMING IS SAFE.
+  implication: Event listener race condition is NOT the issue
+
+- timestamp: 2026-02-08T12:05:00Z
+  checked: IntersectionObserver initialization in model-viewer-base.js
+  found: $isElementInViewport starts as false (line 144). IntersectionObserver is set up in connectedCallback() and fires asynchronously. $shouldAttemptPreload() returns false until IO callback fires. When IO reports isIntersecting=true, $updateSource() is called (line 229). Loading is deferred but works correctly.
+  implication: Model loading waits for visibility — this is by design and works correctly
+
+- timestamp: 2026-02-08T12:06:00Z
+  checked: Duplicate blade registration warnings
+  found: bladeRegistry.ts line 22-24 warns in DEV when registry.has(config.type) is true. This fires during HMR when Vite re-executes registration modules. The registry Map is module-level (persists across HMR), but registry.set() at line 25 simply overwrites. registrations/index.ts uses import.meta.glob with eager: true — all registration files execute on import.
+  implication: Duplicate registration is cosmetic HMR noise, not a functional issue. Does NOT affect 3D viewer loading.
 
 ## Resolution
 
 root_cause: |
-  TWO ROOT CAUSES working together:
+  THREE REMAINING ISSUES after the 22-13 fix:
 
-  1. ERROR SWALLOWING (Viewer3dBlade.tsx line 109-111): The model-viewer error event handler
-     discards ALL diagnostic information. model-viewer dispatches errors with
-     `{ detail: { type: 'loadfailure', sourceError: <Error> } }` (confirmed in
-     node_modules/@google/model-viewer/lib/model-viewer-base.js line 501), but the handler
-     ignores the event entirely and sets a generic string. This makes it impossible to
-     diagnose the actual failure from the user-facing error alone.
+  ISSUE 1 - ENVIRONMENT GENERATION STILL RUNS (HIGH):
+  Removing environment-image="neutral" from the HTML attribute did NOT eliminate the
+  environment generation code path. In model-viewer-base.js line 483, $updateEnvironment()
+  is ALWAYS called as part of $updateSource(), regardless of attributes. The environment.js
+  $updateEnvironment method (line 87) reads the environmentImage property. When null/undefined,
+  TextureUtils.generateEnvironmentMapAndSkybox() at line 120 falls through to
+  loadGeneratedEnvironmentMapAlt() (line 200-204), which procedurally generates a "neutral"
+  environment map using WebGL cube rendering (GenerateEnvironmentMap, line 162-183).
 
-  2. FRAGILE LOADING PIPELINE (Viewer3dBlade.tsx lines 53-65): The base64 -> atob() ->
-     charCodeAt() -> Uint8Array -> Blob -> ObjectURL chain is mechanically correct but
-     unnecessarily complex and fragile. While the atob()/charCodeAt() pattern works in
-     theory, large GLB files may cause atob() to throw DOMException due to string size
-     limits. Additionally, model-viewer's updateSource() runs Promise.all([srcUpdated,
-     envUpdated]), meaning ANY failure in environment initialization (e.g., WebGL context
-     issues in Tauri's WKWebView) triggers the same error event as a model load failure.
+  This means: if WebGL cube rendering fails or the environment map generation returns null,
+  line 148 throws "Failed to load environment map." and the error propagates to the error
+  event. The Promise.all at line 484 means this kills the ENTIRE load — even if the model
+  data itself was perfectly valid.
 
-  The combination means: something fails during model-viewer's load/environment initialization,
-  the error event fires, and all useful error information is discarded. The user sees only
-  "Failed to load 3D model" with no way to determine whether it's a data issue, WebGL issue,
-  or environment image issue.
+  ISSUE 2 - fetch('data:...') RELIABILITY IN TAURI (MEDIUM):
+  The 22-13 fix replaced atob()/charCodeAt() with fetch(dataUri). While this handles large
+  files better, fetch() with data: URIs may not work reliably in Tauri v2's production build
+  on macOS, where the frontend is served via a custom protocol scheme (tauri://localhost).
+  WKWebView applies restrictions to fetch() from custom protocol origins.
+
+  In development mode (http://localhost:1420), this works fine. In production, the data URI
+  fetch may silently fail or throw a network error, which would be caught at line 65-66 and
+  show as "Failed to load model" in the catch block.
+
+  ISSUE 3 - TWO ERROR PATHS, CONFUSING UX (LOW):
+  There are two independent paths that set fetchError:
+    a) Line 66: catch in loadModel() — catches data pipeline failures
+    b) Line 109: model-viewer error event — catches model-viewer internal failures
+  Both show the same BladeContentError with message="Failed to load 3D model".
+  Path (a) fires immediately during data load.
+  Path (b) fires later when model-viewer tries to render.
+  If path (a) succeeds but path (b) fails, the component briefly shows the model-viewer
+  (with opacity:0 and loading overlay), THEN switches to the error state. The fetchError
+  from path (a) is cleared by loadModel() line 30, so only path (b)'s error shows.
 
 fix: |
-  FIX 1 (Critical - capture diagnostics): Update the error event handler at line 109-111:
-    const onError = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      const sourceError = detail?.sourceError;
-      const msg = sourceError?.message || detail?.type || "Failed to render 3D model";
-      setFetchError(msg);
-    };
+  FIX 1 (Critical - eliminate environment failure path):
+  model-viewer's $updateEnvironment always generates an environment map even without the
+  attribute. To truly prevent environment-related failures from killing model loading,
+  the component needs either:
+    a) A workaround: Use loading="eager" to bypass IntersectionObserver timing
+    b) Handle model-viewer errors with retry logic that catches environment failures
+    c) Pre-check WebGL capability before attempting to render
 
-  FIX 2 (Robustness - simplify decode chain): Replace atob()/charCodeAt() with fetch-based
-  approach that leverages browser-native base64 decoding:
-    const dataUri = `data:model/gltf-binary;base64,${content}`;
-    const response = await fetch(dataUri);
-    const blob = await response.blob();
+  However, the real question is: does WebGL work at all in the user's environment?
+  If WebGL context creation fails, model-viewer cannot render anything — no fix in the
+  React component can overcome that.
+
+  FIX 2 (Important - replace fetch(dataUri) with direct Blob construction):
+  Instead of fetch('data:...'), use the browser's native atob() with a safety wrapper,
+  or better yet, use a TextDecoder approach that avoids the data URI entirely:
+
+    // Safe approach — no fetch, no data URI, no WKWebView restrictions
+    const binaryString = atob(content);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    const blob = new Blob([bytes.buffer], { type: mime });
     const url = URL.createObjectURL(blob);
 
-  FIX 3 (Optional - remove environment failure mode): If the environment is not essential,
-  remove environment-image="neutral" or wrap model-viewer in a try/catch that retries
-  without the environment attribute on failure.
+  OR for truly large files (>100MB), chunk the atob() processing:
+
+    function base64ToBlob(base64: string, mime: string): Blob {
+      const CHUNK = 512;
+      const byteArrays: Uint8Array[] = [];
+      for (let offset = 0; offset < base64.length; offset += CHUNK) {
+        const slice = atob(base64.slice(offset, offset + CHUNK));
+        const bytes = new Uint8Array(slice.length);
+        for (let i = 0; i < slice.length; i++) bytes[i] = slice.charCodeAt(i);
+        byteArrays.push(bytes);
+      }
+      return new Blob(byteArrays, { type: mime });
+    }
+
+  Wait — atob() on slices of base64 won't work because base64 must be decoded in
+  complete 4-character groups. The ORIGINAL atob()/charCodeAt() approach was correct.
+  The issue was that atob() on the ENTIRE string may fail for very large files.
+
+  Best approach: Use the Uint8Array directly from a decoded ArrayBuffer.
+  Modern browsers support: Uint8Array.from(atob(content), c => c.charCodeAt(0))
+  Or use a streaming approach via ReadableStream.
+
+  Actually, the simplest robust fix is to keep the atob() approach but add a fallback:
+    try {
+      // Fast path for most files
+      const binaryString = atob(content);
+      const bytes = Uint8Array.from(binaryString, c => c.charCodeAt(0));
+      blob = new Blob([bytes], { type: mime });
+    } catch {
+      // Fallback for very large files — use data URI fetch
+      const response = await fetch(`data:${mime};base64,${content}`);
+      blob = await response.blob();
+    }
+
+  FIX 3 (Diagnostic improvement):
+  Add console.error logging in both error paths so developers can see the exact error
+  in the Tauri dev console:
+    console.error('[Viewer3d] Model loading failed:', fetchError);
+    console.error('[Viewer3d] model-viewer error:', sourceError);
 
 verification:
 files_changed: []
