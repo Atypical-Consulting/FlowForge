@@ -54,13 +54,11 @@ const defaultSettings: Settings = {
 };
 
 function mergeSettings(saved: Partial<Settings>): Settings {
-  const merged = { ...defaultSettings };
-  for (const key of Object.keys(defaultSettings) as (keyof Settings)[]) {
-    if (saved[key]) {
-      merged[key] = { ...defaultSettings[key], ...saved[key] } as Settings[typeof key];
-    }
-  }
-  return merged;
+  return {
+    general: { ...defaultSettings.general, ...saved.general },
+    git: { ...defaultSettings.git, ...saved.git },
+    integrations: { ...defaultSettings.integrations, ...saved.integrations },
+  };
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
