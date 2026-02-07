@@ -1,7 +1,7 @@
 ---
 phase: 22-new-content-blades
-verified: 2026-02-07T20:00:00Z
-status: passed
+verified: 2026-02-08T00:30:00Z
+status: human_needed
 score: 5/5 must-haves verified
 ---
 
@@ -9,9 +9,9 @@ score: 5/5 must-haves verified
 
 **Phase Goal:** Users can preview markdown files, browse the repository file tree, view 3D models, and reference Gitflow workflows -- all within the blade navigation system
 
-**Verified:** 2026-02-07T20:00:00Z
-**Status:** PASSED
-**Re-verification:** No -- initial verification
+**Verified:** 2026-02-08T00:30:00Z
+**Status:** HUMAN NEEDED (wave 7 gap closure applied, visual verification recommended)
+**Re-verification:** Yes — wave 7 gap closure (plans 22-17..19) applied CSS var fixes, DiffBlade routing, 3D model loading, breadcrumb dedup, Backspace nav, HMR warnings
 
 ## Goal Achievement
 
@@ -204,7 +204,24 @@ TypeScript compilation passes cleanly (`npx tsc --noEmit` exit code 0, zero erro
 
 No gaps found. All 5 observable truths are verified, all artifacts across all 10 plans exist with substantive implementations, all key links are wired correctly, all 6 requirements are satisfied, TypeScript compiles cleanly, and no anti-patterns were detected. The phase is structurally complete and ready for human UAT (plan 22-11).
 
+## Wave 7 Gap Closure Applied (2026-02-08)
+
+| Plan | Fix | Verified |
+|------|-----|----------|
+| 22-17 | CSS vars: `var(--ctp-*)` → `var(--catppuccin-color-*)` in 4 files | ✓ Zero `var(--ctp-*)` remaining in src/ |
+| 22-18 | DiffBlade: .md files route to diff blade in diff/staging context | ✓ `openDiff`/`openStagingDiff` condition updated |
+| 22-18 | 3D model: `atob`/`Uint8Array` decode (reverts `fetch('data:...')`) | ✓ Code uses atob, not fetch |
+| 22-18 | WebGL capability detection before 3D render | ✓ Canvas context check added |
+| 22-19 | Breadcrumb: ancestor search prevents stack duplication | ✓ Manual reverse loop + atomic replace |
+| 22-19 | Global Backspace hotkey (enableOnFormTags: false) | ✓ Added to useKeyboardShortcuts |
+| 22-19 | HMR warning suppression (`!import.meta.hot` guard) | ✓ Guard added to bladeRegistry |
+| All | TypeScript compilation clean | ✓ `npx tsc --noEmit` passes |
+
+**Deviations from plans:**
+- Used manual reverse loop instead of `findLastIndex` (ES2023 not available with `"lib": ["ES2020"]`)
+- Used synchronous `popToIndex` + `replaceBlade` instead of `setTimeout(0)` (avoids React batching issues)
+
 ---
 
-_Verified: 2026-02-07T20:00:00Z_
-_Verifier: Claude (gsd-verifier)_
+_Verified: 2026-02-08T00:30:00Z_
+_Verifier: Claude (gsd-verifier + manual orchestrator)_
