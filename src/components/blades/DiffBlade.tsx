@@ -1,8 +1,10 @@
 import { DiffEditor } from "@monaco-editor/react";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { AlignJustify, Columns, Loader2 } from "lucide-react";
+import { useState } from "react";
 import { commands } from "../../bindings";
 import "../../lib/monacoTheme";
+import { Button } from "../ui/button";
 
 /**
  * Blade input: diff source configuration.
@@ -16,10 +18,10 @@ export type DiffSource =
 
 interface DiffBladeProps {
   source: DiffSource;
-  inline?: boolean;
 }
 
-export function DiffBlade({ source, inline = true }: DiffBladeProps) {
+export function DiffBlade({ source }: DiffBladeProps) {
+  const [inline, setInline] = useState(true);
   const contextLines = 3;
 
   const queryKey =
@@ -74,6 +76,25 @@ export function DiffBlade({ source, inline = true }: DiffBladeProps) {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden h-full">
+      {/* Inline/side-by-side toggle */}
+      <div className="flex items-center gap-2 px-3 py-1 border-b border-ctp-surface0 bg-ctp-crust shrink-0">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setInline((v) => !v)}
+          title={inline ? "Switch to side-by-side" : "Switch to inline"}
+          className="h-7 px-2"
+        >
+          {inline ? (
+            <Columns className="w-4 h-4" />
+          ) : (
+            <AlignJustify className="w-4 h-4" />
+          )}
+          <span className="text-xs ml-1.5">
+            {inline ? "Side-by-side" : "Inline"}
+          </span>
+        </Button>
+      </div>
       {/* Monaco DiffEditor */}
       <div className="flex-1 min-h-0">
         <DiffEditor
