@@ -91,7 +91,7 @@ Plans:
 4. User can browse the repository file tree at HEAD, navigate into directories via breadcrumbs, and open files in the appropriate viewer blade
 5. User can open a Gitflow cheat sheet blade that shows workflow diagrams, branch type descriptions, and a "You are here" indicator based on the current branch
 
-**Plans:** 11 plans in 5 waves
+**Plans:** 16 plans in 6 waves
 
 Plans:
 - [x] 22-01-PLAN.md -- W1: Extensibility Refactoring (type safety, auto-registration, file dispatch)
@@ -104,7 +104,12 @@ Plans:
 - [x] 22-08-PLAN.md -- W3: Viewer-3D Blade (model-viewer, orbit controls, progress bar, WebGL fallback)
 - [x] 22-09-PLAN.md -- W3: Gitflow Cheatsheet Blade (SVG diagram, "You Are Here", action cards, branch reference)
 - [x] 22-10-PLAN.md -- W4: Integration & Polish (cross-blade nav, header entry points, accessibility audit)
-- [ ] 22-11-PLAN.md -- W5: Human Verification Checkpoint (UAT)
+- [x] 22-11-PLAN.md -- W5: Human Verification Checkpoint (UAT — 6 gaps identified)
+- [ ] 22-12-PLAN.md -- W5: Gap Closure — DiffBlade preview width and Monaco height
+- [ ] 22-13-PLAN.md -- W5: Gap Closure — 3D model loading and error diagnostics
+- [ ] 22-14-PLAN.md -- W5: Gap Closure — Backspace navigation in repo browser
+- [ ] 22-15-PLAN.md -- W5: Gap Closure — Gitflow cheatsheet entry points
+- [ ] 22-16-PLAN.md -- W6: Gap Closure — Unified breadcrumb UX across all blades
 
 ---
 
@@ -151,7 +156,7 @@ Plans:
 | 20 | Blade Infrastructure & Modal Migration | 9 | Complete |
 | 20.1 | Blade Extensibility Refactoring | 5 | Complete |
 | 21 | Two-Column Staging & Inline Diff | 2 | Complete |
-| 22 | New Content Blades | 6 | UAT Pending |
+| 22 | New Content Blades | 6 | Gap Closure |
 | 23 | Branch Management | 6 | Pending |
 | 24 | Code Review Guidance & Documentation | 2 | Pending |
 
