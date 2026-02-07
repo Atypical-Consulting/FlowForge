@@ -1,6 +1,6 @@
 import { Settings, Sun } from "lucide-react";
 import { registerCommand } from "../lib/commandRegistry";
-import { useBladeStore } from "../stores/blades";
+import { openBlade } from "../lib/bladeOpener";
 import { type Theme, useThemeStore } from "../stores/theme";
 
 registerCommand({
@@ -11,11 +11,7 @@ registerCommand({
   shortcut: "mod+,",
   icon: Settings,
   action: () => {
-    useBladeStore.getState().pushBlade({
-      type: "settings",
-      title: "Settings",
-      props: {},
-    });
+    openBlade("settings", {} as Record<string, never>);
   },
 });
 

@@ -2,6 +2,7 @@ import { Channel } from "@tauri-apps/api/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useHotkeys } from "react-hotkeys-hook";
 import { type SyncProgress, commands } from "../bindings";
+import { openBlade } from "../lib/bladeOpener";
 import { useBladeStore } from "../stores/blades";
 import { useCommandPaletteStore } from "../stores/commandPalette";
 import { useRepositoryStore } from "../stores/repository";
@@ -107,11 +108,7 @@ export function useKeyboardShortcuts() {
     "mod+,",
     (e) => {
       e.preventDefault();
-      useBladeStore.getState().pushBlade({
-        type: "settings",
-        title: "Settings",
-        props: {},
-      });
+      openBlade("settings", {} as Record<string, never>);
     },
     { preventDefault: true },
   );
@@ -211,11 +208,7 @@ export function useKeyboardShortcuts() {
         topologyStore.selectedCommit &&
         bladeStore.bladeStack.length === 1
       ) {
-        bladeStore.pushBlade({
-          type: "commit-details",
-          title: "Commit",
-          props: { oid: topologyStore.selectedCommit },
-        });
+        openBlade("commit-details", { oid: topologyStore.selectedCommit });
       }
     },
     { enableOnFormTags: false, enabled: !!status },

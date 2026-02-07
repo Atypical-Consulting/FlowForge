@@ -47,7 +47,7 @@ export function Header() {
   const { loadStashes, saveStash, isLoading: stashesLoading } = useStashStore();
   const { loadTags, isLoading: tagsLoading } = useTagStore();
   const { undoInfo, isUndoing, loadUndoInfo, performUndo } = useUndoStore();
-  const { openSettings, openChangelog } = useBladeNavigation();
+  const { openBlade } = useBladeNavigation();
   const { addRecentRepo } = useRecentRepos();
   const navigationStore = useNavigationStore();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -252,7 +252,7 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <ShortcutTooltip shortcut="mod+," label="Settings">
-            <Button variant="ghost" size="sm" onClick={openSettings}>
+            <Button variant="ghost" size="sm" onClick={() => openBlade("settings", {} as Record<string, never>)}>
               <Settings className="w-4 h-4" />
             </Button>
           </ShortcutTooltip>
@@ -295,7 +295,7 @@ export function Header() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={openChangelog}
+              onClick={() => openBlade("changelog", {} as Record<string, never>)}
               title="Generate Changelog"
             >
               <FileText className="w-4 h-4" />

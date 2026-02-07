@@ -1,6 +1,13 @@
 import type { FileChange } from "../bindings";
-import type { BladeType } from "../stores/blades";
+import type { BladeType, BladePropsMap } from "../stores/bladeTypes";
+import { getBladeRegistration } from "../lib/bladeRegistry";
 import { useBladeStore } from "../stores/blades";
+
+const SINGLETON_TYPES: BladeType[] = [
+  "settings",
+  "changelog",
+  "gitflow-cheatsheet",
+];
 
 /** Map file extension to a specialized blade type, or "diff" as default */
 function bladeTypeForFile(filePath: string): BladeType {
@@ -18,104 +25,78 @@ function bladeTypeForFile(filePath: string): BladeType {
     return "viewer-image";
   if (lower.endsWith(".md") || lower.endsWith(".mdx"))
     return "viewer-markdown";
-  if (lower.endsWith(".glb") || lower.endsWith(".gltf"))
-    return "viewer-3d";
+  if (lower.endsWith(".glb") || lower.endsWith(".gltf")) return "viewer-3d";
   return "diff";
 }
 
 export function useBladeNavigation() {
   const store = useBladeStore();
 
-  const openCommitDetails = (oid: string) => {
-    store.pushBlade({
-      type: "commit-details",
-      title: "Commit",
-      props: { oid },
-    });
-  };
+  /** Type-safe blade opener — compiler enforces correct props per type */
+  function openBlade<K extends BladeType>(
+    type: K,
+    props: BladePropsMap[K],
+    title?: string,
+  ) {
+    // Singleton guard: don't push duplicates
+    if (SINGLETON_TYPES.includes(type)) {
+      if (store.bladeStack.some((b) => b.type === type)) return;
+    }
 
-  /** Push a diff blade for a historical commit file */
-  const openDiff = (oid: string, filePath: string) => {
+    const reg = getBladeRegistration(type);
+    const resolvedTitle =
+      title ??
+      (typeof reg?.defaultTitle === "function"
+        ? reg.defaultTitle(props as any)
+        : reg?.defaultTitle ?? type);
+
+    store.pushBlade({ type, title: resolvedTitle, props });
+  }
+
+  /** Push a diff/viewer blade for a historical commit file */
+  function openDiff(oid: string, filePath: string) {
     const type = bladeTypeForFile(filePath);
-    store.pushBlade({
-      type,
-      title: filePath.split("/").pop() || filePath,
-      props: { mode: "commit", oid, filePath },
-    });
-  };
+    const title = filePath.split("/").pop() || filePath;
+
+    if (type === "diff") {
+      openBlade("diff", { source: { mode: "commit", oid, filePath } }, title);
+    } else if (type === "viewer-image") {
+      openBlade("viewer-image", { filePath, oid }, title);
+    } else {
+      store.pushBlade({ type, title, props: { filePath } as any });
+    }
+  }
 
   /** Push a diff/viewer blade for a staging (working-tree) file */
-  const openStagingDiff = (
+  function openStagingDiff(
     file: FileChange,
     section: "staged" | "unstaged" | "untracked",
-  ) => {
+  ) {
     const type = bladeTypeForFile(file.path);
-    store.pushBlade({
-      type,
-      title: file.path.split("/").pop() || file.path,
-      props: {
-        mode: "staging",
-        filePath: file.path,
-        staged: section === "staged",
-      },
-    });
-  };
+    const title = file.path.split("/").pop() || file.path;
 
-  const openSettings = () => {
-    store.pushBlade({ type: "settings", title: "Settings", props: {} });
-  };
+    if (type === "diff") {
+      openBlade(
+        "diff",
+        { source: { mode: "staging", filePath: file.path, staged: section === "staged" } },
+        title,
+      );
+    } else if (type === "viewer-image") {
+      openBlade("viewer-image", { filePath: file.path }, title);
+    } else {
+      store.pushBlade({ type, title, props: { filePath: file.path } as any });
+    }
+  }
 
-  const openChangelog = () => {
-    store.pushBlade({ type: "changelog", title: "Changelog", props: {} });
-  };
-
-  const openRepoBrowser = (path?: string) => {
-    store.pushBlade({
-      type: "repo-browser",
-      title: "Repository Browser",
-      props: { path: path || "" },
-    });
-  };
-
-  const openGitflowCheatsheet = () => {
-    store.pushBlade({
-      type: "gitflow-cheatsheet",
-      title: "Gitflow Guide",
-      props: {},
-    });
-  };
-
-  const openMarkdownViewer = (filePath: string) => {
-    store.pushBlade({
-      type: "viewer-markdown",
-      title: filePath.split("/").pop() || "Markdown",
-      props: { filePath },
-    });
-  };
-
-  const openModelViewer = (filePath: string) => {
-    store.pushBlade({
-      type: "viewer-3d",
-      title: filePath.split("/").pop() || "3D Model",
-      props: { filePath },
-    });
-  };
-
-  const goBack = () => store.popBlade();
-  const goToRoot = () => store.resetStack();
+  const goBack = store.popBlade;
+  const goToRoot = store.resetStack;
 
   return {
-    ...store,
-    openCommitDetails,
+    openBlade,
     openDiff,
     openStagingDiff,
-    openSettings,
-    openChangelog,
-    openRepoBrowser,
-    openGitflowCheatsheet,
-    openMarkdownViewer,
-    openModelViewer,
     goBack,
     goToRoot,
+    ...store,
   };
 }
