@@ -110,9 +110,9 @@ Plans:
 - [x] 22-14-PLAN.md -- W5: Gap Closure — Backspace navigation in repo browser
 - [x] 22-15-PLAN.md -- W5: Gap Closure — Gitflow cheatsheet entry points
 - [x] 22-16-PLAN.md -- W6: Gap Closure — Unified breadcrumb UX across all blades
-- [ ] 22-17-PLAN.md -- W7: Gap Closure — CSS variable name fix (var(--ctp-*) to var(--catppuccin-color-*))
-- [ ] 22-18-PLAN.md -- W7: Gap Closure — DiffBlade markdown routing and 3D model atob revert
-- [ ] 22-19-PLAN.md -- W7: Gap Closure — Breadcrumb dedup, global Backspace, HMR warning suppression
+- [x] 22-17-PLAN.md -- W7: Gap Closure — CSS variable name fix (var(--ctp-*) to var(--catppuccin-color-*))
+- [x] 22-18-PLAN.md -- W7: Gap Closure — DiffBlade markdown routing and 3D model atob revert
+- [x] 22-19-PLAN.md -- W7: Gap Closure — Breadcrumb dedup, global Backspace, HMR warning suppression
 
 ---
 
@@ -159,7 +159,7 @@ Plans:
 | 20 | Blade Infrastructure & Modal Migration | 9 | Complete |
 | 20.1 | Blade Extensibility Refactoring | 5 | Complete |
 | 21 | Two-Column Staging & Inline Diff | 2 | Complete |
-| 22 | New Content Blades | 6 | Gap Closure Round 2 |
+| 22 | New Content Blades | 6 | Gap Closure Round 2 Complete |
 | 23 | Branch Management | 6 | Pending |
 | 24 | Code Review Guidance & Documentation | 2 | Pending |
 
