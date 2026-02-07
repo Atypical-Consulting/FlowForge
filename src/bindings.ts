@@ -780,6 +780,53 @@ async cloneRepository(url: string, destination: string, onProgress: TAURI_CHANNE
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+/**
+ * Initialize a new Git repository at the specified path.
+ * 
+ * Validates the path exists and is a directory that is not already a git repository,
+ * then creates a new repository with an optional default branch name.
+ * 
+ * # Arguments
+ * * `path` - Directory where the repository will be initialized
+ * * `default_branch` - Optional initial branch name (defaults to "main")
+ */
+async gitInit(path: string, defaultBranch: string | null) : Promise<Result<InitResult, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("git_init", { path, defaultBranch }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Read the user's global git configuration.
+ * 
+ * Returns None for any value that is not set. Never errors —
+ * if the config file cannot be opened, all fields are None.
+ */
+async getGitGlobalConfig() : Promise<Result<GitGlobalConfig, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_git_global_config") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Set a value in the user's global git configuration.
+ * 
+ * # Arguments
+ * * `key` - The config key (e.g. "user.name", "user.email", "init.defaultBranch")
+ * * `value` - The value to set
+ */
+async setGitGlobalConfig(key: string, value: string) : Promise<Result<null, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("set_git_global_config", { key, value }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -1058,6 +1105,22 @@ export type FlowType = "feature" | "release" | "hotfix"
  */
 export type GitError = { type: "NotFound"; message: string } | { type: "NotARepository"; message: string } | { type: "EmptyRepository" } | { type: "StatusError"; message: string } | { type: "OperationFailed"; message: string } | { type: "PathNotFound"; message: string } | { type: "Internal"; message: string } | { type: "NoStagedChanges" } | { type: "SignatureError"; message: string } | { type: "RemoteNotFound"; message: string } | { type: "AuthenticationFailed"; message: string } | { type: "PushRejected"; message: string } | { type: "NetworkError"; message: string } | { type: "BranchNotFound"; message: string } | { type: "CannotDeleteCurrentBranch" } | { type: "BranchNotMerged"; message: string } | { type: "InvalidBranchName"; message: string } | { type: "BranchAlreadyExists"; message: string } | { type: "DirtyWorkingDirectory" } | { type: "StashNotFound"; message: number } | { type: "NothingToStash" } | { type: "TagAlreadyExists"; message: string } | { type: "TagNotFound"; message: string } | { type: "NoMergeInProgress" } | { type: "InvalidUrl"; message: string } | { type: "PathExists"; message: string } | { type: "CloneFailed"; message: string } | { type: "InvalidPath"; message: string }
 /**
+ * Snapshot of relevant global git configuration values.
+ */
+export type GitGlobalConfig = { 
+/**
+ * user.name from global config, or None if unset.
+ */
+userName: string | null; 
+/**
+ * user.email from global config, or None if unset.
+ */
+userEmail: string | null; 
+/**
+ * init.defaultBranch from global config, or None if unset.
+ */
+defaultBranch: string | null }
+/**
  * Configuration for Gitflow initialization.
  */
 export type GitflowConfig = { 
@@ -1261,6 +1324,18 @@ isHeadAncestor: boolean;
  * The "ideological branch" name that owns this commit for coloring
  */
 ideologicalBranch: string }
+/**
+ * Result of a successful git init operation.
+ */
+export type InitResult = { 
+/**
+ * Absolute path to the initialized repository.
+ */
+repoPath: string; 
+/**
+ * Name of the initial branch (e.g. "main").
+ */
+initialBranch: string }
 /**
  * Last commit message with subject and body parsed separately.
  * 

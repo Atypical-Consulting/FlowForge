@@ -62,7 +62,7 @@ pub async fn get_git_global_config() -> Result<GitGlobalConfig, GitError> {
 #[specta::specta]
 pub async fn set_git_global_config(key: String, value: String) -> Result<(), GitError> {
     tokio::task::spawn_blocking(move || {
-        let mut cfg = git2::Config::open_default()
+        let cfg = git2::Config::open_default()
             .map_err(|e| GitError::OperationFailed(format!("Failed to open git config: {}", e)))?;
 
         let mut global = cfg
