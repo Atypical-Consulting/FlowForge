@@ -4,6 +4,7 @@ import {
   FileText,
   FolderOpen,
   FolderTree,
+  GitBranch,
   GitFork,
   RefreshCw,
   Search,
@@ -292,6 +293,17 @@ export function Header() {
             </Button>
           )}
           {status && <SyncButtons />}
+          {status && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => openBlade("gitflow-cheatsheet", {} as Record<string, never>)}
+              title="Gitflow Guide"
+              aria-label="Open Gitflow guide"
+            >
+              <GitBranch className="w-4 h-4" />
+            </Button>
+          )}
           {status && (
             <Button
               variant="ghost"
