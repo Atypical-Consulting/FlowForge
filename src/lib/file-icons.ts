@@ -1,6 +1,7 @@
 import type { ComponentType, SVGProps } from "react";
 
 import AngularIcon from "../assets/icons/file-types/angular.svg?react";
+import ArchiveIcon from "../assets/icons/file-types/archive.svg?react";
 import AstroIcon from "../assets/icons/file-types/astro.svg?react";
 import BashIcon from "../assets/icons/file-types/bash.svg?react";
 import CIcon from "../assets/icons/file-types/c.svg?react";
@@ -10,12 +11,15 @@ import CssIcon from "../assets/icons/file-types/css.svg?react";
 import CsvIcon from "../assets/icons/file-types/csv.svg?react";
 import DatabaseIcon from "../assets/icons/file-types/database.svg?react";
 import DockerIcon from "../assets/icons/file-types/docker.svg?react";
+import EnvIcon from "../assets/icons/file-types/env.svg?react";
 import FileIcon from "../assets/icons/file-types/file.svg?react";
 import FolderOpenIcon from "../assets/icons/file-types/folder-open.svg?react";
 import FolderIcon from "../assets/icons/file-types/folder.svg?react";
+import FontIcon from "../assets/icons/file-types/font.svg?react";
 import GitIcon from "../assets/icons/file-types/git.svg?react";
 import GoIcon from "../assets/icons/file-types/go.svg?react";
 import HtmlIcon from "../assets/icons/file-types/html.svg?react";
+import ImageIcon from "../assets/icons/file-types/image.svg?react";
 import JavaIcon from "../assets/icons/file-types/java.svg?react";
 import JavaScriptIcon from "../assets/icons/file-types/javascript.svg?react";
 import JsonIcon from "../assets/icons/file-types/json.svg?react";
@@ -140,7 +144,34 @@ export const FILE_ICON_MAP: Record<string, IconComponent> = {
 
   // Config
   lock: JsonIcon,
-  env: FileIcon,
+  env: EnvIcon,
+
+  // Images
+  png: ImageIcon,
+  jpg: ImageIcon,
+  jpeg: ImageIcon,
+  gif: ImageIcon,
+  webp: ImageIcon,
+  bmp: ImageIcon,
+  ico: ImageIcon,
+  tiff: ImageIcon,
+  avif: ImageIcon,
+
+  // Fonts
+  ttf: FontIcon,
+  otf: FontIcon,
+  woff: FontIcon,
+  woff2: FontIcon,
+  eot: FontIcon,
+
+  // Archives
+  zip: ArchiveIcon,
+  tar: ArchiveIcon,
+  gz: ArchiveIcon,
+  bz2: ArchiveIcon,
+  xz: ArchiveIcon,
+  "7z": ArchiveIcon,
+  rar: ArchiveIcon,
 };
 
 // Special filename mappings (exact match, case-insensitive)
@@ -175,6 +206,49 @@ export const FILENAME_ICON_MAP: Record<string, IconComponent> = {
   "angular.json": AngularIcon,
   "biome.json": JsonIcon,
   "biome.jsonc": JsonIcon,
+
+  // Env files
+  ".env": EnvIcon,
+  ".env.local": EnvIcon,
+  ".env.development": EnvIcon,
+  ".env.production": EnvIcon,
+  ".env.staging": EnvIcon,
+  ".env.test": EnvIcon,
+  ".env.example": EnvIcon,
+
+  // Docker
+  ".dockerignore": DockerIcon,
+
+  // Tailwind
+  "tailwind.config.js": JavaScriptIcon,
+  "tailwind.config.ts": TypeScriptIcon,
+  "tailwind.config.mjs": JavaScriptIcon,
+  "tailwind.config.cjs": JavaScriptIcon,
+
+  // Config files
+  ".editorconfig": JsonIcon,
+  ".npmrc": NodejsIcon,
+  ".nvmrc": NodejsIcon,
+  ".prettierignore": JsonIcon,
+  ".eslintignore": JsonIcon,
+  ".browserslistrc": JsonIcon,
+  "webpack.config.js": JavaScriptIcon,
+  "webpack.config.ts": TypeScriptIcon,
+  "rollup.config.js": JavaScriptIcon,
+  "rollup.config.ts": TypeScriptIcon,
+  "postcss.config.js": JavaScriptIcon,
+  "postcss.config.cjs": JavaScriptIcon,
+  "babel.config.js": JavaScriptIcon,
+  "babel.config.json": JsonIcon,
+  ".babelrc": JsonIcon,
+
+  // Build tools
+  makefile: BashIcon,
+  rakefile: RubyIcon,
+  gemfile: RubyIcon,
+  "gemfile.lock": RubyIcon,
+  "go.mod": GoIcon,
+  "go.sum": GoIcon,
 };
 
 export function getFileIcon(filePath: string): IconComponent {
