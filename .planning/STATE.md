@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 
 ## Current Position
 
-Phase: 20 — Blade Infrastructure & Modal Migration
-Plan: Complete (8/8 plans executed)
-Status: Phase 20 complete, awaiting Phase 21 planning
-Last activity: 2026-02-07 — Phase 20 executed
+Phase: 21 — Two-Column Staging & Inline Diff
+Plan: Not yet planned
+Status: Phase 20.1 complete, Phase 21 pending
+Last activity: 2026-02-07 — Phase 20.1 complete
 
-Progress: ██░░░░░░░░ 20%
+Progress: ██░░░░░░░░ 25%
 
 ## Milestone History
 
@@ -31,6 +31,7 @@ See `.planning/MILESTONES.md` for full history.
 | Phase | Name | Requirements | Status |
 |-------|------|-------------|--------|
 | 20 | Blade Infrastructure & Modal Migration | 9 | Complete |
+| 20.1 | Blade Extensibility Refactoring | 5 | Complete |
 | 21 | Two-Column Staging & Inline Diff | 2 | Pending |
 | 22 | New Content Blades | 6 | Pending |
 | 23 | Branch Management | 6 | Pending |
@@ -82,4 +83,4 @@ Run `/gsd:plan-phase 21` to plan Phase 21: Two-Column Staging & Inline Diff.
 
 ---
 *State updated: 2026-02-07*
-*Milestone: v1.3.0 Blades Blades Blades — Phase 20 complete*
+*Milestone: v1.3.0 Blades Blades Blades — Phase 20.1 complete*

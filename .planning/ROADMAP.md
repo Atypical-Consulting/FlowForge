@@ -32,6 +32,26 @@ v1.3.0 expands the blade navigation system into FlowForge's primary interaction 
 
 ---
 
+### Phase 20.1: Blade Extensibility Refactoring
+
+**Goal**: The blade system supports adding new blade types with a single file (registration + component), enforces type-safe props at compile time, and renders with consistent UX patterns (error boundaries, loading states, Suspense) — reducing the per-blade change footprint from 4-7 files to 1-2 files
+
+**Depends on**: Phase 20 complete
+
+**Requirements**: REFACTOR-01 (type-safe blade props), REFACTOR-02 (blade registry), REFACTOR-03 (render performance), REFACTOR-04 (error boundaries), REFACTOR-05 (UX consistency)
+
+**Success Criteria**:
+1. Adding a new blade type requires only creating a component file and a registration — no changes to RepositoryView, useBladeNavigation, or the BladeType union
+2. `pushBlade("commit-details", {})` is a TypeScript compile error (missing required `oid` prop)
+3. A blade that throws during rendering shows a recovery UI instead of crashing the entire view
+4. All blades use consistent loading and Suspense fallback patterns
+5. The `renderBlade` function in RepositoryView is replaced by a generic registry-based renderer
+6. AnimatePresence exit animations work correctly during blade navigation
+
+**Plans:** 20.1-01 through 20.1-06 (6 plans in 4 waves, all complete)
+
+---
+
 ### Phase 21: Two-Column Staging & Inline Diff
 
 **Goal**: Users can see their changed files and a diff preview side-by-side without losing context by navigating away from the staging view
@@ -109,6 +129,7 @@ v1.3.0 expands the blade navigation system into FlowForge's primary interaction 
 | Phase | Name | Requirements | Status |
 |-------|------|-------------|--------|
 | 20 | Blade Infrastructure & Modal Migration | 9 | Complete |
+| 20.1 | Blade Extensibility Refactoring | 5 | Complete |
 | 21 | Two-Column Staging & Inline Diff | 2 | Pending |
 | 22 | New Content Blades | 6 | Pending |
 | 23 | Branch Management | 6 | Pending |
