@@ -1,11 +1,12 @@
 import type { ComponentType, LazyExoticComponent, ReactNode } from "react";
+import type { BladeType } from "../stores/bladeTypes";
 
 export interface BladeRenderContext {
   goBack: () => void;
 }
 
 export interface BladeRegistration<TProps = Record<string, never>> {
-  type: string;
+  type: BladeType;
   defaultTitle: string | ((props: TProps) => string);
   component: ComponentType<TProps> | LazyExoticComponent<ComponentType<TProps>>;
   lazy?: boolean;
@@ -15,18 +16,21 @@ export interface BladeRegistration<TProps = Record<string, never>> {
   renderTrailing?: (props: TProps, ctx: BladeRenderContext) => ReactNode;
 }
 
-const registry = new Map<string, BladeRegistration<any>>();
+const registry = new Map<BladeType, BladeRegistration<any>>();
 
 export function registerBlade<TProps>(config: BladeRegistration<TProps>): void {
+  if (import.meta.env.DEV && registry.has(config.type)) {
+    console.warn(`[BladeRegistry] Duplicate registration for "${config.type}"`);
+  }
   registry.set(config.type, config);
 }
 
 export function getBladeRegistration(
-  type: string,
+  type: BladeType,
 ): BladeRegistration | undefined {
   return registry.get(type);
 }
 
-export function getAllBladeTypes(): string[] {
+export function getAllBladeTypes(): BladeType[] {
   return Array.from(registry.keys());
 }
