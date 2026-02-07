@@ -83,9 +83,24 @@ Each layer adds value; each inner layer stands without the outer ones.
 - ✓ Diff header formatting (path gray + filename bold) — v1.2
 - ✓ Blade refresh on repository switch — v1.2
 
-### Active
+### Active — v1.3.0 Blades Blades Blades
 
-No active milestone. Run `/gsd:new-milestone` to start the next cycle.
+**Goal:** Expand the blade navigation system into the primary interaction model — migrate modals to blades, add new content blades (markdown preview, 3D viewer, repo browser), improve staging UX, enhance branch management, and add code review encouragement within Gitflow workflows.
+
+**Target features:**
+- Migrate Settings modal to blade system
+- Migrate Conventional Commit composer to blade system
+- Migrate Changelog generation to blade system
+- Markdown preview blade (from diff blade)
+- 3D model viewer blade (BabylonJS for Blender exports)
+- Repository file browser blade
+- Two-column Changes / Staged Changes layout
+- Feature branch tags displayed in purple
+- Branch management hub (local, remote, last-used, cleanup)
+- Code review guidance in Gitflow merge workflows
+- GitFlow cheat sheet reference blade
+- Fix Clone button when already inside a repository
+- Documentation website (GitHub Pages)
 
 ### Deferred to v2+
 
@@ -116,6 +131,7 @@ No active milestone. Run `/gsd:new-milestone` to start the next cycle.
 **Current state:** Shipped v1.2.0 with ~23,964 LOC (7,919 Rust + 16,045 TypeScript).
 Tech stack: Tauri 2.x, React 19, Zustand, React Query, Monaco Editor, framer-motion.
 All 111 requirements implemented across 19 phases (97 plans) in three milestones.
+Active milestone: v1.3.0 — Blades Blades Blades.
 
 **Known tech debt:**
 - closeRepository() does not call resetStack() (stale blade content in memory after close)
@@ -160,4 +176,4 @@ All 111 requirements implemented across 19 phases (97 plans) in three milestones
 | git-cliff for changelogs (v1.2) | Automated changelog generation from conventional commits in CI/CD | ✓ Good — release notes auto-generated |
 
 ---
-*Last updated: 2026-02-07 after v1.2.0 milestone completed*
+*Last updated: 2026-02-07 — v1.3.0 milestone started*
