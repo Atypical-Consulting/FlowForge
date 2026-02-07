@@ -1,18 +1,61 @@
 import { FileText } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { useRepoFile } from "../../hooks/useRepoFile";
+import { BladeContentLoading } from "./BladeContentLoading";
+import { BladeContentError } from "./BladeContentError";
+import { BladeContentEmpty } from "./BladeContentEmpty";
+import { MarkdownRenderer } from "../markdown/MarkdownRenderer";
 
 interface ViewerMarkdownBladeProps {
   filePath: string;
 }
 
 export function ViewerMarkdownBlade({ filePath }: ViewerMarkdownBladeProps) {
+  const { data, isLoading, error, refetch } = useRepoFile(filePath);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Focus management: after mounting (including after replaceBlade navigation),
+  // move focus to the content container for keyboard users.
+  useEffect(() => {
+    containerRef.current?.focus();
+  }, [filePath]);
+
+  if (isLoading) {
+    return <BladeContentLoading />;
+  }
+
+  if (error) {
+    return (
+      <BladeContentError
+        message="Failed to load markdown"
+        detail={error.message}
+        onRetry={() => refetch()}
+      />
+    );
+  }
+
+  if (!data || data.isBinary) {
+    return (
+      <BladeContentEmpty
+        icon={FileText}
+        message="File not found at HEAD"
+        detail={filePath}
+      />
+    );
+  }
+
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-4 text-ctp-subtext0">
-      <FileText className="w-12 h-12 text-ctp-overlay0" />
-      <p className="text-sm">Markdown preview for</p>
-      <code className="text-xs bg-ctp-surface0 px-2 py-1 rounded font-mono">
-        {filePath}
-      </code>
-      <p className="text-xs text-ctp-overlay0">Coming in Phase 22</p>
+    <div
+      ref={containerRef}
+      tabIndex={-1}
+      className="flex-1 overflow-y-auto h-full bg-ctp-base outline-none"
+    >
+      <div className="p-6 max-w-3xl mx-auto">
+        <MarkdownRenderer
+          content={data.content}
+          currentFilePath={filePath}
+        />
+      </div>
     </div>
   );
 }
