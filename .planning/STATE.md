@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 
 ## Current Position
 
-Phase: 17 of 19 (Hierarchical View & Commit Enhancements) — COMPLETE
-Plan: 3 of 3 in current phase
-Status: Phase 17 complete, ready for Phase 18 or 19
-Last activity: 2026-02-06 — Phase 17 executed and verified
+Phase: 17 of 19 (Hierarchical View & Commit Enhancements) — VERIFIED
+Plan: 4 of 4 in current phase (gap closure complete)
+Status: Phase 17 fully verified, ready for Phase 18 or 19
+Last activity: 2026-02-07 — Phase 17 gap closure executed and re-verified
 
 Progress: ████░░░░░░ 50%
 
@@ -91,5 +91,5 @@ Run `/gsd:discuss-phase 18` or `/gsd:plan-phase 18` to plan Command Palette & Di
 (Phases 18 and 19 are independent — can execute in any order.)
 
 ---
-*State updated: 2026-02-06*
-*Milestone: v1.2.0 Bugfixing & Polish — Phase 17 complete*
+*State updated: 2026-02-07*
+*Milestone: v1.2.0 Bugfixing & Polish — Phase 17 verified (gap closure complete)*

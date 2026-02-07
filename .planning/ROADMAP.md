@@ -13,7 +13,7 @@ v1.2.0 addresses accumulated UX bugs, visual inconsistencies, and adds a command
 ## Phases
 
 - [x] **Phase 16: Quick Fixes & Visual Polish** - Fix scattered bugs and cosmetic issues across the UI
-- [x] **Phase 17: Hierarchical View & Commit Enhancements** - Improve staging tree and conventional commit visuals
+- [x] **Phase 17: Hierarchical View & Commit Enhancements** - Improve staging tree and conventional commit visuals (verified)
 - [ ] **Phase 18: Command Palette & Discoverability** - Build registry-based command palette with shortcut tooltips
 - [ ] **Phase 19: Settings, Onboarding & File Icons** - Expand settings, add git init prompt, expand icon coverage
 
@@ -51,7 +51,7 @@ Plans:
 - [x] 17-01-PLAN.md — Shared commit type theme module + colored icons in topology and history
 - [x] 17-02-PLAN.md — Batch staging commands + folder stage/unstage in tree view + icon spacing fixes
 - [x] 17-03-PLAN.md — Changelog emoji in Rust templates + ChangelogPreview colored icons
-- [ ] 17-04-PLAN.md — Fix broken vertical indent guide lines in hierarchical file tree (gap closure)
+- [x] 17-04-PLAN.md — Fix broken vertical indent guide lines in hierarchical file tree (gap closure)
 
 ### Phase 18: Command Palette & Discoverability
 **Goal**: Users can discover and invoke any registered action through a searchable command palette or shortcut tooltips
@@ -84,7 +84,7 @@ After Phase 16 completes, remaining phases can execute in any order.
 | Phase | Plans Complete | Status | Completed |
 |-------|---------------|--------|-----------|
 | 16. Quick Fixes & Visual Polish | 3/3 | ✅ Complete | 2026-02-06 |
-| 17. Hierarchical View & Commit Enhancements | 3/4 | ◆ Gap Closure | — |
+| 17. Hierarchical View & Commit Enhancements | 4/4 | ✅ Complete | 2026-02-07 |
 | 18. Command Palette & Discoverability | 0/TBD | Not started | — |
 | 19. Settings, Onboarding & File Icons | 0/TBD | Not started | — |
 
