@@ -1,6 +1,7 @@
 import type { FileChange } from "../bindings";
 import type { BladeType, BladePropsMap } from "../stores/bladeTypes";
 import { getBladeRegistration } from "../lib/bladeRegistry";
+import { bladeTypeForFile } from "../lib/fileTypeUtils";
 import { useBladeStore } from "../stores/blades";
 
 const SINGLETON_TYPES: BladeType[] = [
@@ -8,26 +9,6 @@ const SINGLETON_TYPES: BladeType[] = [
   "changelog",
   "gitflow-cheatsheet",
 ];
-
-/** Map file extension to a specialized blade type, or "diff" as default */
-function bladeTypeForFile(filePath: string): BladeType {
-  const lower = filePath.toLowerCase();
-  if (lower.endsWith(".nupkg")) return "viewer-nupkg";
-  if (
-    lower.endsWith(".png") ||
-    lower.endsWith(".jpg") ||
-    lower.endsWith(".jpeg") ||
-    lower.endsWith(".gif") ||
-    lower.endsWith(".webp") ||
-    lower.endsWith(".svg") ||
-    lower.endsWith(".ico")
-  )
-    return "viewer-image";
-  if (lower.endsWith(".md") || lower.endsWith(".mdx"))
-    return "viewer-markdown";
-  if (lower.endsWith(".glb") || lower.endsWith(".gltf")) return "viewer-3d";
-  return "diff";
-}
 
 export function useBladeNavigation() {
   const store = useBladeStore();

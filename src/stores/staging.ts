@@ -7,18 +7,31 @@ interface StagingState {
   selectedFile: FileChange | null;
   selectedSection: "staged" | "unstaged" | "untracked" | null;
   viewMode: ViewMode;
+  scrollPositions: Record<string, number>;
+  fileListScrollTop: number;
   selectFile: (
     file: FileChange | null,
     section?: "staged" | "unstaged" | "untracked",
   ) => void;
   setViewMode: (mode: ViewMode) => void;
+  saveScrollPosition: (filePath: string, scrollTop: number) => void;
+  setFileListScrollTop: (top: number) => void;
+  clearScrollPositions: () => void;
 }
 
 export const useStagingStore = create<StagingState>((set) => ({
   selectedFile: null,
   selectedSection: null,
-  viewMode: "tree", // Tree view as default
+  viewMode: "tree",
+  scrollPositions: {},
+  fileListScrollTop: 0,
   selectFile: (file, section) =>
     set({ selectedFile: file, selectedSection: section ?? null }),
   setViewMode: (mode) => set({ viewMode: mode }),
+  saveScrollPosition: (filePath, scrollTop) =>
+    set((state) => ({
+      scrollPositions: { ...state.scrollPositions, [filePath]: scrollTop },
+    })),
+  setFileListScrollTop: (top) => set({ fileListScrollTop: top }),
+  clearScrollPositions: () => set({ scrollPositions: {}, fileListScrollTop: 0 }),
 }));
