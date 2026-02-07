@@ -9,6 +9,11 @@ export function BladeContainer() {
 
   return (
     <div className="flex h-full overflow-hidden">
+      {/* Screen reader announcement for blade transitions */}
+      <div aria-live="polite" className="sr-only">
+        {activeBlade.title}
+      </div>
+
       {bladeStack.slice(0, -1).map((blade, index) => (
         <BladeStrip
           key={blade.id}
