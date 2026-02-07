@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { FolderOpen, Home } from "lucide-react";
+import { FolderOpen } from "lucide-react";
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { commands } from "../../bindings";
 import type { RepoFileEntry } from "../../bindings";
@@ -9,7 +9,6 @@ import { FileTypeIcon } from "../icons/FileTypeIcon";
 import { BladeContentLoading } from "./BladeContentLoading";
 import { BladeContentError } from "./BladeContentError";
 import { BladeContentEmpty } from "./BladeContentEmpty";
-import { BladeToolbar } from "./BladeToolbar";
 
 interface RepoBrowserBladeProps {
   path?: string;
@@ -142,10 +141,6 @@ export function RepoBrowserBlade({ path = "" }: RepoBrowserBladeProps) {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden h-full">
-      <BladeToolbar>
-        <Breadcrumbs path={path} onNavigate={navigateToDirectory} />
-      </BladeToolbar>
-
       {!entries || entries.length === 0 ? (
         <BladeContentEmpty
           icon={FolderOpen}
@@ -174,73 +169,6 @@ export function RepoBrowserBlade({ path = "" }: RepoBrowserBladeProps) {
         </div>
       )}
     </div>
-  );
-}
-
-// --- Breadcrumbs ---
-
-interface BreadcrumbsProps {
-  path: string;
-  onNavigate: (path: string) => void;
-}
-
-function Breadcrumbs({ path, onNavigate }: BreadcrumbsProps) {
-  const segments = path ? path.split("/").filter(Boolean) : [];
-
-  return (
-    <nav aria-label="Repository path" className="flex-1 min-w-0">
-      <ol className="flex items-center gap-1 text-sm overflow-x-auto scrollbar-none">
-        <li>
-          {segments.length === 0 ? (
-            <span
-              className="flex items-center gap-1 font-medium text-ctp-text"
-              aria-current="page"
-            >
-              <Home className="w-3.5 h-3.5" />
-              <span className="sr-only">Repository root</span>
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => onNavigate("")}
-              className="flex items-center gap-1 text-ctp-overlay1 hover:text-ctp-text hover:underline"
-              aria-label="Repository root"
-            >
-              <Home className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </li>
-
-        {segments.map((segment, index) => {
-          const segmentPath = segments.slice(0, index + 1).join("/");
-          const isLast = index === segments.length - 1;
-
-          return (
-            <li key={segmentPath} className="flex items-center gap-1">
-              <span aria-hidden="true" className="text-ctp-overlay0">
-                /
-              </span>
-              {isLast ? (
-                <span
-                  className="font-medium text-ctp-text truncate"
-                  aria-current="page"
-                >
-                  {segment}
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => onNavigate(segmentPath)}
-                  className="text-ctp-overlay1 hover:text-ctp-text hover:underline truncate"
-                >
-                  {segment}
-                </button>
-              )}
-            </li>
-          );
-        })}
-      </ol>
-    </nav>
   );
 }
 

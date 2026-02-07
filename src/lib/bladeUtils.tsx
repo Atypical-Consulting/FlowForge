@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { BladeBreadcrumb } from "../components/blades/BladeBreadcrumb";
 
 /**
  * Renders a file path as a split path/filename display for blade headers.
@@ -28,4 +29,14 @@ export function renderPathTitle(filePath: string): ReactNode {
       </span>
     </span>
   );
+}
+
+/**
+ * Renders a file path as a clickable breadcrumb for blade headers.
+ *
+ * Clicking a parent segment navigates to repo-browser at that directory.
+ * The final segment (file or dir name) is rendered as bold, non-clickable text.
+ */
+export function renderPathBreadcrumb(filePath: string): ReactNode {
+  return <BladeBreadcrumb path={filePath} />;
 }

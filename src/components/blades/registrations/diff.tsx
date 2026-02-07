@@ -1,6 +1,6 @@
 import { lazy } from "react";
 import { registerBlade } from "../../../lib/bladeRegistry";
-import { renderPathTitle } from "../../../lib/bladeUtils";
+import { renderPathBreadcrumb } from "../../../lib/bladeUtils";
 import type { DiffSource } from "../DiffBlade";
 
 const DiffBlade = lazy(() =>
@@ -15,6 +15,6 @@ registerBlade<{ source: DiffSource }>({
   renderTitleContent: (props) => {
     const filePath =
       "filePath" in props.source ? props.source.filePath : "Diff";
-    return renderPathTitle(filePath);
+    return renderPathBreadcrumb(filePath);
   },
 });

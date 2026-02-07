@@ -1,6 +1,6 @@
 import { lazy } from "react";
 import { registerBlade } from "../../../lib/bladeRegistry";
-import { renderPathTitle } from "../../../lib/bladeUtils";
+import { renderPathBreadcrumb } from "../../../lib/bladeUtils";
 
 const Viewer3dBlade = lazy(() =>
   import("../Viewer3dBlade").then((m) => ({
@@ -13,5 +13,5 @@ registerBlade<{ filePath: string }>({
   defaultTitle: (props) => props.filePath.split("/").pop() || "3D Model",
   component: Viewer3dBlade,
   lazy: true,
-  renderTitleContent: (props) => renderPathTitle(props.filePath),
+  renderTitleContent: (props) => renderPathBreadcrumb(props.filePath),
 });
