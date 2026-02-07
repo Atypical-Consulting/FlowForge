@@ -5,6 +5,7 @@ import {
   FolderOpen,
   GitFork,
   RefreshCw,
+  Search,
   Settings,
   Undo2,
 } from "lucide-react";
@@ -14,6 +15,7 @@ import { useBranchStore } from "../stores/branches";
 import { useBladeStore } from "../stores/blades";
 import { useChangelogStore } from "../stores/changelogStore";
 import { useNavigationStore } from "../stores/navigation";
+import { useCommandPaletteStore } from "../stores/commandPalette";
 import { useRepositoryStore } from "../stores/repository";
 import { useSettingsStore } from "../stores/settings";
 import { useStashStore } from "../stores/stash";
@@ -257,6 +259,15 @@ export function Header() {
             </Button>
           </ShortcutTooltip>
           <ThemeToggle />
+          <ShortcutTooltip shortcut="mod+shift+P" label="Command Palette">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => useCommandPaletteStore.getState().toggle()}
+            >
+              <Search className="w-4 h-4" />
+            </Button>
+          </ShortcutTooltip>
           {status && undoInfo?.canUndo && (
             <Button
               variant="ghost"

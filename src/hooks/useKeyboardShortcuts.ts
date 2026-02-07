@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useHotkeys } from "react-hotkeys-hook";
 import { type SyncProgress, commands } from "../bindings";
 import { useBladeStore } from "../stores/blades";
+import { useCommandPaletteStore } from "../stores/commandPalette";
 import { useRepositoryStore } from "../stores/repository";
 import { useSettingsStore } from "../stores/settings";
 import { useTopologyStore } from "../stores/topology";
@@ -15,6 +16,7 @@ import { toast } from "../stores/toast";
  * - Cmd/Ctrl+O: Open repository
  * - Cmd/Ctrl+,: Open settings
  * - Cmd/Ctrl+Shift+A: Stage all files
+ * - Cmd/Ctrl+Shift+P: Open command palette
  * - Cmd/Ctrl+Shift+U: Push (Upload)
  * - Cmd/Ctrl+Shift+L: Pull (L for "pull Latest")
  * - Cmd/Ctrl+Shift+F: Fetch
@@ -172,10 +174,22 @@ export function useKeyboardShortcuts() {
     { preventDefault: true, enabled: !!status },
   );
 
+  // Command palette shortcut
+  useHotkeys(
+    "mod+shift+p",
+    (e) => {
+      e.preventDefault();
+      useCommandPaletteStore.getState().toggle();
+    },
+    { preventDefault: true },
+  );
+
   // Escape - close current blade (pop blade stack)
   useHotkeys(
     "escape",
     () => {
+      // Don't pop blade if command palette is open (palette handles its own Escape)
+      if (useCommandPaletteStore.getState().isOpen) return;
       const bladeStore = useBladeStore.getState();
       if (bladeStore.bladeStack.length > 1) {
         bladeStore.popBlade();

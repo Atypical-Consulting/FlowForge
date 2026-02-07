@@ -1,6 +1,8 @@
 import { listen } from "@tauri-apps/api/event";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import "./commands";
+import { CommandPalette } from "./components/command-palette";
 import { Header } from "./components/Header";
 import { RepositoryView } from "./components/RepositoryView";
 import { WelcomeView } from "./components/WelcomeView";
@@ -72,6 +74,7 @@ function App() {
       <ChangelogDialog />
       <SettingsWindow />
       <ToastContainer />
+      <CommandPalette />
     </div>
   );
 }
