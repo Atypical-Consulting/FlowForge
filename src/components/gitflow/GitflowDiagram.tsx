@@ -44,7 +44,7 @@ export function GitflowDiagram({ highlightedLane }: GitflowDiagramProps) {
       aria-label="Gitflow branching workflow diagram"
     >
       {/* Background */}
-      <rect width="800" height="400" fill="var(--ctp-mantle)" rx="8" />
+      <rect width="800" height="400" fill="var(--catppuccin-color-mantle)" rx="8" />
 
       {/* Lane lines and labels */}
       {laneOrder.map((lane) => {

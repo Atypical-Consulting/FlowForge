@@ -288,7 +288,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
           width: "100%",
           height: "100%",
           flex: 1,
-          background: `linear-gradient(to bottom, var(--ctp-base), var(--ctp-mantle))`,
+          background: `linear-gradient(to bottom, var(--catppuccin-color-base), var(--catppuccin-color-mantle))`,
           opacity: modelReady ? 1 : 0,
           transition: "opacity 200ms ease-out",
         }}

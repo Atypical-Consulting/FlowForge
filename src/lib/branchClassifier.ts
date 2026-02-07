@@ -29,12 +29,12 @@ export function classifyBranch(branchName: string): GitflowBranchType {
  * Used for SVG lane highlighting and badge colors.
  */
 export const BRANCH_TYPE_COLORS: Record<GitflowBranchType, string> = {
-  main: "var(--ctp-red)",
-  develop: "var(--ctp-blue)",
-  feature: "var(--ctp-green)",
-  release: "var(--ctp-peach)",
-  hotfix: "var(--ctp-mauve)",
-  other: "var(--ctp-overlay1)",
+  main: "var(--catppuccin-color-red)",
+  develop: "var(--catppuccin-color-blue)",
+  feature: "var(--catppuccin-color-green)",
+  release: "var(--catppuccin-color-peach)",
+  hotfix: "var(--catppuccin-color-mauve)",
+  other: "var(--catppuccin-color-overlay1)",
 };
 
 /**

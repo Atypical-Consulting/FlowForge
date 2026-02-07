@@ -27,23 +27,23 @@
 
 /* React Flow Controls - Theme-aware */
 .react-flow__controls {
-    background: var(--ctp-mantle);
-    border: 1px solid var(--ctp-surface0);
+    background: var(--catppuccin-color-mantle);
+    border: 1px solid var(--catppuccin-color-surface0);
     border-radius: 6px;
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 
 .react-flow__controls-button {
-    background: var(--ctp-mantle);
-    border-bottom: 1px solid var(--ctp-surface0);
-    fill: var(--ctp-subtext0);
+    background: var(--catppuccin-color-mantle);
+    border-bottom: 1px solid var(--catppuccin-color-surface0);
+    fill: var(--catppuccin-color-subtext0);
     width: 28px;
     height: 28px;
 }
 
 .react-flow__controls-button:hover {
-    background: var(--ctp-surface0);
-    fill: var(--ctp-text);
+    background: var(--catppuccin-color-surface0);
+    fill: var(--catppuccin-color-text);
 }
 
 .react-flow__controls-button:last-child {
@@ -52,30 +52,30 @@
 
 /* React Flow Attribution - Theme-aware */
 .react-flow__attribution {
-    background: var(--ctp-mantle);
-    border: 1px solid var(--ctp-surface0);
+    background: var(--catppuccin-color-mantle);
+    border: 1px solid var(--catppuccin-color-surface0);
     border-radius: 4px;
     padding: 2px 6px;
     font-size: 10px;
 }
 
 .react-flow__attribution a {
-    color: var(--ctp-overlay0);
+    color: var(--catppuccin-color-overlay0);
     text-decoration: none;
 }
 
 .react-flow__attribution a:hover {
-    color: var(--ctp-subtext0);
+    color: var(--catppuccin-color-subtext0);
 }
 
 @keyframes dirty-pulse {
     0%,
     100% {
-        filter: drop-shadow(0 0 0px var(--ctp-yellow));
+        filter: drop-shadow(0 0 0px var(--catppuccin-color-yellow));
         opacity: 1;
     }
     50% {
-        filter: drop-shadow(0 0 4px var(--ctp-yellow));
+        filter: drop-shadow(0 0 4px var(--catppuccin-color-yellow));
         opacity: 0.7;
     }
 }
