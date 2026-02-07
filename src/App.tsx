@@ -6,8 +6,6 @@ import { CommandPalette } from "./components/command-palette";
 import { Header } from "./components/Header";
 import { RepositoryView } from "./components/RepositoryView";
 import { WelcomeView } from "./components/WelcomeView";
-import { ChangelogDialog } from "./components/changelog";
-import { SettingsWindow } from "./components/settings";
 import { ToastContainer } from "./components/ui/ToastContainer";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useNavigationStore } from "./stores/navigation";
@@ -71,8 +69,6 @@ function App() {
       <main className="flex-1 min-h-0 overflow-hidden">
         {status ? <RepositoryView /> : <WelcomeView />}
       </main>
-      <ChangelogDialog />
-      <SettingsWindow />
       <ToastContainer />
       <CommandPalette />
     </div>
