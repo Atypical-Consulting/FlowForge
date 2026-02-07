@@ -4,16 +4,25 @@ import {
   AlignJustify,
   ChevronLeft,
   ChevronRight,
+  Code,
   Columns,
+  Eye,
   Loader2,
 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { commands } from "../../bindings";
 import "../../lib/monacoTheme";
 import { useBladeStore } from "../../stores/blades";
 import { useStagingStore } from "../../stores/staging";
 import { Button } from "../ui/button";
+import { BladeLoadingFallback } from "./BladeLoadingFallback";
+
+const MarkdownRenderer = lazy(() =>
+  import("../markdown/MarkdownRenderer").then((m) => ({
+    default: m.MarkdownRenderer,
+  })),
+);
 
 /**
  * Blade input: diff source configuration.
@@ -124,6 +133,13 @@ function StagingDiffNavigation({
 
 export function DiffBlade({ source }: DiffBladeProps) {
   const [inline, setInline] = useState(true);
+
+  // Markdown preview toggle — only for .md/.mdx files
+  const isMarkdown =
+    source.filePath.toLowerCase().endsWith(".md") ||
+    source.filePath.toLowerCase().endsWith(".mdx");
+  const [showPreview, setShowPreview] = useState(false);
+
   const contextLines = 3;
 
   const queryKey =
@@ -178,55 +194,109 @@ export function DiffBlade({ source }: DiffBladeProps) {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden h-full">
-      {/* Inline/side-by-side toggle + staging navigation */}
+      {/* Toolbar: diff view toggles + staging navigation */}
       <div className="flex items-center gap-2 px-3 py-1 border-b border-ctp-surface0 bg-ctp-crust shrink-0">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setInline((v) => !v)}
-          title={inline ? "Switch to side-by-side" : "Switch to inline"}
-          className="h-7 px-2"
-        >
-          {inline ? (
-            <Columns className="w-4 h-4" />
-          ) : (
-            <AlignJustify className="w-4 h-4" />
-          )}
-          <span className="text-xs ml-1.5">
-            {inline ? "Side-by-side" : "Inline"}
-          </span>
-        </Button>
+        {/* Inline/side-by-side toggle (hidden in preview mode) */}
+        {!showPreview && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setInline((v) => !v)}
+            title={inline ? "Switch to side-by-side" : "Switch to inline"}
+            className="h-7 px-2"
+          >
+            {inline ? (
+              <Columns className="w-4 h-4" />
+            ) : (
+              <AlignJustify className="w-4 h-4" />
+            )}
+            <span className="text-xs ml-1.5">
+              {inline ? "Side-by-side" : "Inline"}
+            </span>
+          </Button>
+        )}
+
+        {/* Markdown preview toggle (only for .md/.mdx files) */}
+        {isMarkdown && (
+          <>
+            {!showPreview && (
+              <div className="w-px h-4 bg-ctp-surface1" />
+            )}
+            <div className="flex bg-ctp-surface0 rounded p-0.5">
+              <button
+                type="button"
+                onClick={() => setShowPreview(false)}
+                className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-colors ${
+                  !showPreview
+                    ? "bg-ctp-surface1 text-ctp-text"
+                    : "text-ctp-overlay0 hover:text-ctp-subtext1"
+                }`}
+                title="Show diff"
+              >
+                <Code className="w-3.5 h-3.5" />
+                Diff
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowPreview(true)}
+                className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-colors ${
+                  showPreview
+                    ? "bg-ctp-surface1 text-ctp-text"
+                    : "text-ctp-overlay0 hover:text-ctp-subtext1"
+                }`}
+                title="Show rendered preview"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                Preview
+              </button>
+            </div>
+          </>
+        )}
+
         <div className="flex-1" />
         {source.mode === "staging" && (
           <StagingDiffNavigation currentFilePath={source.filePath} />
         )}
       </div>
-      {/* Monaco DiffEditor */}
-      <div className="flex-1 min-h-0">
-        <DiffEditor
-          original={diff.oldContent}
-          modified={diff.newContent}
-          language={diff.language}
-          theme="flowforge-dark"
-          options={{
-            readOnly: true,
-            renderSideBySide: !inline,
-            originalEditable: false,
-            automaticLayout: true,
-            scrollBeyondLastLine: false,
-            minimap: { enabled: false },
-            fontSize: 13,
-            lineNumbers: "on",
-            folding: true,
-            wordWrap: "off",
-            renderLineHighlight: "all",
-            scrollbar: {
-              verticalScrollbarSize: 10,
-              horizontalScrollbarSize: 10,
-            },
-          }}
-        />
-      </div>
+      {/* Content: diff editor or markdown preview */}
+      {showPreview && isMarkdown ? (
+        <div className="flex-1 min-h-0 overflow-y-auto bg-ctp-base">
+          <div className="p-6 max-w-3xl mx-auto">
+            <Suspense fallback={<BladeLoadingFallback />}>
+              <MarkdownRenderer
+                content={diff.newContent}
+                currentFilePath={source.filePath}
+              />
+            </Suspense>
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 min-h-0">
+          <DiffEditor
+            original={diff.oldContent}
+            modified={diff.newContent}
+            language={diff.language}
+            theme="flowforge-dark"
+            options={{
+              readOnly: true,
+              renderSideBySide: !inline,
+              originalEditable: false,
+              automaticLayout: true,
+              scrollBeyondLastLine: false,
+              minimap: { enabled: false },
+              fontSize: 13,
+              lineNumbers: "on",
+              folding: true,
+              wordWrap: "off",
+              renderLineHighlight: "all",
+              scrollbar: {
+                verticalScrollbarSize: 10,
+                horizontalScrollbarSize: 10,
+              },
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }
