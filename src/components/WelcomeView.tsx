@@ -11,17 +11,19 @@ import { useRepositoryStore } from "../stores/repository";
 import { CloneForm } from "./clone/CloneForm";
 import { RecentRepos } from "./RecentRepos";
 import { Button } from "./ui/button";
-import { AnimatedGradientBg } from "./welcome";
+import { AnimatedGradientBg, GitInitBanner } from "./welcome";
 
 export function WelcomeView() {
   const { openRepository, isLoading, error, clearError } = useRepositoryStore();
   const { addRecentRepo } = useRecentRepos();
   const [isDragOver, setIsDragOver] = useState(false);
   const [showCloneForm, setShowCloneForm] = useState(false);
+  const [pendingInitPath, setPendingInitPath] = useState<string | null>(null);
 
   const openDialog = useCallback(async () => {
     try {
       clearError();
+      setPendingInitPath(null);
       const selected = await open({
         directory: true,
         multiple: false,
@@ -29,8 +31,13 @@ export function WelcomeView() {
       });
 
       if (selected && typeof selected === "string") {
-        await openRepository(selected);
-        await addRecentRepo(selected);
+        const isRepo = await commands.isGitRepository(selected);
+        if (isRepo.status === "ok" && isRepo.data) {
+          await openRepository(selected);
+          await addRecentRepo(selected);
+        } else {
+          setPendingInitPath(selected);
+        }
       }
     } catch (e) {
       console.error("Failed to open repository:", e);
@@ -90,14 +97,13 @@ export function WelcomeView() {
       }
 
       try {
-        // Verify it's a git repository
         const isRepo = await commands.isGitRepository(path);
-        if (isRepo.status === "error" || !isRepo.data) {
-          throw new Error(`"${path}" is not a Git repository`);
+        if (isRepo.status === "ok" && isRepo.data) {
+          await openRepository(path);
+          await addRecentRepo(path);
+        } else {
+          setPendingInitPath(path);
         }
-
-        await openRepository(path);
-        await addRecentRepo(path);
       } catch (e) {
         console.error("Failed to open dropped repository:", e);
       }
@@ -204,6 +210,13 @@ export function WelcomeView() {
               <div className="text-sm text-ctp-red/80 mt-1">{error}</div>
             </div>
           </motion.div>
+        )}
+
+        {pendingInitPath && !error && (
+          <GitInitBanner
+            path={pendingInitPath}
+            onDismiss={() => setPendingInitPath(null)}
+          />
         )}
 
         {/* Recent repos */}
