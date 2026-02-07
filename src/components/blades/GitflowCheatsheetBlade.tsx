@@ -1,11 +1,81 @@
 import { GitMerge } from "lucide-react";
+import { useGitflowStore } from "../../stores/gitflow";
+import { useRepositoryStore } from "../../stores/repository";
+import { classifyBranch, BRANCH_TYPE_COLORS } from "../../lib/branchClassifier";
+import type { GitflowBranchType } from "../../lib/branchClassifier";
+import { GitflowDiagram } from "../gitflow/GitflowDiagram";
+import { GitflowActionCards } from "../gitflow/GitflowActionCards";
+import { GitflowBranchReference } from "../gitflow/GitflowBranchReference";
 
 export function GitflowCheatsheetBlade() {
+  const { status: gitflowStatus } = useGitflowStore();
+  const { status: repoStatus } = useRepositoryStore();
+
+  // Determine branch type from current branch name
+  // Prefer gitflow status (has currentBranch), fall back to repo status (has branchName)
+  const branchName = gitflowStatus?.currentBranch || repoStatus?.branchName || "";
+  const branchType: GitflowBranchType = branchName
+    ? classifyBranch(branchName)
+    : "other";
+
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-4 text-ctp-subtext0">
-      <GitMerge className="w-12 h-12 text-ctp-overlay0" />
-      <p className="text-sm">Gitflow workflow reference guide</p>
-      <p className="text-xs text-ctp-overlay0">Coming in Phase 22</p>
+    <div className="flex-1 overflow-y-auto h-full bg-ctp-base">
+      <div className="p-6 max-w-3xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-2">
+          <GitMerge className="w-6 h-6 text-ctp-mauve" />
+          <div>
+            <h1 className="text-lg font-bold text-ctp-text">
+              Gitflow Workflow Guide
+            </h1>
+            <p className="text-xs text-ctp-subtext0">
+              A branching model for structured release management
+            </p>
+          </div>
+        </div>
+
+        {/* SVG Diagram */}
+        <div className="shrink-0">
+          <GitflowDiagram
+            highlightedLane={branchType !== "other" ? branchType : undefined}
+          />
+        </div>
+
+        {/* "You are here" section */}
+        <div className="bg-ctp-surface0/30 border border-ctp-surface1 rounded-lg p-4">
+          {branchName ? (
+            <>
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-2.5 h-2.5 rounded-full motion-safe:animate-gentle-pulse"
+                  style={{ backgroundColor: BRANCH_TYPE_COLORS[branchType] }}
+                />
+                <p className="text-sm text-ctp-text">
+                  You are on{" "}
+                  <code className="bg-ctp-crust text-ctp-peach px-1.5 py-0.5 rounded text-xs font-mono">
+                    {branchName}
+                  </code>
+                </p>
+              </div>
+              {branchType === "other" && (
+                <p className="text-xs text-ctp-overlay0 mt-1 ml-5">
+                  This branch does not match a gitflow naming pattern
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-sm text-ctp-overlay0">
+              No branch detected — open a repository to see your position
+            </p>
+          )}
+        </div>
+
+        {/* Action Cards */}
+        <GitflowActionCards branchType={branchType} />
+
+        {/* Branch Reference */}
+        <GitflowBranchReference currentBranchType={branchType} />
+      </div>
     </div>
   );
 }
