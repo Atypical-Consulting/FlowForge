@@ -28,7 +28,7 @@ v1.3.0 expands the blade navigation system into FlowForge's primary interaction 
 4. App.tsx contains zero modal mounts for SettingsWindow, ChangelogDialog, or ConventionalCommitModal
 5. All 7 new blade types (settings, changelog, conventional-commit, viewer-markdown, viewer-3d, repo-browser, gitflow-cheatsheet) are registered in BladeType, renderBlade, and useBladeNavigation
 
-**Plans:** TBD
+**Plans:** 20-01 through 20-08 (8 plans, all complete)
 
 ---
 
@@ -108,7 +108,7 @@ v1.3.0 expands the blade navigation system into FlowForge's primary interaction 
 
 | Phase | Name | Requirements | Status |
 |-------|------|-------------|--------|
-| 20 | Blade Infrastructure & Modal Migration | 9 | Pending |
+| 20 | Blade Infrastructure & Modal Migration | 9 | Complete |
 | 21 | Two-Column Staging & Inline Diff | 2 | Pending |
 | 22 | New Content Blades | 6 | Pending |
 | 23 | Branch Management | 6 | Pending |

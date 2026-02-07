@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 20 — Blade Infrastructure & Modal Migration
-Plan: Not started
-Status: Roadmap created, awaiting phase planning
-Last activity: 2026-02-07 — Roadmap created for v1.3.0
+Plan: Complete (8/8 plans executed)
+Status: Phase 20 complete, awaiting Phase 21 planning
+Last activity: 2026-02-07 — Phase 20 executed
 
-Progress: ░░░░░░░░░░ 0%
+Progress: ██░░░░░░░░ 20%
 
 ## Milestone History
 
@@ -30,7 +30,7 @@ See `.planning/MILESTONES.md` for full history.
 
 | Phase | Name | Requirements | Status |
 |-------|------|-------------|--------|
-| 20 | Blade Infrastructure & Modal Migration | 9 | Pending |
+| 20 | Blade Infrastructure & Modal Migration | 9 | Complete |
 | 21 | Two-Column Staging & Inline Diff | 2 | Pending |
 | 22 | New Content Blades | 6 | Pending |
 | 23 | Branch Management | 6 | Pending |
@@ -52,11 +52,11 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 
 ### Research Flags (v1.3.0)
 
-- P1: Blade stack state corruption during modal-to-blade migration — address in Phase 20
+- ~~P1: Blade stack state corruption during modal-to-blade migration — addressed in Phase 20 (settings/changelog push onto existing stack, back navigates naturally)~~
 - P2: WebGL context loss in Tauri WebViews for 3D viewer — address in Phase 22
 - P3: XSS via repository markdown content — address in Phase 22 before markdown rendering ships
 - P4: File browser performance on large repos — address in Phase 22 with virtualization
-- P5: Keyboard focus management across blade transitions — address in Phase 20
+- ~~P5: Keyboard focus management across blade transitions — addressed in Phase 20 (Escape pops blade, standard tabbing works)~~
 
 ### Pending Todos
 
@@ -78,8 +78,8 @@ None.
 
 ## Next Steps
 
-Run `/gsd:plan-phase 20` to plan Phase 20: Blade Infrastructure & Modal Migration.
+Run `/gsd:plan-phase 21` to plan Phase 21: Two-Column Staging & Inline Diff.
 
 ---
 *State updated: 2026-02-07*
-*Milestone: v1.3.0 Blades Blades Blades — Roadmap created*
+*Milestone: v1.3.0 Blades Blades Blades — Phase 20 complete*

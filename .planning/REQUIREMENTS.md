@@ -4,10 +4,10 @@
 
 ### Blade Migrations
 
-- [ ] **BLADE-01**: User can access Settings as a blade instead of a modal, with back navigation via blade strip
-- [ ] **BLADE-02**: User can compose conventional commits inline in the commit form (blade-integrated) instead of a separate modal
-- [ ] **BLADE-03**: User can generate and preview changelogs in a blade instead of a modal dialog
-- [ ] **BLADE-04**: App removes all modal mounts (SettingsWindow, ChangelogDialog, ConventionalCommitModal) from App.tsx
+- [x] **BLADE-01**: User can access Settings as a blade instead of a modal, with back navigation via blade strip
+- [x] **BLADE-02**: User can compose conventional commits inline in the commit form (blade-integrated) instead of a separate modal
+- [x] **BLADE-03**: User can generate and preview changelogs in a blade instead of a modal dialog
+- [x] **BLADE-04**: App removes all modal mounts (SettingsWindow, ChangelogDialog, ConventionalCommitModal) from App.tsx
 
 ### New Content Blades
 
@@ -36,11 +36,11 @@
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: BladeType union extended with all new blade types (settings, changelog, conventional-commit, viewer-markdown, viewer-3d, repo-browser, gitflow-cheatsheet)
-- [ ] **INFRA-02**: renderBlade switch in RepositoryView handles all new blade types
-- [ ] **INFRA-03**: useBladeNavigation hook provides helpers for all new blade types (openSettings, openChangelog, openRepoBrowser, openGitflowCheatsheet)
-- [ ] **INFRA-04**: All new viewer dependencies (react-markdown, remark-gfm, rehype-highlight, @google/model-viewer) are lazy-loaded with React.lazy
-- [ ] **INFRA-05**: New Rust commands for repo file browsing (list_repo_files, read_repo_file) are registered and type-safe via tauri-specta
+- [x] **INFRA-01**: BladeType union extended with all new blade types (settings, changelog, conventional-commit, viewer-markdown, viewer-3d, repo-browser, gitflow-cheatsheet)
+- [x] **INFRA-02**: renderBlade switch in RepositoryView handles all new blade types
+- [x] **INFRA-03**: useBladeNavigation hook provides helpers for all new blade types (openSettings, openChangelog, openRepoBrowser, openGitflowCheatsheet)
+- [x] **INFRA-04**: All new viewer dependencies (react-markdown, remark-gfm, rehype-highlight, @google/model-viewer) are lazy-loaded with React.lazy
+- [x] **INFRA-05**: New Rust commands for repo file browsing (list_repo_files, read_repo_file) are registered and type-safe via tauri-specta
 
 ## Future Requirements (Deferred)
 
@@ -62,15 +62,15 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| INFRA-01 | Phase 20 | Pending |
-| INFRA-02 | Phase 20 | Pending |
-| INFRA-03 | Phase 20 | Pending |
-| INFRA-04 | Phase 20 | Pending |
-| INFRA-05 | Phase 20 | Pending |
-| BLADE-01 | Phase 20 | Pending |
-| BLADE-02 | Phase 20 | Pending |
-| BLADE-03 | Phase 20 | Pending |
-| BLADE-04 | Phase 20 | Pending |
+| INFRA-01 | Phase 20 | Complete |
+| INFRA-02 | Phase 20 | Complete |
+| INFRA-03 | Phase 20 | Complete |
+| INFRA-04 | Phase 20 | Complete |
+| INFRA-05 | Phase 20 | Complete |
+| BLADE-01 | Phase 20 | Complete |
+| BLADE-02 | Phase 20 | Complete |
+| BLADE-03 | Phase 20 | Complete |
+| BLADE-04 | Phase 20 | Complete |
 | UX-01 | Phase 21 | Pending |
 | UX-02 | Phase 21 | Pending |
 | CONTENT-01 | Phase 22 | Pending |
