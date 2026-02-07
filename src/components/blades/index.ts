@@ -11,3 +11,7 @@ export { StagingChangesBlade } from "./StagingChangesBlade";
 export { TopologyRootBlade } from "./TopologyRootBlade";
 export { ViewerImageBlade } from "./ViewerImageBlade";
 export { ViewerNupkgBlade } from "./ViewerNupkgBlade";
+export { ViewerMarkdownBlade } from "./ViewerMarkdownBlade";
+export { Viewer3dBlade } from "./Viewer3dBlade";
+export { RepoBrowserBlade } from "./RepoBrowserBlade";
+export { GitflowCheatsheetBlade } from "./GitflowCheatsheetBlade";

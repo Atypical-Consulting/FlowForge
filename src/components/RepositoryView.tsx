@@ -8,7 +8,7 @@ import {
   Plus,
   Tag,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import type { Blade } from "../stores/blades";
 import { useBladeNavigation } from "../hooks/useBladeNavigation";
 import {
@@ -36,6 +36,28 @@ import {
   DeleteWorktreeDialog,
   WorktreePanel,
 } from "./worktree";
+
+// Lazy-loaded blade components for Phase 22+ content
+const ViewerMarkdownBlade = lazy(() =>
+  import("./blades/ViewerMarkdownBlade").then((m) => ({
+    default: m.ViewerMarkdownBlade,
+  })),
+);
+const Viewer3dBlade = lazy(() =>
+  import("./blades/Viewer3dBlade").then((m) => ({
+    default: m.Viewer3dBlade,
+  })),
+);
+const RepoBrowserBlade = lazy(() =>
+  import("./blades/RepoBrowserBlade").then((m) => ({
+    default: m.RepoBrowserBlade,
+  })),
+);
+const GitflowCheatsheetBlade = lazy(() =>
+  import("./blades/GitflowCheatsheetBlade").then((m) => ({
+    default: m.GitflowCheatsheetBlade,
+  })),
+);
 
 export function RepositoryView() {
   const { status } = useRepositoryStore();
@@ -161,25 +183,55 @@ export function RepositoryView() {
         case "viewer-markdown":
           return (
             <BladePanel title={blade.title} showBack onBack={goBack}>
-              <div className="p-4 text-ctp-subtext0">Markdown viewer — coming in Phase 22</div>
+              <Suspense
+                fallback={
+                  <div className="p-4 text-ctp-subtext0">Loading...</div>
+                }
+              >
+                <ViewerMarkdownBlade
+                  filePath={String(blade.props.filePath)}
+                />
+              </Suspense>
             </BladePanel>
           );
         case "viewer-3d":
           return (
             <BladePanel title={blade.title} showBack onBack={goBack}>
-              <div className="p-4 text-ctp-subtext0">3D model viewer — coming in Phase 22</div>
+              <Suspense
+                fallback={
+                  <div className="p-4 text-ctp-subtext0">Loading...</div>
+                }
+              >
+                <Viewer3dBlade filePath={String(blade.props.filePath)} />
+              </Suspense>
             </BladePanel>
           );
         case "repo-browser":
           return (
             <BladePanel title="Repository Browser" showBack onBack={goBack}>
-              <div className="p-4 text-ctp-subtext0">Repo browser — coming in Phase 22</div>
+              <Suspense
+                fallback={
+                  <div className="p-4 text-ctp-subtext0">Loading...</div>
+                }
+              >
+                <RepoBrowserBlade
+                  path={
+                    blade.props.path ? String(blade.props.path) : undefined
+                  }
+                />
+              </Suspense>
             </BladePanel>
           );
         case "gitflow-cheatsheet":
           return (
             <BladePanel title="Gitflow Guide" showBack onBack={goBack}>
-              <div className="p-4 text-ctp-subtext0">Gitflow guide — coming in Phase 22</div>
+              <Suspense
+                fallback={
+                  <div className="p-4 text-ctp-subtext0">Loading...</div>
+                }
+              >
+                <GitflowCheatsheetBlade />
+              </Suspense>
             </BladePanel>
           );
         default:
