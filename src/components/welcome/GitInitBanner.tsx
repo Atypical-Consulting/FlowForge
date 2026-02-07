@@ -4,6 +4,7 @@ import { useState } from "react";
 import { commands } from "../../bindings";
 import { useRecentRepos } from "../../hooks/useRecentRepos";
 import { fadeInUp } from "../../lib/animations";
+import { getErrorMessage } from "../../lib/errors";
 import { useRepositoryStore } from "../../stores/repository";
 import { Button } from "../ui/button";
 
@@ -31,7 +32,7 @@ export function GitInitBanner({ path, onDismiss }: GitInitBannerProps) {
         useMainBranch ? "main" : null,
       );
       if (result.status === "error") {
-        setInitError(result.error.message);
+        setInitError(getErrorMessage(result.error));
         return;
       }
       await openRepository(path);
