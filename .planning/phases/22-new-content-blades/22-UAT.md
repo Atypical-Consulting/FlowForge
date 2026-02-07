@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 22-new-content-blades
 source: 22-11-PLAN.md, 22-VERIFICATION.md
 started: 2026-02-07T21:00:00Z
@@ -230,57 +230,86 @@ skipped: 12
   reason: "User reported: the width of the rendered markdown does not take 100% width"
   severity: cosmetic
   test: 13
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "DiffBlade.tsx line 265: max-w-3xl constrains preview to 768px"
+  artifacts:
+    - path: "src/components/blades/DiffBlade.tsx"
+      issue: "max-w-3xl on preview container limits width to 768px"
+  missing:
+    - "Remove or widen max-w-3xl on the markdown preview container"
+  debug_session: ".planning/debug/diffblade-monaco-0px-height.md"
 
 - truth: "Monaco diff editor reappears at full size when toggling back from Preview to Diff"
   status: failed
   reason: "User reported: no, i cannot see the diff editor 0px height, not 100% width"
   severity: major
   test: 14
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "DiffBlade.tsx line 275: Monaco container missing h-full overflow-hidden; conditional rendering causes full remount, Monaco measures 0px before flex resolves"
+  artifacts:
+    - path: "src/components/blades/DiffBlade.tsx"
+      issue: "Container has flex-1 min-h-0 but lacks h-full overflow-hidden; conditional ternary remounts DiffEditor"
+  missing:
+    - "Add h-full overflow-hidden to Monaco container div"
+  debug_session: ".planning/debug/diffblade-monaco-0px-height.md"
 
 - truth: "3D model loads and renders with orbit controls from repo browser"
   status: failed
   reason: "User reported: Failed to load 3D model"
   severity: major
   test: 16
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Viewer3dBlade.tsx: error handler (line 109-111) swallows actual error; environment-image='neutral' (line 286) may fail in Tauri WKWebView causing Promise.all rejection"
+  artifacts:
+    - path: "src/components/blades/Viewer3dBlade.tsx"
+      issue: "Error handler discards event detail; environment-image may fail in Tauri WebView"
+  missing:
+    - "Capture actual error from CustomEvent detail"
+    - "Handle environment failures gracefully or remove environment-image attribute"
+  debug_session: ".planning/debug/3d-model-load-failure.md"
 
 - truth: "Repo browser blade header merges back button and breadcrumb into one row; all viewer and diff blades use the same breadcrumb pattern"
   status: failed
   reason: "User reported: headers of this blade should be merged [back button, breadcrumb]. apply the same breadcrumb to all viewers and diff editors"
   severity: minor
   test: 23
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "3 inconsistent header patterns: BladePanel has back button (row 1), RepoBrowserBlade has separate Breadcrumbs in BladeToolbar (row 2), viewers use static non-clickable renderPathTitle"
+  artifacts:
+    - path: "src/components/blades/BladePanel.tsx"
+      issue: "Back button in row 1, breadcrumb in row 2 for repo-browser"
+    - path: "src/components/blades/RepoBrowserBlade.tsx"
+      issue: "Breadcrumbs in BladeToolbar creates separate row from back button"
+    - path: "src/lib/bladeUtils.tsx"
+      issue: "renderPathTitle is static/non-clickable, not a real breadcrumb"
+  missing:
+    - "Create shared BladeBreadcrumb component with clickable segments"
+    - "Move breadcrumb into BladePanel titleContent slot (same row as back button)"
+    - "Apply to all viewer and diff blade registrations"
+  debug_session: ".planning/debug/blade-header-breadcrumb-ux.md"
 
 - truth: "Backspace navigates to parent directory in repo browser"
   status: failed
   reason: "User reported: no, the backspace button does not work for navigation"
   severity: major
   test: 28
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "RepoBrowserBlade.tsx line 46-48: useEffect depends on [focusedIndex] only; fires before query data loads, never re-fires when entries populate; listbox div (line 155) lacks tabIndex so it can't receive focus as fallback"
+  artifacts:
+    - path: "src/components/blades/RepoBrowserBlade.tsx"
+      issue: "Focus useEffect misses entries dependency; listbox div lacks tabIndex"
+  missing:
+    - "Add entries to focus useEffect dependency array"
+    - "Add tabIndex={0} to listbox div as defensive fallback"
+  debug_session: ".planning/debug/backspace-nav-repo-browser.md"
 
 - truth: "Gitflow cheatsheet blade is accessible from the UI"
   status: failed
   reason: "User reported: no, the gitflow cheat sheet is not accessible from anywhere"
   severity: major
   test: 30
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Zero calls to openBlade('gitflow-cheatsheet') anywhere in codebase; blade is registered but no entry point wired up in Header, command palette, or GitflowPanel"
+  artifacts:
+    - path: "src/components/Header.tsx"
+      issue: "Missing gitflow-cheatsheet button (has buttons for settings, repo-browser, changelog but not gitflow)"
+    - path: "src/components/gitflow/GitflowPanel.tsx"
+      issue: "No link to cheatsheet blade in sidebar gitflow section"
+  missing:
+    - "Add header button for gitflow-cheatsheet"
+    - "Add link in GitflowPanel sidebar"
+  debug_session: ".planning/debug/gitflow-cheatsheet-no-entry-point.md"
