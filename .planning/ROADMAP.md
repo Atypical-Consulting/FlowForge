@@ -65,7 +65,14 @@ v1.3.0 expands the blade navigation system into FlowForge's primary interaction 
 2. User can click any file in the list and immediately see its diff in the adjacent panel without pushing a new blade
 3. User can click an expand button on the inline diff to open a full-screen diff blade
 
-**Plans:** TBD
+**Plans:** 5 plans in 4 waves
+
+Plans:
+- [ ] 21-01-PLAN.md -- Foundation: SplitPaneLayout, staging store extension, preview registry, file type utilities
+- [ ] 21-02-PLAN.md -- Diff preview components: InlineDiffViewer, DiffPreviewHeader, NonTextPlaceholder, StagingDiffPreview
+- [ ] 21-03-PLAN.md -- Integration: StagingChangesBlade two-column refactor, StagingPanel/FileItem mods, keyboard navigation
+- [ ] 21-04-PLAN.md -- Full-screen diff navigation: next/prev file arrows in DiffBlade, state preservation
+- [ ] 21-05-PLAN.md -- Human verification checkpoint
 
 ---
 
