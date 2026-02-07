@@ -144,6 +144,42 @@ export function RepositoryView() {
               />
             </BladePanel>
           );
+        case "settings":
+          return (
+            <BladePanel title="Settings" showBack onBack={goBack}>
+              <div className="p-4 text-ctp-subtext0">Settings blade — coming in 20-04</div>
+            </BladePanel>
+          );
+        case "changelog":
+          return (
+            <BladePanel title="Generate Changelog" showBack onBack={goBack}>
+              <div className="p-4 text-ctp-subtext0">Changelog blade — coming in 20-06</div>
+            </BladePanel>
+          );
+        case "viewer-markdown":
+          return (
+            <BladePanel title={blade.title} showBack onBack={goBack}>
+              <div className="p-4 text-ctp-subtext0">Markdown viewer — coming in Phase 22</div>
+            </BladePanel>
+          );
+        case "viewer-3d":
+          return (
+            <BladePanel title={blade.title} showBack onBack={goBack}>
+              <div className="p-4 text-ctp-subtext0">3D model viewer — coming in Phase 22</div>
+            </BladePanel>
+          );
+        case "repo-browser":
+          return (
+            <BladePanel title="Repository Browser" showBack onBack={goBack}>
+              <div className="p-4 text-ctp-subtext0">Repo browser — coming in Phase 22</div>
+            </BladePanel>
+          );
+        case "gitflow-cheatsheet":
+          return (
+            <BladePanel title="Gitflow Guide" showBack onBack={goBack}>
+              <div className="p-4 text-ctp-subtext0">Gitflow guide — coming in Phase 22</div>
+            </BladePanel>
+          );
         default:
           return <div>Unknown blade type</div>;
       }

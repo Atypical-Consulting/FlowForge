@@ -6,7 +6,13 @@ export type BladeType =
   | "commit-details"
   | "diff"
   | "viewer-nupkg"
-  | "viewer-image";
+  | "viewer-image"
+  | "settings"
+  | "changelog"
+  | "viewer-markdown"
+  | "viewer-3d"
+  | "repo-browser"
+  | "gitflow-cheatsheet";
 
 export type ProcessType = "staging" | "topology";
 

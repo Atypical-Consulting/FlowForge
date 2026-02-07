@@ -16,6 +16,10 @@ function bladeTypeForFile(filePath: string): BladeType {
     lower.endsWith(".ico")
   )
     return "viewer-image";
+  if (lower.endsWith(".md") || lower.endsWith(".mdx"))
+    return "viewer-markdown";
+  if (lower.endsWith(".glb") || lower.endsWith(".gltf"))
+    return "viewer-3d";
   return "diff";
 }
 
@@ -57,6 +61,46 @@ export function useBladeNavigation() {
     });
   };
 
+  const openSettings = () => {
+    store.pushBlade({ type: "settings", title: "Settings", props: {} });
+  };
+
+  const openChangelog = () => {
+    store.pushBlade({ type: "changelog", title: "Changelog", props: {} });
+  };
+
+  const openRepoBrowser = (path?: string) => {
+    store.pushBlade({
+      type: "repo-browser",
+      title: "Repository Browser",
+      props: { path: path || "" },
+    });
+  };
+
+  const openGitflowCheatsheet = () => {
+    store.pushBlade({
+      type: "gitflow-cheatsheet",
+      title: "Gitflow Guide",
+      props: {},
+    });
+  };
+
+  const openMarkdownViewer = (filePath: string) => {
+    store.pushBlade({
+      type: "viewer-markdown",
+      title: filePath.split("/").pop() || "Markdown",
+      props: { filePath },
+    });
+  };
+
+  const openModelViewer = (filePath: string) => {
+    store.pushBlade({
+      type: "viewer-3d",
+      title: filePath.split("/").pop() || "3D Model",
+      props: { filePath },
+    });
+  };
+
   const goBack = () => store.popBlade();
   const goToRoot = () => store.resetStack();
 
@@ -65,6 +109,12 @@ export function useBladeNavigation() {
     openCommitDetails,
     openDiff,
     openStagingDiff,
+    openSettings,
+    openChangelog,
+    openRepoBrowser,
+    openGitflowCheatsheet,
+    openMarkdownViewer,
+    openModelViewer,
     goBack,
     goToRoot,
   };
