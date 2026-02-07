@@ -1,4 +1,5 @@
 pub mod branch;
+pub mod browse;
 pub mod changelog;
 pub mod clone;
 pub mod commands;
