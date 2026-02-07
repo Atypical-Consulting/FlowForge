@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { commands } from "../bindings";
 import { useRecentRepos } from "../hooks/useRecentRepos";
 import { fadeInUp, staggerContainer, staggerItem } from "../lib/animations";
+import { modKeyLabel } from "../lib/platform";
 import { useRepositoryStore } from "../stores/repository";
 import { CloneForm } from "./clone/CloneForm";
 import { RecentRepos } from "./RecentRepos";
@@ -180,7 +181,7 @@ export function WelcomeView() {
               <p className="text-xs text-ctp-subtext0">
                 or press{" "}
                 <kbd className="px-1.5 py-0.5 bg-ctp-surface0 rounded text-ctp-subtext1 font-mono text-xs">
-                  {navigator.platform.includes("Mac") ? "Cmd" : "Ctrl"}+O
+                  {modKeyLabel}+O
                 </kbd>
               </p>
             </>
