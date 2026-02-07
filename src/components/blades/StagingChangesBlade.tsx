@@ -1,7 +1,118 @@
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
+import type { FileChange } from "../../bindings";
+import { commands } from "../../bindings";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
+import { useStagingKeyboard } from "../../hooks/useStagingKeyboard";
+import { useStagingStore } from "../../stores/staging";
+import { SplitPaneLayout } from "../layout";
+import { StagingDiffPreview } from "../staging/StagingDiffPreview";
 import { StagingPanel } from "../staging/StagingPanel";
 
 export function StagingChangesBlade() {
   const { openStagingDiff } = useBladeNavigation();
-  return <StagingPanel onFileSelect={openStagingDiff} />;
+  const queryClient = useQueryClient();
+  const { selectedFile, selectedSection, selectFile } = useStagingStore();
+  const [fileListFocused, setFileListFocused] = useState(false);
+
+  // Share the staging status query (same cache as StagingPanel)
+  const { data: statusResult } = useQuery({
+    queryKey: ["stagingStatus"],
+    queryFn: () => commands.getStagingStatus(),
+    refetchInterval: 2000,
+  });
+
+  // Build flat ordered file list for navigation
+  const allFiles = useMemo(() => {
+    if (!statusResult || statusResult.status !== "ok") return [];
+    const s = statusResult.data;
+    return [
+      ...s.staged.map((f) => ({ file: f, section: "staged" as const })),
+      ...s.unstaged.map((f) => ({ file: f, section: "unstaged" as const })),
+      ...s.untracked.map((f) => ({ file: f, section: "untracked" as const })),
+    ];
+  }, [statusResult]);
+
+  const currentIndex = useMemo(
+    () => allFiles.findIndex((item) => item.file.path === selectedFile?.path),
+    [allFiles, selectedFile?.path],
+  );
+  const hasPrev = currentIndex > 0;
+  const hasNext = currentIndex < allFiles.length - 1;
+
+  const handleExpand = useCallback(() => {
+    if (selectedFile && selectedSection) {
+      openStagingDiff(selectedFile, selectedSection);
+    }
+  }, [selectedFile, selectedSection, openStagingDiff]);
+
+  const handleToggleStage = useCallback(() => {
+    if (!selectedFile || !selectedSection) return;
+    if (selectedSection === "staged") {
+      commands
+        .unstageFile(selectedFile.path)
+        .then(() =>
+          queryClient.invalidateQueries({ queryKey: ["stagingStatus"] }),
+        );
+    } else {
+      commands
+        .stageFile(selectedFile.path)
+        .then(() =>
+          queryClient.invalidateQueries({ queryKey: ["stagingStatus"] }),
+        );
+    }
+  }, [selectedFile, selectedSection, queryClient]);
+
+  const handleNavigateFile = useCallback(
+    (direction: "next" | "prev") => {
+      const newIndex =
+        direction === "next" ? currentIndex + 1 : currentIndex - 1;
+      const entry = allFiles[newIndex];
+      if (entry) {
+        selectFile(entry.file, entry.section);
+      }
+    },
+    [currentIndex, allFiles, selectFile],
+  );
+
+  useStagingKeyboard({
+    allFiles,
+    enabled: fileListFocused,
+    onExpand: handleExpand,
+    onToggleStage: handleToggleStage,
+  });
+
+  return (
+    <SplitPaneLayout
+      autoSaveId="staging-split"
+      primaryDefaultSize={40}
+      primaryMinSize={20}
+      primaryMaxSize={60}
+      detailMinSize={30}
+      primary={
+        <div
+          tabIndex={0}
+          role="region"
+          aria-label="Changed files"
+          onFocus={() => setFileListFocused(true)}
+          onBlur={() => setFileListFocused(false)}
+          className="h-full outline-none"
+        >
+          <StagingPanel />
+        </div>
+      }
+      detail={
+        <div role="region" aria-label="Diff preview" className="h-full">
+          <StagingDiffPreview
+            file={selectedFile}
+            section={selectedSection}
+            onExpand={handleExpand}
+            onNavigateFile={handleNavigateFile}
+            hasPrev={hasPrev}
+            hasNext={hasNext}
+          />
+        </div>
+      }
+    />
+  );
 }
