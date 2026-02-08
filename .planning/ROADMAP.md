@@ -118,8 +118,8 @@ Plans:
 - [x] 22-22-PLAN.md -- W8: Gap Closure — Redesign Gitflow SVG diagram (opacity, cubic curves, geometry)
 - [x] 22-23-PLAN.md -- W9: Gap Closure — DiffBlade toolbar order fix and Viewer3dBlade silent failure fix
 - [x] 22-24-PLAN.md -- W9: Gap Closure — Gitflow SVG complete redesign (canonical layout, arrowheads, readability)
-- [ ] 22-25-PLAN.md -- W10: Gap Closure — Viewer3dBlade diagnostic logging and standalone test page
-- [ ] 22-26-PLAN.md -- W10: Gap Closure — Gitflow SVG mermaid gitgraph-style redesign (straight lines, 5 lanes)
+- [x] 22-25-PLAN.md -- W10: Gap Closure — Viewer3dBlade diagnostic logging and standalone test page
+- [x] 22-26-PLAN.md -- W10: Gap Closure — Gitflow SVG mermaid gitgraph-style redesign (straight lines, 5 lanes)
 
 ---
 
@@ -166,7 +166,7 @@ Plans:
 | 20 | Blade Infrastructure & Modal Migration | 9 | Complete |
 | 20.1 | Blade Extensibility Refactoring | 5 | Complete |
 | 21 | Two-Column Staging & Inline Diff | 2 | Complete |
-| 22 | New Content Blades | 6 | Gap Closure Round 5 |
+| 22 | New Content Blades | 6 | Gap Closure Round 5 Complete |
 | 23 | Branch Management | 6 | Pending |
 | 24 | Code Review Guidance & Documentation | 2 | Pending |
 
