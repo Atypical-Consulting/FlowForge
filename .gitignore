@@ -33,3 +33,7 @@ src-tauri/gen/
 # Generated bindings
 src/bindings.ts
 screenshots/
+
+# VitePress
+docs/.vitepress/dist
+docs/.vitepress/cache
