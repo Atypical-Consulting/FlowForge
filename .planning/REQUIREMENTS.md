@@ -112,13 +112,60 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (populated during roadmap creation) | | |
+| NAV-01 | Phase 26 | Pending |
+| NAV-02 | Phase 26 | Pending |
+| NAV-03 | Phase 26 | Pending |
+| NAV-04 | Phase 26 | Pending |
+| NAV-05 | Phase 26 | Pending |
+| NAV-06 | Phase 26 | Pending |
+| NAV-07 | Phase 26 | Pending |
+| NAV-08 | Phase 26 | Pending |
+| NAV-09 | Phase 26 | Pending |
+| NAV-10 | Phase 26 | Pending |
+| INIT-01 | Phase 27 | Pending |
+| INIT-02 | Phase 27 | Pending |
+| INIT-03 | Phase 27 | Pending |
+| INIT-04 | Phase 27 | Pending |
+| INIT-05 | Phase 27 | Pending |
+| INIT-06 | Phase 27 | Pending |
+| INIT-07 | Phase 27 | Pending |
+| INIT-08 | Phase 27 | Pending |
+| INIT-09 | Phase 27 | Pending |
+| INIT-10 | Phase 27 | Pending |
+| CC-01 | Phase 28 | Pending |
+| CC-02 | Phase 28 | Pending |
+| CC-03 | Phase 28 | Pending |
+| CC-04 | Phase 28 | Pending |
+| CC-05 | Phase 28 | Pending |
+| CC-06 | Phase 28 | Pending |
+| CC-07 | Phase 28 | Pending |
+| CC-08 | Phase 28 | Pending |
+| CC-09 | Phase 28 | Pending |
+| STRC-01 | Phase 29 | Pending |
+| STRC-02 | Phase 29 | Pending |
+| STRC-03 | Phase 29 | Pending |
+| STRC-04 | Phase 29 | Pending |
+| STRC-05 | Phase 29 | Pending |
+| STRC-06 | Phase 29 | Pending |
+| ARCH-01 | Phase 25 | Pending |
+| ARCH-02 | Phase 25 | Pending |
+| ARCH-03 | Phase 25 | Pending |
+| ARCH-04 | Phase 25 | Pending |
+| ARCH-05 | Phase 30 | Pending |
+| ARCH-06 | Phase 30 | Pending |
+| ARCH-07 | Phase 30 | Pending |
+| ARCH-08 | Phase 30 | Pending |
+| ARCH-09 | Phase 30 | Pending |
+| ARCH-10 | Phase 30 | Pending |
+| ARCH-11 | Phase 30 | Pending |
+| ARCH-12 | Phase 30 | Pending |
+| ARCH-13 | Phase 30 | Pending |
 
 **Coverage:**
 - v1.4 requirements: 39 total
-- Mapped to phases: 0
-- Unmapped: 39
+- Mapped to phases: 39
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-08*
-*Last updated: 2026-02-08 after initial definition*
+*Last updated: 2026-02-08 after roadmap creation*
