@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, X } from "lucide-react";
+import { useEffect, useRef } from "react";
 import type { FileChange, FileStatus } from "../../bindings";
 import { commands } from "../../bindings";
 import { cn } from "../../lib/utils";
@@ -11,10 +12,6 @@ interface FileItemProps {
   section: "staged" | "unstaged" | "untracked";
   depth?: number;
   showFilenameOnly?: boolean;
-  onFileSelect?: (
-    file: FileChange,
-    section: "staged" | "unstaged" | "untracked",
-  ) => void;
 }
 
 function getStatusDot(status: FileStatus): { color: string; title: string } {
@@ -35,11 +32,18 @@ export function FileItem({
   section,
   depth = 0,
   showFilenameOnly = false,
-  onFileSelect,
 }: FileItemProps) {
   const queryClient = useQueryClient();
   const { selectedFile, selectFile } = useStagingStore();
   const isSelected = selectedFile?.path === file.path;
+  const itemRef = useRef<HTMLDivElement>(null);
+
+  // Scroll into view when programmatically selected (keyboard navigation)
+  useEffect(() => {
+    if (isSelected) {
+      itemRef.current?.scrollIntoView({ block: "nearest" });
+    }
+  }, [isSelected]);
 
   const stageMutation = useMutation({
     mutationFn: () => commands.stageFile(file.path),
@@ -69,11 +73,11 @@ export function FileItem({
 
   const handleSelect = () => {
     selectFile(file, section);
-    onFileSelect?.(file, section);
   };
 
   return (
     <div
+      ref={itemRef}
       onClick={handleSelect}
       onKeyDown={(e) => e.key === "Enter" && handleSelect()}
       className={cn(

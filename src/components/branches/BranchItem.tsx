@@ -1,13 +1,15 @@
-import { Check, GitBranch, GitMerge, Loader2, Trash2 } from "lucide-react";
+import { Check, GitBranch, GitMerge, Loader2, Pin, Trash2 } from "lucide-react";
 import { useState } from "react";
-import type { BranchInfo } from "../../bindings";
+import type { EnrichedBranch } from "../../lib/branchClassifier";
 import { cn } from "../../lib/utils";
+import { BranchTypeBadge } from "./BranchTypeBadge";
 
 interface BranchItemProps {
-  branch: BranchInfo;
+  branch: EnrichedBranch;
   onCheckout: () => Promise<unknown> | void;
   onDelete: () => Promise<unknown> | void;
   onMerge: () => Promise<unknown> | void;
+  onTogglePin?: () => void;
   disabled?: boolean;
 }
 
@@ -16,6 +18,7 @@ export function BranchItem({
   onCheckout,
   onDelete,
   onMerge,
+  onTogglePin,
   disabled,
 }: BranchItemProps) {
   const [loadingAction, setLoadingAction] = useState<
@@ -34,10 +37,11 @@ export function BranchItem({
       setLoadingAction(null);
     }
   };
+
   return (
     <div
       className={cn(
-        "group flex items-center justify-between px-2 py-1 rounded-md",
+        "group/item flex items-center justify-between px-2 py-1 rounded-md",
         branch.isHead
           ? "bg-ctp-blue/20 border border-ctp-blue/50"
           : "hover:bg-ctp-surface0",
@@ -45,6 +49,25 @@ export function BranchItem({
       )}
     >
       <div className="flex items-center gap-1.5 min-w-0 flex-1">
+        {onTogglePin && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onTogglePin();
+            }}
+            className={cn(
+              "p-0.5 rounded shrink-0 transition-opacity",
+              branch.isPinned
+                ? "text-ctp-blue hover:text-ctp-sapphire opacity-100"
+                : "text-ctp-overlay0 hover:text-ctp-subtext0 opacity-0 group-hover/item:opacity-100"
+            )}
+            title={branch.isPinned ? "Unpin branch" : "Pin branch"}
+            aria-label={branch.isPinned ? "Unpin branch" : "Pin branch"}
+          >
+            <Pin className={cn("w-3 h-3", branch.isPinned && "fill-current")} />
+          </button>
+        )}
         <GitBranch className="w-3.5 h-3.5 shrink-0 text-ctp-overlay1" />
         <span className="truncate text-sm font-medium">{branch.name}</span>
         {branch.isHead && (
@@ -55,8 +78,9 @@ export function BranchItem({
             merged
           </span>
         )}
+        <BranchTypeBadge branchType={branch.branchType} />
       </div>
-      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity">
         {!branch.isHead && (
           <>
             <button

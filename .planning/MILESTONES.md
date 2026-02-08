@@ -35,7 +35,7 @@
 
 ---
 
-## v1.0 MVP (Shipped: 2026-02-04)
+## v1.0.0 MVP (Shipped: 2026-02-04)
 
 **Delivered:** A cross-platform desktop Git client with enforced Gitflow workflows, conventional commits, topology visualization, and worktree management.
 

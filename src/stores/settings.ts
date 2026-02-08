@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { getStore } from "../lib/store";
 
-export type SettingsCategory = "general" | "git" | "appearance" | "integrations";
+export type SettingsCategory = "general" | "git" | "appearance" | "integrations" | "review";
 
 export interface GeneralSettings {
   defaultTab: "changes" | "history" | "topology";
@@ -24,12 +24,9 @@ export interface Settings {
 }
 
 interface SettingsState {
-  isOpen: boolean;
   activeCategory: SettingsCategory;
   settings: Settings;
 
-  openSettings: () => void;
-  closeSettings: () => void;
   setCategory: (category: SettingsCategory) => void;
   updateSetting: <C extends keyof Settings>(
     category: C,
@@ -62,12 +59,9 @@ function mergeSettings(saved: Partial<Settings>): Settings {
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
-  isOpen: false,
   activeCategory: "general",
   settings: defaultSettings,
 
-  openSettings: () => set({ isOpen: true }),
-  closeSettings: () => set({ isOpen: false }),
   setCategory: (category) => set({ activeCategory: category }),
 
   updateSetting: async (category, key, value) => {

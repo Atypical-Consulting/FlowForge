@@ -6,8 +6,8 @@ import {
   X,
 } from "lucide-react";
 import { registerCommand } from "../lib/commandRegistry";
+import { openBlade } from "../lib/bladeOpener";
 import { useBranchStore } from "../stores/branches";
-import { useChangelogStore } from "../stores/changelogStore";
 import { useRepositoryStore } from "../stores/repository";
 import { useStashStore } from "../stores/stash";
 import { useTagStore } from "../stores/tags";
@@ -54,7 +54,7 @@ registerCommand({
   category: "Repository",
   icon: FileText,
   action: () => {
-    useChangelogStore.getState().openDialog();
+    openBlade("changelog", {} as Record<string, never>);
   },
   enabled: () => !!useRepositoryStore.getState().status,
 });

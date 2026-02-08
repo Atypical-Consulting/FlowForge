@@ -6,9 +6,10 @@ use std::sync::Mutex;
 use git::{
     RepositoryState, WatcherState,
     branch::{
-        checkout_branch, checkout_remote_branch, create_branch, delete_branch, list_all_branches,
-        list_branches,
+        batch_delete_branches, checkout_branch, checkout_remote_branch, create_branch,
+        delete_branch, get_recent_checkouts, list_all_branches, list_branches,
     },
+    browse::{list_repo_files, read_repo_file},
     changelog::generate_changelog_cmd,
     clone::clone_repository,
     commands::{close_repository, get_repository_status, is_git_repository, open_repository},
@@ -90,6 +91,8 @@ pub fn run() {
         delete_branch,
         list_all_branches,
         checkout_remote_branch,
+        batch_delete_branches,
+        get_recent_checkouts,
         // Stash commands
         list_stashes,
         stash_save,
@@ -131,6 +134,9 @@ pub fn run() {
         clone_repository,
         // Init commands
         git_init,
+        // Browse commands
+        list_repo_files,
+        read_repo_file,
         // Config commands
         get_git_global_config,
         set_git_global_config,

@@ -47,14 +47,15 @@ export function BranchSwitcher({ onSelectBranch }: BranchSwitcherProps) {
   const isDirty = status?.isDirty ?? false;
   const repoPath = status?.repoPath ?? "";
 
-  // Load branches when panel opens
+  // Load branches when panel opens — always include remote to avoid
+  // clobbering the shared allBranches state used by the branch panel
   useEffect(() => {
     if (isOpen) {
-      loadAllBranches(includeRemote);
+      loadAllBranches(true);
       setSearchQuery("");
       setHighlightedIndex(-1);
     }
-  }, [isOpen, includeRemote, loadAllBranches]);
+  }, [isOpen, loadAllBranches]);
 
   // Recent branches (only those that still exist in allBranches)
   const recentBranches: BranchInfo[] = useMemo(() => {
@@ -67,12 +68,18 @@ export function BranchSwitcher({ onSelectBranch }: BranchSwitcherProps) {
       .slice(0, 3);
   }, [searchQuery, getRecentBranches, repoPath, allBranches, currentBranch]);
 
-  // Filtered branches
+  // Filtered branches — apply remote toggle and search locally
   const filteredBranches: BranchInfo[] = useMemo(() => {
-    if (!searchQuery) return allBranches;
-    const q = searchQuery.toLowerCase();
-    return allBranches.filter((b) => b.name.toLowerCase().includes(q));
-  }, [allBranches, searchQuery]);
+    let result = allBranches;
+    if (!includeRemote) {
+      result = result.filter((b) => !b.isRemote);
+    }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((b) => b.name.toLowerCase().includes(q));
+    }
+    return result;
+  }, [allBranches, includeRemote, searchQuery]);
 
   // Combined flat list for keyboard navigation
   const allItems = useMemo(

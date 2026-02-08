@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use tauri::State;
@@ -416,6 +418,177 @@ pub async fn checkout_remote_branch(
             })?;
 
         Ok(())
+    })
+    .await
+    .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}
+
+/// A recently checked-out branch extracted from the reflog.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct RecentCheckout {
+    /// Branch name (bare, without refs/heads/ prefix)
+    pub name: String,
+    /// Unix timestamp in milliseconds when the checkout occurred
+    pub last_checkout_ms: f64,
+}
+
+/// Result of deleting a single branch in a batch operation.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct BranchDeleteResult {
+    /// Branch name that was targeted
+    pub name: String,
+    /// Whether the branch was successfully deleted
+    pub deleted: bool,
+    /// Error message if deletion failed
+    pub error: Option<String>,
+}
+
+/// Result of a batch branch deletion operation.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct BatchDeleteResult {
+    /// Per-branch results
+    pub results: Vec<BranchDeleteResult>,
+    /// Count of successfully deleted branches
+    pub total_deleted: u32,
+    /// Count of branches that failed to delete
+    pub total_failed: u32,
+}
+
+/// Get recently checked-out branches from the HEAD reflog.
+#[tauri::command]
+#[specta::specta]
+pub async fn get_recent_checkouts(
+    limit: Option<u32>,
+    state: State<'_, RepositoryState>,
+) -> Result<Vec<RecentCheckout>, GitError> {
+    let repo_path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+    let max = limit.unwrap_or(10) as usize;
+
+    tokio::task::spawn_blocking(move || {
+        let repo = git2::Repository::open(&repo_path)?;
+        let reflog = repo
+            .reflog("HEAD")
+            .map_err(|e| GitError::OperationFailed(e.message().to_string()))?;
+
+        let mut seen = HashSet::new();
+        let mut recent = Vec::new();
+
+        for entry in reflog.iter() {
+            let msg = entry.message().unwrap_or("");
+            if let Some(branch_name) = msg
+                .strip_prefix("checkout: moving from ")
+                .and_then(|rest| rest.rsplit(" to ").next())
+            {
+                // Skip detached HEAD entries (40-char hex hashes)
+                if branch_name.len() == 40 && branch_name.chars().all(|c| c.is_ascii_hexdigit()) {
+                    continue;
+                }
+
+                if seen.insert(branch_name.to_string()) {
+                    let timestamp_secs = entry.committer().when().seconds();
+                    recent.push(RecentCheckout {
+                        name: branch_name.to_string(),
+                        last_checkout_ms: (timestamp_secs as f64) * 1000.0,
+                    });
+                    if recent.len() >= max {
+                        break;
+                    }
+                }
+            }
+        }
+
+        Ok(recent)
+    })
+    .await
+    .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}
+
+/// Delete multiple local branches in a single batch operation.
+#[tauri::command]
+#[specta::specta]
+pub async fn batch_delete_branches(
+    branch_names: Vec<String>,
+    force: bool,
+    state: State<'_, RepositoryState>,
+) -> Result<BatchDeleteResult, GitError> {
+    let repo_path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+
+    tokio::task::spawn_blocking(move || {
+        let repo = git2::Repository::open(&repo_path)?;
+
+        let head_commit = match repo.head() {
+            Ok(head) => Some(head.peel_to_commit()?),
+            Err(e) if e.code() == git2::ErrorCode::UnbornBranch => None,
+            Err(e) => return Err(e.into()),
+        };
+
+        let mut results = Vec::with_capacity(branch_names.len());
+        let mut total_deleted = 0u32;
+        let mut total_failed = 0u32;
+
+        for name in &branch_names {
+            let result: Result<(), String> = (|| {
+                let mut branch = repo
+                    .find_branch(name, git2::BranchType::Local)
+                    .map_err(|_| format!("Branch '{}' not found", name))?;
+
+                if branch.is_head() {
+                    return Err("Cannot delete the current branch".to_string());
+                }
+
+                if !force {
+                    if let Some(ref head) = head_commit {
+                        let branch_commit = branch
+                            .get()
+                            .peel_to_commit()
+                            .map_err(|e| e.message().to_string())?;
+                        let merge_base = repo
+                            .merge_base(head.id(), branch_commit.id())
+                            .map_err(|e| e.message().to_string())?;
+                        if merge_base != branch_commit.id() {
+                            return Err(format!("Branch '{}' is not fully merged", name));
+                        }
+                    }
+                }
+
+                branch.delete().map_err(|e| e.message().to_string())?;
+                Ok(())
+            })();
+
+            match result {
+                Ok(()) => {
+                    total_deleted += 1;
+                    results.push(BranchDeleteResult {
+                        name: name.clone(),
+                        deleted: true,
+                        error: None,
+                    });
+                }
+                Err(e) => {
+                    total_failed += 1;
+                    results.push(BranchDeleteResult {
+                        name: name.clone(),
+                        deleted: false,
+                        error: Some(e),
+                    });
+                }
+            }
+        }
+
+        Ok(BatchDeleteResult {
+            results,
+            total_deleted,
+            total_failed,
+        })
     })
     .await
     .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?

@@ -3,6 +3,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   FileText,
   FolderOpen,
+  FolderTree,
+  GitBranch,
   GitFork,
   RefreshCw,
   Search,
@@ -13,11 +15,10 @@ import { useCallback, useEffect, useState } from "react";
 import { useRecentRepos } from "../hooks/useRecentRepos";
 import { useBranchStore } from "../stores/branches";
 import { useBladeStore } from "../stores/blades";
-import { useChangelogStore } from "../stores/changelogStore";
 import { useNavigationStore } from "../stores/navigation";
 import { useCommandPaletteStore } from "../stores/commandPalette";
 import { useRepositoryStore } from "../stores/repository";
-import { useSettingsStore } from "../stores/settings";
+import { useBladeNavigation } from "../hooks/useBladeNavigation";
 import { useStashStore } from "../stores/stash";
 import { useTagStore } from "../stores/tags";
 import { toast } from "../stores/toast";
@@ -48,8 +49,7 @@ export function Header() {
   const { loadStashes, saveStash, isLoading: stashesLoading } = useStashStore();
   const { loadTags, isLoading: tagsLoading } = useTagStore();
   const { undoInfo, isUndoing, loadUndoInfo, performUndo } = useUndoStore();
-  const openChangelog = useChangelogStore((s) => s.openDialog);
-  const openSettings = useSettingsStore((s) => s.openSettings);
+  const { openBlade } = useBladeNavigation();
   const { addRecentRepo } = useRecentRepos();
   const navigationStore = useNavigationStore();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -254,7 +254,7 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <ShortcutTooltip shortcut="mod+," label="Settings">
-            <Button variant="ghost" size="sm" onClick={openSettings}>
+            <Button variant="ghost" size="sm" onClick={() => openBlade("settings", {} as Record<string, never>)}>
               <Settings className="w-4 h-4" />
             </Button>
           </ShortcutTooltip>
@@ -297,7 +297,29 @@ export function Header() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={openChangelog}
+              onClick={() => openBlade("gitflow-cheatsheet", {} as Record<string, never>)}
+              title="Gitflow Guide"
+              aria-label="Open Gitflow guide"
+            >
+              <GitBranch className="w-4 h-4" />
+            </Button>
+          )}
+          {status && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => openBlade("repo-browser", {})}
+              title="Browse repository files"
+              aria-label="Browse repository files"
+            >
+              <FolderTree className="w-4 h-4" />
+            </Button>
+          )}
+          {status && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => openBlade("changelog", {} as Record<string, never>)}
               title="Generate Changelog"
             >
               <FileText className="w-4 h-4" />
@@ -308,21 +330,46 @@ export function Header() {
               Close
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              document.dispatchEvent(
-                new CustomEvent("clone-repository-dialog"),
-              );
-            }}
-            disabled={isLoading}
-            className="text-ctp-subtext1 hover:text-ctp-text"
-            title="Clone Repository"
-          >
-            <GitFork className="w-4 h-4 mr-2" />
-            Clone
-          </Button>
+          {status ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={async () => {
+                try {
+                  const { revealItemInDir } = await import(
+                    "@tauri-apps/plugin-opener"
+                  );
+                  await revealItemInDir(status.repoPath);
+                } catch (e) {
+                  toast.error(
+                    `Failed to reveal: ${e instanceof Error ? e.message : String(e)}`,
+                  );
+                }
+              }}
+              className="text-ctp-subtext1 hover:text-ctp-text"
+              title="Reveal in Finder"
+              aria-label="Reveal repository in file manager"
+            >
+              <FolderOpen className="w-4 h-4 mr-2" />
+              Reveal
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                document.dispatchEvent(
+                  new CustomEvent("clone-repository-dialog"),
+                );
+              }}
+              disabled={isLoading}
+              className="text-ctp-subtext1 hover:text-ctp-text"
+              title="Clone Repository"
+            >
+              <GitFork className="w-4 h-4 mr-2" />
+              Clone
+            </Button>
+          )}
           <ShortcutTooltip shortcut="mod+o" label="Open Repository">
             <Button
               variant="ghost"

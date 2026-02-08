@@ -1,7 +1,8 @@
-import { AlertTriangle, Flag, GitBranch, Play, Square, X } from "lucide-react";
+import { AlertTriangle, BookOpen, Flag, GitBranch, Play, Square, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useBranchStore } from "../../stores/branches";
 import { useGitflowStore } from "../../stores/gitflow";
+import { useBladeNavigation } from "../../hooks/useBladeNavigation";
 import { FinishFlowDialog } from "./FinishFlowDialog";
 import { InitGitflowDialog } from "./InitGitflowDialog";
 import { StartFlowDialog } from "./StartFlowDialog";
@@ -11,6 +12,7 @@ type FlowType = "feature" | "release" | "hotfix";
 export function GitflowPanel() {
   const { status, isLoading, error, refresh, abort, clearError } =
     useGitflowStore();
+  const { openBlade } = useBladeNavigation();
   const { branches } = useBranchStore();
   const [showStartDialog, setShowStartDialog] = useState<FlowType | null>(null);
   const [showFinishDialog, setShowFinishDialog] = useState<FlowType | null>(
@@ -194,6 +196,18 @@ export function GitflowPanel() {
         >
           <Square className="w-3.5 h-3.5 text-ctp-peach" />
           <span>Finish Hotfix</span>
+        </button>
+      </div>
+
+      {/* Reference */}
+      <div className="pt-1.5 border-t border-ctp-surface0">
+        <button
+          type="button"
+          onClick={() => openBlade("gitflow-cheatsheet", {} as Record<string, never>)}
+          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-sm text-left rounded hover:bg-ctp-surface0 transition-colors text-ctp-subtext1"
+        >
+          <BookOpen className="w-3.5 h-3.5" />
+          <span>Gitflow Guide</span>
         </button>
       </div>
 

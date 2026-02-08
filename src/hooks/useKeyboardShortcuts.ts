@@ -2,10 +2,10 @@ import { Channel } from "@tauri-apps/api/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useHotkeys } from "react-hotkeys-hook";
 import { type SyncProgress, commands } from "../bindings";
+import { openBlade } from "../lib/bladeOpener";
 import { useBladeStore } from "../stores/blades";
 import { useCommandPaletteStore } from "../stores/commandPalette";
 import { useRepositoryStore } from "../stores/repository";
-import { useSettingsStore } from "../stores/settings";
 import { useTopologyStore } from "../stores/topology";
 import { toast } from "../stores/toast";
 
@@ -21,11 +21,11 @@ import { toast } from "../stores/toast";
  * - Cmd/Ctrl+Shift+L: Pull (L for "pull Latest")
  * - Cmd/Ctrl+Shift+F: Fetch
  * - Cmd/Ctrl+Shift+M: Toggle amend commit
+ * - Backspace: Pop blade (navigate back)
  */
 export function useKeyboardShortcuts() {
   const queryClient = useQueryClient();
   const { status } = useRepositoryStore();
-  const openSettings = useSettingsStore((s) => s.openSettings);
 
   // Stage all mutation
   const stageAllMutation = useMutation({
@@ -109,7 +109,7 @@ export function useKeyboardShortcuts() {
     "mod+,",
     (e) => {
       e.preventDefault();
-      openSettings();
+      openBlade("settings", {} as Record<string, never>);
     },
     { preventDefault: true },
   );
@@ -198,6 +198,19 @@ export function useKeyboardShortcuts() {
     { enableOnFormTags: false },
   );
 
+  // Backspace - navigate back (pop blade stack)
+  useHotkeys(
+    "backspace",
+    () => {
+      if (useCommandPaletteStore.getState().isOpen) return;
+      const bladeStore = useBladeStore.getState();
+      if (bladeStore.bladeStack.length > 1) {
+        bladeStore.popBlade();
+      }
+    },
+    { enableOnFormTags: false },
+  );
+
   // Enter - open details for selected commit in topology
   useHotkeys(
     "enter",
@@ -209,11 +222,7 @@ export function useKeyboardShortcuts() {
         topologyStore.selectedCommit &&
         bladeStore.bladeStack.length === 1
       ) {
-        bladeStore.pushBlade({
-          type: "commit-details",
-          title: "Commit",
-          props: { oid: topologyStore.selectedCommit },
-        });
+        openBlade("commit-details", { oid: topologyStore.selectedCommit });
       }
     },
     { enableOnFormTags: false, enabled: !!status },

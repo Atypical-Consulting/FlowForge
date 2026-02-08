@@ -1,17 +1,16 @@
 import { Channel } from "@tauri-apps/api/core";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, PenLine, RotateCcw } from "lucide-react";
+import { Loader2, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { type SyncProgress, commands } from "../../bindings";
 import { cn } from "../../lib/utils";
 import { toast } from "../../stores/toast";
 import { ShortcutTooltip } from "../ui/ShortcutTooltip";
 import { Button } from "../ui/button";
-import { ConventionalCommitModal } from "./ConventionalCommitModal";
+import { ConventionalCommitForm } from "./ConventionalCommitForm";
 
 export function CommitForm() {
   const [useConventional, setUseConventional] = useState(false);
-  const [showModal, setShowModal] = useState(false);
   const [message, setMessage] = useState("");
   const [amend, setAmend] = useState(false);
   const queryClient = useQueryClient();
@@ -122,7 +121,7 @@ export function CommitForm() {
   const status = result?.status === "ok" ? result.data : null;
   const hasStagedFiles = status && status.staged.length > 0;
 
-  // Handle commit from ConventionalCommitModal
+  // Handle commit from ConventionalCommitForm
   const handleConventionalCommit = (commitMessage: string) => {
     commitMutation.mutate(commitMessage);
   };
@@ -158,18 +157,14 @@ export function CommitForm() {
         </label>
       </div>
 
-      {/* Conventional commit mode - show button to open modal */}
+      {/* Conventional commit mode - inline form */}
       {useConventional ? (
-        <div className="space-y-3">
-          <Button
-            onClick={() => setShowModal(true)}
+        <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+          <ConventionalCommitForm
+            onCommit={handleConventionalCommit}
+            onCancel={() => setUseConventional(false)}
             disabled={commitMutation.isPending || !hasStagedFiles}
-            variant="outline"
-            className="w-full"
-          >
-            <PenLine className="w-4 h-4 mr-2" />
-            Write commit message...
-          </Button>
+          />
           {!hasStagedFiles && (
             <p className="text-xs text-ctp-overlay0 text-center">
               No staged changes to commit
@@ -180,12 +175,6 @@ export function CommitForm() {
               {String(commitMutation.error)}
             </p>
           )}
-          <ConventionalCommitModal
-            open={showModal}
-            onOpenChange={setShowModal}
-            onCommit={handleConventionalCommit}
-            disabled={commitMutation.isPending || !hasStagedFiles}
-          />
         </div>
       ) : (
         /* Simple commit form */

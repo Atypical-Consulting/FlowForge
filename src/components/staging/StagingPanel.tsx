@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileCheck, FolderTree, List, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { FileCheck, FolderTree, List } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import type { FileChange } from "../../bindings";
 import { commands } from "../../bindings";
 import { formatShortcut } from "../../hooks/useKeyboardShortcuts";
@@ -13,17 +13,11 @@ import { FileList } from "./FileList";
 import { FileTreeSearch } from "./FileTreeSearch";
 import { FileTreeView } from "./FileTreeView";
 
-interface StagingPanelProps {
-  onFileSelect?: (
-    file: FileChange,
-    section: "staged" | "unstaged" | "untracked",
-  ) => void;
-}
-
-export function StagingPanel({ onFileSelect }: StagingPanelProps = {}) {
+export function StagingPanel() {
   const queryClient = useQueryClient();
-  const { viewMode, setViewMode, selectedFile, selectFile } = useStagingStore();
+  const { viewMode, setViewMode, selectedFile, selectFile, fileListScrollTop, setFileListScrollTop } = useStagingStore();
   const [searchFilter, setSearchFilter] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const {
     data: result,
@@ -72,6 +66,46 @@ export function StagingPanel({ onFileSelect }: StagingPanelProps = {}) {
       }
     }
   }, [result, selectedFile, selectFile]);
+
+  // Reconcile selected file after stage/unstage (file moves between sections)
+  const stagedLen = result?.status === "ok" ? result.data.staged.length : 0;
+  const unstagedLen = result?.status === "ok" ? result.data.unstaged.length : 0;
+  const untrackedLen = result?.status === "ok" ? result.data.untracked.length : 0;
+
+  useEffect(() => {
+    if (!selectedFile || !result || result.status !== "ok") return;
+    const status = result.data;
+    const filePath = selectedFile.path;
+
+    const inStaged = status.staged.find((f) => f.path === filePath);
+    const inUnstaged = status.unstaged.find((f) => f.path === filePath);
+    const inUntracked = status.untracked.find((f) => f.path === filePath);
+
+    if (inStaged) {
+      selectFile(inStaged, "staged");
+    } else if (inUnstaged) {
+      selectFile(inUnstaged, "unstaged");
+    } else if (inUntracked) {
+      selectFile(inUntracked, "untracked");
+    }
+  }, [stagedLen, unstagedLen, untrackedLen]);
+
+  // Restore scroll position on mount
+  useEffect(() => {
+    if (scrollRef.current && fileListScrollTop > 0) {
+      scrollRef.current.scrollTop = fileListScrollTop;
+    }
+  }, []);
+
+  // Save scroll position on unmount
+  useEffect(() => {
+    const el = scrollRef.current;
+    return () => {
+      if (el) {
+        setFileListScrollTop(el.scrollTop);
+      }
+    };
+  }, [setFileListScrollTop]);
 
   if (isLoading) {
     return (
@@ -153,7 +187,7 @@ export function StagingPanel({ onFileSelect }: StagingPanelProps = {}) {
       </div>
 
       {/* File lists */}
-      <div className="flex-1 overflow-y-auto">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto">
         {viewMode === "tree" ? (
           <>
             {status.staged.length > 0 && (
@@ -177,7 +211,7 @@ export function StagingPanel({ onFileSelect }: StagingPanelProps = {}) {
                   files={status.staged}
                   section="staged"
                   filter={searchFilter}
-                  onFileSelect={onFileSelect}
+
                   onStageFolder={(paths) => unstageFolderMutation.mutate(paths)}
                 />
               </div>
@@ -204,7 +238,7 @@ export function StagingPanel({ onFileSelect }: StagingPanelProps = {}) {
                   files={status.unstaged}
                   section="unstaged"
                   filter={searchFilter}
-                  onFileSelect={onFileSelect}
+
                   onStageFolder={(paths) => stageFolderMutation.mutate(paths)}
                 />
               </div>
@@ -231,7 +265,7 @@ export function StagingPanel({ onFileSelect }: StagingPanelProps = {}) {
                   files={status.untracked}
                   section="untracked"
                   filter={searchFilter}
-                  onFileSelect={onFileSelect}
+
                   onStageFolder={(paths) => stageFolderMutation.mutate(paths)}
                 />
               </div>
@@ -244,21 +278,18 @@ export function StagingPanel({ onFileSelect }: StagingPanelProps = {}) {
               files={status.staged}
               section="staged"
               onUnstageAll={() => unstageAllMutation.mutate()}
-              onFileSelect={onFileSelect}
             />
             <FileList
               title="Changes"
               files={status.unstaged}
               section="unstaged"
               onStageAll={() => stageAllMutation.mutate()}
-              onFileSelect={onFileSelect}
             />
             <FileList
               title="Untracked Files"
               files={status.untracked}
               section="untracked"
               onStageAll={() => stageAllMutation.mutate()}
-              onFileSelect={onFileSelect}
             />
           </>
         )}

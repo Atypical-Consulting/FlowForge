@@ -1,32 +1,18 @@
 import {
-  AlignJustify,
   Archive,
-  Columns,
   FolderGit2,
   GitBranch,
   GitMerge,
   Plus,
   Tag,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import type { Blade } from "../stores/blades";
-import { useBladeNavigation } from "../hooks/useBladeNavigation";
-import {
-  BladeContainer,
-  BladePanel,
-  CommitDetailsBlade,
-  DiffBlade,
-  StagingChangesBlade,
-  TopologyRootBlade,
-  ViewerImageBlade,
-  ViewerNupkgBlade,
-} from "./blades";
+import { useEffect, useState } from "react";
+import { useRepositoryStore } from "../stores/repository";
+import { BladeContainer } from "./blades";
 import { BranchList } from "./branches/BranchList";
-import { Button } from "./ui/button";
 import { CommitForm } from "./commit/CommitForm";
 import { GitflowPanel } from "./gitflow";
 import { ResizablePanelLayout, ResizablePanel, ResizeHandle } from "./layout";
-import { useRepositoryStore } from "../stores/repository";
 import { StashList } from "./stash/StashList";
 import { TagList } from "./tags/TagList";
 import {
@@ -37,13 +23,11 @@ import {
 
 export function RepositoryView() {
   const { status } = useRepositoryStore();
-  const { goBack } = useBladeNavigation();
   const [showBranchDialog, setShowBranchDialog] = useState(false);
   const [showStashDialog, setShowStashDialog] = useState(false);
   const [showTagDialog, setShowTagDialog] = useState(false);
   const [showWorktreeDialog, setShowWorktreeDialog] = useState(false);
   const [worktreeToDelete, setWorktreeToDelete] = useState<string | null>(null);
-  const [diffInline, setDiffInline] = useState(true);
 
   // Listen for create-branch-dialog event from command palette
   useEffect(() => {
@@ -51,105 +35,6 @@ export function RepositoryView() {
     document.addEventListener("create-branch-dialog", handler);
     return () => document.removeEventListener("create-branch-dialog", handler);
   }, []);
-
-  const renderBlade = useCallback(
-    (blade: Blade) => {
-      switch (blade.type) {
-        case "staging-changes":
-          return <StagingChangesBlade />;
-        case "topology-graph":
-          return <TopologyRootBlade />;
-        case "commit-details":
-          return (
-            <BladePanel title="Commit" showBack onBack={goBack}>
-              <CommitDetailsBlade oid={String(blade.props.oid)} />
-            </BladePanel>
-          );
-        case "diff": {
-          const filePath = String(blade.props.filePath);
-          const lastSlash = filePath.lastIndexOf("/");
-          const titleNode =
-            lastSlash === -1 ? (
-              <span className="text-sm font-semibold text-ctp-text truncate">
-                {filePath}
-              </span>
-            ) : (
-              <span className="text-sm truncate">
-                <span className="text-ctp-overlay1">
-                  {filePath.slice(0, lastSlash + 1)}
-                </span>
-                <span className="font-semibold text-ctp-text">
-                  {filePath.slice(lastSlash + 1)}
-                </span>
-              </span>
-            );
-          return (
-            <BladePanel
-              title="Diff"
-              titleContent={titleNode}
-              trailing={
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setDiffInline((v) => !v)}
-                  title={
-                    diffInline ? "Switch to side-by-side" : "Switch to inline"
-                  }
-                >
-                  {diffInline ? (
-                    <Columns className="w-4 h-4" />
-                  ) : (
-                    <AlignJustify className="w-4 h-4" />
-                  )}
-                </Button>
-              }
-              showBack
-              onBack={goBack}
-            >
-              <DiffBlade
-                source={
-                  blade.props as
-                    | { mode: "commit"; oid: string; filePath: string }
-                    | { mode: "staging"; filePath: string; staged: boolean }
-                }
-                inline={diffInline}
-              />
-            </BladePanel>
-          );
-        }
-        case "viewer-nupkg":
-          return (
-            <BladePanel
-              title={String(blade.props.filePath).split("/").pop() || "Package"}
-              showBack
-              onBack={goBack}
-            >
-              <ViewerNupkgBlade filePath={String(blade.props.filePath)} />
-            </BladePanel>
-          );
-        case "viewer-image":
-          return (
-            <BladePanel
-              title={String(blade.props.filePath).split("/").pop() || "Image"}
-              showBack
-              onBack={goBack}
-            >
-              <ViewerImageBlade
-                filePath={String(blade.props.filePath)}
-                oid={
-                  blade.props.mode === "commit"
-                    ? String(blade.props.oid)
-                    : undefined
-                }
-              />
-            </BladePanel>
-          );
-        default:
-          return <div>Unknown blade type</div>;
-      }
-    },
-    [goBack, diffInline],
-  );
 
   if (!status) return null;
 
@@ -276,7 +161,7 @@ export function RepositoryView() {
 
         {/* Main area - Blade Container */}
         <ResizablePanel id="blades" defaultSize={80}>
-          <BladeContainer renderBlade={renderBlade} />
+          <BladeContainer />
         </ResizablePanel>
       </ResizablePanelLayout>
 

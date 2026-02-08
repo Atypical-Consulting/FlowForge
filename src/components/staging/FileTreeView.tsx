@@ -27,10 +27,6 @@ interface FileTreeViewProps {
   files: FileChange[];
   section: "staged" | "unstaged" | "untracked";
   filter?: string;
-  onFileSelect?: (
-    file: FileChange,
-    section: "staged" | "unstaged" | "untracked",
-  ) => void;
   onStageFolder?: (paths: string[]) => void;
 }
 
@@ -38,7 +34,6 @@ export function FileTreeView({
   files,
   section,
   filter = "",
-  onFileSelect,
   onStageFolder,
 }: FileTreeViewProps) {
   const filteredFiles = useMemo(() => {
@@ -97,7 +92,6 @@ export function FileTreeView({
           node={node}
           section={section}
           depth={0}
-          onFileSelect={onFileSelect}
           onStageFolder={onStageFolder}
         />
       ))}
@@ -133,10 +127,6 @@ interface TreeNodeProps {
   node: FileTreeNode;
   section: "staged" | "unstaged" | "untracked";
   depth: number;
-  onFileSelect?: (
-    file: FileChange,
-    section: "staged" | "unstaged" | "untracked",
-  ) => void;
   onStageFolder?: (paths: string[]) => void;
 }
 
@@ -144,7 +134,6 @@ function TreeNode({
   node,
   section,
   depth,
-  onFileSelect,
   onStageFolder,
 }: TreeNodeProps) {
   const [expanded, setExpanded] = useState(true);
@@ -157,7 +146,6 @@ function TreeNode({
         section={section}
         depth={depth}
         showFilenameOnly
-        onFileSelect={onFileSelect}
       />
     );
   }
@@ -248,7 +236,6 @@ function TreeNode({
                     node={child}
                     section={section}
                     depth={depth + 1}
-                    onFileSelect={onFileSelect}
                     onStageFolder={onStageFolder}
                   />
                 ) : child.file ? (
@@ -257,7 +244,6 @@ function TreeNode({
                     section={section}
                     depth={0}
                     showFilenameOnly
-                    onFileSelect={onFileSelect}
                   />
                 ) : null}
               </ConnectorRow>
