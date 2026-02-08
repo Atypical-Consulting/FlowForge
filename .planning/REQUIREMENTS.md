@@ -1,0 +1,124 @@
+# Requirements: FlowForge
+
+**Defined:** 2026-02-08
+**Core Value:** The intelligence is in the agent; the authority is in the infrastructure.
+
+## v1.4 Requirements
+
+Requirements for v1.4.0 Architecture & Navigation Overhaul. Each maps to roadmap phases.
+
+### Navigation (XState FSM)
+
+- [ ] **NAV-01**: User can navigate between blades via push/pop/replace/reset events managed by XState FSM
+- [ ] **NAV-02**: User's blade stack is maintained in XState context with type-safe TypedBlade entries
+- [ ] **NAV-03**: User is prevented from navigating away from blades with unsaved form state (navigation guards)
+- [ ] **NAV-04**: User can switch between processes (staging/topology) with atomic stack reset via FSM events
+- [ ] **NAV-05**: User cannot open duplicate singleton blades (settings, changelog) — enforced by FSM guards
+- [ ] **NAV-06**: User's blade stack is limited to a maximum depth to prevent unbounded growth
+- [ ] **NAV-07**: User can access navigation machine from hooks, command palette, and non-React contexts via createActorContext
+- [ ] **NAV-08**: Developer can inspect live navigation state via XState visual inspector in dev mode
+- [ ] **NAV-09**: User sees distinct transition animations for push vs pop vs replace blade operations
+- [ ] **NAV-10**: User sees a dirty-form indicator on blade strips when a blade has unsaved changes
+
+### Init Repo Blade
+
+- [ ] **INIT-01**: User can initialize a repository through a dedicated full-width Init Repo blade
+- [ ] **INIT-02**: User can search and filter .gitignore templates from the full GitHub collection (163 templates)
+- [ ] **INIT-03**: User can preview .gitignore template contents before applying
+- [ ] **INIT-04**: User can compose multiple .gitignore templates (e.g., Node + macOS + JetBrains)
+- [ ] **INIT-05**: User can select .gitignore templates offline via bundled fallback (top 15-20 templates)
+- [ ] **INIT-06**: User can choose the default branch name during initialization
+- [ ] **INIT-07**: User can optionally generate a README.md during initialization
+- [ ] **INIT-08**: User can optionally create an initial commit with generated files
+- [ ] **INIT-09**: User receives smart .gitignore recommendations based on auto-detected project type
+- [ ] **INIT-10**: User can browse .gitignore templates grouped by category (Languages, Frameworks, Editors/IDEs, OS)
+
+### Conventional Commit Blade
+
+- [ ] **CC-01**: User can compose conventional commits in a dedicated full-width blade workspace
+- [ ] **CC-02**: User can select commit type, scope, and description using existing CC components in wider layout
+- [ ] **CC-03**: User can preview the full commit message in a generous monospace preview area
+- [ ] **CC-04**: User can commit and push in a single workflow from the CC blade
+- [ ] **CC-05**: User is automatically navigated back to staging after a successful commit
+- [ ] **CC-06**: User can amend the previous commit with type/scope/description fields pre-filled
+- [ ] **CC-07**: User can still use the inline sidebar CC form for quick commits (both modes coexist)
+- [ ] **CC-08**: User can view scope frequency visualization from commit history
+- [ ] **CC-09**: User can use pre-defined commit message templates for common patterns
+
+### File Structure
+
+- [ ] **STRC-01**: Developer finds each blade's files co-located in a single feature module directory
+- [ ] **STRC-02**: Developer can add a new blade type by creating files in one feature directory
+- [ ] **STRC-03**: Blade auto-discovery works with the new feature-module file structure
+- [ ] **STRC-04**: Shared blade infrastructure (BladeContainer, BladeRenderer, etc.) remains in a central shared directory
+- [ ] **STRC-05**: Developer can migrate blades gradually (old and new structures coexist)
+- [ ] **STRC-06**: Import boundaries are enforced (blades don't import from other blades, features don't import from other features)
+
+### Architecture & Tech Debt
+
+- [ ] **ARCH-01**: Developer can run unit tests via Vitest with jsdom environment and React Testing Library
+- [ ] **ARCH-02**: Developer can test XState navigation machine guards and transitions with unit tests
+- [ ] **ARCH-03**: Developer can test Zustand store logic with isolated, auto-resetting test setup
+- [ ] **ARCH-04**: Developer can run component smoke tests that verify each blade renders without crashing
+- [ ] **ARCH-05**: Developer finds related Zustand stores consolidated into domain-grouped stores
+- [ ] **ARCH-06**: Developer finds a single blade opener implementation (duplicate removed)
+- [ ] **ARCH-07**: closeRepository() resets the blade stack (stale content fix)
+- [ ] **ARCH-08**: defaultTab setting is wired in blade store initialization
+- [ ] **ARCH-09**: Topology shows EmptyState for repositories with zero commits
+- [ ] **ARCH-10**: Orphaned v1.0 code is removed (greet, getMergeStatus, CollapsibleSidebar, AnimatedList, FadeIn)
+- [ ] **ARCH-11**: Debug page (viewer3d-test.html) is excluded from production bundle
+- [ ] **ARCH-12**: Gitflow cheatsheet is registered in command palette
+- [ ] **ARCH-13**: Review store errors surface as user-facing toasts instead of console-only
+
+## Future Requirements
+
+Deferred to future release. Tracked but not in current roadmap.
+
+### Navigation Enhancements
+
+- **NAV-F01**: User can navigate forward/back through blade history (browser-style)
+- **NAV-F02**: XState machine definitions support HMR in development
+
+### Init Repo Enhancements
+
+- **INIT-F01**: User can select a LICENSE file during initialization
+- **INIT-F02**: User can create repo from template (clone + reinitialize)
+
+### Conventional Commit Enhancements
+
+- **CC-F01**: User receives AI-powered commit message suggestions
+- **CC-F02**: User can view multiple active blades side-by-side (blade tabs)
+
+### Testing Enhancements
+
+- **ARCH-F01**: E2E testing with Playwright for Tauri desktop app
+- **ARCH-F02**: Test coverage threshold enforced in CI pipeline
+
+## Out of Scope
+
+Explicitly excluded. Documented to prevent scope creep.
+
+| Feature | Reason |
+|---------|--------|
+| Replace all Zustand stores with XState | XState is for navigation FSM only; Zustand for data stores. Migrating 21 stores is a rewrite with no UX benefit |
+| File-based routing (React Router v7) | FlowForge uses blade stack navigation, not URL-mapped pages |
+| Custom .gitignore text editor | Template picker + preview is sufficient; post-init editing in any editor |
+| Snapshot testing | Brittle for UI; behavior-based Testing Library tests preferred |
+| XState HMR for machine definitions | Creates ghost states and race conditions; accept page reload |
+
+## Traceability
+
+Which phases cover which requirements. Updated during roadmap creation.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| (populated during roadmap creation) | | |
+
+**Coverage:**
+- v1.4 requirements: 39 total
+- Mapped to phases: 0
+- Unmapped: 39
+
+---
+*Requirements defined: 2026-02-08*
+*Last updated: 2026-02-08 after initial definition*
