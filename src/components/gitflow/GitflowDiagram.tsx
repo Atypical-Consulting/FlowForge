@@ -22,6 +22,108 @@ const LANE_LABELS: Record<string, string> = {
   hotfix: "hotfix/*",
 };
 
+// Per-lane commit positions — long-lived branches get more dots
+const LANE_COMMITS: Record<string, number[]> = {
+  main: [200, 350, 500, 650],
+  develop: [200, 300, 450, 600, 700],
+  feature: [350, 450, 500],
+  release: [400, 500, 550],
+  hotfix: [450, 550],
+};
+
+interface FlowCurve {
+  from: GitflowBranchType; // lane the curve relates to for highlighting
+  path: string; // SVG cubic bezier path
+  color: string; // from BRANCH_TYPE_COLORS
+  startX: number;
+  startY: number; // for connection dot
+  endX: number;
+  endY: number; // for connection dot
+}
+
+const FLOW_CURVES: FlowCurve[] = [
+  // Feature branch-out (develop -> feature)
+  {
+    from: "feature",
+    path: "M 300 270 C 300 305, 350 305, 350 340",
+    color: BRANCH_TYPE_COLORS.feature,
+    startX: 300,
+    startY: 270,
+    endX: 350,
+    endY: 340,
+  },
+  // Feature merge-back (feature -> develop)
+  {
+    from: "feature",
+    path: "M 500 340 C 500 305, 600 305, 600 270",
+    color: BRANCH_TYPE_COLORS.feature,
+    startX: 500,
+    startY: 340,
+    endX: 600,
+    endY: 270,
+  },
+  // Release branch-out (develop -> release)
+  {
+    from: "release",
+    path: "M 450 270 C 450 200, 400 200, 400 130",
+    color: BRANCH_TYPE_COLORS.release,
+    startX: 450,
+    startY: 270,
+    endX: 400,
+    endY: 130,
+  },
+  // Release merge to main
+  {
+    from: "release",
+    path: "M 550 130 C 550 165, 500 165, 500 200",
+    color: BRANCH_TYPE_COLORS.release,
+    startX: 550,
+    startY: 130,
+    endX: 500,
+    endY: 200,
+  },
+  // Release merge back to develop
+  {
+    from: "release",
+    path: "M 550 130 C 550 200, 600 200, 600 270",
+    color: BRANCH_TYPE_COLORS.release,
+    startX: 550,
+    startY: 130,
+    endX: 600,
+    endY: 270,
+  },
+  // Hotfix branch-out (main -> hotfix)
+  {
+    from: "hotfix",
+    path: "M 350 200 C 350 130, 450 130, 450 60",
+    color: BRANCH_TYPE_COLORS.hotfix,
+    startX: 350,
+    startY: 200,
+    endX: 450,
+    endY: 60,
+  },
+  // Hotfix merge to main
+  {
+    from: "hotfix",
+    path: "M 550 60 C 550 130, 650 130, 650 200",
+    color: BRANCH_TYPE_COLORS.hotfix,
+    startX: 550,
+    startY: 60,
+    endX: 650,
+    endY: 200,
+  },
+  // Hotfix merge to develop
+  {
+    from: "hotfix",
+    path: "M 550 60 C 550 165, 700 165, 700 270",
+    color: BRANCH_TYPE_COLORS.hotfix,
+    startX: 550,
+    startY: 60,
+    endX: 700,
+    endY: 270,
+  },
+];
+
 /**
  * Gitflow branching workflow diagram rendered as inline SVG.
  * Uses Catppuccin CSS variable colors for branch lanes.
@@ -36,6 +138,9 @@ export function GitflowDiagram({ highlightedLane }: GitflowDiagramProps) {
     "feature",
   ];
 
+  const hasHighlight =
+    highlightedLane !== undefined && highlightedLane !== "other";
+
   return (
     <svg
       viewBox="0 0 800 400"
@@ -44,16 +149,33 @@ export function GitflowDiagram({ highlightedLane }: GitflowDiagramProps) {
       aria-label="Gitflow branching workflow diagram"
     >
       {/* Background */}
-      <rect width="800" height="400" fill="var(--catppuccin-color-mantle)" rx="8" />
+      <rect
+        width="800"
+        height="400"
+        fill="var(--catppuccin-color-mantle)"
+        rx="8"
+      />
 
-      {/* Lane lines and labels */}
+      {/* Glow filter for active lane */}
+      <defs>
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="3" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      {/* Lane lines, labels, and commit dots */}
       {laneOrder.map((lane) => {
-        const isActive = highlightedLane === lane;
+        const isActive = hasHighlight && highlightedLane === lane;
         const color = BRANCH_TYPE_COLORS[lane];
         const y = LANE_Y[lane];
+        const laneOpacity = isActive ? 1 : 0.7;
 
         return (
-          <g key={lane} opacity={isActive ? 1 : 0.4}>
+          <g key={lane} opacity={laneOpacity}>
             {/* Lane line */}
             <line
               x1={120}
@@ -63,9 +185,7 @@ export function GitflowDiagram({ highlightedLane }: GitflowDiagramProps) {
               stroke={color}
               strokeWidth={isActive ? 3 : 2}
               strokeLinecap="round"
-              {...(isActive && {
-                filter: "url(#glow)",
-              })}
+              {...(isActive && { filter: "url(#glow)" })}
             />
 
             {/* Lane label */}
@@ -80,8 +200,8 @@ export function GitflowDiagram({ highlightedLane }: GitflowDiagramProps) {
               {LANE_LABELS[lane]}
             </text>
 
-            {/* Example commit dots */}
-            {[200, 350, 500, 650].map((cx) => (
+            {/* Per-lane commit dots */}
+            {LANE_COMMITS[lane].map((cx) => (
               <circle
                 key={cx}
                 cx={cx}
@@ -94,78 +214,48 @@ export function GitflowDiagram({ highlightedLane }: GitflowDiagramProps) {
         );
       })}
 
-      {/* Branch/merge arrows (simplified illustration) */}
-      {/* Feature branches from develop */}
-      <path
-        d="M 250 270 Q 250 305 300 340"
-        fill="none"
-        stroke={BRANCH_TYPE_COLORS.feature}
-        strokeWidth={1.5}
-        strokeDasharray="4 4"
-        opacity={highlightedLane === "feature" ? 0.8 : 0.3}
-      />
-      <path
-        d="M 550 340 Q 600 305 600 270"
-        fill="none"
-        stroke={BRANCH_TYPE_COLORS.feature}
-        strokeWidth={1.5}
-        strokeDasharray="4 4"
-        opacity={highlightedLane === "feature" ? 0.8 : 0.3}
-      />
+      {/* Flow curves with connection dots */}
+      {FLOW_CURVES.map((curve, i) => {
+        const isActive = hasHighlight && highlightedLane === curve.from;
+        const curveOpacity = isActive ? 0.9 : 0.55;
 
-      {/* Release branches from develop, merge to main and develop */}
-      <path
-        d="M 350 270 Q 350 200 400 130"
-        fill="none"
-        stroke={BRANCH_TYPE_COLORS.release}
-        strokeWidth={1.5}
-        strokeDasharray="4 4"
-        opacity={highlightedLane === "release" ? 0.8 : 0.3}
-      />
-      <path
-        d="M 550 130 Q 575 165 575 200"
-        fill="none"
-        stroke={BRANCH_TYPE_COLORS.release}
-        strokeWidth={1.5}
-        strokeDasharray="4 4"
-        opacity={highlightedLane === "release" ? 0.8 : 0.3}
-      />
+        return (
+          <g key={i} opacity={curveOpacity}>
+            {/* Curve path */}
+            <path
+              d={curve.path}
+              fill="none"
+              stroke={curve.color}
+              strokeWidth={2.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
 
-      {/* Hotfix branches from main, merge to main and develop */}
-      <path
-        d="M 400 200 Q 400 130 450 60"
-        fill="none"
-        stroke={BRANCH_TYPE_COLORS.hotfix}
-        strokeWidth={1.5}
-        strokeDasharray="4 4"
-        opacity={highlightedLane === "hotfix" ? 0.8 : 0.3}
-      />
-      <path
-        d="M 600 60 Q 625 130 625 200"
-        fill="none"
-        stroke={BRANCH_TYPE_COLORS.hotfix}
-        strokeWidth={1.5}
-        strokeDasharray="4 4"
-        opacity={highlightedLane === "hotfix" ? 0.8 : 0.3}
-      />
+            {/* Connection dot at start */}
+            <circle
+              cx={curve.startX}
+              cy={curve.startY}
+              r={3}
+              fill={curve.color}
+            />
 
-      {/* Glow filter for active lane */}
-      <defs>
-        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="3" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
+            {/* Connection dot at end */}
+            <circle
+              cx={curve.endX}
+              cy={curve.endY}
+              r={3}
+              fill={curve.color}
+            />
+          </g>
+        );
+      })}
 
       {/* "You are here" indicator */}
-      {highlightedLane && highlightedLane !== "other" && (
+      {hasHighlight && (
         <g className="motion-safe:animate-gentle-pulse">
           {/* Outer glow circle */}
           <circle
-            cx={700}
+            cx={740}
             cy={LANE_Y[highlightedLane]}
             r={10}
             fill={BRANCH_TYPE_COLORS[highlightedLane]}
@@ -173,14 +263,14 @@ export function GitflowDiagram({ highlightedLane }: GitflowDiagramProps) {
           />
           {/* Inner dot */}
           <circle
-            cx={700}
+            cx={740}
             cy={LANE_Y[highlightedLane]}
             r={5}
             fill={BRANCH_TYPE_COLORS[highlightedLane]}
           />
           {/* Label */}
           <text
-            x={700}
+            x={740}
             y={LANE_Y[highlightedLane] - 18}
             fill={BRANCH_TYPE_COLORS[highlightedLane]}
             fontSize={10}
