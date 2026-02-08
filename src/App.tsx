@@ -9,6 +9,7 @@ import { RepositoryView } from "./components/RepositoryView";
 import { WelcomeView } from "./components/WelcomeView";
 import { ToastContainer } from "./components/ui/ToastContainer";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { NavigationProvider } from "./machines/navigation/context";
 import { useBranchMetadataStore } from "./stores/branchMetadata";
 import { useNavigationStore } from "./stores/navigation";
 import { useRepositoryStore } from "./stores/repository";
@@ -71,14 +72,16 @@ function App() {
   }, [status, queryClient, loadUndoInfo]);
 
   return (
-    <div className="flex flex-col h-screen bg-ctp-base text-ctp-text font-sans">
-      <Header />
-      <main className="flex-1 min-h-0 overflow-hidden">
-        {status ? <RepositoryView /> : <WelcomeView />}
-      </main>
-      <ToastContainer />
-      <CommandPalette />
-    </div>
+    <NavigationProvider>
+      <div className="flex flex-col h-screen bg-ctp-base text-ctp-text font-sans">
+        <Header />
+        <main className="flex-1 min-h-0 overflow-hidden">
+          {status ? <RepositoryView /> : <WelcomeView />}
+        </main>
+        <ToastContainer />
+        <CommandPalette />
+      </div>
+    </NavigationProvider>
   );
 }
 

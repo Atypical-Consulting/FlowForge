@@ -5,4 +5,5 @@ registerBlade({
   type: "changelog",
   defaultTitle: "Generate Changelog",
   component: ChangelogBlade,
+  singleton: true,
 });

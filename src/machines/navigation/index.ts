@@ -1,6 +1,13 @@
 export { navigationMachine } from "./navigationMachine";
 export { rootBladeForProcess } from "./actions";
 export {
+  NavigationProvider,
+  getNavigationActor,
+  setNavigationActor,
+  useNavigationActorRef,
+} from "./context";
+export { getInspector } from "./inspector";
+export {
   selectBladeStack,
   selectActiveBlade,
   selectActiveProcess,

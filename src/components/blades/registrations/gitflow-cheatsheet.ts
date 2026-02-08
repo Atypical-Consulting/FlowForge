@@ -12,4 +12,5 @@ registerBlade({
   defaultTitle: "Gitflow Guide",
   component: GitflowCheatsheetBlade,
   lazy: true,
+  singleton: true,
 });

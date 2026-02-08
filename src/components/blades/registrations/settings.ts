@@ -5,4 +5,5 @@ registerBlade({
   type: "settings",
   defaultTitle: "Settings",
   component: SettingsBlade,
+  singleton: true,
 });
