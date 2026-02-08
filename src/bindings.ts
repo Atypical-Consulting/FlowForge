@@ -416,6 +416,28 @@ async checkoutRemoteBranch(remoteBranch: string) : Promise<Result<null, GitError
 }
 },
 /**
+ * Delete multiple local branches in a single batch operation.
+ */
+async batchDeleteBranches(branchNames: string[], force: boolean) : Promise<Result<BatchDeleteResult, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("batch_delete_branches", { branchNames, force }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Get recently checked-out branches from the HEAD reflog.
+ */
+async getRecentCheckouts(limit: number | null) : Promise<Result<RecentCheckout[], GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_recent_checkouts", { limit }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * List all stash entries in the repository.
  */
 async listStashes() : Promise<Result<StashEntry[], GitError>> {
@@ -800,8 +822,10 @@ async gitInit(path: string, defaultBranch: string | null) : Promise<Result<InitR
 }
 },
 /**
- * List files and directories at a given path within the repository at HEAD.
+ * List files and directories at a given path within the repository.
  * 
+ * Merges entries from the HEAD tree and the working directory so that
+ * uncommitted/untracked files are also visible in the browser.
  * Pass an empty string for `path` to list the root directory.
  * Returns directories first, then files, both sorted alphabetically.
  */
@@ -814,8 +838,10 @@ async listRepoFiles(path: string) : Promise<Result<RepoFileEntry[], GitError>> {
 }
 },
 /**
- * Read file content from the repository at HEAD.
+ * Read file content from the repository at HEAD, with working-directory fallback.
  * 
+ * First tries the git HEAD tree. If the file is not found there (e.g. uncommitted),
+ * falls back to reading from the working directory on disk.
  * Binary files are returned as base64-encoded content.
  * Text files are returned as UTF-8 strings.
  */
@@ -872,6 +898,38 @@ async setGitGlobalConfig(key: string, value: string) : Promise<Result<null, GitE
  * Information about active Gitflow workflow.
  */
 export type ActiveFlow = { flowType: FlowType; name: string; sourceBranch: string }
+/**
+ * Result of a batch branch deletion operation.
+ */
+export type BatchDeleteResult = { 
+/**
+ * Per-branch results
+ */
+results: BranchDeleteResult[]; 
+/**
+ * Count of successfully deleted branches
+ */
+totalDeleted: number; 
+/**
+ * Count of branches that failed to delete
+ */
+totalFailed: number }
+/**
+ * Result of deleting a single branch in a batch operation.
+ */
+export type BranchDeleteResult = { 
+/**
+ * Branch name that was targeted
+ */
+name: string; 
+/**
+ * Whether the branch was successfully deleted
+ */
+deleted: boolean; 
+/**
+ * Error message if deletion failed
+ */
+error: string | null }
 /**
  * Information about a branch (local or remote).
  */
@@ -1442,6 +1500,18 @@ inProgress: boolean;
  * List of conflicted file paths
  */
 conflictedFiles: string[] }
+/**
+ * A recently checked-out branch extracted from the reflog.
+ */
+export type RecentCheckout = { 
+/**
+ * Branch name (bare, without refs/heads/ prefix)
+ */
+name: string; 
+/**
+ * Unix timestamp in milliseconds when the checkout occurred
+ */
+lastCheckoutMs: number }
 /**
  * Information about a configured remote.
  */

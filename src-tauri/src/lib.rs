@@ -6,8 +6,8 @@ use std::sync::Mutex;
 use git::{
     RepositoryState, WatcherState,
     branch::{
-        checkout_branch, checkout_remote_branch, create_branch, delete_branch, list_all_branches,
-        list_branches,
+        batch_delete_branches, checkout_branch, checkout_remote_branch, create_branch,
+        delete_branch, get_recent_checkouts, list_all_branches, list_branches,
     },
     browse::{list_repo_files, read_repo_file},
     changelog::generate_changelog_cmd,
@@ -91,6 +91,8 @@ pub fn run() {
         delete_branch,
         list_all_branches,
         checkout_remote_branch,
+        batch_delete_branches,
+        get_recent_checkouts,
         // Stash commands
         list_stashes,
         stash_save,
