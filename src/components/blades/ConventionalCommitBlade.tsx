@@ -1,6 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { AlertTriangle, Check, RotateCcw } from "lucide-react";
 import { useConventionalCommit } from "../../hooks/useConventionalCommit";
 import { useCommitExecution } from "../../hooks/useCommitExecution";
+import { useAmendPrefill } from "../../hooks/useAmendPrefill";
 import { useBladeFormGuard } from "../../hooks/useBladeFormGuard";
 import { useConventionalStore } from "../../stores/conventional";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
@@ -54,14 +57,37 @@ export function ConventionalCommitBlade({
   const { goBack } = useBladeNavigation();
   const { markDirty, markClean } = useBladeFormGuard(BLADE_ID);
 
+  // Success state for auto-navigate
+  const [commitSuccess, setCommitSuccess] = useState(false);
+  const [stayHere, setStayHere] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Amend pre-fill
+  const { prefillConventional, originalMessage } = useAmendPrefill({
+    mode: "conventional",
+  });
+
   const { commit, commitAndPush, isCommitting, isPushing } =
     useCommitExecution({
       onCommitSuccess: () => {
+        setCommitSuccess(true);
         reset();
         markClean();
-        goBack();
+
+        if (!stayHere) {
+          timerRef.current = setTimeout(() => {
+            goBack();
+          }, 1500);
+        }
       },
     });
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   // Initialize suggestions on mount
   useEffect(() => {
@@ -72,8 +98,9 @@ export function ConventionalCommitBlade({
   useEffect(() => {
     if (initialAmend) {
       store.getState().setIsAmend(true);
+      prefillConventional(store.getState());
     }
-  }, [initialAmend, store]);
+  }, [initialAmend, store, prefillConventional]);
 
   // Dirty form guard: mark dirty when form has content
   useEffect(() => {
@@ -85,6 +112,13 @@ export function ConventionalCommitBlade({
   }, [description, commitType, markDirty, markClean]);
 
   const isAmend = useConventionalStore((s) => s.isAmend);
+
+  const handleAmendToggle = (checked: boolean) => {
+    store.getState().setIsAmend(checked);
+    if (checked) {
+      prefillConventional(store.getState());
+    }
+  };
 
   const handleCommit = () => {
     if (isAmend) {
@@ -106,10 +140,68 @@ export function ConventionalCommitBlade({
     commitAndPush(currentMessage, isAmend);
   };
 
+  const handleStayHere = () => {
+    setStayHere(true);
+    setCommitSuccess(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+  };
+
   const isDescriptionOverLimit = description.length > MAX_DESCRIPTION_LENGTH;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="relative flex flex-col h-full">
+      {/* Success overlay */}
+      {commitSuccess && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="absolute inset-0 flex flex-col items-center justify-center bg-ctp-base/90 z-10"
+        >
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring" }}
+          >
+            <Check className="w-16 h-16 text-ctp-green" />
+          </motion.div>
+          <p className="mt-4 text-lg text-ctp-text">Commit successful!</p>
+          <button
+            type="button"
+            onClick={handleStayHere}
+            className="mt-2 text-sm text-ctp-blue hover:text-ctp-sapphire underline"
+          >
+            Stay here
+          </button>
+        </motion.div>
+      )}
+
+      {/* Amend toggle header */}
+      <div className="flex items-center gap-3 px-4 py-2 border-b border-ctp-surface0">
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="checkbox"
+            checked={isAmend}
+            onChange={(e) => handleAmendToggle(e.target.checked)}
+            className="rounded border-ctp-surface2 bg-ctp-surface0 text-ctp-peach focus:ring-ctp-peach"
+          />
+          <RotateCcw className="w-4 h-4 text-ctp-overlay1" />
+          <span className="text-ctp-subtext1">Amend last commit</span>
+        </label>
+      </div>
+
+      {/* Amend warning banner */}
+      {isAmend && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-ctp-peach/10 border-b border-ctp-peach/30 text-sm">
+          <AlertTriangle className="w-4 h-4 text-ctp-peach shrink-0" />
+          <span className="text-ctp-peach">
+            Amending previous commit
+            {originalMessage
+              ? `: "${originalMessage.split("\n")[0]}"`
+              : ""}
+          </span>
+        </div>
+      )}
+
       {/* Main content with split pane */}
       <div className="flex-1 min-h-0">
         <SplitPaneLayout
@@ -206,6 +298,19 @@ export function ConventionalCommitBlade({
                   Message Preview
                 </label>
               </div>
+
+              {/* Original message comparison when amending */}
+              {isAmend && originalMessage && (
+                <div className="space-y-2 mb-4">
+                  <label className="text-sm font-medium text-ctp-overlay1">
+                    Original Message
+                  </label>
+                  <pre className="p-3 text-sm bg-ctp-surface0/50 border border-ctp-surface1 rounded text-ctp-overlay1 font-mono whitespace-pre-wrap line-through opacity-60">
+                    {originalMessage}
+                  </pre>
+                </div>
+              )}
+
               <CommitPreview message={currentMessage} variant="full" />
             </div>
           }
