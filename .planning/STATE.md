@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 22 — New Content Blades
-Plan: 22-19 (all 19 plans complete)
-Status: All 19 plans executed (10 autonomous + 1 UAT + 8 gap closure), verification pending
-Last activity: 2026-02-08 — Gap closure plans 22-17 through 22-19 executed (wave 7)
+Plan: 22-22 (all 22 plans complete)
+Status: All 22 plans executed (10 autonomous + 1 UAT + 11 gap closure), verification pending
+Last activity: 2026-02-08 — Wave 8 gap closure plans 22-20 through 22-22 executed
 
 Progress: ██████░░░░ 60%
 
@@ -33,7 +33,7 @@ See `.planning/MILESTONES.md` for full history.
 | 20 | Blade Infrastructure & Modal Migration | 9 | Complete |
 | 20.1 | Blade Extensibility Refactoring | 5 | Complete |
 | 21 | Two-Column Staging & Inline Diff | 2 | Complete |
-| 22 | New Content Blades | 6 | Gap Closure Round 2 Complete |
+| 22 | New Content Blades | 6 | Gap Closure Round 3 Complete |
 | 23 | Branch Management | 6 | Pending |
 | 24 | Code Review Guidance & Documentation | 2 | Pending |
 
@@ -54,7 +54,7 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 ### Research Flags (v1.3.0)
 
 - ~~P1: Blade stack state corruption during modal-to-blade migration — addressed in Phase 20 (settings/changelog push onto existing stack, back navigates naturally)~~
-- ~~P2: WebGL context loss in Tauri WebViews for 3D viewer — addressed in Phase 22 (Viewer3dBlade detects context loss via Shadow DOM canvas, shows retry UI)~~
+- ~~P2: WebGL context loss in Tauri WebViews for 3D viewer — addressed in Phase 22 (Viewer3dBlade uses native canvas events for context loss detection via Three.js, no Shadow DOM)~~
 - ~~P3: XSS via repository markdown content — addressed in Phase 22 (rehype-sanitize strips dangerous tags, hljs class allowlist)~~
 - P4: File browser performance on large repos — Phase 22 uses react-query with staleTime; virtualization deferred to future phase if needed
 - ~~P5: Keyboard focus management across blade transitions — addressed in Phase 20 (Escape pops blade, standard tabbing works)~~
@@ -79,8 +79,8 @@ None.
 
 ## Next Steps
 
-All 19 plans complete (wave 7 gap closure: CSS vars, DiffBlade routing, 3D model loading, breadcrumb dedup, global Backspace, HMR warnings). Run `/gsd:verify-work 22` to verify phase completion.
+All 22 plans complete (wave 8 gap closure: Monaco 0px height, Three.js 3D viewer replacement, Gitflow SVG redesign). Run `/gsd:verify-work 22` to verify phase completion.
 
 ---
 *State updated: 2026-02-08*
-*Milestone: v1.3.0 Blades Blades Blades — Phase 22 gap closure round 2 complete, verification pending*
+*Milestone: v1.3.0 Blades Blades Blades — Phase 22 gap closure round 3 complete, verification pending*

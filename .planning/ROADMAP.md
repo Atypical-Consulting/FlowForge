@@ -113,9 +113,9 @@ Plans:
 - [x] 22-17-PLAN.md -- W7: Gap Closure — CSS variable name fix (var(--ctp-*) to var(--catppuccin-color-*))
 - [x] 22-18-PLAN.md -- W7: Gap Closure — DiffBlade markdown routing and 3D model atob revert
 - [x] 22-19-PLAN.md -- W7: Gap Closure — Breadcrumb dedup, global Backspace, HMR warning suppression
-- [ ] 22-20-PLAN.md -- W8: Gap Closure — Monaco 0px height fix and HMR registration cleanup
-- [ ] 22-21-PLAN.md -- W8: Gap Closure — Replace model-viewer with Three.js + GLTFLoader
-- [ ] 22-22-PLAN.md -- W8: Gap Closure — Redesign Gitflow SVG diagram (opacity, cubic curves, geometry)
+- [x] 22-20-PLAN.md -- W8: Gap Closure — Monaco 0px height fix and HMR registration cleanup
+- [x] 22-21-PLAN.md -- W8: Gap Closure — Replace model-viewer with Three.js + GLTFLoader
+- [x] 22-22-PLAN.md -- W8: Gap Closure — Redesign Gitflow SVG diagram (opacity, cubic curves, geometry)
 
 ---
 
@@ -162,7 +162,7 @@ Plans:
 | 20 | Blade Infrastructure & Modal Migration | 9 | Complete |
 | 20.1 | Blade Extensibility Refactoring | 5 | Complete |
 | 21 | Two-Column Staging & Inline Diff | 2 | Complete |
-| 22 | New Content Blades | 6 | Gap Closure Round 3 In Progress |
+| 22 | New Content Blades | 6 | Gap Closure Round 3 Complete |
 | 23 | Branch Management | 6 | Pending |
 | 24 | Code Review Guidance & Documentation | 2 | Pending |
 
