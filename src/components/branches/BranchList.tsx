@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
+import { Pin, Clock } from "lucide-react";
+import { useBranchScopes } from "../../hooks/useBranchScopes";
+import { useBranchMetadataStore } from "../../stores/branchMetadata";
 import { useBranchStore } from "../../stores/branches";
 import { toast } from "../../stores/toast";
 import { BranchItem } from "./BranchItem";
+import { BranchScopeSelector } from "./BranchScopeSelector";
+import { CollapsibleSection } from "./CollapsibleSection";
 import { CreateBranchDialog } from "./CreateBranchDialog";
 import { MergeDialog } from "./MergeDialog";
 
@@ -16,21 +21,43 @@ export function BranchList({
 }: BranchListProps) {
   const {
     branches,
+    pinnedBranches,
+    recentBranches,
+    activeScopeId,
+    setScope,
+    scopes,
+    repoPath,
     isLoading,
     error,
     loadBranches,
-    checkoutBranch,
-    deleteBranch,
-    mergeBranch,
-    lastMergeResult,
-    clearError,
-    clearMergeResult,
-  } = useBranchStore();
+    loadAllBranches,
+  } = useBranchScopes();
+
+  const { checkoutBranch, deleteBranch, mergeBranch, lastMergeResult, clearError, clearMergeResult } = useBranchStore();
   const [mergingBranch, setMergingBranch] = useState<string | null>(null);
 
   useEffect(() => {
     loadBranches();
-  }, [loadBranches]);
+    loadAllBranches(true);
+    useBranchMetadataStore.getState().initMetadata();
+  }, [loadBranches, loadAllBranches]);
+
+  const handleCheckout = async (branchName: string) => {
+    const success = await checkoutBranch(branchName);
+    if (success && repoPath) {
+      await useBranchMetadataStore.getState().recordBranchVisit(repoPath, branchName);
+    }
+  };
+
+  const handleTogglePin = async (branchName: string) => {
+    if (!repoPath) return;
+    const store = useBranchMetadataStore.getState();
+    if (store.isPinned(repoPath, branchName)) {
+      await store.unpinBranch(repoPath, branchName);
+    } else {
+      await store.pinBranch(repoPath, branchName);
+    }
+  };
 
   const handleDelete = async (name: string, isMerged: boolean | null) => {
     if (!isMerged) {
@@ -78,14 +105,65 @@ export function BranchList({
         </div>
       )}
 
+      <BranchScopeSelector
+        scopes={scopes}
+        activeScopeId={activeScopeId}
+        onChange={setScope}
+      />
+
       <div className="flex-1 overflow-y-auto p-2 space-y-1">
+        {pinnedBranches.length > 0 && (
+          <CollapsibleSection
+            title="Quick Access"
+            icon={<Pin className="w-3 h-3" />}
+            count={pinnedBranches.length}
+          >
+            <div className="space-y-0.5">
+              {pinnedBranches.map((branch) => (
+                <BranchItem
+                  key={`pin-${branch.name}`}
+                  branch={branch}
+                  onCheckout={() => handleCheckout(branch.name)}
+                  onDelete={() => handleDelete(branch.name, branch.isMerged)}
+                  onMerge={() => handleMerge(branch.name)}
+                  onTogglePin={() => handleTogglePin(branch.name)}
+                  disabled={isLoading}
+                />
+              ))}
+            </div>
+          </CollapsibleSection>
+        )}
+
+        {recentBranches.length > 0 && (
+          <CollapsibleSection
+            title="Recent"
+            icon={<Clock className="w-3 h-3" />}
+            count={recentBranches.length}
+          >
+            <div className="space-y-0.5">
+              {recentBranches.map((branch) => (
+                <BranchItem
+                  key={`recent-${branch.name}`}
+                  branch={branch}
+                  onCheckout={() => handleCheckout(branch.name)}
+                  onDelete={() => handleDelete(branch.name, branch.isMerged)}
+                  onMerge={() => handleMerge(branch.name)}
+                  onTogglePin={() => handleTogglePin(branch.name)}
+                  disabled={isLoading}
+                />
+              ))}
+            </div>
+          </CollapsibleSection>
+        )}
+
         {branches.map((branch) => (
           <BranchItem
             key={branch.name}
             branch={branch}
-            onCheckout={() => checkoutBranch(branch.name)}
+            onCheckout={() => handleCheckout(branch.name)}
             onDelete={() => handleDelete(branch.name, branch.isMerged)}
             onMerge={() => handleMerge(branch.name)}
+            onTogglePin={() => handleTogglePin(branch.name)}
             disabled={isLoading}
           />
         ))}
