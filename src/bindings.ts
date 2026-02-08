@@ -1287,6 +1287,10 @@ export type GitflowError =
  */
 { type: "MergeConflict" } | 
 /**
+ * Working directory has uncommitted changes
+ */
+{ type: "DirtyWorkingTree" } | 
+/**
  * Repository has no commits yet
  */
 { type: "UnbornHead" } | 

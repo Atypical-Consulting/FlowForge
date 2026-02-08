@@ -2,19 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-07)
+See: .planning/PROJECT.md (updated 2026-02-08)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** v1.3.0 Blades Blades Blades
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 24 — Code Review Guidance & Documentation (COMPLETE)
-Plan: 24-04 complete (4/4 plans done, verification passed)
-Status: All requirements verified — UX-03 (review checklist) and UX-04 (docs website)
-Last activity: 2026-02-08 — phase verified, all must-haves confirmed
+Phase: None — between milestones
+Plan: N/A
+Status: v1.3.0 shipped, next milestone not started
+Last activity: 2026-02-08 — v1.3.0 milestone archived
 
-Progress: ██████████ 100%
+Progress: N/A
 
 ## Milestone History
 
@@ -23,41 +23,27 @@ Progress: ██████████ 100%
 | v1.0.0 MVP | Complete | 2026-02-04 |
 | v1.1.0 Usability | Complete | 2026-02-06 |
 | v1.2.0 Bugfixing & Polish | Complete | 2026-02-07 |
+| v1.3.0 Blades Blades Blades | Complete | 2026-02-08 |
 
 See `.planning/MILESTONES.md` for full history.
-
-## v1.3.0 Phase Overview
-
-| Phase | Name | Requirements | Status |
-|-------|------|-------------|--------|
-| 20 | Blade Infrastructure & Modal Migration | 9 | Complete |
-| 20.1 | Blade Extensibility Refactoring | 5 | Complete |
-| 21 | Two-Column Staging & Inline Diff | 2 | Complete |
-| 22 | New Content Blades | 6 | Complete |
-| 23 | Branch Management | 6 | Complete |
-| 24 | Code Review Guidance & Documentation | 2 | Complete |
 
 ## Accumulated Context
 
 ### Tech Debt
 
+- closeRepository() does not call resetStack() (stale blade content in memory after close)
 - defaultTab setting not wired in blade store initialization
 - Topology lacks EmptyState for repos with zero commits
 - Orphaned v1.0 code: greet command, getMergeStatus, CollapsibleSidebar, AnimatedList, FadeIn
-- Pre-existing TS2440 in auto-generated bindings.ts (TAURI_CHANNEL conflict fixed with post-export strip in lib.rs)
-- closeRepository() does not call resetStack() (stale blade content in memory after close)
+- Pre-existing TS2440 in auto-generated bindings.ts
+- 3D viewer reliability on some hardware (diagnostic logging only)
+- Debug page (viewer3d-test.html) ships in production bundle
+- Gitflow cheatsheet not registered in command palette
+- Review store errors logged to console only (no user-facing toast)
 
 ### Key Decisions
 
 All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
-
-### Research Flags (v1.3.0)
-
-- ~~P1: Blade stack state corruption during modal-to-blade migration — addressed in Phase 20 (settings/changelog push onto existing stack, back navigates naturally)~~
-- ~~P2: WebGL context loss in Tauri WebViews for 3D viewer — addressed in Phase 22 (Viewer3dBlade uses native canvas events for context loss detection via Three.js, no Shadow DOM)~~
-- ~~P3: XSS via repository markdown content — addressed in Phase 22 (rehype-sanitize strips dangerous tags, hljs class allowlist)~~
-- P4: File browser performance on large repos — Phase 22 uses react-query with staleTime; virtualization deferred to future phase if needed
-- ~~P5: Keyboard focus management across blade transitions — addressed in Phase 20 (Escape pops blade, standard tabbing works)~~
 
 ### Pending Todos
 
@@ -79,8 +65,8 @@ None.
 
 ## Next Steps
 
-All phases complete. Milestone v1.3.0 ready for archival.
+Run `/gsd:new-milestone` to start next milestone (questioning → research → requirements → roadmap).
 
 ---
 *State updated: 2026-02-08*
-*Milestone: v1.3.0 Blades Blades Blades — Phase 23 complete, Phase 24 pending*
+*v1.3.0 Blades Blades Blades — SHIPPED*

@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A cross-platform desktop Git client built on Tauri (Rust backend + React frontend) that makes Gitflow, conventional commits, and worktrees the structural foundation of the interface — not afterthoughts buried in menus. The client enforces workflow conventions through its architecture, preventing invalid operations rather than just warning about them.
+A cross-platform desktop Git client built on Tauri (Rust backend + React frontend) that makes Gitflow, conventional commits, and worktrees the structural foundation of the interface — not afterthoughts buried in menus. The client enforces workflow conventions through its architecture, preventing invalid operations rather than just warning about them. Features a blade-based navigation system with 13 blade types for rich content preview and inline workflows.
 
 ## Core Value
 
@@ -83,24 +83,35 @@ Each layer adds value; each inner layer stands without the outer ones.
 - ✓ Diff header formatting (path gray + filename bold) — v1.2
 - ✓ Blade refresh on repository switch — v1.2
 
-### Active — v1.3.0 Blades Blades Blades
+- ✓ Settings migrated from modal to blade with back navigation — v1.3
+- ✓ Conventional commit composer inline in commit form (blade-integrated) — v1.3
+- ✓ Changelog preview as blade instead of modal dialog — v1.3
+- ✓ All modal mounts removed from App.tsx — v1.3
+- ✓ Extensible blade registry (1-2 files to add new blade type) — v1.3
+- ✓ Type-safe blade props with compile-time validation — v1.3
+- ✓ Error boundaries and Suspense fallbacks on all blades — v1.3
+- ✓ Two-column Changes/Staged layout with inline diff preview — v1.3
+- ✓ Inline diff expand to full-screen diff blade — v1.3
+- ✓ Markdown preview blade with GFM support — v1.3
+- ✓ Code viewer blade with Monaco read-only editor — v1.3
+- ✓ 3D model viewer blade with orbit controls (Three.js + GLTFLoader) — v1.3
+- ✓ Repository file browser blade at HEAD with breadcrumbs — v1.3
+- ✓ Gitflow cheat sheet blade with SVG diagram and "You are here" indicator — v1.3
+- ✓ DiffBlade markdown preview toggle for .md files — v1.3
+- ✓ Branch pin/favorites with persistent Quick Access section — v1.3
+- ✓ Branch scope selector (Local/Remote/Last Used) — v1.3
+- ✓ Bulk delete merged branches with Gitflow protection — v1.3
+- ✓ Feature branch tags in purple across topology and branch lists — v1.3
+- ✓ Contextual clone/reveal button in branch management — v1.3
+- ✓ Pre-merge review checklist for Gitflow finish operations — v1.3
+- ✓ Documentation website on GitHub Pages — v1.3
+- ✓ Rust commands for repo file browsing (list_repo_files, read_repo_file) — v1.3
+- ✓ Lazy-loaded viewer dependencies (react-markdown, three.js, Monaco) — v1.3
+- ✓ Unified branch classification and color system — v1.3
 
-**Goal:** Expand the blade navigation system into the primary interaction model — migrate modals to blades, add new content blades (markdown preview, 3D viewer, repo browser), improve staging UX, enhance branch management, and add code review encouragement within Gitflow workflows.
+### Active
 
-**Target features:**
-- Migrate Settings modal to blade system
-- Migrate Conventional Commit composer to blade system
-- Migrate Changelog generation to blade system
-- Markdown preview blade (from diff blade)
-- 3D model viewer blade (BabylonJS for Blender exports)
-- Repository file browser blade
-- Two-column Changes / Staged Changes layout
-- Feature branch tags displayed in purple
-- Branch management hub (local, remote, last-used, cleanup)
-- Code review guidance in Gitflow merge workflows
-- GitFlow cheat sheet reference blade
-- Fix Clone button when already inside a repository
-- Documentation website (GitHub Pages)
+(No active milestone — planning next)
 
 ### Deferred to v2+
 
@@ -122,16 +133,17 @@ Each layer adds value; each inner layer stands without the outer ones.
 - Plugin/extension system — complexity, security risks
 - CI/CD integration — feature creep
 - Built-in terminal — users have terminals
-- Code review features — GitHub/GitLab do this well
+- Code review features — GitHub/GitLab do this well (lightweight checklist added in v1.3)
 - Real-time collaboration — high complexity
 - Mobile apps — desktop-first
 
 ## Context
 
-**Current state:** Shipped v1.2.0 with ~23,964 LOC (7,919 Rust + 16,045 TypeScript).
-Tech stack: Tauri 2.x, React 19, Zustand, React Query, Monaco Editor, framer-motion.
-All 111 requirements implemented across 19 phases (97 plans) in three milestones.
-Active milestone: v1.3.0 — Blades Blades Blades.
+**Current state:** Shipped v1.3.0 with ~29,590 LOC (8,401 Rust + 21,189 TypeScript).
+Tech stack: Tauri 2.x, React 19, Zustand, React Query, Monaco Editor, Three.js, framer-motion.
+All 136 requirements implemented across 25 phases (~156 plans) in four milestones.
+13 blade types in registry-based navigation system.
+Documentation website live on GitHub Pages.
 
 **Known tech debt:**
 - closeRepository() does not call resetStack() (stale blade content in memory after close)
@@ -139,6 +151,10 @@ Active milestone: v1.3.0 — Blades Blades Blades.
 - Topology lacks EmptyState for repos with zero commits
 - Orphaned v1.0 code: greet command, getMergeStatus, CollapsibleSidebar, AnimatedList, FadeIn
 - Pre-existing TS2440 in auto-generated bindings.ts
+- 3D viewer reliability on some hardware (diagnostic logging only)
+- Debug page (viewer3d-test.html) ships in production bundle
+- Gitflow cheatsheet not registered in command palette
+- Review store errors logged to console only (no user-facing toast)
 
 **v2 vision:** MCP server exposing repository state (branches, worktrees, commit history, diffs, Gitflow context) as structured resources and tools. Tiered autonomy model:
 - **Tier 1 (full autonomy):** Reversible, local, convention-clear operations
@@ -174,6 +190,11 @@ Active milestone: v1.3.0 — Blades Blades Blades.
 | Command registry pattern (v1.2) | Centralized command definitions enable palette, shortcuts, and tooltips from single source | ✓ Good — 14 commands, single registration |
 | Shared commit type theme (v1.2) | Single COMMIT_TYPE_THEME module used by 4 consumers instead of per-component definitions | ✓ Good — no duplication |
 | git-cliff for changelogs (v1.2) | Automated changelog generation from conventional commits in CI/CD | ✓ Good — release notes auto-generated |
+| Blade registry over switch statement (v1.3) | Registry pattern reduces per-blade change footprint from 4-7 files to 1-2 | ✓ Good — extensible, type-safe |
+| Three.js over model-viewer (v1.3) | model-viewer Web Component conflicts with React lifecycle; Three.js gives full control | ✓ Good — reliable rendering |
+| Lazy-loaded content blades (v1.3) | Heavy dependencies (Three.js, Monaco, react-markdown) loaded on demand, zero startup impact | ✓ Good — no performance regression |
+| Lightweight review checklist over full PR review (v1.3) | Avoids duplicating GitHub/GitLab; encourages review habits without blocking merges | ✓ Good — non-intrusive guidance |
+| VitePress for documentation (v1.3) | Vue-based SSG with excellent DX, Catppuccin theme integration, GitHub Pages deployment | ✓ Good — fast, polished docs site |
 
 ---
-*Last updated: 2026-02-07 — v1.3.0 milestone started*
+*Last updated: 2026-02-08 after v1.3.0 milestone*
