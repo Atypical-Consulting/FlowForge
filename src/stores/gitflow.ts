@@ -57,6 +57,8 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
     const result = await commands.startFeature(name);
     if (result.status === "ok") {
       await get().refresh();
+      await useBranchStore.getState().loadBranches();
+      await useRepositoryStore.getState().refreshStatus();
       return result.data;
     }
     await get().refresh();
@@ -69,6 +71,8 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
     const result = await commands.finishFeature();
     if (result.status === "ok") {
       await get().refresh();
+      await useBranchStore.getState().loadBranches();
+      await useRepositoryStore.getState().refreshStatus();
       return true;
     }
     await get().refresh();
@@ -81,6 +85,8 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
     const result = await commands.startRelease(version);
     if (result.status === "ok") {
       await get().refresh();
+      await useBranchStore.getState().loadBranches();
+      await useRepositoryStore.getState().refreshStatus();
       return result.data;
     }
     await get().refresh();
@@ -93,6 +99,8 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
     const result = await commands.finishRelease(tagMessage ?? null);
     if (result.status === "ok") {
       await get().refresh();
+      await useBranchStore.getState().loadBranches();
+      await useRepositoryStore.getState().refreshStatus();
       return result.data;
     }
     await get().refresh();
@@ -105,6 +113,8 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
     const result = await commands.startHotfix(name);
     if (result.status === "ok") {
       await get().refresh();
+      await useBranchStore.getState().loadBranches();
+      await useRepositoryStore.getState().refreshStatus();
       return result.data;
     }
     await get().refresh();
@@ -117,6 +127,8 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
     const result = await commands.finishHotfix(tagMessage ?? null);
     if (result.status === "ok") {
       await get().refresh();
+      await useBranchStore.getState().loadBranches();
+      await useRepositoryStore.getState().refreshStatus();
       return result.data;
     }
     await get().refresh();

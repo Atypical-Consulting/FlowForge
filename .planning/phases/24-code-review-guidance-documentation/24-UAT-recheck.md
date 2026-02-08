@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 24-code-review-guidance-documentation
 source: [24-04-SUMMARY.md]
 started: 2026-02-08T14:00:00Z
@@ -49,7 +49,12 @@ skipped: 0
   reason: "User reported: visible in the top bar but not in the local branches list"
   severity: major
   test: 1
-  root_cause: ""
-  artifacts: []
-  missing: []
+  root_cause: "startFeature() in gitflow store only calls get().refresh() (gitflow status) but does not call useBranchStore.getState().loadBranches() to refresh the branch list. The abort() function correctly refreshes both stores, but all 6 start/finish operations are missing this call. Top bar updates because it reads from useRepositoryStore.status, while branch list reads from useBranchStore.allBranches."
+  artifacts:
+    - path: "src/stores/gitflow.ts"
+      issue: "startFeature, finishFeature, startRelease, finishRelease, startHotfix, finishHotfix all missing loadBranches() call on success path"
+    - path: "src/components/navigation/BranchSwitcher.tsx"
+      issue: "allBranches only refreshed when dropdown opens (line 54), not triggered by gitflow operations"
+  missing:
+    - "Add useBranchStore.getState().loadBranches() to all 6 gitflow operation success paths (matching abort() pattern)"
   debug_session: ""
