@@ -60,8 +60,11 @@ export function BranchList({
 
   const handleCheckout = async (branchName: string) => {
     const success = await checkoutBranch(branchName);
-    if (success && repoPath) {
-      await useBranchMetadataStore.getState().recordBranchVisit(repoPath, branchName);
+    if (success) {
+      await loadAllBranches(true);
+      if (repoPath) {
+        await useBranchMetadataStore.getState().recordBranchVisit(repoPath, branchName);
+      }
     }
   };
 
@@ -85,6 +88,7 @@ export function BranchList({
     } else {
       await deleteBranch(name, false);
     }
+    await loadAllBranches(true);
   };
 
   const handleMerge = (branchName: string) => {
@@ -95,6 +99,7 @@ export function BranchList({
     if (mergingBranch) {
       const result = await mergeBranch(mergingBranch);
       if (result) {
+        await loadAllBranches(true);
         if (result.hasConflicts) {
           toast.warning(`Merge has conflicts - resolve manually`);
         } else {
