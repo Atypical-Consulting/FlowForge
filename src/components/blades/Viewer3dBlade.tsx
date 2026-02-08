@@ -34,6 +34,8 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sceneRef = useRef<SceneRefs | null>(null);
+  // Ref to pass the loaded ArrayBuffer to the Three.js setup effect
+  const bufferRef = useRef<ArrayBuffer | null>(null);
 
   // Load model from git HEAD
   const loadModel = useCallback(async () => {
@@ -108,12 +110,19 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
     }
   }, [filePath]);
 
-  // Ref to pass the loaded ArrayBuffer to the Three.js setup effect
-  const bufferRef = useRef<ArrayBuffer | null>(null);
-
-  // Initial load
+  // Initial load with cancellation for StrictMode
   useEffect(() => {
-    loadModel();
+    let aborted = false;
+    const load = async () => {
+      await loadModel();
+      if (aborted) {
+        bufferRef.current = null;
+      }
+    };
+    load();
+    return () => {
+      aborted = true;
+    };
   }, [loadModel]);
 
   // Three.js scene setup and model parsing
@@ -124,6 +133,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
     const container = containerRef.current;
     if (!canvas || !container) return;
 
+    let disposed = false;
     const arrayBuffer = bufferRef.current;
 
     // Create renderer
@@ -205,40 +215,54 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
 
     // Parse the GLTF/GLB model
     const loader = new GLTFLoader();
-    loader.parse(
-      arrayBuffer,
-      "",
-      (gltf) => {
-        // Center and scale the model to fit the viewport
-        const box = new THREE.Box3().setFromObject(gltf.scene);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = maxDim > 0 ? 2 / maxDim : 1;
-        gltf.scene.scale.multiplyScalar(scale);
-        gltf.scene.position.sub(center.multiplyScalar(scale));
-        scene.add(gltf.scene);
+    try {
+      loader.parse(
+        arrayBuffer,
+        "",
+        (gltf) => {
+          if (disposed) return;
 
-        camera.position.set(0, 1, 3);
-        controls.target.set(0, 0, 0);
-        controls.update();
+          // Center and scale the model to fit the viewport
+          const box = new THREE.Box3().setFromObject(gltf.scene);
+          const center = box.getCenter(new THREE.Vector3());
+          const size = box.getSize(new THREE.Vector3());
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const scale = maxDim > 0 ? 2 / maxDim : 1;
+          gltf.scene.scale.multiplyScalar(scale);
+          gltf.scene.position.sub(center.multiplyScalar(scale));
+          scene.add(gltf.scene);
 
-        setModelReady(true);
+          camera.position.set(0, 1, 3);
+          controls.target.set(0, 0, 0);
+          controls.update();
 
-        // Show interaction hint on first ever load
-        const hintKey = "flowforge-3d-hint-seen";
-        if (!localStorage.getItem(hintKey)) {
-          setShowHint(true);
-          localStorage.setItem(hintKey, "true");
-        }
-      },
-      (error) => {
-        console.error("[Viewer3dBlade] GLTF parse error:", error);
-        setFetchError(
-          error instanceof Error ? error.message : "Failed to parse 3D model",
-        );
-      },
-    );
+          setModelReady(true);
+
+          // Show interaction hint on first ever load
+          const hintKey = "flowforge-3d-hint-seen";
+          if (!localStorage.getItem(hintKey)) {
+            setShowHint(true);
+            localStorage.setItem(hintKey, "true");
+          }
+        },
+        (error) => {
+          if (disposed) return;
+          console.error("[Viewer3dBlade] GLTF parse error:", error);
+          setFetchError(
+            error instanceof Error
+              ? error.message
+              : "Failed to parse 3D model",
+          );
+        },
+      );
+    } catch (syncError) {
+      console.error("[Viewer3dBlade] GLTF parse sync error:", syncError);
+      setFetchError(
+        syncError instanceof Error
+          ? syncError.message
+          : "Failed to parse 3D model",
+      );
+    }
 
     // Keep animFrameId up to date in the ref
     const updateAnimId = () => {
@@ -250,6 +274,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
 
     // Cleanup
     return () => {
+      disposed = true;
       cancelAnimationFrame(animFrameId);
       resizeObserver.disconnect();
       controls.dispose();
@@ -277,7 +302,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
       canvas.removeEventListener("webglcontextrestored", handleContextRestored);
       sceneRef.current = null;
     };
-  }, [loading, fetchError]);
+  }, [loading]);
 
   // Auto-hide interaction hint
   useEffect(() => {
