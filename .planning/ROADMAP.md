@@ -139,7 +139,16 @@ Plans:
 5. Feature branch tags appear in purple across both the topology graph and branch list views
 6. Clone button shows a contextually appropriate action (e.g., "Open in Explorer" or similar) when user is already inside a repository
 
-**Plans:** TBD
+**Plans:** 7 plans in 4 waves
+
+Plans:
+- [ ] 23-01-PLAN.md -- W1: Unified branch color system (single source of truth, feature=purple)
+- [ ] 23-02-PLAN.md -- W1: Branch metadata store, scope registry, and composition hooks
+- [ ] 23-03-PLAN.md -- W1: Rust backend commands (get_recent_checkouts, batch_delete_branches)
+- [ ] 23-04-PLAN.md -- W2: Branch scope selector, tiered section layout, pin/badge UI
+- [ ] 23-05-PLAN.md -- W2: Bulk delete pipeline, multi-select hook, confirmation dialog
+- [ ] 23-06-PLAN.md -- W3: Bulk delete integration, contextual clone/reveal button, metadata init
+- [ ] 23-07-PLAN.md -- W4: Human verification checkpoint (UAT)
 
 ---
 
@@ -167,7 +176,7 @@ Plans:
 | 20.1 | Blade Extensibility Refactoring | 5 | Complete |
 | 21 | Two-Column Staging & Inline Diff | 2 | Complete |
 | 22 | New Content Blades | 6 | Complete |
-| 23 | Branch Management | 6 | Pending |
+| 23 | Branch Management | 6 | Planned |
 | 24 | Code Review Guidance & Documentation | 2 | Pending |
 
 **Total:** 25 requirements across 5 phases
