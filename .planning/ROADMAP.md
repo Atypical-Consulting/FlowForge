@@ -54,13 +54,13 @@ Plans:
   3. User cannot open a second instance of singleton blades like Settings or Changelog (FSM guard silently prevents it)
   4. User can switch between staging and topology processes with atomic blade stack reset (no stale blade content from previous process)
   5. Developer can inspect live navigation state via XState visual inspector in dev mode and sees current state, context, and event history
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 26-01: TBD
-- [ ] 26-02: TBD
-- [ ] 26-03: TBD
-- [ ] 26-04: TBD
+- [ ] 26-01-PLAN.md -- XState navigation machine definition + pure TDD tests (types, guards, actions, machine, selectors)
+- [ ] 26-02-PLAN.md -- React provider, module-level actor, dev inspector, extensibility refactoring (singleton metadata)
+- [ ] 26-03-PLAN.md -- Consumer migration: hooks, bladeOpener, components, direction-aware animations
+- [ ] 26-04-PLAN.md -- Dirty-form guards, navigation guard dialog, dirty indicators, max depth, store cleanup
 
 ### Phase 27: Init Repo Blade
 **Goal**: Users can initialize a repository through a rich, full-width blade that offers .gitignore template discovery, composition, and project scaffolding
@@ -185,7 +185,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 25. Test Infrastructure Foundation | 3/3 | ✓ Complete | 2026-02-08 |
-| 26. XState Navigation FSM | 0/TBD | Not started | - |
+| 26. XState Navigation FSM | 0/4 | Not started | - |
 | 27. Init Repo Blade | 0/TBD | Not started | - |
 | 28. Conventional Commit Blade | 0/TBD | Not started | - |
 | 29. Blade-Centric File Structure | 0/TBD | Not started | - |
