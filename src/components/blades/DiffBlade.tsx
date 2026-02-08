@@ -197,6 +197,43 @@ export function DiffBlade({ source }: DiffBladeProps) {
     <div className="flex-1 flex flex-col overflow-hidden h-full">
       {/* Toolbar: diff view toggles + staging navigation */}
       <div className="flex items-center gap-2 px-3 py-1 border-b border-ctp-surface0 bg-ctp-crust shrink-0">
+        {/* Markdown preview toggle (only for .md/.mdx files) */}
+        {isMarkdown && (
+          <div className="flex bg-ctp-surface0 rounded p-0.5">
+            <button
+              type="button"
+              onClick={() => setShowPreview(false)}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-colors ${
+                !showPreview
+                  ? "bg-ctp-surface1 text-ctp-text"
+                  : "text-ctp-overlay0 hover:text-ctp-subtext1"
+              }`}
+              title="Show diff"
+            >
+              <Code className="w-3.5 h-3.5" />
+              Diff
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowPreview(true)}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-colors ${
+                showPreview
+                  ? "bg-ctp-surface1 text-ctp-text"
+                  : "text-ctp-overlay0 hover:text-ctp-subtext1"
+              }`}
+              title="Show rendered preview"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              Preview
+            </button>
+          </div>
+        )}
+
+        {/* Divider between Diff/Preview toggle and Side-by-side button */}
+        {isMarkdown && !showPreview && (
+          <div className="w-px h-4 bg-ctp-surface1" />
+        )}
+
         {/* Inline/side-by-side toggle (hidden in preview mode) */}
         {!showPreview && (
           <Button
@@ -215,43 +252,6 @@ export function DiffBlade({ source }: DiffBladeProps) {
               {inline ? "Side-by-side" : "Inline"}
             </span>
           </Button>
-        )}
-
-        {/* Markdown preview toggle (only for .md/.mdx files) */}
-        {isMarkdown && (
-          <>
-            {!showPreview && (
-              <div className="w-px h-4 bg-ctp-surface1" />
-            )}
-            <div className="flex bg-ctp-surface0 rounded p-0.5">
-              <button
-                type="button"
-                onClick={() => setShowPreview(false)}
-                className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-colors ${
-                  !showPreview
-                    ? "bg-ctp-surface1 text-ctp-text"
-                    : "text-ctp-overlay0 hover:text-ctp-subtext1"
-                }`}
-                title="Show diff"
-              >
-                <Code className="w-3.5 h-3.5" />
-                Diff
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowPreview(true)}
-                className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-colors ${
-                  showPreview
-                    ? "bg-ctp-surface1 text-ctp-text"
-                    : "text-ctp-overlay0 hover:text-ctp-subtext1"
-                }`}
-                title="Show rendered preview"
-              >
-                <Eye className="w-3.5 h-3.5" />
-                Preview
-              </button>
-            </div>
-          </>
         )}
 
         <div className="flex-1" />
