@@ -50,7 +50,6 @@ pub async fn start_feature(
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
-        ensure_clean_working_tree(&repo)?;
 
         // Must be on develop
         let current = get_current_branch_name(&repo)?
@@ -74,10 +73,10 @@ pub async fn start_feature(
         let head_commit = repo.head()?.peel_to_commit()?;
         repo.branch(&branch_name, &head_commit, false)?;
 
-        // Checkout new branch
+        // Checkout new branch (safe checkout preserves uncommitted changes)
         let refname = format!("refs/heads/{}", branch_name);
         repo.set_head(&refname)?;
-        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().force()))?;
+        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().safe()))?;
 
         Ok(branch_name)
     })
@@ -145,7 +144,6 @@ pub async fn start_release(
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
-        ensure_clean_working_tree(&repo)?;
 
         // Must be on develop
         let current = get_current_branch_name(&repo)?
@@ -175,12 +173,12 @@ pub async fn start_release(
             return Err(GitflowError::BranchExists(branch_name));
         }
 
-        // Create and checkout
+        // Create and checkout (safe checkout preserves uncommitted changes)
         let head_commit = repo.head()?.peel_to_commit()?;
         repo.branch(&branch_name, &head_commit, false)?;
         let refname = format!("refs/heads/{}", branch_name);
         repo.set_head(&refname)?;
-        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().force()))?;
+        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().safe()))?;
 
         Ok(branch_name)
     })
@@ -266,7 +264,6 @@ pub async fn start_hotfix(
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
-        ensure_clean_working_tree(&repo)?;
 
         // Must be on main/master
         let current = get_current_branch_name(&repo)?
@@ -295,11 +292,12 @@ pub async fn start_hotfix(
             return Err(GitflowError::BranchExists(branch_name));
         }
 
+        // Safe checkout preserves uncommitted changes
         let head_commit = repo.head()?.peel_to_commit()?;
         repo.branch(&branch_name, &head_commit, false)?;
         let refname = format!("refs/heads/{}", branch_name);
         repo.set_head(&refname)?;
-        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().force()))?;
+        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().safe()))?;
 
         Ok(branch_name)
     })
