@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useBranchStore } from "../../stores/branches";
 import { useGitflowStore } from "../../stores/gitflow";
 import { useRepositoryStore } from "../../stores/repository";
+import { ReviewChecklist } from "./ReviewChecklist";
 
 interface FinishFlowDialogProps {
   flowType: "feature" | "release" | "hotfix";
@@ -101,6 +102,8 @@ export function FinishFlowDialog({ flowType, onClose }: FinishFlowDialogProps) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <p className="text-sm text-ctp-overlay1">{getDescription()}</p>
+
+          <ReviewChecklist flowType={flowType} />
 
           {needsTagMessage && (
             <div>

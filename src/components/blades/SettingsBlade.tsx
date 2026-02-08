@@ -1,10 +1,11 @@
 import { useCallback } from "react";
-import { GitBranch, Palette, Settings, Wrench } from "lucide-react";
+import { ClipboardCheck, GitBranch, Palette, Settings, Wrench } from "lucide-react";
 import { type SettingsCategory, useSettingsStore } from "../../stores/settings";
 import { AppearanceSettings } from "../settings/AppearanceSettings";
 import { GeneralSettings } from "../settings/GeneralSettings";
 import { GitSettings } from "../settings/GitSettings";
 import { IntegrationsSettings } from "../settings/IntegrationsSettings";
+import { ReviewSettings } from "../settings/ReviewSettings";
 
 interface SettingsTab {
   id: SettingsCategory;
@@ -31,6 +32,12 @@ const settingsTabs: SettingsTab[] = [
     label: "Integrations",
     icon: <Wrench className="w-4 h-4" />,
     panel: <IntegrationsSettings />,
+  },
+  {
+    id: "review",
+    label: "Review",
+    icon: <ClipboardCheck className="w-4 h-4" />,
+    panel: <ReviewSettings />,
   },
   {
     id: "appearance",

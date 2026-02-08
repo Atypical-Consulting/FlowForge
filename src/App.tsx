@@ -12,6 +12,7 @@ import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useBranchMetadataStore } from "./stores/branchMetadata";
 import { useNavigationStore } from "./stores/navigation";
 import { useRepositoryStore } from "./stores/repository";
+import { useReviewChecklistStore } from "./stores/reviewChecklist";
 import { useSettingsStore } from "./stores/settings";
 import { useThemeStore } from "./stores/theme";
 import { useTopologyStore } from "./stores/topology";
@@ -24,6 +25,7 @@ function App() {
   const initSettings = useSettingsStore((s) => s.initSettings);
   const initNavigation = useNavigationStore((s) => s.initNavigation);
   const initMetadata = useBranchMetadataStore((s) => s.initMetadata);
+  const initChecklist = useReviewChecklistStore((s) => s.initChecklist);
   const loadUndoInfo = useUndoStore((s) => s.loadUndoInfo);
 
   // Register global keyboard shortcuts
@@ -35,7 +37,8 @@ function App() {
     initSettings();
     initNavigation();
     initMetadata();
-  }, [initTheme, initSettings, initNavigation, initMetadata]);
+    initChecklist();
+  }, [initTheme, initSettings, initNavigation, initMetadata, initChecklist]);
 
   // Listen for file watcher events
   useEffect(() => {

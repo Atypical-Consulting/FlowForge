@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { getStore } from "../lib/store";
 
-export type SettingsCategory = "general" | "git" | "appearance" | "integrations";
+export type SettingsCategory = "general" | "git" | "appearance" | "integrations" | "review";
 
 export interface GeneralSettings {
   defaultTab: "changes" | "history" | "topology";
