@@ -9,6 +9,7 @@ import { RepositoryView } from "./components/RepositoryView";
 import { WelcomeView } from "./components/WelcomeView";
 import { ToastContainer } from "./components/ui/ToastContainer";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { useBranchMetadataStore } from "./stores/branchMetadata";
 import { useNavigationStore } from "./stores/navigation";
 import { useRepositoryStore } from "./stores/repository";
 import { useSettingsStore } from "./stores/settings";
@@ -22,17 +23,19 @@ function App() {
   const initTheme = useThemeStore((s) => s.initTheme);
   const initSettings = useSettingsStore((s) => s.initSettings);
   const initNavigation = useNavigationStore((s) => s.initNavigation);
+  const initMetadata = useBranchMetadataStore((s) => s.initMetadata);
   const loadUndoInfo = useUndoStore((s) => s.loadUndoInfo);
 
   // Register global keyboard shortcuts
   useKeyboardShortcuts();
 
-  // Initialize theme, settings, and navigation on mount
+  // Initialize theme, settings, navigation, and branch metadata on mount
   useEffect(() => {
     initTheme();
     initSettings();
     initNavigation();
-  }, [initTheme, initSettings, initNavigation]);
+    initMetadata();
+  }, [initTheme, initSettings, initNavigation, initMetadata]);
 
   // Listen for file watcher events
   useEffect(() => {

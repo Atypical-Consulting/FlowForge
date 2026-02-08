@@ -330,21 +330,46 @@ export function Header() {
               Close
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              document.dispatchEvent(
-                new CustomEvent("clone-repository-dialog"),
-              );
-            }}
-            disabled={isLoading}
-            className="text-ctp-subtext1 hover:text-ctp-text"
-            title="Clone Repository"
-          >
-            <GitFork className="w-4 h-4 mr-2" />
-            Clone
-          </Button>
+          {status ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={async () => {
+                try {
+                  const { revealItemInDir } = await import(
+                    "@tauri-apps/plugin-opener"
+                  );
+                  await revealItemInDir(status.repoPath);
+                } catch (e) {
+                  toast.error(
+                    `Failed to reveal: ${e instanceof Error ? e.message : String(e)}`,
+                  );
+                }
+              }}
+              className="text-ctp-subtext1 hover:text-ctp-text"
+              title="Reveal in Finder"
+              aria-label="Reveal repository in file manager"
+            >
+              <FolderOpen className="w-4 h-4 mr-2" />
+              Reveal
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                document.dispatchEvent(
+                  new CustomEvent("clone-repository-dialog"),
+                );
+              }}
+              disabled={isLoading}
+              className="text-ctp-subtext1 hover:text-ctp-text"
+              title="Clone Repository"
+            >
+              <GitFork className="w-4 h-4 mr-2" />
+              Clone
+            </Button>
+          )}
           <ShortcutTooltip shortcut="mod+o" label="Open Repository">
             <Button
               variant="ghost"
