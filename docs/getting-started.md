@@ -2,14 +2,20 @@
 
 FlowForge is a desktop Git client built with Tauri. It provides a visual interface for everyday Git operations with first-class Gitflow support.
 
-## Prerequisites
+## Download
 
-- **Node.js** 20 or later
+Grab the latest release for your platform from the [Download page](/download). Pre-built binaries are available for macOS, Windows, and Linux.
+
+## Building from Source
+
+### Prerequisites
+
+- **Node.js** 22 or later
 - **Rust** (stable toolchain)
 - **Git** installed and available on your `PATH`
 - A platform supported by Tauri (macOS, Windows, or Linux)
 
-## Installation
+### Installation
 
 Clone the repository and install dependencies:
 
@@ -52,4 +58,5 @@ If the repository has not been initialized with Gitflow, navigate to the Gitflow
 
 - Learn about [Gitflow workflows](/features/gitflow) for managing features, releases, and hotfixes.
 - Explore [staging and commits](/features/staging) for day-to-day changes.
+- Read about [GitFlow](/concepts/gitflow) and [Conventional Commits](/concepts/conventional-commits) concepts.
 - See all available [keyboard shortcuts](/reference/keyboard-shortcuts) for fast navigation.

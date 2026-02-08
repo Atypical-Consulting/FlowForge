@@ -11,7 +11,9 @@ export default defineConfig({
     nav: [
       { text: "Guide", link: "/getting-started" },
       { text: "Features", link: "/features/" },
+      { text: "Concepts", link: "/concepts/" },
       { text: "Reference", link: "/reference/keyboard-shortcuts" },
+      { text: "Download", link: "/download" },
     ],
 
     sidebar: {
@@ -23,6 +25,19 @@ export default defineConfig({
             { text: "Gitflow Workflow", link: "/features/gitflow" },
             { text: "Staging & Commits", link: "/features/staging" },
             { text: "Branch Management", link: "/features/branches" },
+          ],
+        },
+      ],
+      "/concepts/": [
+        {
+          text: "Concepts",
+          items: [
+            { text: "Overview", link: "/concepts/" },
+            { text: "GitFlow", link: "/concepts/gitflow" },
+            {
+              text: "Conventional Commits",
+              link: "/concepts/conventional-commits",
+            },
           ],
         },
       ],
