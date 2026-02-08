@@ -72,13 +72,13 @@ Plans:
   3. User can preview a .gitignore template's contents before applying it, and compose multiple templates (e.g., Node + macOS + JetBrains) into a single .gitignore
   4. User can select .gitignore templates while offline via bundled fallback templates (top 15-20) without errors or empty states
   5. User receives smart .gitignore recommendations based on auto-detected project type (e.g., package.json detected suggests Node template)
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 27-01: TBD
-- [ ] 27-02: TBD
-- [ ] 27-03: TBD
-- [ ] 27-04: TBD
+- [ ] 27-01-PLAN.md -- Rust backend: reqwest, bundled templates, 4 Tauri commands (list/get/detect/write)
+- [ ] 27-02-PLAN.md -- TypeScript utilities: gitignore composer, category mapping, Zustand store
+- [ ] 27-03-PLAN.md -- InitRepoBlade shell, React Query hooks, form UI, template picker
+- [ ] 27-04-PLAN.md -- Preview panel, init pipeline wiring, entry point integration, verification
 
 ### Phase 28: Conventional Commit Blade
 **Goal**: Users can compose conventional commits in a dedicated full-width blade workspace with richer layout, commit-and-push workflow, and automatic post-commit navigation
