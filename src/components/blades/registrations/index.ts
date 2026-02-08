@@ -18,6 +18,7 @@ if (import.meta.env.DEV && !import.meta.hot?.data?.isUpdate) {
     "staging-changes", "topology-graph", "commit-details", "diff",
     "viewer-nupkg", "viewer-image", "viewer-markdown", "viewer-3d",
     "viewer-code", "repo-browser", "settings", "changelog", "gitflow-cheatsheet",
+    "init-repo",
   ];
   const missing = EXPECTED_TYPES.filter(t => !registered.has(t as any));
   if (missing.length > 0) {
