@@ -8,6 +8,7 @@ import { useRecentRepos } from "../hooks/useRecentRepos";
 import { fadeInUp, staggerContainer, staggerItem } from "../lib/animations";
 import { modKeyLabel } from "../lib/platform";
 import { useRepositoryStore } from "../stores/repository";
+import { InitRepoBlade } from "./blades/InitRepoBlade";
 import { CloneForm } from "./clone/CloneForm";
 import { RecentRepos } from "./RecentRepos";
 import { Button } from "./ui/button";
@@ -19,6 +20,7 @@ export function WelcomeView() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [showCloneForm, setShowCloneForm] = useState(false);
   const [pendingInitPath, setPendingInitPath] = useState<string | null>(null);
+  const [showInitRepo, setShowInitRepo] = useState(false);
 
   const openDialog = useCallback(async () => {
     try {
@@ -110,6 +112,24 @@ export function WelcomeView() {
     },
     [openRepository, addRecentRepo, clearError],
   );
+
+  // Show Init Repo blade in standalone mode
+  if (showInitRepo && pendingInitPath) {
+    return (
+      <div className="h-[calc(100vh-3.5rem)] bg-ctp-base">
+        <InitRepoBlade
+          directoryPath={pendingInitPath}
+          onCancel={() => setShowInitRepo(false)}
+          onComplete={async (path) => {
+            await openRepository(path);
+            await addRecentRepo(path);
+            setShowInitRepo(false);
+            setPendingInitPath(null);
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -212,10 +232,11 @@ export function WelcomeView() {
           </motion.div>
         )}
 
-        {pendingInitPath && !error && (
+        {pendingInitPath && !error && !showInitRepo && (
           <GitInitBanner
             path={pendingInitPath}
             onDismiss={() => setPendingInitPath(null)}
+            onSetup={() => setShowInitRepo(true)}
           />
         )}
 

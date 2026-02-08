@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { commands } from "../../bindings";
 import { useProjectDetection } from "../../hooks/useGitignoreTemplates";
 import { useInitRepoStore } from "../../stores/initRepo";
 import { SplitPaneLayout } from "../layout/SplitPaneLayout";
@@ -21,6 +22,9 @@ export function InitRepoBlade({
     setReadmeName,
     setDetectedTypes,
     addTemplate,
+    setTemplateContent,
+    selectedTemplates,
+    templateContents,
     reset,
   } = useInitRepoStore();
 
@@ -51,6 +55,19 @@ export function InitRepoBlade({
       }
     }
   }, [detection, setDetectedTypes, addTemplate]);
+
+  // Fetch template content for selected templates (for preview)
+  useEffect(() => {
+    for (const name of selectedTemplates) {
+      if (!templateContents[name]) {
+        commands.getGitignoreTemplate(name).then((result) => {
+          if (result.status === "ok") {
+            setTemplateContent(name, result.data.content);
+          }
+        });
+      }
+    }
+  }, [selectedTemplates, templateContents, setTemplateContent]);
 
   return (
     <SplitPaneLayout
