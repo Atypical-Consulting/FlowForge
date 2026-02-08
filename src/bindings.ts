@@ -822,6 +822,57 @@ async gitInit(path: string, defaultBranch: string | null) : Promise<Result<InitR
 }
 },
 /**
+ * List all available .gitignore template names.
+ * 
+ * Attempts to fetch from GitHub API with a 5s timeout, falling back to
+ * bundled templates on any error.
+ */
+async listGitignoreTemplates() : Promise<Result<GitignoreTemplateList, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("list_gitignore_templates") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Get the content of a single .gitignore template by name.
+ * 
+ * Tries GitHub API first, falls back to bundled templates.
+ */
+async getGitignoreTemplate(name: string) : Promise<Result<GitignoreTemplate, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_gitignore_template", { name }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Detect project types by scanning for marker files in a directory.
+ * 
+ * Returns all detected project types with recommended .gitignore templates.
+ */
+async detectProjectType(path: string) : Promise<Result<ProjectDetection, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("detect_project_type", { path }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Write initialization files (.gitignore, README.md, etc.) to a directory.
+ */
+async writeInitFiles(path: string, files: InitFile[]) : Promise<Result<null, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("write_init_files", { path, files }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * List files and directories at a given path within the repository.
  * 
  * Merges entries from the HEAD tree and the working directory so that
@@ -1159,6 +1210,7 @@ branch: string | null;
  * If true and branch is Some, create a new branch with that name
  */
 createBranch: boolean }
+export type DetectedProject = { projectType: string; markerFile: string; recommendedTemplates: string[] }
 /**
  * A single diff hunk with line range information.
  */
@@ -1354,6 +1406,9 @@ export type GitflowStatus = { currentBranch: string; isGitflowReady: boolean; ca
  * Context about the repository's Gitflow state
  */
 context: GitflowContext }
+export type GitignoreTemplate = { name: string; content: string; source: string }
+export type GitignoreTemplateList = { templates: GitignoreTemplateName[]; source: string }
+export type GitignoreTemplateName = { name: string; category: string }
 /**
  * An edge in the commit graph connecting parent and child commits.
  */
@@ -1414,6 +1469,7 @@ isHeadAncestor: boolean;
  * The "ideological branch" name that owns this commit for coloring
  */
 ideologicalBranch: string }
+export type InitFile = { filename: string; content: string }
 /**
  * Result of a successful git init operation.
  */
@@ -1504,6 +1560,7 @@ inProgress: boolean;
  * List of conflicted file paths
  */
 conflictedFiles: string[] }
+export type ProjectDetection = { detectedTypes: DetectedProject[] }
 /**
  * A recently checked-out branch extracted from the reflog.
  */

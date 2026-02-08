@@ -361,6 +361,17 @@ pub async fn write_init_files(path: String, files: Vec<InitFile>) -> Result<(), 
         }
 
         for file in &files {
+            // Validate filename to prevent path traversal
+            if file.filename.contains('/')
+                || file.filename.contains('\\')
+                || file.filename.contains("..")
+            {
+                return Err(GitError::OperationFailed(format!(
+                    "Invalid filename: {}",
+                    file.filename
+                )));
+            }
+
             let file_path = dir.join(&file.filename);
             std::fs::write(&file_path, &file.content).map_err(|e| {
                 GitError::OperationFailed(format!(
