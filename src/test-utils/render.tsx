@@ -2,6 +2,7 @@ import type { ReactElement, ReactNode } from "react";
 import { render, type RenderOptions } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MotionConfig } from "framer-motion";
+import { NavigationProvider } from "../machines/navigation/context";
 
 function createTestQueryClient() {
   return new QueryClient({
@@ -21,7 +22,9 @@ function AllTheProviders({ children }: { children: ReactNode }) {
   const queryClient = createTestQueryClient();
   return (
     <QueryClientProvider client={queryClient}>
-      <MotionConfig reducedMotion="always">{children}</MotionConfig>
+      <NavigationProvider>
+        <MotionConfig reducedMotion="always">{children}</MotionConfig>
+      </NavigationProvider>
     </QueryClientProvider>
   );
 }

@@ -14,7 +14,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { useRecentRepos } from "../hooks/useRecentRepos";
 import { useBranchStore } from "../stores/branches";
-import { useBladeStore } from "../stores/blades";
+import { getNavigationActor } from "../machines/navigation/context";
 import { useNavigationStore } from "../stores/navigation";
 import { useCommandPaletteStore } from "../stores/commandPalette";
 import { useRepositoryStore } from "../stores/repository";
@@ -129,7 +129,7 @@ export function Header() {
 
         // Open new repository atomically (do NOT close first!)
         await openRepository(path);
-        useBladeStore.getState().resetStack();
+        getNavigationActor().send({ type: "RESET_STACK" });
         await addRecentRepo(path);
 
         // Check if there's a last active branch for this repo

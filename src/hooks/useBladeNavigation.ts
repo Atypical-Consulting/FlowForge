@@ -1,17 +1,24 @@
+import { useSelector } from "@xstate/react";
 import type { FileChange } from "../bindings";
-import type { BladeType, BladePropsMap } from "../stores/bladeTypes";
 import { getBladeRegistration } from "../lib/bladeRegistry";
 import { bladeTypeForFile } from "../lib/fileTypeUtils";
-import { useBladeStore } from "../stores/blades";
-
-const SINGLETON_TYPES: BladeType[] = [
-  "settings",
-  "changelog",
-  "gitflow-cheatsheet",
-];
+import {
+  useNavigationActorRef,
+} from "../machines/navigation/context";
+import {
+  selectActiveProcess,
+  selectBladeStack,
+  selectLastAction,
+  selectDirtyBladeIds,
+} from "../machines/navigation/selectors";
+import type { BladeType, BladePropsMap, ProcessType, TypedBlade } from "../machines/navigation/types";
 
 export function useBladeNavigation() {
-  const store = useBladeStore();
+  const actorRef = useNavigationActorRef();
+  const bladeStack = useSelector(actorRef, selectBladeStack);
+  const activeProcess = useSelector(actorRef, selectActiveProcess);
+  const lastAction = useSelector(actorRef, selectLastAction);
+  const dirtyBladeIds = useSelector(actorRef, selectDirtyBladeIds);
 
   /** Type-safe blade opener — compiler enforces correct props per type */
   function openBlade<K extends BladeType>(
@@ -19,11 +26,6 @@ export function useBladeNavigation() {
     props: BladePropsMap[K],
     title?: string,
   ) {
-    // Singleton guard: don't push duplicates
-    if (SINGLETON_TYPES.includes(type)) {
-      if (store.bladeStack.some((b) => b.type === type)) return;
-    }
-
     const reg = getBladeRegistration(type);
     const resolvedTitle =
       title ??
@@ -31,7 +33,7 @@ export function useBladeNavigation() {
         ? reg.defaultTitle(props as any)
         : reg?.defaultTitle ?? type);
 
-    store.pushBlade({ type, title: resolvedTitle, props });
+    actorRef.send({ type: "PUSH_BLADE", bladeType: type, title: resolvedTitle, props });
   }
 
   /** Push a diff/viewer blade for a historical commit file */
@@ -44,7 +46,12 @@ export function useBladeNavigation() {
     } else if (type === "viewer-image") {
       openBlade("viewer-image", { filePath, oid }, title);
     } else {
-      store.pushBlade({ type, title, props: { filePath } as any });
+      actorRef.send({
+        type: "PUSH_BLADE",
+        bladeType: type,
+        title,
+        props: { filePath } as BladePropsMap[BladeType],
+      });
     }
   }
 
@@ -65,19 +72,58 @@ export function useBladeNavigation() {
     } else if (type === "viewer-image") {
       openBlade("viewer-image", { filePath: file.path }, title);
     } else {
-      store.pushBlade({ type, title, props: { filePath: file.path } as any });
+      actorRef.send({
+        type: "PUSH_BLADE",
+        bladeType: type,
+        title,
+        props: { filePath: file.path } as BladePropsMap[BladeType],
+      });
     }
   }
 
-  const goBack = store.popBlade;
-  const goToRoot = store.resetStack;
+  function pushBlade<K extends BladeType>(blade: {
+    type: K;
+    title: string;
+    props: BladePropsMap[K];
+  }) {
+    actorRef.send({
+      type: "PUSH_BLADE",
+      bladeType: blade.type,
+      title: blade.title,
+      props: blade.props,
+    });
+  }
+
+  function replaceBlade<K extends BladeType>(blade: {
+    type: K;
+    title: string;
+    props: BladePropsMap[K];
+  }) {
+    actorRef.send({
+      type: "REPLACE_BLADE",
+      bladeType: blade.type,
+      title: blade.title,
+      props: blade.props,
+    });
+  }
 
   return {
     openBlade,
     openDiff,
     openStagingDiff,
-    goBack,
-    goToRoot,
-    ...store,
+    goBack: () => actorRef.send({ type: "POP_BLADE" }),
+    goToRoot: () => actorRef.send({ type: "RESET_STACK" }),
+    pushBlade,
+    popBlade: () => actorRef.send({ type: "POP_BLADE" }),
+    popToIndex: (index: number) => actorRef.send({ type: "POP_TO_INDEX", index }),
+    replaceBlade,
+    resetStack: () => actorRef.send({ type: "RESET_STACK" }),
+    setProcess: (process: ProcessType) => actorRef.send({ type: "SWITCH_PROCESS", process }),
+    markDirty: (bladeId: string) => actorRef.send({ type: "MARK_DIRTY", bladeId }),
+    markClean: (bladeId: string) => actorRef.send({ type: "MARK_CLEAN", bladeId }),
+    bladeStack,
+    activeProcess,
+    lastAction,
+    dirtyBladeIds,
   };
 }

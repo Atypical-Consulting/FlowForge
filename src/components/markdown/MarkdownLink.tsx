@@ -1,6 +1,6 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import type { AnchorHTMLAttributes } from "react";
-import { useBladeStore } from "../../stores/blades";
+import { useBladeNavigation } from "../../hooks/useBladeNavigation";
 import { resolveRelativePath } from "../../lib/resolveRelativePath";
 
 interface MarkdownLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -14,7 +14,7 @@ export function MarkdownLink({
   currentFilePath,
   ...props
 }: MarkdownLinkProps) {
-  const store = useBladeStore();
+  const { replaceBlade, pushBlade } = useBladeNavigation();
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -36,14 +36,14 @@ export function MarkdownLink({
 
     if (href.endsWith(".md") || href.endsWith(".mdx")) {
       // Markdown link → replace current blade
-      store.replaceBlade({
+      replaceBlade({
         type: "viewer-markdown",
         title: resolvedPath.split("/").pop() || "Markdown",
         props: { filePath: resolvedPath },
       });
     } else {
       // Other file/directory → push repo browser
-      store.pushBlade({
+      pushBlade({
         type: "repo-browser",
         title: resolvedPath.split("/").pop() || "Browser",
         props: { path: resolvedPath },

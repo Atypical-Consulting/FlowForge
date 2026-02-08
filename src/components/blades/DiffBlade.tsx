@@ -14,7 +14,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { commands } from "../../bindings";
 import { MONACO_COMMON_OPTIONS, MONACO_THEME } from "../../lib/monacoConfig";
 import "../../lib/monacoTheme";
-import { useBladeStore } from "../../stores/blades";
+import { useBladeNavigation } from "../../hooks/useBladeNavigation";
 import { useStagingStore } from "../../stores/staging";
 import { Button } from "../ui/button";
 import { BladeLoadingFallback } from "./BladeLoadingFallback";
@@ -43,7 +43,7 @@ function StagingDiffNavigation({
   currentFilePath,
 }: { currentFilePath: string }) {
   const { selectFile } = useStagingStore();
-  const store = useBladeStore();
+  const { replaceBlade } = useBladeNavigation();
 
   const { data: statusResult } = useQuery({
     queryKey: ["stagingStatus"],
@@ -74,7 +74,7 @@ function StagingDiffNavigation({
       const entry = allFiles[index];
       if (!entry) return;
       selectFile(entry.file, entry.section);
-      store.replaceBlade({
+      replaceBlade({
         type: "diff",
         title: entry.file.path.split("/").pop() || entry.file.path,
         props: {
@@ -86,7 +86,7 @@ function StagingDiffNavigation({
         },
       });
     },
-    [allFiles, selectFile, store],
+    [allFiles, selectFile, replaceBlade],
   );
 
   useHotkeys(

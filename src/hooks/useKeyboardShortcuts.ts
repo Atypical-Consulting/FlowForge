@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useHotkeys } from "react-hotkeys-hook";
 import { type SyncProgress, commands } from "../bindings";
 import { openBlade } from "../lib/bladeOpener";
-import { useBladeStore } from "../stores/blades";
+import { getNavigationActor } from "../machines/navigation/context";
 import { useCommandPaletteStore } from "../stores/commandPalette";
 import { useRepositoryStore } from "../stores/repository";
 import { useTopologyStore } from "../stores/topology";
@@ -190,10 +190,7 @@ export function useKeyboardShortcuts() {
     () => {
       // Don't pop blade if command palette is open (palette handles its own Escape)
       if (useCommandPaletteStore.getState().isOpen) return;
-      const bladeStore = useBladeStore.getState();
-      if (bladeStore.bladeStack.length > 1) {
-        bladeStore.popBlade();
-      }
+      getNavigationActor().send({ type: "POP_BLADE" });
     },
     { enableOnFormTags: false },
   );
@@ -203,10 +200,7 @@ export function useKeyboardShortcuts() {
     "backspace",
     () => {
       if (useCommandPaletteStore.getState().isOpen) return;
-      const bladeStore = useBladeStore.getState();
-      if (bladeStore.bladeStack.length > 1) {
-        bladeStore.popBlade();
-      }
+      getNavigationActor().send({ type: "POP_BLADE" });
     },
     { enableOnFormTags: false },
   );
@@ -215,12 +209,12 @@ export function useKeyboardShortcuts() {
   useHotkeys(
     "enter",
     () => {
-      const bladeStore = useBladeStore.getState();
+      const ctx = getNavigationActor().getSnapshot().context;
       const topologyStore = useTopologyStore.getState();
       if (
-        bladeStore.activeProcess === "topology" &&
+        ctx.activeProcess === "topology" &&
         topologyStore.selectedCommit &&
-        bladeStore.bladeStack.length === 1
+        ctx.bladeStack.length === 1
       ) {
         openBlade("commit-details", { oid: topologyStore.selectedCommit });
       }

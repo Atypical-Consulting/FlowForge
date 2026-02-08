@@ -1,5 +1,5 @@
 import { Home } from "lucide-react";
-import { useBladeStore } from "../../stores/blades";
+import { useBladeNavigation } from "../../hooks/useBladeNavigation";
 
 interface BladeBreadcrumbProps {
   /** Full file/directory path, e.g. "src/components/App.tsx" */
@@ -15,30 +15,29 @@ interface BladeBreadcrumbProps {
  * current blade with a repo-browser at that directory path.
  */
 export function BladeBreadcrumb({ path, navigable = true }: BladeBreadcrumbProps) {
-  const store = useBladeStore();
+  const { bladeStack, popToIndex, replaceBlade } = useBladeNavigation();
   const segments = path ? path.split("/").filter(Boolean) : [];
 
   const navigateTo = (dirPath: string) => {
     if (!navigable) return;
-    const stack = store.bladeStack;
     // Find the last repo-browser ancestor (excluding current top blade)
     let repoBrowserIndex = -1;
-    for (let i = stack.length - 2; i >= 0; i--) {
-      if (stack[i].type === "repo-browser") {
+    for (let i = bladeStack.length - 2; i >= 0; i--) {
+      if (bladeStack[i].type === "repo-browser") {
         repoBrowserIndex = i;
         break;
       }
     }
     if (repoBrowserIndex >= 0) {
       // Pop to ancestor, then replace it atomically
-      store.popToIndex(repoBrowserIndex);
-      store.replaceBlade({
+      popToIndex(repoBrowserIndex);
+      replaceBlade({
         type: "repo-browser",
         title: dirPath.split("/").pop() || "Repository Browser",
         props: { path: dirPath },
       });
     } else {
-      store.replaceBlade({
+      replaceBlade({
         type: "repo-browser",
         title: dirPath.split("/").pop() || "Repository Browser",
         props: { path: dirPath },
@@ -48,23 +47,22 @@ export function BladeBreadcrumb({ path, navigable = true }: BladeBreadcrumbProps
 
   const navigateToRoot = () => {
     if (!navigable) return;
-    const stack = store.bladeStack;
     let repoBrowserIndex = -1;
-    for (let i = stack.length - 2; i >= 0; i--) {
-      if (stack[i].type === "repo-browser") {
+    for (let i = bladeStack.length - 2; i >= 0; i--) {
+      if (bladeStack[i].type === "repo-browser") {
         repoBrowserIndex = i;
         break;
       }
     }
     if (repoBrowserIndex >= 0) {
-      store.popToIndex(repoBrowserIndex);
-      store.replaceBlade({
+      popToIndex(repoBrowserIndex);
+      replaceBlade({
         type: "repo-browser",
         title: "Repository Browser",
         props: { path: "" },
       });
     } else {
-      store.replaceBlade({
+      replaceBlade({
         type: "repo-browser",
         title: "Repository Browser",
         props: { path: "" },

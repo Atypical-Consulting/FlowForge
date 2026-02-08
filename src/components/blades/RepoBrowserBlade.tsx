@@ -4,7 +4,7 @@ import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { commands } from "../../bindings";
 import type { RepoFileEntry } from "../../bindings";
 import { bladeTypeForFile } from "../../lib/fileDispatch";
-import { useBladeStore } from "../../stores/blades";
+import { useBladeNavigation } from "../../hooks/useBladeNavigation";
 import { FileTypeIcon } from "../icons/FileTypeIcon";
 import { BladeContentLoading } from "./BladeContentLoading";
 import { BladeContentError } from "./BladeContentError";
@@ -15,7 +15,7 @@ interface RepoBrowserBladeProps {
 }
 
 export function RepoBrowserBlade({ path = "" }: RepoBrowserBladeProps) {
-  const store = useBladeStore();
+  const { pushBlade, replaceBlade } = useBladeNavigation();
   const [focusedIndex, setFocusedIndex] = useState(0);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -48,13 +48,13 @@ export function RepoBrowserBlade({ path = "" }: RepoBrowserBladeProps) {
 
   const navigateToDirectory = useCallback(
     (dirPath: string) => {
-      store.replaceBlade({
+      replaceBlade({
         type: "repo-browser",
         title: dirPath.split("/").pop() || "Repository Browser",
         props: { path: dirPath },
       });
     },
-    [store],
+    [replaceBlade],
   );
 
   const openFile = useCallback(
@@ -68,19 +68,19 @@ export function RepoBrowserBlade({ path = "" }: RepoBrowserBladeProps) {
       const title = entry.name;
 
       if (bladeType === "viewer-image") {
-        store.pushBlade({ type: "viewer-image", title, props: { filePath: entry.path } });
+        pushBlade({ type: "viewer-image", title, props: { filePath: entry.path } });
       } else if (bladeType === "viewer-markdown") {
-        store.pushBlade({ type: "viewer-markdown", title, props: { filePath: entry.path } });
+        pushBlade({ type: "viewer-markdown", title, props: { filePath: entry.path } });
       } else if (bladeType === "viewer-3d") {
-        store.pushBlade({ type: "viewer-3d", title, props: { filePath: entry.path } });
+        pushBlade({ type: "viewer-3d", title, props: { filePath: entry.path } });
       } else if (bladeType === "viewer-nupkg") {
-        store.pushBlade({ type: "viewer-nupkg", title, props: { filePath: entry.path } });
+        pushBlade({ type: "viewer-nupkg", title, props: { filePath: entry.path } });
       } else {
         // viewer-code is the default for browse context
-        store.pushBlade({ type: "viewer-code", title, props: { filePath: entry.path } });
+        pushBlade({ type: "viewer-code", title, props: { filePath: entry.path } });
       }
     },
-    [store, navigateToDirectory],
+    [pushBlade, navigateToDirectory],
   );
 
   const handleKeyDown = useCallback(

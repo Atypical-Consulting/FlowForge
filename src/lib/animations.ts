@@ -103,3 +103,36 @@ export const bladeSlideIn: Variants = {
     transition: { type: "tween", ease: "easeIn", duration: 0.15 },
   },
 };
+
+// Direction-aware blade transitions driven by FSM lastAction
+export type BladeTransitionDirection = "push" | "pop" | "replace" | "reset" | "init";
+
+export const bladeTransitionVariants: Variants = {
+  initial: (direction: BladeTransitionDirection) => {
+    switch (direction) {
+      case "push": return { x: "100%", opacity: 0 };
+      case "pop": return { x: "-30%", opacity: 0 };
+      case "replace": return { opacity: 0, scale: 0.98 };
+      case "reset": return { opacity: 0, scale: 0.95 };
+      default: return { x: 40, opacity: 0 };
+    }
+  },
+  animate: { x: 0, opacity: 1, scale: 1 },
+  exit: (direction: BladeTransitionDirection) => {
+    switch (direction) {
+      case "push": return { x: "-30%", opacity: 0 };
+      case "pop": return { x: "100%", opacity: 0 };
+      case "replace": return { opacity: 0, scale: 0.98 };
+      case "reset": return { opacity: 0, scale: 0.95 };
+      default: return { x: 40, opacity: 0 };
+    }
+  },
+};
+
+export const bladeTransitionConfig: Record<BladeTransitionDirection, Transition> = {
+  push: { type: "tween", ease: "easeOut", duration: 0.2 },
+  pop: { type: "tween", ease: "easeOut", duration: 0.18 },
+  replace: { type: "tween", ease: "easeInOut", duration: 0.15 },
+  reset: { type: "tween", ease: "easeOut", duration: 0.25 },
+  init: { type: "tween", ease: "easeOut", duration: 0.2 },
+};

@@ -1,6 +1,8 @@
 import { Files, Network } from "lucide-react";
-import { useBladeStore } from "../../stores/blades";
-import type { ProcessType } from "../../stores/blades";
+import { useSelector } from "@xstate/react";
+import { useNavigationActorRef } from "../../machines/navigation/context";
+import { selectActiveProcess } from "../../machines/navigation/selectors";
+import type { ProcessType } from "../../machines/navigation/types";
 import { cn } from "../../lib/utils";
 
 const PROCESSES = [
@@ -13,14 +15,15 @@ interface ProcessNavigationProps {
 }
 
 export function ProcessNavigation({ className }: ProcessNavigationProps) {
-  const { activeProcess, setProcess } = useBladeStore();
+  const actorRef = useNavigationActorRef();
+  const activeProcess = useSelector(actorRef, selectActiveProcess);
 
   return (
     <div className={cn("flex items-center gap-1", className)}>
       {PROCESSES.map(({ id, label, icon: Icon }) => (
         <button
           key={id}
-          onClick={() => setProcess(id)}
+          onClick={() => actorRef.send({ type: "SWITCH_PROCESS", process: id })}
           className={cn(
             "px-3 py-1.5 rounded-md text-sm flex items-center gap-2 transition-colors",
             activeProcess === id

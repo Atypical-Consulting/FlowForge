@@ -1,8 +1,15 @@
+/**
+ * @deprecated Use NavigationProvider + useBladeNavigation() or getNavigationActor().
+ * This store is kept for backward compat during migration. All navigation now goes
+ * through the XState FSM in src/machines/navigation/.
+ */
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import type { BladeType, BladePropsMap, TypedBlade } from "./bladeTypes";
 
+/** @deprecated Use types from src/machines/navigation/types.ts */
 export type { BladeType, TypedBlade };
+/** @deprecated Use types from src/machines/navigation/types.ts */
 export type { BladePropsMap };
 
 /** @deprecated Use TypedBlade instead */
