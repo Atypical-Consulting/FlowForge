@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-08)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Phase 28 - Conventional Commit Blade
+**Current focus:** Phase 29 - Blade-Centric File Structure
 
 ## Current Position
 
-Phase: 28 of 30 (Conventional Commit Blade)
+Phase: 29 of 30 (Blade-Centric File Structure)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-02-08 -- Phase 27 complete (Init Repo Blade with .gitignore templates, project detection, offline fallback)
+Last activity: 2026-02-09 -- Phase 28 complete (Conventional Commit Blade with syntax highlighting, commit+push, amend mode, templates, scope chart)
 
-Progress: [█████░░░░░] 50%
+Progress: [██████░░░░] 67%
 
 ## Milestone History
 
@@ -31,9 +31,9 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11 (v1.4.0)
+- Total plans completed: 16 (v1.4.0)
 - Average duration: ~5 min/plan
-- Total execution time: ~55 min
+- Total execution time: ~80 min
 
 **By Phase:**
 
@@ -42,6 +42,7 @@ See `.planning/MILESTONES.md` for full history.
 | 25 | 3/3 | ~15 min | ~5 min |
 | 26 | 4/4 | ~20 min | ~5 min |
 | 27 | 4/4 | ~20 min | ~5 min |
+| 28 | 5/5 | ~25 min | ~5 min |
 
 *Updated after each plan completion*
 
@@ -82,6 +83,15 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 - Path traversal validation added to `write_init_files` after security review
 - Team review identified 13 improvement items for future iteration (see 27-REVIEW-FINDINGS.md)
 
+**Phase 28 decisions:**
+- Pure utility extraction (`conventional-utils.ts`) enables testability and shared logic between sidebar and blade
+- `useCommitExecution` and `useAmendPrefill` hooks shared between CommitForm (sidebar) and ConventionalCommitBlade
+- Singleton blade enforcement via XState FSM guard (SINGLETON_TYPES Set)
+- Syntax highlighting uses CC theme colors from `commit-type-theme.ts`
+- Success overlay with framer-motion spring animation and 1.5s auto-navigate timer
+- 7 built-in commit templates with Lucide icons as chip bar (shows when form empty, collapses on input)
+- ScopeFrequencyChart uses pure CSS horizontal bars with Catppuccin accent colors (no charting library)
+
 ### Pending Todos
 
 None.
@@ -103,10 +113,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-08
-Stopped at: Phase 27 complete, ready for Phase 28
+Last session: 2026-02-09
+Stopped at: Phase 28 complete, ready for Phase 29
 Resume file: None
 
 ---
-*State updated: 2026-02-08*
-*v1.4.0 Architecture & Navigation Overhaul -- Phase 27 COMPLETE, ready for Phase 28*
+*State updated: 2026-02-09*
+*v1.4.0 Architecture & Navigation Overhaul -- Phase 28 COMPLETE, ready for Phase 29*

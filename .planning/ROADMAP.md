@@ -21,7 +21,7 @@ Six phases transform FlowForge's frontend architecture from implicit, store-driv
 - [x] **Phase 25: Test Infrastructure Foundation** - Establish Vitest with jsdom, typed Tauri mocks, and Zustand auto-reset so all subsequent changes are verifiable
 - [ ] **Phase 26: XState Navigation FSM** - Replace imperative blade store with an explicit state machine governing push/pop/replace/reset with guards, constraints, and side effects
 - [ ] **Phase 27: Init Repo Blade** - Full-width blade for repository initialization with .gitignore template search, multi-template composition, and offline fallback
-- [ ] **Phase 28: Conventional Commit Blade** - Full-width blade workspace for conventional commits with commit-and-push workflow and post-commit navigation
+- [x] **Phase 28: Conventional Commit Blade** - Full-width blade workspace for conventional commits with commit-and-push workflow and post-commit navigation
 - [ ] **Phase 29: Blade-Centric File Structure** - Migrate from layer-based to feature-module organization with co-located components, stores, hooks, and tests per blade
 - [ ] **Phase 30: Store Consolidation & Tech Debt** - Consolidate Zustand stores into domain groups and resolve all nine accumulated tech debt items
 
@@ -93,11 +93,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 28-01-PLAN.md -- Extract pure utilities (buildCommitMessage, parseConventionalMessage) and extend store
-- [ ] 28-02-PLAN.md -- Extract commit execution hook, amend hook, and UI primitives (CommitPreview, CommitActionBar)
-- [ ] 28-03-PLAN.md -- Blade shell, registration, SplitPaneLayout, and sidebar coexistence
-- [ ] 28-04-PLAN.md -- Preview syntax highlighting, commit+push pipeline, auto-navigate, amend mode
-- [ ] 28-05-PLAN.md -- Commit templates and scope frequency chart
+- [x] 28-01-PLAN.md -- Extract pure utilities (buildCommitMessage, parseConventionalMessage) and extend store
+- [x] 28-02-PLAN.md -- Extract commit execution hook, amend hook, and UI primitives (CommitPreview, CommitActionBar)
+- [x] 28-03-PLAN.md -- Blade shell, registration, SplitPaneLayout, and sidebar coexistence
+- [x] 28-04-PLAN.md -- Preview syntax highlighting, commit+push pipeline, auto-navigate, amend mode
+- [x] 28-05-PLAN.md -- Commit templates and scope frequency chart
 
 ### Phase 29: Blade-Centric File Structure
 **Goal**: Developers find each blade's files co-located in a single feature module directory with enforced import boundaries, while auto-discovery and the blade registry continue to work
@@ -189,10 +189,10 @@ Plans:
 | 25. Test Infrastructure Foundation | 3/3 | ✓ Complete | 2026-02-08 |
 | 26. XState Navigation FSM | 4/4 | ✓ Complete | 2026-02-08 |
 | 27. Init Repo Blade | 4/4 | ✓ Complete | 2026-02-08 |
-| 28. Conventional Commit Blade | 0/TBD | Not started | - |
+| 28. Conventional Commit Blade | 5/5 | ✓ Complete | 2026-02-09 |
 | 29. Blade-Centric File Structure | 0/TBD | Not started | - |
 | 30. Store Consolidation & Tech Debt | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-08*
-*Phase 27 complete — Init Repo Blade with .gitignore templates, project detection, and offline fallback*
+*Last updated: 2026-02-09*
+*Phase 28 complete — Conventional Commit Blade with syntax highlighting, commit+push, amend mode, templates, and scope chart*
