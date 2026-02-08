@@ -164,12 +164,13 @@ Plans:
 1. User sees a pre-merge review checklist when finishing a Gitflow feature, release, or hotfix, with configurable checklist items
 2. Documentation website is live on GitHub Pages with a getting-started guide, feature overview, and keyboard shortcuts reference
 
-**Plans:** 3 plans in 2 waves
+**Plans:** 4 plans in 3 waves (all complete)
 
 Plans:
-- [ ] 24-01-PLAN.md -- W1: Review checklist store, component, FinishFlowDialog integration, Settings tab
-- [ ] 24-02-PLAN.md -- W1: VitePress documentation site scaffold, content pages, GitHub Actions deployment
-- [ ] 24-03-PLAN.md -- W2: Human verification checkpoint (UX-03 + UX-04)
+- [x] 24-01-PLAN.md -- W1: Review checklist store, component, FinishFlowDialog integration, Settings tab
+- [x] 24-02-PLAN.md -- W1: VitePress documentation site scaffold, content pages, GitHub Actions deployment
+- [x] 24-03-PLAN.md -- W2: Human verification checkpoint (UX-03 + UX-04 — 1 gap identified)
+- [x] 24-04-PLAN.md -- W3: Gap Closure — Gitflow robustness fixes (dirty tree, merge cleanup, UI refresh)
 
 ---
 
@@ -182,7 +183,7 @@ Plans:
 | 21 | Two-Column Staging & Inline Diff | 2 | Complete |
 | 22 | New Content Blades | 6 | Complete |
 | 23 | Branch Management | 6 | Complete |
-| 24 | Code Review Guidance & Documentation | 2 | Pending |
+| 24 | Code Review Guidance & Documentation | 2 | Complete |
 
 **Total:** 25 requirements across 5 phases
 
