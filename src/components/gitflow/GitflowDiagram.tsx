@@ -6,43 +6,48 @@ interface GitflowDiagramProps {
   highlightedLane?: GitflowBranchType;
 }
 
-// Canonical layout: main at top, develop below, arcs between/below
-const MAIN_Y = 50;
-const DEVELOP_Y = 200;
-const LANE_X_START = 100;
-const LANE_X_END = 820;
+// 5 horizontal lanes, evenly spaced — order matches mermaid gitgraph convention
+const LANE_Y = {
+  main: 40,
+  hotfix: 90,
+  release: 140,
+  develop: 190,
+  feature: 240,
+} as const;
 
-// "You Are Here" indicator positions per branch type
+const LANE_X_START = 100;
+const LANE_X_END = 850;
+const SVG_WIDTH = 950;
+const SVG_HEIGHT = 290;
+
+// "You Are Here" indicator positions per branch type — derived from LANE_Y
 const INDICATOR_Y: Record<string, number> = {
-  main: MAIN_Y,
-  develop: DEVELOP_Y,
-  feature: 280, // below develop arc midpoint
-  release: 125, // between develop and main
-  hotfix: 125, // between main and develop
+  main: LANE_Y.main,
+  develop: LANE_Y.develop,
+  feature: LANE_Y.feature,
+  release: LANE_Y.release,
+  hotfix: LANE_Y.hotfix,
 };
 
 // Commit dot positions on permanent lanes
 const MAIN_COMMITS = [160, 280, 510, 660, 780];
 const DEVELOP_COMMITS = [160, 240, 360, 530, 620, 700, 780];
 
-// Feature arc: branches DOWN from develop at x=180, arcs to Y=280, merges back at x=350
-const FEATURE_BRANCH_X = 180;
-const FEATURE_ARC_Y = 280;
-const FEATURE_MERGE_X = 350;
-const FEATURE_COMMITS = [230, 280, 310];
+// Feature: branches from develop, does work, merges back to develop
+const FEATURE_BRANCH_X = 220;
+const FEATURE_MERGE_X = 380;
+const FEATURE_COMMITS = [260, 310, 350];
 
-// Release arc: branches UP from develop at x=390, arcs to Y=125, merges to main at x=500, back to develop at x=530
-const RELEASE_BRANCH_X = 390;
-const RELEASE_ARC_Y = 125;
+// Release: branches from develop, merges to main AND develop
+const RELEASE_BRANCH_X = 420;
 const RELEASE_MERGE_MAIN_X = 500;
-const RELEASE_MERGE_DEV_X = 530;
-const RELEASE_COMMITS = [430, 470];
+const RELEASE_MERGE_DEV_X = 520;
+const RELEASE_COMMITS = [450, 490];
 
-// Hotfix arc: branches DOWN from main at x=570, arcs to Y=125, merges back to main at x=660, down to develop at x=690
-const HOTFIX_BRANCH_X = 570;
-const HOTFIX_ARC_Y = 125;
-const HOTFIX_MERGE_MAIN_X = 660;
-const HOTFIX_MERGE_DEV_X = 690;
+// Hotfix: branches from main, merges to main AND develop
+const HOTFIX_BRANCH_X = 580;
+const HOTFIX_MERGE_MAIN_X = 650;
+const HOTFIX_MERGE_DEV_X = 670;
 const HOTFIX_COMMITS = [610];
 
 // Version label positions on main
@@ -52,61 +57,31 @@ const VERSION_LABELS = [
   { x: 660, label: "v2.0.1" },
 ];
 
-interface FlowCurve {
+// Connector: straight vertical line between two lanes
+interface Connector {
   type: GitflowBranchType;
-  path: string;
-  markerId: string;
+  x: number;
+  fromY: number;
+  toY: number;
 }
 
-const FLOW_CURVES: FlowCurve[] = [
+const CONNECTORS: Connector[] = [
   // Feature branch-out: develop -> feature (down)
-  {
-    type: "feature",
-    path: `M ${FEATURE_BRANCH_X} ${DEVELOP_Y} C ${FEATURE_BRANCH_X} ${DEVELOP_Y + 50}, ${FEATURE_BRANCH_X + 30} ${FEATURE_ARC_Y}, ${FEATURE_BRANCH_X + 50} ${FEATURE_ARC_Y}`,
-    markerId: "arrow-feature",
-  },
+  { type: "feature", x: FEATURE_BRANCH_X, fromY: LANE_Y.develop, toY: LANE_Y.feature },
   // Feature merge-back: feature -> develop (up)
-  {
-    type: "feature",
-    path: `M ${FEATURE_MERGE_X - 20} ${FEATURE_ARC_Y} C ${FEATURE_MERGE_X} ${FEATURE_ARC_Y}, ${FEATURE_MERGE_X} ${DEVELOP_Y + 50}, ${FEATURE_MERGE_X} ${DEVELOP_Y}`,
-    markerId: "arrow-feature",
-  },
+  { type: "feature", x: FEATURE_MERGE_X, fromY: LANE_Y.feature, toY: LANE_Y.develop },
   // Release branch-out: develop -> release (up)
-  {
-    type: "release",
-    path: `M ${RELEASE_BRANCH_X} ${DEVELOP_Y} C ${RELEASE_BRANCH_X} ${DEVELOP_Y - 40}, ${RELEASE_BRANCH_X + 20} ${RELEASE_ARC_Y}, ${RELEASE_BRANCH_X + 40} ${RELEASE_ARC_Y}`,
-    markerId: "arrow-release",
-  },
+  { type: "release", x: RELEASE_BRANCH_X, fromY: LANE_Y.develop, toY: LANE_Y.release },
   // Release merge to main (up)
-  {
-    type: "release",
-    path: `M ${RELEASE_MERGE_MAIN_X - 30} ${RELEASE_ARC_Y} C ${RELEASE_MERGE_MAIN_X - 10} ${RELEASE_ARC_Y}, ${RELEASE_MERGE_MAIN_X} ${MAIN_Y + 40}, ${RELEASE_MERGE_MAIN_X} ${MAIN_Y}`,
-    markerId: "arrow-release",
-  },
-  // Release merge back to develop (down)
-  {
-    type: "release",
-    path: `M ${RELEASE_MERGE_MAIN_X - 30} ${RELEASE_ARC_Y} C ${RELEASE_MERGE_DEV_X - 20} ${RELEASE_ARC_Y}, ${RELEASE_MERGE_DEV_X} ${DEVELOP_Y - 40}, ${RELEASE_MERGE_DEV_X} ${DEVELOP_Y}`,
-    markerId: "arrow-release",
-  },
+  { type: "release", x: RELEASE_MERGE_MAIN_X, fromY: LANE_Y.release, toY: LANE_Y.main },
+  // Release merge to develop (down)
+  { type: "release", x: RELEASE_MERGE_DEV_X, fromY: LANE_Y.release, toY: LANE_Y.develop },
   // Hotfix branch-out: main -> hotfix (down)
-  {
-    type: "hotfix",
-    path: `M ${HOTFIX_BRANCH_X} ${MAIN_Y} C ${HOTFIX_BRANCH_X} ${MAIN_Y + 40}, ${HOTFIX_BRANCH_X + 20} ${HOTFIX_ARC_Y}, ${HOTFIX_BRANCH_X + 40} ${HOTFIX_ARC_Y}`,
-    markerId: "arrow-hotfix",
-  },
+  { type: "hotfix", x: HOTFIX_BRANCH_X, fromY: LANE_Y.main, toY: LANE_Y.hotfix },
   // Hotfix merge to main (up)
-  {
-    type: "hotfix",
-    path: `M ${HOTFIX_MERGE_MAIN_X - 30} ${HOTFIX_ARC_Y} C ${HOTFIX_MERGE_MAIN_X - 10} ${HOTFIX_ARC_Y}, ${HOTFIX_MERGE_MAIN_X} ${MAIN_Y + 40}, ${HOTFIX_MERGE_MAIN_X} ${MAIN_Y}`,
-    markerId: "arrow-hotfix",
-  },
+  { type: "hotfix", x: HOTFIX_MERGE_MAIN_X, fromY: LANE_Y.hotfix, toY: LANE_Y.main },
   // Hotfix merge to develop (down)
-  {
-    type: "hotfix",
-    path: `M ${HOTFIX_MERGE_MAIN_X - 30} ${HOTFIX_ARC_Y} C ${HOTFIX_MERGE_DEV_X - 20} ${HOTFIX_ARC_Y}, ${HOTFIX_MERGE_DEV_X} ${DEVELOP_Y - 40}, ${HOTFIX_MERGE_DEV_X} ${DEVELOP_Y}`,
-    markerId: "arrow-hotfix",
-  },
+  { type: "hotfix", x: HOTFIX_MERGE_DEV_X, fromY: LANE_Y.hotfix, toY: LANE_Y.develop },
 ];
 
 const MARKER_TYPES: { id: string; type: GitflowBranchType }[] = [
@@ -117,11 +92,29 @@ const MARKER_TYPES: { id: string; type: GitflowBranchType }[] = [
   { id: "arrow-hotfix", type: "hotfix" },
 ];
 
+// Lane configuration for rendering
+interface LaneConfig {
+  type: GitflowBranchType;
+  label: string;
+  y: number;
+  xStart: number;
+  xEnd: number;
+  dashed: boolean;
+  commits: number[];
+}
+
+const LANES: LaneConfig[] = [
+  { type: "main", label: "main", y: LANE_Y.main, xStart: LANE_X_START, xEnd: LANE_X_END, dashed: false, commits: MAIN_COMMITS },
+  { type: "hotfix", label: "hotfix/*", y: LANE_Y.hotfix, xStart: HOTFIX_BRANCH_X, xEnd: HOTFIX_MERGE_DEV_X, dashed: true, commits: HOTFIX_COMMITS },
+  { type: "release", label: "release/*", y: LANE_Y.release, xStart: RELEASE_BRANCH_X, xEnd: RELEASE_MERGE_DEV_X, dashed: true, commits: RELEASE_COMMITS },
+  { type: "develop", label: "develop", y: LANE_Y.develop, xStart: LANE_X_START, xEnd: LANE_X_END, dashed: false, commits: DEVELOP_COMMITS },
+  { type: "feature", label: "feature/*", y: LANE_Y.feature, xStart: FEATURE_BRANCH_X, xEnd: FEATURE_MERGE_X, dashed: true, commits: FEATURE_COMMITS },
+];
+
 /**
  * Gitflow branching workflow diagram rendered as inline SVG.
- * Canonical layout: main at top, develop below, short-lived branches as arcs.
+ * Mermaid gitgraph-style: 5 horizontal lanes with straight vertical connectors.
  * Uses Catppuccin CSS variable colors for branch lanes.
- * Arrowheads on all curves indicate flow direction.
  */
 export function GitflowDiagram({ highlightedLane }: GitflowDiagramProps) {
   const hasHighlight =
@@ -139,15 +132,15 @@ export function GitflowDiagram({ highlightedLane }: GitflowDiagramProps) {
 
   return (
     <svg
-      viewBox="0 0 900 340"
+      viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
       className="w-full h-auto"
       role="img"
       aria-label="Gitflow branching workflow diagram"
     >
       {/* Background */}
       <rect
-        width="900"
-        height="340"
+        width={SVG_WIDTH}
+        height={SVG_HEIGHT}
         fill="var(--catppuccin-color-mantle)"
         rx="8"
       />
@@ -179,183 +172,93 @@ export function GitflowDiagram({ highlightedLane }: GitflowDiagramProps) {
         ))}
       </defs>
 
-      {/* === PERMANENT LANES === */}
-
-      {/* Main lane */}
-      <g opacity={getOpacity("main")}>
-        <line
-          x1={LANE_X_START}
-          y1={MAIN_Y}
-          x2={LANE_X_END}
-          y2={MAIN_Y}
-          stroke={BRANCH_TYPE_COLORS.main}
-          strokeWidth={getStrokeWidth("main", 2.5)}
-          strokeLinecap="round"
-          {...(hasHighlight &&
-            highlightedLane === "main" && { filter: "url(#glow)" })}
-        />
-        <text
-          x={15}
-          y={MAIN_Y + 5}
-          fill={BRANCH_TYPE_COLORS.main}
-          fontSize={13}
-          fontFamily="var(--font-mono)"
-          fontWeight={
-            hasHighlight && highlightedLane === "main" ? "bold" : "normal"
-          }
-        >
-          main
-        </text>
-        {MAIN_COMMITS.map((cx) => (
-          <circle
-            key={cx}
-            cx={cx}
-            cy={MAIN_Y}
-            r={hasHighlight && highlightedLane === "main" ? 5 : 4}
-            fill={BRANCH_TYPE_COLORS.main}
+      {/* === HORIZONTAL LANE LINES === */}
+      {LANES.map((lane) => (
+        <g key={lane.type} opacity={getOpacity(lane.type)}>
+          {/* Lane line */}
+          <line
+            x1={lane.xStart}
+            y1={lane.y}
+            x2={lane.xEnd}
+            y2={lane.y}
+            stroke={BRANCH_TYPE_COLORS[lane.type]}
+            strokeWidth={getStrokeWidth(lane.type, 2.5)}
+            strokeLinecap="round"
+            {...(lane.dashed && { strokeDasharray: "6 3" })}
+            {...(hasHighlight &&
+              highlightedLane === lane.type && { filter: "url(#glow)" })}
           />
-        ))}
-      </g>
 
-      {/* Develop lane */}
-      <g opacity={getOpacity("develop")}>
-        <line
-          x1={LANE_X_START}
-          y1={DEVELOP_Y}
-          x2={LANE_X_END}
-          y2={DEVELOP_Y}
-          stroke={BRANCH_TYPE_COLORS.develop}
-          strokeWidth={getStrokeWidth("develop", 2.5)}
-          strokeLinecap="round"
-          {...(hasHighlight &&
-            highlightedLane === "develop" && { filter: "url(#glow)" })}
-        />
-        <text
-          x={15}
-          y={DEVELOP_Y + 5}
-          fill={BRANCH_TYPE_COLORS.develop}
-          fontSize={13}
-          fontFamily="var(--font-mono)"
-          fontWeight={
-            hasHighlight && highlightedLane === "develop" ? "bold" : "normal"
-          }
-        >
-          develop
-        </text>
-        {DEVELOP_COMMITS.map((cx) => (
-          <circle
-            key={cx}
-            cx={cx}
-            cy={DEVELOP_Y}
-            r={hasHighlight && highlightedLane === "develop" ? 5 : 4}
-            fill={BRANCH_TYPE_COLORS.develop}
-          />
-        ))}
-      </g>
+          {/* Lane label */}
+          <text
+            x={15}
+            y={lane.y + 5}
+            fill={BRANCH_TYPE_COLORS[lane.type]}
+            fontSize={13}
+            fontFamily="var(--font-mono)"
+            fontWeight={
+              hasHighlight && highlightedLane === lane.type ? "bold" : "normal"
+            }
+          >
+            {lane.label}
+          </text>
 
-      {/* === SHORT-LIVED BRANCH ARCS === */}
-
-      {/* Flow curves with arrowheads */}
-      {FLOW_CURVES.map((curve, i) => (
-        <path
-          key={i}
-          d={curve.path}
-          fill="none"
-          stroke={BRANCH_TYPE_COLORS[curve.type]}
-          strokeWidth={getStrokeWidth(curve.type, 2)}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          markerEnd={`url(#${curve.markerId})`}
-          opacity={getOpacity(curve.type)}
-          {...(hasHighlight &&
-            highlightedLane === curve.type && { filter: "url(#glow)" })}
-        />
+          {/* Commit dots */}
+          {lane.commits.map((cx) => (
+            <circle
+              key={cx}
+              cx={cx}
+              cy={lane.y}
+              r={hasHighlight && highlightedLane === lane.type ? 5 : 4}
+              fill={BRANCH_TYPE_COLORS[lane.type]}
+            />
+          ))}
+        </g>
       ))}
 
-      {/* Feature arc commit dots */}
-      <g opacity={getOpacity("feature")}>
-        {FEATURE_COMMITS.map((cx) => (
-          <circle
-            key={cx}
-            cx={cx}
-            cy={FEATURE_ARC_Y}
-            r={hasHighlight && highlightedLane === "feature" ? 5 : 4}
-            fill={BRANCH_TYPE_COLORS.feature}
-          />
-        ))}
-        <text
-          x={(FEATURE_BRANCH_X + FEATURE_MERGE_X) / 2}
-          y={FEATURE_ARC_Y + 22}
-          fill={BRANCH_TYPE_COLORS.feature}
-          fontSize={11}
-          fontFamily="var(--font-mono)"
-          textAnchor="middle"
-          fontWeight={
-            hasHighlight && highlightedLane === "feature" ? "bold" : "normal"
-          }
-        >
-          feature/*
-        </text>
-      </g>
+      {/* === VERTICAL CONNECTORS === */}
+      {CONNECTORS.map((connector, i) => {
+        const markerId = `arrow-${connector.type}`;
+        return (
+          <g key={i} opacity={getOpacity(connector.type)}>
+            {/* Vertical connector line */}
+            <line
+              x1={connector.x}
+              y1={connector.fromY}
+              x2={connector.x}
+              y2={connector.toY}
+              stroke={BRANCH_TYPE_COLORS[connector.type]}
+              strokeWidth={getStrokeWidth(connector.type, 2)}
+              markerEnd={`url(#${markerId})`}
+              {...(hasHighlight &&
+                highlightedLane === connector.type && { filter: "url(#glow)" })}
+            />
 
-      {/* Release arc commit dots */}
-      <g opacity={getOpacity("release")}>
-        {RELEASE_COMMITS.map((cx) => (
-          <circle
-            key={cx}
-            cx={cx}
-            cy={RELEASE_ARC_Y}
-            r={hasHighlight && highlightedLane === "release" ? 5 : 4}
-            fill={BRANCH_TYPE_COLORS.release}
-          />
-        ))}
-        <text
-          x={(RELEASE_BRANCH_X + RELEASE_MERGE_MAIN_X) / 2 + 10}
-          y={RELEASE_ARC_Y - 14}
-          fill={BRANCH_TYPE_COLORS.release}
-          fontSize={11}
-          fontFamily="var(--font-mono)"
-          textAnchor="middle"
-          fontWeight={
-            hasHighlight && highlightedLane === "release" ? "bold" : "normal"
-          }
-        >
-          release/*
-        </text>
-      </g>
+            {/* Junction dot at source */}
+            <circle
+              cx={connector.x}
+              cy={connector.fromY}
+              r={3}
+              fill={BRANCH_TYPE_COLORS[connector.type]}
+            />
 
-      {/* Hotfix arc commit dots */}
-      <g opacity={getOpacity("hotfix")}>
-        {HOTFIX_COMMITS.map((cx) => (
-          <circle
-            key={cx}
-            cx={cx}
-            cy={HOTFIX_ARC_Y}
-            r={hasHighlight && highlightedLane === "hotfix" ? 5 : 4}
-            fill={BRANCH_TYPE_COLORS.hotfix}
-          />
-        ))}
-        <text
-          x={(HOTFIX_BRANCH_X + HOTFIX_MERGE_MAIN_X) / 2 + 10}
-          y={HOTFIX_ARC_Y - 14}
-          fill={BRANCH_TYPE_COLORS.hotfix}
-          fontSize={11}
-          fontFamily="var(--font-mono)"
-          textAnchor="middle"
-          fontWeight={
-            hasHighlight && highlightedLane === "hotfix" ? "bold" : "normal"
-          }
-        >
-          hotfix/*
-        </text>
-      </g>
+            {/* Junction dot at target */}
+            <circle
+              cx={connector.x}
+              cy={connector.toY}
+              r={3}
+              fill={BRANCH_TYPE_COLORS[connector.type]}
+            />
+          </g>
+        );
+      })}
 
       {/* === VERSION LABELS ON MAIN === */}
       {VERSION_LABELS.map(({ x, label }) => (
         <g key={label} opacity={getOpacity("main")}>
           <rect
             x={x - 18}
-            y={MAIN_Y - 26}
+            y={LANE_Y.main - 26}
             width={36}
             height={16}
             rx={3}
@@ -365,7 +268,7 @@ export function GitflowDiagram({ highlightedLane }: GitflowDiagramProps) {
           />
           <text
             x={x}
-            y={MAIN_Y - 15}
+            y={LANE_Y.main - 15}
             fill={BRANCH_TYPE_COLORS.main}
             fontSize={9}
             fontFamily="var(--font-mono)"
@@ -382,7 +285,7 @@ export function GitflowDiagram({ highlightedLane }: GitflowDiagramProps) {
         <g className="motion-safe:animate-gentle-pulse">
           {/* Outer glow circle */}
           <circle
-            cx={800}
+            cx={820}
             cy={INDICATOR_Y[highlightedLane]}
             r={10}
             fill={BRANCH_TYPE_COLORS[highlightedLane]}
@@ -390,14 +293,14 @@ export function GitflowDiagram({ highlightedLane }: GitflowDiagramProps) {
           />
           {/* Inner dot */}
           <circle
-            cx={800}
+            cx={820}
             cy={INDICATOR_Y[highlightedLane]}
             r={5}
             fill={BRANCH_TYPE_COLORS[highlightedLane]}
           />
           {/* Label */}
           <text
-            x={800}
+            x={820}
             y={INDICATOR_Y[highlightedLane] - 18}
             fill={BRANCH_TYPE_COLORS[highlightedLane]}
             fontSize={10}
