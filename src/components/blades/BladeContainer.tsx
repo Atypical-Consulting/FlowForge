@@ -12,6 +12,7 @@ import {
 } from "../../lib/animations";
 import { BladeRenderer } from "./BladeRenderer";
 import { BladeStrip } from "./BladeStrip";
+import { NavigationGuardDialog } from "./NavigationGuardDialog";
 
 export function BladeContainer() {
   const actorRef = useNavigationActorRef();
@@ -60,6 +61,7 @@ export function BladeContainer() {
           />
         </motion.div>
       </AnimatePresence>
+      <NavigationGuardDialog />
     </div>
   );
 }

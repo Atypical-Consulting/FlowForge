@@ -1,5 +1,6 @@
 import { setup, assign, and, not } from "xstate";
 import { rootBladeForProcess } from "./actions";
+import { toast } from "../../stores/toast";
 import type {
   NavigationContext,
   NavigationEvent,
@@ -190,6 +191,7 @@ export const navigationMachine = setup({
     }),
     notifyMaxDepth: () => {
       // Side effect: toast notification. Overridable via machine.provide() in tests.
+      toast.info("Maximum blade depth reached. Close some blades first.");
     },
   },
 }).createMachine({

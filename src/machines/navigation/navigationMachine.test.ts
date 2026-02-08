@@ -635,6 +635,79 @@ describe("navigationMachine", () => {
     actor.stop();
   });
 
+  it("CONFIRM_DISCARD after REPLACE_BLADE performs the replace", () => {
+    const actor = createTestActor();
+
+    actor.send({
+      type: "PUSH_BLADE",
+      bladeType: "diff",
+      title: "Diff",
+      props: { source: { mode: "staging", filePath: "a.ts", staged: false } },
+    });
+    const bladeId = actor.getSnapshot().context.bladeStack[1].id;
+
+    actor.send({ type: "MARK_DIRTY", bladeId });
+    actor.send({
+      type: "REPLACE_BLADE",
+      bladeType: "settings",
+      title: "Settings",
+      props: {} as Record<string, never>,
+    });
+    actor.send({ type: "CONFIRM_DISCARD" });
+
+    const snap = actor.getSnapshot();
+    expect(snap.value).toBe("navigating");
+    expect(snap.context.bladeStack).toHaveLength(2);
+    expect(snap.context.bladeStack[1].type).toBe("settings");
+    expect(snap.context.pendingEvent).toBeNull();
+    expect(Object.keys(snap.context.dirtyBladeIds)).toHaveLength(0);
+
+    actor.stop();
+  });
+
+  it("CONFIRM_DISCARD after POP_TO_INDEX performs the pop", () => {
+    const actor = createTestActor();
+
+    actor.send({
+      type: "PUSH_BLADE",
+      bladeType: "diff",
+      title: "Diff 1",
+      props: { source: { mode: "staging", filePath: "a.ts", staged: false } },
+    });
+    actor.send({
+      type: "PUSH_BLADE",
+      bladeType: "diff",
+      title: "Diff 2",
+      props: { source: { mode: "staging", filePath: "b.ts", staged: false } },
+    });
+
+    const bladeId = actor.getSnapshot().context.bladeStack[2].id;
+    actor.send({ type: "MARK_DIRTY", bladeId });
+    actor.send({ type: "POP_TO_INDEX", index: 0 });
+    actor.send({ type: "CONFIRM_DISCARD" });
+
+    const snap = actor.getSnapshot();
+    expect(snap.value).toBe("navigating");
+    expect(snap.context.bladeStack).toHaveLength(1);
+    expect(snap.context.bladeStack[0].type).toBe("staging-changes");
+
+    actor.stop();
+  });
+
+  it("switching process clears dirty state", () => {
+    const actor = createTestActor();
+
+    actor.send({
+      type: "SWITCH_PROCESS",
+      process: "topology",
+    });
+
+    expect(Object.keys(actor.getSnapshot().context.dirtyBladeIds)).toHaveLength(0);
+    expect(actor.getSnapshot().context.activeProcess).toBe("topology");
+
+    actor.stop();
+  });
+
   it("notifyMaxDepth action is called when push is blocked at max depth", () => {
     const notifyFn = vi.fn();
     const testMachine = navigationMachine.provide({
