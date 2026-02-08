@@ -36,9 +36,12 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
   const sceneRef = useRef<SceneRefs | null>(null);
   // Ref to pass the loaded ArrayBuffer to the Three.js setup effect
   const bufferRef = useRef<ArrayBuffer | null>(null);
+  // Version counter to prevent stale async results (handles StrictMode double-invoke)
+  const loadVersionRef = useRef(0);
 
-  // Load model from git HEAD
+  // Load model data (from HEAD tree with workdir fallback)
   const loadModel = useCallback(async () => {
+    const myVersion = ++loadVersionRef.current;
     setLoading(true);
     setFetchError(null);
     setModelReady(false);
@@ -51,8 +54,10 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
         testCanvas.getContext("webgl2") || testCanvas.getContext("webgl");
       if (!gl) {
         console.error("[Viewer3dBlade] WebGL not supported — neither webgl2 nor webgl context available");
-        setFetchError("WebGL is not supported by your browser or GPU");
-        setLoading(false);
+        if (myVersion === loadVersionRef.current) {
+          setFetchError("WebGL is not supported by your browser or GPU");
+          setLoading(false);
+        }
         return;
       }
     } catch {
@@ -63,6 +68,9 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
 
     try {
       const result = await commands.readRepoFile(filePath);
+      // Stale check: a newer loadModel call has started, discard this result
+      if (myVersion !== loadVersionRef.current) return;
+
       if (result.status !== "ok") {
         console.error("[Viewer3dBlade] readRepoFile failed:", result.error);
         setFetchError(getErrorMessage(result.error));
@@ -107,6 +115,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
       console.log("[Viewer3dBlade] Buffer ready, setting loading=false");
       setLoading(false);
     } catch (err) {
+      if (myVersion !== loadVersionRef.current) return;
       console.error("[Viewer3dBlade] Model load failed:", err);
       setFetchError(
         err instanceof Error ? err.message : "Failed to load model",
@@ -115,19 +124,9 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
     }
   }, [filePath]);
 
-  // Initial load with cancellation for StrictMode
+  // Initial load
   useEffect(() => {
-    let aborted = false;
-    const load = async () => {
-      await loadModel();
-      if (aborted) {
-        bufferRef.current = null;
-      }
-    };
-    load();
-    return () => {
-      aborted = true;
-    };
+    loadModel();
   }, [loadModel]);
 
   // Three.js scene setup and model parsing

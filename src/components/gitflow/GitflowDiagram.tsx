@@ -105,10 +105,10 @@ interface LaneConfig {
 
 const LANES: LaneConfig[] = [
   { type: "main", label: "main", y: LANE_Y.main, xStart: LANE_X_START, xEnd: LANE_X_END, dashed: false, commits: MAIN_COMMITS },
-  { type: "hotfix", label: "hotfix/*", y: LANE_Y.hotfix, xStart: HOTFIX_BRANCH_X, xEnd: HOTFIX_MERGE_DEV_X, dashed: true, commits: HOTFIX_COMMITS },
-  { type: "release", label: "release/*", y: LANE_Y.release, xStart: RELEASE_BRANCH_X, xEnd: RELEASE_MERGE_DEV_X, dashed: true, commits: RELEASE_COMMITS },
+  { type: "hotfix", label: "hotfix/*", y: LANE_Y.hotfix, xStart: LANE_X_START, xEnd: LANE_X_END, dashed: true, commits: HOTFIX_COMMITS },
+  { type: "release", label: "release/*", y: LANE_Y.release, xStart: LANE_X_START, xEnd: LANE_X_END, dashed: true, commits: RELEASE_COMMITS },
   { type: "develop", label: "develop", y: LANE_Y.develop, xStart: LANE_X_START, xEnd: LANE_X_END, dashed: false, commits: DEVELOP_COMMITS },
-  { type: "feature", label: "feature/*", y: LANE_Y.feature, xStart: FEATURE_BRANCH_X, xEnd: FEATURE_MERGE_X, dashed: true, commits: FEATURE_COMMITS },
+  { type: "feature", label: "feature/*", y: LANE_Y.feature, xStart: LANE_X_START, xEnd: LANE_X_END, dashed: true, commits: FEATURE_COMMITS },
 ];
 
 /**
@@ -122,7 +122,7 @@ export function GitflowDiagram({ highlightedLane }: GitflowDiagramProps) {
 
   const getOpacity = (type: GitflowBranchType) => {
     if (!hasHighlight) return 0.85;
-    return highlightedLane === type ? 1 : 0.35;
+    return highlightedLane === type ? 1 : 0.5;
   };
 
   const getStrokeWidth = (type: GitflowBranchType, base: number) => {
@@ -146,8 +146,9 @@ export function GitflowDiagram({ highlightedLane }: GitflowDiagramProps) {
       />
 
       <defs>
-        {/* Glow filter for active lane */}
-        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+        {/* Glow filter for active lane — uses userSpaceOnUse to avoid
+            zero-height clipping on horizontal lines */}
+        <filter id="glow" filterUnits="userSpaceOnUse" x="0" y="0" width={SVG_WIDTH} height={SVG_HEIGHT}>
           <feGaussianBlur stdDeviation="3" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
