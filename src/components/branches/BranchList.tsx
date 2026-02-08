@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Pin, Clock, Shield } from "lucide-react";
+import { Pin, Shield } from "lucide-react";
 import { useBulkSelect } from "../../hooks/useBulkSelect";
 import { useBranchScopes } from "../../hooks/useBranchScopes";
 import { bulkDeleteBranches, getProtectedBranches } from "../../lib/bulkBranchOps";
@@ -27,7 +27,6 @@ export function BranchList({
   const {
     branches,
     pinnedBranches,
-    recentBranches,
     activeScopeId,
     setScope,
     scopes,
@@ -186,28 +185,6 @@ export function BranchList({
               {pinnedBranches.map((branch) => (
                 <BranchItem
                   key={`pin-${branch.name}`}
-                  branch={branch}
-                  onCheckout={() => handleCheckout(branch.name)}
-                  onDelete={() => handleDelete(branch.name, branch.isMerged)}
-                  onMerge={() => handleMerge(branch.name)}
-                  onTogglePin={() => handleTogglePin(branch.name)}
-                  disabled={isLoading}
-                />
-              ))}
-            </div>
-          </CollapsibleSection>
-        )}
-
-        {recentBranches.length > 0 && (
-          <CollapsibleSection
-            title="Recent"
-            icon={<Clock className="w-3 h-3" />}
-            count={recentBranches.length}
-          >
-            <div className="space-y-0.5">
-              {recentBranches.map((branch) => (
-                <BranchItem
-                  key={`recent-${branch.name}`}
                   branch={branch}
                   onCheckout={() => handleCheckout(branch.name)}
                   onDelete={() => handleDelete(branch.name, branch.isMerged)}
