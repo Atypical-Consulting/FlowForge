@@ -1,10 +1,10 @@
-import { Channel } from "@tauri-apps/api/core";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, RotateCcw } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { type SyncProgress, commands } from "../../bindings";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { commands } from "../../bindings";
 import { cn } from "../../lib/utils";
-import { toast } from "../../stores/toast";
+import { useCommitExecution } from "../../hooks/useCommitExecution";
+import { useAmendPrefill } from "../../hooks/useAmendPrefill";
 import { ShortcutTooltip } from "../ui/ShortcutTooltip";
 import { Button } from "../ui/button";
 import { ConventionalCommitForm } from "./ConventionalCommitForm";
@@ -12,110 +12,34 @@ import { ConventionalCommitForm } from "./ConventionalCommitForm";
 export function CommitForm() {
   const [useConventional, setUseConventional] = useState(false);
   const [message, setMessage] = useState("");
-  const [amend, setAmend] = useState(false);
-  const queryClient = useQueryClient();
 
-  // Fetch last commit message for amend pre-fill
-  const { data: lastMessageResult, refetch: refetchLastMessage } = useQuery({
-    queryKey: ["lastCommitMessage"],
-    queryFn: () => commands.getLastCommitMessage(),
-    enabled: false, // Only fetch when needed
+  const { commit, isCommitting, commitError } = useCommitExecution({
+    onCommitSuccess: () => {
+      setMessage("");
+      amendPrefill.setAmend(false);
+    },
   });
 
-  const lastMessage =
-    lastMessageResult?.status === "ok" ? lastMessageResult.data : null;
-
-  // Handle amend checkbox change with pre-fill logic
-  const handleAmendChange = useCallback(
-    async (checked: boolean) => {
-      if (checked) {
-        // Fetch the last commit message
-        const result = await refetchLastMessage();
-        const fetchedMessage =
-          result.data?.status === "ok" ? result.data.data : null;
-
-        if (fetchedMessage) {
-          if (message.trim().length === 0) {
-            // Empty message - auto-fill
-            setMessage(fetchedMessage.fullMessage);
-            setAmend(true);
-          } else {
-            // Has content - ask user
-            const shouldReplace = window.confirm(
-              "You have unsaved text. Replace with previous commit message?",
-            );
-            if (shouldReplace) {
-              setMessage(fetchedMessage.fullMessage);
-            }
-            setAmend(true);
-          }
-        } else {
-          setAmend(true);
-        }
-      } else {
-        // Uncheck amend - clear the message
-        setAmend(false);
-        setMessage("");
-      }
-    },
-    [message, refetchLastMessage],
-  );
+  const amendPrefill = useAmendPrefill({ mode: "simple" });
 
   // Listen for toggle-amend event from keyboard shortcut
   useEffect(() => {
     const handleToggleAmend = () => {
-      handleAmendChange(!amend);
+      amendPrefill.toggleAmend(!amendPrefill.amend, {
+        onPrefill: (msg) => setMessage(msg),
+        onClear: () => setMessage(""),
+        hasContent: message.trim().length > 0,
+      });
     };
     document.addEventListener("toggle-amend", handleToggleAmend);
     return () => {
       document.removeEventListener("toggle-amend", handleToggleAmend);
     };
-  }, [amend, handleAmendChange]);
+  }, [amendPrefill, message]);
 
   const { data: result } = useQuery({
     queryKey: ["stagingStatus"],
     queryFn: () => commands.getStagingStatus(),
-  });
-
-  const pushMutation = useMutation({
-    mutationFn: () => {
-      const channel = new Channel<SyncProgress>();
-      return commands.pushToRemote("origin", channel);
-    },
-    onSuccess: () => {
-      toast.success("Pushed to origin");
-      queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
-    },
-    onError: (error) => {
-      toast.error(`Push failed: ${String(error)}`, {
-        label: "Retry",
-        onClick: () => pushMutation.mutate(),
-      });
-    },
-  });
-
-  const commitMutation = useMutation({
-    mutationFn: (commitMessage: string) =>
-      commands.createCommit(commitMessage, amend),
-    onSuccess: (_data, commitMessage) => {
-      setMessage("");
-      setAmend(false);
-      queryClient.invalidateQueries({ queryKey: ["stagingStatus"] });
-      queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
-      queryClient.invalidateQueries({ queryKey: ["repositoryStatus"] });
-
-      const shortMessage =
-        commitMessage.length > 50
-          ? `${commitMessage.slice(0, 50)}...`
-          : commitMessage;
-      toast.success(`Committed: ${shortMessage}`, {
-        label: "Push now",
-        onClick: () => pushMutation.mutate(),
-      });
-    },
-    onError: (error) => {
-      toast.error(`Commit failed: ${String(error)}`);
-    },
   });
 
   const status = result?.status === "ok" ? result.data : null;
@@ -123,7 +47,7 @@ export function CommitForm() {
 
   // Handle commit from ConventionalCommitForm
   const handleConventionalCommit = (commitMessage: string) => {
-    commitMutation.mutate(commitMessage);
+    commit(commitMessage, false);
   };
 
   // Simple form logic
@@ -163,16 +87,16 @@ export function CommitForm() {
           <ConventionalCommitForm
             onCommit={handleConventionalCommit}
             onCancel={() => setUseConventional(false)}
-            disabled={commitMutation.isPending || !hasStagedFiles}
+            disabled={isCommitting || !hasStagedFiles}
           />
           {!hasStagedFiles && (
             <p className="text-xs text-ctp-overlay0 text-center">
               No staged changes to commit
             </p>
           )}
-          {commitMutation.isError && (
+          {commitError && (
             <p className="text-xs text-ctp-red text-center">
-              {String(commitMutation.error)}
+              {String(commitError)}
             </p>
           )}
         </div>
@@ -201,8 +125,14 @@ export function CommitForm() {
                 <label className="flex items-center gap-1.5 text-ctp-overlay1 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={amend}
-                    onChange={(e) => handleAmendChange(e.target.checked)}
+                    checked={amendPrefill.amend}
+                    onChange={(e) =>
+                      amendPrefill.toggleAmend(e.target.checked, {
+                        onPrefill: (msg) => setMessage(msg),
+                        onClear: () => setMessage(""),
+                        hasContent: message.trim().length > 0,
+                      })
+                    }
                     className="rounded border-ctp-surface2"
                   />
                   <span className="text-xs">Amend last commit</span>
@@ -228,23 +158,23 @@ export function CommitForm() {
           {/* Commit button */}
           <Button
             onClick={() => {
-              if (amend) {
+              if (amendPrefill.amend) {
                 const confirmed = window.confirm(
                   "Amend will rewrite the last commit. This cannot be undone. Continue?",
                 );
                 if (!confirmed) return;
               }
-              commitMutation.mutate(message);
+              commit(message, amendPrefill.amend);
             }}
-            disabled={!canSimpleCommit || commitMutation.isPending}
+            disabled={!canSimpleCommit || isCommitting}
             className="w-full"
           >
-            {commitMutation.isPending ? (
+            {isCommitting ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Committing...
               </>
-            ) : amend ? (
+            ) : amendPrefill.amend ? (
               <>
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Amend Commit
@@ -260,9 +190,9 @@ export function CommitForm() {
             </p>
           )}
 
-          {commitMutation.isError && (
+          {commitError && (
             <p className="text-xs text-ctp-red text-center">
-              {String(commitMutation.error)}
+              {String(commitError)}
             </p>
           )}
         </div>

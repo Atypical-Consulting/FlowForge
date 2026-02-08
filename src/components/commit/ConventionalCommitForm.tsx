@@ -3,6 +3,8 @@ import { useConventionalCommit } from "../../hooks/useConventionalCommit";
 import { cn } from "../../lib/utils";
 import { BreakingChangeSection } from "./BreakingChangeSection";
 import { CharacterProgress } from "./CharacterProgress";
+import { CommitActionBar } from "./CommitActionBar";
+import { CommitPreview } from "./CommitPreview";
 import { ScopeAutocomplete } from "./ScopeAutocomplete";
 import { TypeSelector } from "./TypeSelector";
 import { ValidationErrors } from "./ValidationErrors";
@@ -150,53 +152,15 @@ export function ConventionalCommitForm({
       <ValidationErrors validation={validation} isValidating={isValidating} />
 
       {/* Message preview */}
-      {currentMessage && (
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-ctp-subtext1">
-            Preview
-          </label>
-          <pre
-            className={cn(
-              "p-3 text-sm bg-ctp-mantle border border-ctp-surface0 rounded",
-              "text-ctp-subtext1 font-mono whitespace-pre-wrap wrap-break-words",
-              "max-h-32 overflow-y-auto",
-            )}
-          >
-            {currentMessage}
-          </pre>
-        </div>
-      )}
+      <CommitPreview message={currentMessage} variant="compact" />
 
-      {/* Action buttons */}
-      <div className="flex justify-end gap-2 pt-2">
-        {onCancel && (
-          <button
-            type="button"
-            onClick={handleCancel}
-            className={cn(
-              "px-4 py-2 text-sm font-medium rounded",
-              "text-ctp-subtext1 bg-ctp-surface1 hover:bg-ctp-surface0",
-              "focus:outline-none focus:ring-2 focus:ring-ctp-overlay0",
-              "disabled:opacity-50 disabled:cursor-not-allowed",
-            )}
-            disabled={disabled}
-          >
-            Cancel
-          </button>
-        )}
-        <button
-          type="submit"
-          disabled={!canCommit || disabled}
-          className={cn(
-            "px-4 py-2 text-sm font-medium rounded",
-            "text-ctp-base bg-ctp-blue hover:bg-ctp-sapphire",
-            "focus:outline-none focus:ring-2 focus:ring-ctp-blue",
-            "disabled:opacity-50 disabled:cursor-not-allowed",
-          )}
-        >
-          Commit
-        </button>
-      </div>
+      {/* Action buttons — commit button is type="submit", form onSubmit handles it */}
+      <CommitActionBar
+        canCommit={canCommit}
+        disabled={disabled}
+        onCommit={() => {}}
+        onCancel={onCancel ? handleCancel : undefined}
+      />
     </form>
   );
 }

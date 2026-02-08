@@ -9,6 +9,8 @@ interface TypeSelectorProps {
   onChange: (type: CommitType) => void;
   suggestion: TypeSuggestion | null;
   onApplySuggestion: () => void;
+  /** Grid columns: 4 for sidebar (default), 6 for blade layout */
+  columns?: 4 | 6;
 }
 
 export function TypeSelector({
@@ -16,6 +18,7 @@ export function TypeSelector({
   onChange,
   suggestion,
   onApplySuggestion,
+  columns = 4,
 }: TypeSelectorProps) {
   return (
     <div className="space-y-2">
@@ -46,7 +49,12 @@ export function TypeSelector({
       )}
 
       {/* Type grid */}
-      <div className="grid grid-cols-4 gap-2">
+      <div
+        className={cn(
+          "grid gap-2",
+          columns === 6 ? "grid-cols-6" : "grid-cols-4",
+        )}
+      >
         {COMMIT_TYPES.map((type) => {
           const theme = COMMIT_TYPE_THEME[type];
           const Icon = theme.icon;
