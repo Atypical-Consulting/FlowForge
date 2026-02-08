@@ -23,6 +23,15 @@ if (!globalThis.crypto?.randomUUID) {
   });
 }
 
+// Polyfill ResizeObserver for jsdom (used by react-resizable-panels)
+if (!globalThis.ResizeObserver) {
+  globalThis.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof globalThis.ResizeObserver;
+}
+
 // Mock @tauri-apps/api/event globally (used by App.tsx for file watcher)
 vi.mock("@tauri-apps/api/event", () => ({
   listen: vi.fn().mockResolvedValue(() => {}),
