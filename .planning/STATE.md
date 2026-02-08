@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-08)
 Phase: None — between milestones
 Plan: N/A
 Status: v1.3.0 shipped, next milestone not started
-Last activity: 2026-02-08 — v1.3.0 milestone archived
+Last activity: 2026-02-08 - Completed quick task 027: Improve doc website with GitFlow/Conventional Commits explanations and download button
 
 Progress: N/A
 
@@ -62,6 +62,7 @@ None.
 | 024 | Bump version to v1.1.0 | 2026-02-06 | dfc6d4e | [024-prepare-v110-version-bump](./quick/024-prepare-v110-version-bump/) |
 | 025 | Fix TAURI_CHANNEL CI pipeline failure | 2026-02-06 | c6bafb2 | [025-fix-tauri-channel-ci-pipeline](./quick/025-fix-tauri-channel-ci-pipeline/) |
 | 026 | Fix DMG damaged on macOS (revert broken signing vars) | 2026-02-06 | 27011ba | [026-fix-dmg-damaged-macos-signing](./quick/026-fix-dmg-damaged-macos-signing/) |
+| 027 | Improve doc website with GitFlow/Conventional Commits explanations and download button | 2026-02-08 | d0c8da3 | [27-improve-doc-website-with-gitflow-convent](./quick/27-improve-doc-website-with-gitflow-convent/) |
 
 ## Next Steps
 
