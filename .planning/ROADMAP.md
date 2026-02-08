@@ -91,7 +91,7 @@ Plans:
 4. User can browse the repository file tree at HEAD, navigate into directories via breadcrumbs, and open files in the appropriate viewer blade
 5. User can open a Gitflow cheat sheet blade that shows workflow diagrams, branch type descriptions, and a "You are here" indicator based on the current branch
 
-**Plans:** 22 plans in 8 waves
+**Plans:** 24 plans in 9 waves
 
 Plans:
 - [x] 22-01-PLAN.md -- W1: Extensibility Refactoring (type safety, auto-registration, file dispatch)
@@ -116,6 +116,8 @@ Plans:
 - [x] 22-20-PLAN.md -- W8: Gap Closure — Monaco 0px height fix and HMR registration cleanup
 - [x] 22-21-PLAN.md -- W8: Gap Closure — Replace model-viewer with Three.js + GLTFLoader
 - [x] 22-22-PLAN.md -- W8: Gap Closure — Redesign Gitflow SVG diagram (opacity, cubic curves, geometry)
+- [ ] 22-23-PLAN.md -- W9: Gap Closure — DiffBlade toolbar order fix and Viewer3dBlade silent failure fix
+- [ ] 22-24-PLAN.md -- W9: Gap Closure — Gitflow SVG complete redesign (canonical layout, arrowheads, readability)
 
 ---
 
@@ -162,7 +164,7 @@ Plans:
 | 20 | Blade Infrastructure & Modal Migration | 9 | Complete |
 | 20.1 | Blade Extensibility Refactoring | 5 | Complete |
 | 21 | Two-Column Staging & Inline Diff | 2 | Complete |
-| 22 | New Content Blades | 6 | Gap Closure Round 3 Complete |
+| 22 | New Content Blades | 6 | Gap Closure Round 4 |
 | 23 | Branch Management | 6 | Pending |
 | 24 | Code Review Guidance & Documentation | 2 | Pending |
 

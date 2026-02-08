@@ -19,10 +19,12 @@ export interface BladeRegistration<TProps = Record<string, never>> {
 const registry = new Map<BladeType, BladeRegistration<any>>();
 
 export function registerBlade<TProps>(config: BladeRegistration<TProps>): void {
-  if (import.meta.env.DEV && registry.has(config.type) && !import.meta.hot) {
-    console.warn(`[BladeRegistry] Duplicate registration for "${config.type}"`);
-  }
   registry.set(config.type, config);
+}
+
+/** Clear all registrations. Used by HMR dispose to reset before re-registration. */
+export function clearRegistry(): void {
+  registry.clear();
 }
 
 export function getBladeRegistration(
