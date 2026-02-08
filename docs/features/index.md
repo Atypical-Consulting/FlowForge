@@ -22,5 +22,11 @@ Sync with remotes using dedicated toolbar actions or keyboard shortcuts. Progres
 ### Stash Support
 Save and restore work-in-progress changes with Git stash. Name your stashes for easy identification and apply or drop them as needed.
 
+### Repository Initialization
+Create new Git repositories from any folder with guided `.gitignore` template selection, project type auto-detection, and optional initial commit generation. [Learn more &rarr;](/features/init-repo)
+
+### Conventional Commits
+Write structured commit messages with a dedicated editor that breaks messages into type, scope, description, and body fields. Live preview ensures correct formatting before you commit. [Learn more &rarr;](/features/conventional-commits)
+
 ### Review Checklist
 Before finishing a Gitflow branch, an advisory checklist reminds you of common pre-merge steps. Items are customizable per flow type in Settings.

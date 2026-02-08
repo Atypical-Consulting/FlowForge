@@ -116,3 +116,5 @@ FlowForge's commit panel provides a text area where you write your commit messag
 - The **undo last commit** action gives you a safety net to re-commit with a corrected message.
 
 Pairing Conventional Commits with FlowForge's [GitFlow workflow](/features/gitflow) gives you a clean history where every branch merge and version tag tells a coherent story.
+
+FlowForge is also building a dedicated [Conventional Commit blade](/features/conventional-commits) with a structured editor, live preview, and commit templates.

@@ -25,6 +25,14 @@ export default defineConfig({
             { text: "Gitflow Workflow", link: "/features/gitflow" },
             { text: "Staging & Commits", link: "/features/staging" },
             { text: "Branch Management", link: "/features/branches" },
+            {
+              text: "Repository Initialization",
+              link: "/features/init-repo",
+            },
+            {
+              text: "Conventional Commits",
+              link: "/features/conventional-commits",
+            },
           ],
         },
       ],
@@ -37,6 +45,10 @@ export default defineConfig({
             {
               text: "Conventional Commits",
               link: "/concepts/conventional-commits",
+            },
+            {
+              text: "Blade Navigation",
+              link: "/concepts/blade-navigation",
             },
           ],
         },

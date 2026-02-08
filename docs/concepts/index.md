@@ -17,3 +17,9 @@ Conventional Commits is a specification for writing structured commit messages. 
 FlowForge's commit interface encourages clear, descriptive messages that pair naturally with this convention.
 
 [Learn about Conventional Commits &rarr;](/concepts/conventional-commits)
+
+## Blade Navigation
+
+FlowForge organizes its interface using a blade-based navigation model. Each blade is a focused panel that slides onto a stack — push to go deeper, pop to go back. An XState state machine manages transitions, ensuring predictable navigation with unsaved-changes protection and direction-aware animations.
+
+[Learn about Blade Navigation &rarr;](/concepts/blade-navigation)

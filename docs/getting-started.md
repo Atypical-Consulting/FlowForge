@@ -52,11 +52,14 @@ The output binary is placed in `src-tauri/target/release/`.
 3. Select a folder containing a Git repository.
 4. FlowForge loads the repository status, branches, and commit history.
 
+If you select a folder that is **not yet a Git repository**, FlowForge offers to [initialize one for you](/features/init-repo) — complete with `.gitignore` template selection and an optional first commit.
+
 If the repository has not been initialized with Gitflow, navigate to the Gitflow panel and click **Initialize Gitflow** to set up the standard branch structure.
 
 ## Next Steps
 
 - Learn about [Gitflow workflows](/features/gitflow) for managing features, releases, and hotfixes.
 - Explore [staging and commits](/features/staging) for day-to-day changes.
-- Read about [GitFlow](/concepts/gitflow) and [Conventional Commits](/concepts/conventional-commits) concepts.
+- Set up a new project with [Repository Initialization](/features/init-repo).
+- Read about [GitFlow](/concepts/gitflow), [Conventional Commits](/concepts/conventional-commits), and [Blade Navigation](/concepts/blade-navigation) concepts.
 - See all available [keyboard shortcuts](/reference/keyboard-shortcuts) for fast navigation.
