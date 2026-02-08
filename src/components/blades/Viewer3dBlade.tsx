@@ -1,4 +1,6 @@
-import "@google/model-viewer";
+import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { Box, Info, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { commands } from "../../bindings";
@@ -11,39 +13,49 @@ interface Viewer3dBladeProps {
   filePath: string;
 }
 
+interface SceneRefs {
+  renderer: THREE.WebGLRenderer;
+  scene: THREE.Scene;
+  camera: THREE.PerspectiveCamera;
+  controls: OrbitControls;
+  animFrameId: number;
+  resizeObserver: ResizeObserver;
+}
+
 export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
-  const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [progress, setProgress] = useState(0);
   const [modelReady, setModelReady] = useState(false);
   const [contextLost, setContextLost] = useState(false);
   const [showMetadata, setShowMetadata] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [fileSize, setFileSize] = useState(0);
-  const viewerRef = useRef<HTMLElement>(null);
   const retryCount = useRef(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const sceneRef = useRef<SceneRefs | null>(null);
 
   // Load model from git HEAD
   const loadModel = useCallback(async () => {
     setLoading(true);
     setFetchError(null);
-    setProgress(0);
     setModelReady(false);
     setContextLost(false);
 
     // WebGL capability check
     try {
       const testCanvas = document.createElement("canvas");
-      const gl = testCanvas.getContext("webgl2") || testCanvas.getContext("webgl");
+      const gl =
+        testCanvas.getContext("webgl2") || testCanvas.getContext("webgl");
       if (!gl) {
         setFetchError("WebGL is not supported by your browser or GPU");
         setLoading(false);
         return;
       }
     } catch {
-      // WebGL detection itself failed — continue anyway, model-viewer will handle it
-      console.warn("[Viewer3dBlade] WebGL detection failed, proceeding anyway");
+      console.warn(
+        "[Viewer3dBlade] WebGL detection failed, proceeding anyway",
+      );
     }
 
     try {
@@ -57,138 +69,215 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
       const { content, isBinary, size } = result.data;
       setFileSize(size);
 
-      if (!isBinary) {
-        // .gltf files are JSON text — handle as text blob
-        const ext = filePath.split(".").pop()?.toLowerCase();
-        const mime = ext === "gltf" ? "model/gltf+json" : "model/gltf-binary";
-        const blob = new Blob([content], { type: mime });
-        const url = URL.createObjectURL(blob);
-        setBlobUrl(url);
-      } else {
-        // Binary (.glb) — decode base64 via atob + Uint8Array (avoids fetch('data:...') which fails in Tauri WKWebView)
-        const ext = filePath.split(".").pop()?.toLowerCase();
-        const mime = ext === "gltf" ? "model/gltf+json" : "model/gltf-binary";
+      let arrayBuffer: ArrayBuffer;
+
+      if (isBinary) {
+        // Binary (.glb) — decode base64 via atob + Uint8Array
         try {
           const binaryString = atob(content);
           const bytes = new Uint8Array(binaryString.length);
           for (let i = 0; i < binaryString.length; i++) {
             bytes[i] = binaryString.charCodeAt(i);
           }
-          const blob = new Blob([bytes], { type: mime });
-          const url = URL.createObjectURL(blob);
-          setBlobUrl(url);
+          arrayBuffer = bytes.buffer as ArrayBuffer;
         } catch (decodeErr) {
           console.error("[Viewer3dBlade] Base64 decode failed:", decodeErr);
-          setFetchError(decodeErr instanceof Error ? decodeErr.message : "Base64 decode failed");
+          setFetchError(
+            decodeErr instanceof Error
+              ? decodeErr.message
+              : "Base64 decode failed",
+          );
           setLoading(false);
           return;
         }
+      } else {
+        // Text (.gltf) — encode to ArrayBuffer
+        arrayBuffer = new TextEncoder().encode(content)
+          .buffer as ArrayBuffer;
       }
 
+      // Store the buffer for the Three.js effect to pick up
+      bufferRef.current = arrayBuffer;
       setLoading(false);
     } catch (err) {
       console.error("[Viewer3dBlade] Model load failed:", err);
-      setFetchError(err instanceof Error ? err.message : "Failed to load model");
+      setFetchError(
+        err instanceof Error ? err.message : "Failed to load model",
+      );
       setLoading(false);
     }
   }, [filePath]);
 
+  // Ref to pass the loaded ArrayBuffer to the Three.js setup effect
+  const bufferRef = useRef<ArrayBuffer | null>(null);
+
   // Initial load
   useEffect(() => {
     loadModel();
-    return () => {
-      // Cleanup blob URL on unmount
-      setBlobUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
-        return null;
-      });
-    };
   }, [loadModel]);
 
-  // model-viewer event listeners
+  // Three.js scene setup and model parsing
   useEffect(() => {
-    const viewer = viewerRef.current;
-    if (!viewer || !blobUrl) return;
+    if (loading || fetchError || !bufferRef.current) return;
 
-    const onProgress = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      if (detail && typeof detail.totalProgress === "number") {
-        setProgress(detail.totalProgress);
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
+
+    const arrayBuffer = bufferRef.current;
+
+    // Create renderer
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: true,
+    });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    const rect = container.getBoundingClientRect();
+    renderer.setSize(rect.width, rect.height);
+
+    // Create camera
+    const aspect = rect.width / rect.height || 1;
+    const camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
+    camera.position.set(0, 1, 3);
+
+    // Create scene
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x1e1e2e); // Catppuccin base
+
+    // Create controls
+    const controls = new OrbitControls(camera, canvas);
+    controls.enableDamping = true;
+
+    // Add lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+    dirLight1.position.set(5, 10, 7.5);
+    scene.add(dirLight1);
+
+    const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.3);
+    dirLight2.position.set(-5, 5, -5);
+    scene.add(dirLight2);
+
+    // Animation loop
+    let animFrameId = 0;
+    const animate = () => {
+      animFrameId = requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    // ResizeObserver for responsive canvas
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (width === 0 || height === 0) continue;
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height);
+      }
+    });
+    resizeObserver.observe(container);
+
+    // WebGL context loss/restore handling
+    const handleContextLost = (e: Event) => {
+      e.preventDefault();
+      setContextLost(true);
+    };
+    const handleContextRestored = () => {
+      setContextLost(false);
+    };
+    canvas.addEventListener("webglcontextlost", handleContextLost);
+    canvas.addEventListener("webglcontextrestored", handleContextRestored);
+
+    // Store refs for cleanup
+    sceneRef.current = {
+      renderer,
+      scene,
+      camera,
+      controls,
+      animFrameId,
+      resizeObserver,
+    };
+
+    // Parse the GLTF/GLB model
+    const loader = new GLTFLoader();
+    loader.parse(
+      arrayBuffer,
+      "",
+      (gltf) => {
+        // Center and scale the model to fit the viewport
+        const box = new THREE.Box3().setFromObject(gltf.scene);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = maxDim > 0 ? 2 / maxDim : 1;
+        gltf.scene.scale.multiplyScalar(scale);
+        gltf.scene.position.sub(center.multiplyScalar(scale));
+        scene.add(gltf.scene);
+
+        camera.position.set(0, 1, 3);
+        controls.target.set(0, 0, 0);
+        controls.update();
+
+        setModelReady(true);
+
+        // Show interaction hint on first ever load
+        const hintKey = "flowforge-3d-hint-seen";
+        if (!localStorage.getItem(hintKey)) {
+          setShowHint(true);
+          localStorage.setItem(hintKey, "true");
+        }
+      },
+      (error) => {
+        console.error("[Viewer3dBlade] GLTF parse error:", error);
+        setFetchError(
+          error instanceof Error ? error.message : "Failed to parse 3D model",
+        );
+      },
+    );
+
+    // Keep animFrameId up to date in the ref
+    const updateAnimId = () => {
+      if (sceneRef.current) {
+        sceneRef.current.animFrameId = animFrameId;
       }
     };
+    updateAnimId();
 
-    const onLoad = () => {
-      setModelReady(true);
-      // Show interaction hint on first ever load
-      const hintKey = "flowforge-3d-hint-seen";
-      if (!localStorage.getItem(hintKey)) {
-        setShowHint(true);
-        localStorage.setItem(hintKey, "true");
-      }
-    };
-
-    const onError = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      const sourceError = detail?.sourceError;
-      const msg = sourceError?.message || detail?.type || "Failed to render 3D model";
-      setFetchError(msg);
-    };
-
-    viewer.addEventListener("progress", onProgress);
-    viewer.addEventListener("load", onLoad);
-    viewer.addEventListener("error", onError);
-
+    // Cleanup
     return () => {
-      viewer.removeEventListener("progress", onProgress);
-      viewer.removeEventListener("load", onLoad);
-      viewer.removeEventListener("error", onError);
+      cancelAnimationFrame(animFrameId);
+      resizeObserver.disconnect();
+      controls.dispose();
+
+      // Traverse and dispose all geometries and materials
+      scene.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+          if (object.geometry) {
+            object.geometry.dispose();
+          }
+          if (object.material) {
+            if (Array.isArray(object.material)) {
+              for (const material of object.material) {
+                disposeMaterial(material);
+              }
+            } else {
+              disposeMaterial(object.material);
+            }
+          }
+        }
+      });
+
+      renderer.dispose();
+      canvas.removeEventListener("webglcontextlost", handleContextLost);
+      canvas.removeEventListener("webglcontextrestored", handleContextRestored);
+      sceneRef.current = null;
     };
-  }, [blobUrl]);
-
-  // WebGL context loss detection
-  useEffect(() => {
-    const viewer = viewerRef.current;
-    if (!viewer) return;
-
-    // model-viewer uses Shadow DOM — access canvas via shadowRoot
-    let canvasCleanup: (() => void) | undefined;
-
-    const checkCanvas = () => {
-      const canvas = viewer.shadowRoot?.querySelector("canvas");
-      if (!canvas) return false;
-
-      const handleContextLost = (e: Event) => {
-        e.preventDefault();
-        setContextLost(true);
-      };
-
-      const handleContextRestored = () => {
-        setContextLost(false);
-      };
-
-      canvas.addEventListener("webglcontextlost", handleContextLost);
-      canvas.addEventListener("webglcontextrestored", handleContextRestored);
-
-      canvasCleanup = () => {
-        canvas.removeEventListener("webglcontextlost", handleContextLost);
-        canvas.removeEventListener("webglcontextrestored", handleContextRestored);
-      };
-
-      return true;
-    };
-
-    // Canvas may not be immediately available — poll until found
-    const interval = setInterval(() => {
-      if (checkCanvas()) {
-        clearInterval(interval);
-      }
-    }, 200);
-
-    return () => {
-      clearInterval(interval);
-      canvasCleanup?.();
-    };
-  }, [blobUrl]);
+  }, [loading, fetchError]);
 
   // Auto-hide interaction hint
   useEffect(() => {
@@ -202,14 +291,38 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
     if (showHint) setShowHint(false);
   }, [showHint]);
 
-  // Retry handler
+  // Retry handler — dispose old Three.js scene, reset state, reload
   const handleRetry = useCallback(() => {
     retryCount.current += 1;
-    // Revoke old blob URL
-    if (blobUrl) URL.revokeObjectURL(blobUrl);
-    setBlobUrl(null);
+
+    // Dispose old scene if it exists
+    if (sceneRef.current) {
+      const { renderer, scene, controls, animFrameId, resizeObserver } =
+        sceneRef.current;
+      cancelAnimationFrame(animFrameId);
+      resizeObserver.disconnect();
+      controls.dispose();
+      scene.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+          if (object.geometry) object.geometry.dispose();
+          if (object.material) {
+            if (Array.isArray(object.material)) {
+              for (const material of object.material) {
+                disposeMaterial(material);
+              }
+            } else {
+              disposeMaterial(object.material);
+            }
+          }
+        }
+      });
+      renderer.dispose();
+      sceneRef.current = null;
+    }
+
+    bufferRef.current = null;
     loadModel();
-  }, [blobUrl, loadModel]);
+  }, [loadModel]);
 
   if (loading) {
     return <BladeContentLoading />;
@@ -225,7 +338,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
     );
   }
 
-  if (!blobUrl) {
+  if (!bufferRef.current) {
     return (
       <BladeContentEmpty
         icon={Box}
@@ -238,7 +351,10 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
   // WebGL context lost state
   if (contextLost) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-ctp-mantle gap-4" role="alert">
+      <div
+        className="flex-1 flex flex-col items-center justify-center bg-ctp-mantle gap-4"
+        role="alert"
+      >
         <Box className="w-12 h-12 text-ctp-overlay0" />
         <p className="text-sm text-ctp-subtext0">3D rendering context lost</p>
         <p className="text-xs text-ctp-overlay0">WebGL context was lost</p>
@@ -269,6 +385,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
       onPointerDown={handleInteraction}
       onWheel={handleInteraction}
       aria-busy={!modelReady}
+      aria-label={`3D viewer: ${fileName}`}
     >
       {/* Collapsible metadata panel */}
       {showMetadata && (
@@ -280,44 +397,37 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
             </div>
             <div>
               <span className="text-ctp-overlay0">Size: </span>
-              <span className="text-ctp-subtext1">{formatFileSize(fileSize)}</span>
+              <span className="text-ctp-subtext1">
+                {formatFileSize(fileSize)}
+              </span>
             </div>
           </div>
         </div>
       )}
 
-      {/* Loading progress overlay */}
-      {!modelReady && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ctp-mantle z-10">
-          <Box className="w-8 h-8 text-ctp-overlay0" />
-          <div className="w-48 h-1.5 bg-ctp-surface0 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-ctp-blue rounded-full transition-[width] duration-150"
-              style={{ width: `${Math.round(progress * 100)}%` }}
-            />
+      {/* Canvas container */}
+      <div className="h-full overflow-hidden relative" ref={containerRef}>
+        <canvas
+          ref={canvasRef}
+          style={{
+            width: "100%",
+            height: "100%",
+            opacity: modelReady ? 1 : 0,
+            transition: "opacity 200ms ease-out",
+          }}
+        />
+
+        {/* Loading overlay (pulsing animation — GLTFLoader.parse doesn't report progress for in-memory data) */}
+        {!modelReady && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ctp-mantle z-10">
+            <Box className="w-8 h-8 text-ctp-overlay0 animate-pulse" />
+            <div className="w-48 h-1.5 bg-ctp-surface0 rounded-full overflow-hidden">
+              <div className="h-full bg-ctp-blue rounded-full w-full animate-pulse" />
+            </div>
+            <p className="text-xs text-ctp-overlay0">Loading model...</p>
           </div>
-          <p className="text-xs text-ctp-overlay0">Loading model...</p>
-        </div>
-      )}
-
-      {/* model-viewer element */}
-      <model-viewer
-        ref={viewerRef as React.Ref<never>}
-        src={blobUrl}
-        alt={fileName}
-        camera-controls
-        auto-rotate
-        shadow-intensity="1"
-
-        style={{
-          width: "100%",
-          height: "100%",
-          flex: 1,
-          background: `linear-gradient(to bottom, var(--catppuccin-color-base), var(--catppuccin-color-mantle))`,
-          opacity: modelReady ? 1 : 0,
-          transition: "opacity 200ms ease-out",
-        }}
-      />
+        )}
+      </div>
 
       {/* Metadata toggle button (positioned inside the viewport) */}
       {modelReady && (
@@ -345,6 +455,17 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
       )}
     </div>
   );
+}
+
+/** Dispose a Three.js material and its textures. */
+function disposeMaterial(material: THREE.Material) {
+  // Dispose all texture properties
+  for (const value of Object.values(material)) {
+    if (value instanceof THREE.Texture) {
+      value.dispose();
+    }
+  }
+  material.dispose();
 }
 
 function formatFileSize(bytes: number): string {
