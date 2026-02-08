@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useRef } from "react";
 import { Loader2 } from "lucide-react";
-import type { BranchType } from "../../bindings";
 import { useCommitGraph } from "../../hooks/useCommitGraph";
+import { classifyBranch } from "../../lib/branchClassifier";
+import type { GitflowBranchType } from "../../lib/branchClassifier";
 import { LaneHeader } from "./LaneHeader";
 import { CommitBadge } from "./CommitBadge";
 import {
@@ -12,19 +13,6 @@ import {
   type PositionedNode,
   computeLayout,
 } from "./layoutUtils";
-
-/** Classify a branch name into a BranchType (mirrors Rust classify_branch). */
-function classifyBranch(name: string): BranchType {
-  const bare = name.replace(/^refs\/heads\//, "").replace(/^origin\//, "");
-  if (bare === "main" || bare === "master") return "main";
-  if (bare === "develop" || bare === "dev") return "develop";
-  if (bare.startsWith("release/") || bare.startsWith("release-"))
-    return "release";
-  if (bare.startsWith("hotfix/") || bare.startsWith("hotfix-")) return "hotfix";
-  if (bare.startsWith("feature/") || bare.startsWith("feature-"))
-    return "feature";
-  return "other";
-}
 
 interface TopologyPanelProps {
   onCommitSelect?: (oid: string) => void;
@@ -57,7 +45,7 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
       {
         column: number;
         branchName: string;
-        branchType: BranchType;
+        branchType: GitflowBranchType;
       }
     >();
     for (const gn of graphNodes) {

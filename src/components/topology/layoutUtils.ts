@@ -1,4 +1,11 @@
-import type { BranchType, GraphEdge, GraphNode } from "../../bindings";
+import type { GraphEdge, GraphNode } from "../../bindings";
+import {
+  BRANCH_HEX_COLORS,
+  BRANCH_BADGE_STYLES,
+  BRANCH_RING_COLORS,
+} from "../../lib/branchClassifier";
+
+export { BRANCH_HEX_COLORS, BRANCH_BADGE_STYLES, BRANCH_RING_COLORS };
 
 // ── Layout constants (Ungit-inspired) ──
 
@@ -18,37 +25,6 @@ export const SIDE_RADIUS = 8;
 export const BADGE_WIDTH = 240;
 /** Height of commit detail badge (DOM overlay) */
 export const BADGE_HEIGHT = 32;
-
-// ── Color mapping ──
-
-/** Catppuccin Mocha hex colors for SVG rendering */
-export const BRANCH_HEX_COLORS: Record<BranchType, string> = {
-  main: "#89b4fa",
-  develop: "#a6e3a1",
-  feature: "#cba6f7",
-  release: "#fab387",
-  hotfix: "#f38ba8",
-  other: "#6c7086",
-};
-
-/** Tailwind-compatible CSS color classes per branch type */
-export const BRANCH_BADGE_STYLES: Record<BranchType, string> = {
-  main: "border-ctp-blue bg-ctp-blue/10 hover:bg-ctp-blue/20",
-  develop: "border-ctp-green bg-ctp-green/10 hover:bg-ctp-green/20",
-  feature: "border-ctp-mauve bg-ctp-mauve/10 hover:bg-ctp-mauve/20",
-  release: "border-ctp-peach bg-ctp-peach/10 hover:bg-ctp-peach/20",
-  hotfix: "border-ctp-red bg-ctp-red/10 hover:bg-ctp-red/20",
-  other: "border-ctp-overlay0 bg-ctp-surface0/50 hover:bg-ctp-surface1/50",
-};
-
-export const BRANCH_RING_COLORS: Record<BranchType, string> = {
-  main: "ring-ctp-blue",
-  develop: "ring-ctp-green",
-  feature: "ring-ctp-mauve",
-  release: "ring-ctp-peach",
-  hotfix: "ring-ctp-red",
-  other: "ring-ctp-overlay0",
-};
 
 // ── Positioned types ──
 
