@@ -8,6 +8,7 @@ pub mod config;
 pub mod conventional;
 pub mod diff;
 pub mod error;
+pub mod gitignore;
 pub mod graph;
 pub mod history;
 pub mod init;

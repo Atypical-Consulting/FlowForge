@@ -20,6 +20,9 @@ use git::{
         validate_conventional_commit,
     },
     diff::{get_commit_file_base64, get_commit_file_diff, get_file_base64, get_file_diff},
+    gitignore::{
+        detect_project_type, get_gitignore_template, list_gitignore_templates, write_init_files,
+    },
     init::git_init,
     graph::get_commit_graph,
     history::{get_commit_details, get_commit_history, search_commits},
@@ -134,6 +137,11 @@ pub fn run() {
         clone_repository,
         // Init commands
         git_init,
+        // Gitignore commands
+        list_gitignore_templates,
+        get_gitignore_template,
+        detect_project_type,
+        write_init_files,
         // Browse commands
         list_repo_files,
         read_repo_file,

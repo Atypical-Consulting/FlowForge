@@ -31,3 +31,4 @@ tera = "1"
 chrono = "0.4"
 notify = "8"
 notify-debouncer-mini = "0.7"
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }

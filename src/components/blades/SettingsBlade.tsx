@@ -1,5 +1,11 @@
 import { useCallback } from "react";
-import { ClipboardCheck, GitBranch, Palette, Settings, Wrench } from "lucide-react";
+import {
+  ClipboardCheck,
+  GitBranch,
+  Palette,
+  Settings,
+  Wrench,
+} from "lucide-react";
 import { type SettingsCategory, useSettingsStore } from "../../stores/settings";
 import { AppearanceSettings } from "../settings/AppearanceSettings";
 import { GeneralSettings } from "../settings/GeneralSettings";
@@ -84,7 +90,7 @@ export function SettingsBlade() {
 
   return (
     <div className="flex h-full overflow-hidden">
-      <div className="w-[180px] border-r border-ctp-surface0 bg-ctp-base p-2 flex flex-col gap-1">
+      <div className="w-45 border-r border-ctp-surface0 bg-ctp-base p-2 flex flex-col gap-1">
         <div
           role="tablist"
           aria-label="Settings categories"
