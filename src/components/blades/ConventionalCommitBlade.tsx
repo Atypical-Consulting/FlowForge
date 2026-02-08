@@ -15,6 +15,9 @@ import { CharacterProgress } from "../commit/CharacterProgress";
 import { ValidationErrors } from "../commit/ValidationErrors";
 import { CommitPreview } from "../commit/CommitPreview";
 import { CommitActionBar } from "../commit/CommitActionBar";
+import { TemplateSelector } from "../commit/TemplateSelector";
+import { ScopeFrequencyChart } from "../commit/ScopeFrequencyChart";
+import type { CommitTemplate } from "../../stores/conventional";
 import { cn } from "../../lib/utils";
 
 const MAX_DESCRIPTION_LENGTH = 72;
@@ -112,6 +115,19 @@ export function ConventionalCommitBlade({
   }, [description, commitType, markDirty, markClean]);
 
   const isAmend = useConventionalStore((s) => s.isAmend);
+  const activeTemplate = useConventionalStore((s) => s.activeTemplate);
+  const scopeFrequencies = useConventionalStore((s) => s.scopeFrequencies);
+
+  // Fetch scope frequencies on mount
+  useEffect(() => {
+    store.getState().fetchScopeFrequencies();
+  }, [store]);
+
+  const isFormEmpty = !commitType && !description;
+
+  const handleApplyTemplate = (template: CommitTemplate) => {
+    store.getState().applyTemplate(template);
+  };
 
   const handleAmendToggle = (checked: boolean) => {
     store.getState().setIsAmend(checked);
@@ -213,6 +229,13 @@ export function ConventionalCommitBlade({
           primary={
             /* LEFT PANEL: Form */
             <div className="h-full overflow-y-auto p-4 space-y-4">
+              {/* Template quick-start chips */}
+              <TemplateSelector
+                onApply={handleApplyTemplate}
+                isFormEmpty={isFormEmpty}
+                activeTemplateId={activeTemplate?.id}
+              />
+
               {/* Type selector — 6 columns for wider layout */}
               <TypeSelector
                 value={commitType}
@@ -312,6 +335,12 @@ export function ConventionalCommitBlade({
               )}
 
               <CommitPreview message={currentMessage} variant="full" />
+
+              {/* Scope frequency chart */}
+              <ScopeFrequencyChart
+                frequencies={scopeFrequencies}
+                onScopeClick={setScope}
+              />
             </div>
           }
         />
