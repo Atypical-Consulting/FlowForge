@@ -14,6 +14,20 @@ use crate::gitflow::policy::{
 };
 use crate::gitflow::state::{get_current_branch_name, GitflowContext};
 
+/// Check if the working directory is clean (no uncommitted changes).
+/// Returns Ok(()) if clean, Err(DirtyWorkingTree) if dirty.
+fn ensure_clean_working_tree(repo: &git2::Repository) -> Result<(), GitflowError> {
+    let statuses = repo.statuses(Some(
+        git2::StatusOptions::new()
+            .include_untracked(false)
+            .include_ignored(false),
+    ))?;
+    if !statuses.is_empty() {
+        return Err(GitflowError::DirtyWorkingTree);
+    }
+    Ok(())
+}
+
 // ============================================================================
 // Feature Flow Commands
 // ============================================================================
@@ -36,6 +50,7 @@ pub async fn start_feature(
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
+        ensure_clean_working_tree(&repo)?;
 
         // Must be on develop
         let current = get_current_branch_name(&repo)?
@@ -81,6 +96,7 @@ pub async fn finish_feature(state: State<'_, RepositoryState>) -> Result<(), Git
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
+        ensure_clean_working_tree(&repo)?;
 
         // Must be on feature branch
         let current = get_current_branch_name(&repo)?
@@ -129,6 +145,7 @@ pub async fn start_release(
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
+        ensure_clean_working_tree(&repo)?;
 
         // Must be on develop
         let current = get_current_branch_name(&repo)?
@@ -186,6 +203,7 @@ pub async fn finish_release(
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
+        ensure_clean_working_tree(&repo)?;
 
         // Must be on release branch
         let current = get_current_branch_name(&repo)?
@@ -248,6 +266,7 @@ pub async fn start_hotfix(
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
+        ensure_clean_working_tree(&repo)?;
 
         // Must be on main/master
         let current = get_current_branch_name(&repo)?
@@ -303,6 +322,7 @@ pub async fn finish_hotfix(
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
+        ensure_clean_working_tree(&repo)?;
 
         let current = get_current_branch_name(&repo)?
             .ok_or(GitflowError::Git("HEAD is detached".to_string()))?;

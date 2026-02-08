@@ -36,6 +36,10 @@ pub enum GitflowError {
     #[error("Merge conflict detected")]
     MergeConflict,
 
+    /// Working directory has uncommitted changes
+    #[error("Working directory has uncommitted changes — commit or stash before proceeding")]
+    DirtyWorkingTree,
+
     /// Repository has no commits yet
     #[error("Repository has no commits (unborn HEAD)")]
     UnbornHead,
