@@ -9,12 +9,10 @@ See: .planning/PROJECT.md (updated 2026-02-08)
 
 ## Current Position
 
-Phase: None — between milestones
-Plan: N/A
-Status: v1.3.0 shipped, next milestone not started
-Last activity: 2026-02-08 - Completed quick task 027: Improve doc website with GitFlow/Conventional Commits explanations and download button
-
-Progress: N/A
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-08 — Milestone v1.4.0 started
 
 ## Milestone History
 
@@ -66,8 +64,8 @@ None.
 
 ## Next Steps
 
-Run `/gsd:new-milestone` to start next milestone (questioning → research → requirements → roadmap).
+Define requirements and create roadmap for v1.4.0.
 
 ---
 *State updated: 2026-02-08*
-*v1.3.0 Blades Blades Blades — SHIPPED*
+*v1.4.0 Architecture & Navigation Overhaul — DEFINING REQUIREMENTS*

@@ -111,7 +111,18 @@ Each layer adds value; each inner layer stands without the outer ones.
 
 ### Active
 
-(No active milestone — planning next)
+## Current Milestone: v1.4.0 Architecture & Navigation Overhaul
+
+**Goal:** Reorganize the frontend around blade-centric modules, replace implicit navigation with an XState finite state machine, migrate remaining flows to blades, and resolve all accumulated tech debt with a testing foundation.
+
+**Target features:**
+- Blade-centric file structure with co-located modules + shared layer
+- XState navigation FSM (push/pop/replace/reset with guards, constraints, side effects) persisted in Zustand
+- Init Repository blade with optional README, .gitignore template search (GitHub API + bundled fallback)
+- Dedicated Conventional Commit blade (full-screen standalone composer)
+- Tech debt cleanup (all 9 accumulated items)
+- Zustand store consolidation and cleaner data flow patterns
+- Test infrastructure + initial test coverage
 
 ### Deferred to v2+
 
@@ -197,4 +208,4 @@ Documentation website live on GitHub Pages.
 | VitePress for documentation (v1.3) | Vue-based SSG with excellent DX, Catppuccin theme integration, GitHub Pages deployment | ✓ Good — fast, polished docs site |
 
 ---
-*Last updated: 2026-02-08 after v1.3.0 milestone*
+*Last updated: 2026-02-08 after v1.4.0 milestone started*
