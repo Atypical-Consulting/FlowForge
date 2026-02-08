@@ -59,6 +59,13 @@ See `.planning/MILESTONES.md` for full history.
 - Review store errors logged to console only (no user-facing toast)
 - Duplicate blade opener implementation
 - 21 Zustand stores need consolidation into ~5 domain stores
+- CC blade: Debounce aria-live preview by 500-800ms for screen readers (Phase 28 review)
+- CC blade: Apply peach/caution color to Commit button in amend mode (not just Commit & Push)
+- CC blade: Add aria-label attributes for amend mode buttons
+- CC blade: Extract pushAfterCommit to preferences store (survives reset, user preference)
+- CC blade: Refactor useAmendPrefill to own the effect instead of callback pattern
+- CC blade: Consolidate scopeSuggestions (limit 20) and scopeFrequencies (limit 50) into single fetch
+- CC blade: Monitor useConventionalCommit.ts size; split at ~100 lines of logic
 
 ### Key Decisions
 
