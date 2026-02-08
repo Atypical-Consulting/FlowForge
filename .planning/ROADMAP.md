@@ -37,12 +37,12 @@ Six phases transform FlowForge's frontend architecture from implicit, store-driv
   3. Developer can mock Tauri IPC commands with type-safe factories that match actual binding signatures
   4. Developer can run component smoke tests that verify each blade type renders without crashing
   5. Developer can test XState machine guards and transitions with deterministic assertions (no DOM needed)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 25-01: TBD
-- [ ] 25-02: TBD
-- [ ] 25-03: TBD
+- [ ] 25-01-PLAN.md -- Vitest config, global setup, Zustand auto-reset mock, blades store test
+- [ ] 25-02-PLAN.md -- Typed Tauri mock factories, custom render wrapper, store tests (repository + toast)
+- [ ] 25-03-PLAN.md -- Blade smoke tests (all 13 types) + XState machine test example
 
 ### Phase 26: XState Navigation FSM
 **Goal**: Users navigate between blades via an explicit finite state machine that enforces valid transitions, prevents data loss, and provides observable state for debugging
@@ -184,7 +184,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 25. Test Infrastructure Foundation | 0/TBD | Not started | - |
+| 25. Test Infrastructure Foundation | 0/3 | Planning complete | - |
 | 26. XState Navigation FSM | 0/TBD | Not started | - |
 | 27. Init Repo Blade | 0/TBD | Not started | - |
 | 28. Conventional Commit Blade | 0/TBD | Not started | - |
