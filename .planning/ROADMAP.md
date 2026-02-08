@@ -164,7 +164,12 @@ Plans:
 1. User sees a pre-merge review checklist when finishing a Gitflow feature, release, or hotfix, with configurable checklist items
 2. Documentation website is live on GitHub Pages with a getting-started guide, feature overview, and keyboard shortcuts reference
 
-**Plans:** TBD
+**Plans:** 3 plans in 2 waves
+
+Plans:
+- [ ] 24-01-PLAN.md -- W1: Review checklist store, component, FinishFlowDialog integration, Settings tab
+- [ ] 24-02-PLAN.md -- W1: VitePress documentation site scaffold, content pages, GitHub Actions deployment
+- [ ] 24-03-PLAN.md -- W2: Human verification checkpoint (UX-03 + UX-04)
 
 ---
 
