@@ -485,6 +485,7 @@ pub async fn abort_gitflow(state: State<'_, RepositoryState>) -> Result<(), Gitf
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
+        ensure_clean_working_tree(&repo)?;
         let ctx = GitflowContext::from_repo(&repo)?;
 
         let (branch_to_delete, target_branch) = match &ctx.state {
