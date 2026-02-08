@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-08)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Phase 26 - XState Navigation FSM
+**Current focus:** Phase 28 - Conventional Commit Blade
 
 ## Current Position
 
-Phase: 26 of 30 (XState Navigation FSM)
+Phase: 28 of 30 (Conventional Commit Blade)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-02-08 -- Phase 25 complete (test infrastructure established, 34 tests passing)
+Last activity: 2026-02-08 -- Phase 27 complete (Init Repo Blade with .gitignore templates, project detection, offline fallback)
 
-Progress: [██░░░░░░░░] 17%
+Progress: [█████░░░░░] 50%
 
 ## Milestone History
 
@@ -31,15 +31,17 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3 (v1.4.0)
+- Total plans completed: 11 (v1.4.0)
 - Average duration: ~5 min/plan
-- Total execution time: ~15 min
+- Total execution time: ~55 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 25 | 3/3 | ~15 min | ~5 min |
+| 26 | 4/4 | ~20 min | ~5 min |
+| 27 | 4/4 | ~20 min | ~5 min |
 
 *Updated after each plan completion*
 
@@ -67,6 +69,19 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 - ResizeObserver polyfill added to global setup for react-resizable-panels
 - Monaco loader mock requires `init()` returning `{ editor: { defineTheme } }`
 
+**Phase 26 decisions:**
+- XState v5 navigation machine with explicit push/pop/replace/reset events
+- Direction-aware blade animations with AnimatePresence
+- NavigationGuardDialog for dirty-form protection
+- Singleton blade metadata enforced at FSM guard level
+
+**Phase 27 decisions:**
+- `reqwest` with `rustls-tls` for GitHub API (cross-platform TLS)
+- `include_str!` for bundled templates (compile-time embedding, no runtime resource loading)
+- Dual-mode blade rendering via `onCancel`/`onComplete` props for standalone welcome screen use
+- Path traversal validation added to `write_init_files` after security review
+- Team review identified 13 improvement items for future iteration (see 27-REVIEW-FINDINGS.md)
+
 ### Pending Todos
 
 None.
@@ -89,9 +104,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Phase 25 complete, ready for Phase 26
+Stopped at: Phase 27 complete, ready for Phase 28
 Resume file: None
 
 ---
 *State updated: 2026-02-08*
-*v1.4.0 Architecture & Navigation Overhaul -- Phase 25 COMPLETE, ready for Phase 26*
+*v1.4.0 Architecture & Navigation Overhaul -- Phase 27 COMPLETE, ready for Phase 28*

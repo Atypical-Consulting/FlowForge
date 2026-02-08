@@ -57,10 +57,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 26-01-PLAN.md -- XState navigation machine definition + pure TDD tests (types, guards, actions, machine, selectors)
-- [ ] 26-02-PLAN.md -- React provider, module-level actor, dev inspector, extensibility refactoring (singleton metadata)
-- [ ] 26-03-PLAN.md -- Consumer migration: hooks, bladeOpener, components, direction-aware animations
-- [ ] 26-04-PLAN.md -- Dirty-form guards, navigation guard dialog, dirty indicators, max depth, store cleanup
+- [x] 26-01-PLAN.md -- XState navigation machine definition + pure TDD tests (types, guards, actions, machine, selectors)
+- [x] 26-02-PLAN.md -- React provider, module-level actor, dev inspector, extensibility refactoring (singleton metadata)
+- [x] 26-03-PLAN.md -- Consumer migration: hooks, bladeOpener, components, direction-aware animations
+- [x] 26-04-PLAN.md -- Dirty-form guards, navigation guard dialog, dirty indicators, max depth, store cleanup
 
 ### Phase 27: Init Repo Blade
 **Goal**: Users can initialize a repository through a rich, full-width blade that offers .gitignore template discovery, composition, and project scaffolding
@@ -75,10 +75,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 27-01-PLAN.md -- Rust backend: reqwest, bundled templates, 4 Tauri commands (list/get/detect/write)
-- [ ] 27-02-PLAN.md -- TypeScript utilities: gitignore composer, category mapping, Zustand store
-- [ ] 27-03-PLAN.md -- InitRepoBlade shell, React Query hooks, form UI, template picker
-- [ ] 27-04-PLAN.md -- Preview panel, init pipeline wiring, entry point integration, verification
+- [x] 27-01-PLAN.md -- Rust backend: reqwest, bundled templates, 4 Tauri commands (list/get/detect/write)
+- [x] 27-02-PLAN.md -- TypeScript utilities: gitignore composer, category mapping, Zustand store
+- [x] 27-03-PLAN.md -- InitRepoBlade shell, React Query hooks, form UI, template picker
+- [x] 27-04-PLAN.md -- Preview panel, init pipeline wiring, entry point integration, verification
 
 ### Phase 28: Conventional Commit Blade
 **Goal**: Users can compose conventional commits in a dedicated full-width blade workspace with richer layout, commit-and-push workflow, and automatic post-commit navigation
@@ -185,12 +185,12 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 25. Test Infrastructure Foundation | 3/3 | ✓ Complete | 2026-02-08 |
-| 26. XState Navigation FSM | 0/4 | Not started | - |
-| 27. Init Repo Blade | 0/TBD | Not started | - |
+| 26. XState Navigation FSM | 4/4 | ✓ Complete | 2026-02-08 |
+| 27. Init Repo Blade | 4/4 | ✓ Complete | 2026-02-08 |
 | 28. Conventional Commit Blade | 0/TBD | Not started | - |
 | 29. Blade-Centric File Structure | 0/TBD | Not started | - |
 | 30. Store Consolidation & Tech Debt | 0/TBD | Not started | - |
 
 ---
 *Last updated: 2026-02-08*
-*Phase 25 complete — test infrastructure established*
+*Phase 27 complete — Init Repo Blade with .gitignore templates, project detection, and offline fallback*
