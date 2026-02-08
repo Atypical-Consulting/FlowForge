@@ -26,6 +26,7 @@ export interface BladePropsMap {
   "changelog": Record<string, never>;
   "gitflow-cheatsheet": Record<string, never>;
   "init-repo": { directoryPath: string };
+  "conventional-commit": { amend?: boolean };
 }
 
 /** Derived from the map — single source of truth */

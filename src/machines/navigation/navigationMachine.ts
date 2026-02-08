@@ -10,7 +10,7 @@ import type {
 const DEFAULT_MAX_STACK_DEPTH = 8;
 
 /** Singleton blade types that can only appear once in the stack. */
-const SINGLETON_TYPES = new Set(["settings", "changelog", "gitflow-cheatsheet"]);
+const SINGLETON_TYPES = new Set(["settings", "changelog", "gitflow-cheatsheet", "conventional-commit"]);
 
 export const navigationMachine = setup({
   types: {
