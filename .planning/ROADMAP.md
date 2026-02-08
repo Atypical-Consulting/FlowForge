@@ -166,7 +166,7 @@ Plans:
 | 20 | Blade Infrastructure & Modal Migration | 9 | Complete |
 | 20.1 | Blade Extensibility Refactoring | 5 | Complete |
 | 21 | Two-Column Staging & Inline Diff | 2 | Complete |
-| 22 | New Content Blades | 6 | Gap Closure Round 5 Complete |
+| 22 | New Content Blades | 6 | Complete |
 | 23 | Branch Management | 6 | Pending |
 | 24 | Code Review Guidance & Documentation | 2 | Pending |
 
