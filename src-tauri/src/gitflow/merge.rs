@@ -35,7 +35,19 @@ pub fn merge_no_ff(
     let (analysis, _) = repo.merge_analysis(&[&annotated])?;
 
     if analysis.is_up_to_date() {
-        return Ok(target.id());
+        // Even when up-to-date, create a merge commit (true --no-ff behavior)
+        let tree_oid = repo.index()?.write_tree()?;
+        let tree = repo.find_tree(tree_oid)?;
+        let sig = repo.signature()?;
+        let commit_oid = repo.commit(
+            Some("HEAD"),
+            &sig,
+            &sig,
+            message,
+            &tree,
+            &[&target, &source],
+        )?;
+        return Ok(commit_oid);
     }
 
     if analysis.is_unborn() {
@@ -48,6 +60,10 @@ pub fn merge_no_ff(
     // 7. Check for conflicts
     let index = repo.index()?;
     if index.has_conflicts() {
+        // Clean up merge state so repo isn't left in MERGING state
+        repo.cleanup_state()?;
+        // Reset to target branch state (undo partial merge)
+        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().force()))?;
         return Err(GitflowError::MergeConflict);
     }
 

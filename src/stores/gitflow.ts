@@ -57,9 +57,12 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
     const result = await commands.startFeature(name);
     if (result.status === "ok") {
       await get().refresh();
+      await useBranchStore.getState().loadBranches();
+      await useRepositoryStore.getState().refreshStatus();
       return result.data;
     }
-    set({ error: getErrorMessage(result.error), isLoading: false });
+    await get().refresh();
+    set({ error: getErrorMessage(result.error) });
     return null;
   },
 
@@ -68,9 +71,12 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
     const result = await commands.finishFeature();
     if (result.status === "ok") {
       await get().refresh();
+      await useBranchStore.getState().loadBranches();
+      await useRepositoryStore.getState().refreshStatus();
       return true;
     }
-    set({ error: getErrorMessage(result.error), isLoading: false });
+    await get().refresh();
+    set({ error: getErrorMessage(result.error) });
     return false;
   },
 
@@ -79,9 +85,12 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
     const result = await commands.startRelease(version);
     if (result.status === "ok") {
       await get().refresh();
+      await useBranchStore.getState().loadBranches();
+      await useRepositoryStore.getState().refreshStatus();
       return result.data;
     }
-    set({ error: getErrorMessage(result.error), isLoading: false });
+    await get().refresh();
+    set({ error: getErrorMessage(result.error) });
     return null;
   },
 
@@ -90,9 +99,12 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
     const result = await commands.finishRelease(tagMessage ?? null);
     if (result.status === "ok") {
       await get().refresh();
+      await useBranchStore.getState().loadBranches();
+      await useRepositoryStore.getState().refreshStatus();
       return result.data;
     }
-    set({ error: getErrorMessage(result.error), isLoading: false });
+    await get().refresh();
+    set({ error: getErrorMessage(result.error) });
     return null;
   },
 
@@ -101,9 +113,12 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
     const result = await commands.startHotfix(name);
     if (result.status === "ok") {
       await get().refresh();
+      await useBranchStore.getState().loadBranches();
+      await useRepositoryStore.getState().refreshStatus();
       return result.data;
     }
-    set({ error: getErrorMessage(result.error), isLoading: false });
+    await get().refresh();
+    set({ error: getErrorMessage(result.error) });
     return null;
   },
 
@@ -112,9 +127,12 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
     const result = await commands.finishHotfix(tagMessage ?? null);
     if (result.status === "ok") {
       await get().refresh();
+      await useBranchStore.getState().loadBranches();
+      await useRepositoryStore.getState().refreshStatus();
       return result.data;
     }
-    set({ error: getErrorMessage(result.error), isLoading: false });
+    await get().refresh();
+    set({ error: getErrorMessage(result.error) });
     return null;
   },
 

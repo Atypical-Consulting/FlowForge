@@ -1,5 +1,60 @@
 # Project Milestones: FlowForge
 
+## v1.3.0 Blades Blades Blades (Shipped: 2026-02-08)
+
+**Delivered:** Expanded blade navigation into the primary interaction model — migrated 3 modals to blades, built extensible blade registry, added 5 new content blades (markdown, code, 3D, repo browser, Gitflow cheatsheet), two-column staging with inline diff, branch management hub, pre-merge review checklist, and documentation website.
+
+**Phases completed:** 20-24 (6 phases, ~56 plans, 25 requirements)
+
+**Key accomplishments:**
+
+- Migrated 3 modal dialogs (Settings, Changelog, Conventional Commit) to blade navigation system
+- Built extensible blade registry — adding a new blade type requires only 1-2 files instead of 4-7
+- Implemented two-column staging layout with inline diff preview and expand-to-fullscreen
+- Added 5 new content blades: Markdown preview, Code viewer, 3D model viewer, Repo browser, Gitflow cheatsheet
+- Delivered branch management hub with pin/favorites, scope selector, bulk delete, and feature branch coloring
+- Added pre-merge review checklist for Gitflow workflows and published documentation website on GitHub Pages
+
+**Stats:**
+
+- 253 files changed (+39,773/-1,262 lines)
+- ~29,590 lines of code (21,189 TypeScript + 8,401 Rust)
+- 6 phases, ~56 plans, 25 requirements
+- 2 days (2026-02-07 → 2026-02-08)
+- 112 commits
+
+**Git range:** `feat(20)` → `test(24)`
+
+**Tech debt accepted:**
+- 3D viewer reliability on some hardware (diagnostic logging added, root cause unresolved)
+- Debug page ships in production bundle
+- Gitflow cheatsheet not in command palette
+- Missing formal VERIFICATION.md for 3 phases (mitigated by UAT evidence)
+- Pre-existing: closeRepository() doesn't reset blade stack, defaultTab not wired, topology EmptyState, orphaned v1.0 code
+
+**What's next:** v1.4+ — Drag-and-drop staging, branch pins in Git config, per-process blade stacks, CSP hardening
+
+---
+
+## v1.2.0 Bugfixing & Polish (Shipped: 2026-02-07)
+
+**Delivered:** Command palette, Git identity settings, Git init onboarding, folder-level staging, commit type icons, changelog emoji, expanded file icons, visual polish, and toolbar shortcut tooltips.
+
+**Phases completed:** 16-19 (4 phases)
+
+**Key accomplishments:**
+
+- VS Code-style command palette with registry pattern and fuzzy search
+- Git identity and integrations settings tabs
+- Git init onboarding prompt for non-repo folders
+- Folder-level stage/unstage in hierarchical view
+- Color-coded conventional commit type icons across all views
+- Expanded Catppuccin file-type icon set
+
+**Git range:** `v1.1.0` → `v1.2.0`
+
+---
+
 ## v1.1.0 Usability (Shipped: 2026-02-06)
 
 **Delivered:** UX overhaul with toast notifications, clone workflow, repo/branch switcher, UI polish suite, and Ungit-style topology with blade navigation and diff viewing.
@@ -30,8 +85,6 @@
 - Topology EmptyState and Skeleton consistency
 - Orphaned v1.0 code still present
 - Phase 15 missing formal SUMMARY/VERIFICATION files
-
-**What's next:** v2.0 — MCP server integration, tiered autonomy model
 
 ---
 
@@ -65,7 +118,5 @@
 **Tech debt accepted:**
 - Topology auto-refresh (manual tab switch needed after commits)
 - Orphaned code: greet, getMergeStatus, CollapsibleSidebar, AnimatedList, FadeIn
-
-**What's next:** v1.1 — MCP server integration, topology refresh fix, code cleanup
 
 ---

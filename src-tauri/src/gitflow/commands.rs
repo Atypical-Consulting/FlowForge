@@ -14,6 +14,20 @@ use crate::gitflow::policy::{
 };
 use crate::gitflow::state::{get_current_branch_name, GitflowContext};
 
+/// Check if the working directory is clean (no uncommitted changes).
+/// Returns Ok(()) if clean, Err(DirtyWorkingTree) if dirty.
+fn ensure_clean_working_tree(repo: &git2::Repository) -> Result<(), GitflowError> {
+    let statuses = repo.statuses(Some(
+        git2::StatusOptions::new()
+            .include_untracked(false)
+            .include_ignored(false),
+    ))?;
+    if !statuses.is_empty() {
+        return Err(GitflowError::DirtyWorkingTree);
+    }
+    Ok(())
+}
+
 // ============================================================================
 // Feature Flow Commands
 // ============================================================================
@@ -59,10 +73,10 @@ pub async fn start_feature(
         let head_commit = repo.head()?.peel_to_commit()?;
         repo.branch(&branch_name, &head_commit, false)?;
 
-        // Checkout new branch
+        // Checkout new branch (safe checkout preserves uncommitted changes)
         let refname = format!("refs/heads/{}", branch_name);
         repo.set_head(&refname)?;
-        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().force()))?;
+        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().safe()))?;
 
         Ok(branch_name)
     })
@@ -81,6 +95,7 @@ pub async fn finish_feature(state: State<'_, RepositoryState>) -> Result<(), Git
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
+        ensure_clean_working_tree(&repo)?;
 
         // Must be on feature branch
         let current = get_current_branch_name(&repo)?
@@ -158,12 +173,12 @@ pub async fn start_release(
             return Err(GitflowError::BranchExists(branch_name));
         }
 
-        // Create and checkout
+        // Create and checkout (safe checkout preserves uncommitted changes)
         let head_commit = repo.head()?.peel_to_commit()?;
         repo.branch(&branch_name, &head_commit, false)?;
         let refname = format!("refs/heads/{}", branch_name);
         repo.set_head(&refname)?;
-        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().force()))?;
+        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().safe()))?;
 
         Ok(branch_name)
     })
@@ -186,6 +201,7 @@ pub async fn finish_release(
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
+        ensure_clean_working_tree(&repo)?;
 
         // Must be on release branch
         let current = get_current_branch_name(&repo)?
@@ -276,11 +292,12 @@ pub async fn start_hotfix(
             return Err(GitflowError::BranchExists(branch_name));
         }
 
+        // Safe checkout preserves uncommitted changes
         let head_commit = repo.head()?.peel_to_commit()?;
         repo.branch(&branch_name, &head_commit, false)?;
         let refname = format!("refs/heads/{}", branch_name);
         repo.set_head(&refname)?;
-        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().force()))?;
+        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().safe()))?;
 
         Ok(branch_name)
     })
@@ -303,6 +320,7 @@ pub async fn finish_hotfix(
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
+        ensure_clean_working_tree(&repo)?;
 
         let current = get_current_branch_name(&repo)?
             .ok_or(GitflowError::Git("HEAD is detached".to_string()))?;
@@ -467,6 +485,7 @@ pub async fn abort_gitflow(state: State<'_, RepositoryState>) -> Result<(), Gitf
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
+        ensure_clean_working_tree(&repo)?;
         let ctx = GitflowContext::from_repo(&repo)?;
 
         let (branch_to_delete, target_branch) = match &ctx.state {
