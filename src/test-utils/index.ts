@@ -1,3 +1,20 @@
 // Test utilities barrel export
-// Note: Custom render with providers will be added in Plan 02
-export { render, screen, within, waitFor, fireEvent, cleanup } from "@testing-library/react";
+export { render, screen, within, waitFor, fireEvent, cleanup, act } from "./render";
+export {
+  ok,
+  err,
+  createMockCommands,
+  createRepoStatus,
+  createStagingStatus,
+  createFileChange,
+  createBranchInfo,
+  createCommitSummary,
+  createFileDiff,
+  createCommitDetails,
+  createCommitInfo,
+  createTagInfo,
+  createStashEntry,
+  createRemoteInfo,
+  createCommitGraph,
+  createWorktreeInfo,
+} from "./mocks/tauri-commands";
