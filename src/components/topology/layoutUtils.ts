@@ -4,6 +4,7 @@ import {
   BRANCH_BADGE_STYLES,
   BRANCH_RING_COLORS,
 } from "../../lib/branchClassifier";
+import { parseConventionalMessage } from "../../lib/conventional-utils";
 
 export { BRANCH_HEX_COLORS, BRANCH_BADGE_STYLES, BRANCH_RING_COLORS };
 
@@ -180,8 +181,6 @@ export function computeLayout(
 }
 
 export function parseConventionalType(message: string): string | null {
-  const match = message.match(
-    /^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\(.+?\))?(!)?:/,
-  );
-  return match ? match[1] : null;
+  const parsed = parseConventionalMessage(message);
+  return parsed ? parsed.commitType : null;
 }

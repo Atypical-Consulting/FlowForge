@@ -6,6 +6,7 @@ import type {
   TypeSuggestion,
   ValidationResult,
 } from "../bindings";
+import { buildCommitMessage as buildMessage } from "../lib/conventional-utils";
 
 /**
  * Valid conventional commit types.
@@ -41,6 +42,24 @@ export const COMMIT_TYPE_LABELS: Record<CommitType, string> = {
   revert: "Revert",
 };
 
+/**
+ * Template for pre-filling the conventional commit form.
+ */
+export interface CommitTemplate {
+  id: string;
+  label: string;
+  description: string;
+  icon?: string;
+  fields: {
+    commitType: CommitType;
+    scope?: string;
+    description: string;
+    body?: string;
+    isBreaking?: boolean;
+    breakingDescription?: string;
+  };
+}
+
 interface ConventionalState {
   // Form state
   commitType: CommitType | "";
@@ -49,6 +68,12 @@ interface ConventionalState {
   body: string;
   isBreaking: boolean;
   breakingDescription: string;
+
+  // Blade state
+  isAmend: boolean;
+  pushAfterCommit: boolean;
+  activeTemplate: CommitTemplate | null;
+  scopeFrequencies: ScopeSuggestion[];
 
   // Suggestions
   typeSuggestion: TypeSuggestion | null;
@@ -66,6 +91,13 @@ interface ConventionalState {
   setBody: (body: string) => void;
   setIsBreaking: (breaking: boolean) => void;
   setBreakingDescription: (desc: string) => void;
+
+  // Blade actions
+  setIsAmend: (amend: boolean) => void;
+  setPushAfterCommit: (push: boolean) => void;
+  setActiveTemplate: (template: CommitTemplate | null) => void;
+  applyTemplate: (template: CommitTemplate) => void;
+  fetchScopeFrequencies: () => Promise<void>;
 
   // Async actions
   fetchTypeSuggestion: () => Promise<void>;
@@ -86,6 +118,10 @@ export const useConventionalStore = create<ConventionalState>((set, get) => ({
   body: "",
   isBreaking: false,
   breakingDescription: "",
+  isAmend: false,
+  pushAfterCommit: false,
+  activeTemplate: null,
+  scopeFrequencies: [],
   typeSuggestion: null,
   scopeSuggestions: [],
   inferredScope: null,
@@ -99,6 +135,31 @@ export const useConventionalStore = create<ConventionalState>((set, get) => ({
   setBody: (body) => set({ body }),
   setIsBreaking: (breaking) => set({ isBreaking: breaking }),
   setBreakingDescription: (desc) => set({ breakingDescription: desc }),
+
+  // Blade setters
+  setIsAmend: (amend) => set({ isAmend: amend }),
+  setPushAfterCommit: (push) => set({ pushAfterCommit: push }),
+  setActiveTemplate: (template) => set({ activeTemplate: template }),
+  applyTemplate: (template) =>
+    set({
+      commitType: template.fields.commitType,
+      scope: template.fields.scope || "",
+      description: template.fields.description,
+      body: template.fields.body || "",
+      isBreaking: template.fields.isBreaking || false,
+      breakingDescription: template.fields.breakingDescription || "",
+      activeTemplate: template,
+    }),
+  fetchScopeFrequencies: async () => {
+    try {
+      const result = await commands.getScopeSuggestions(50);
+      if (result.status === "ok") {
+        set({ scopeFrequencies: result.data });
+      }
+    } catch (e) {
+      console.error("Failed to fetch scope frequencies:", e);
+    }
+  },
 
   // Async actions
   fetchTypeSuggestion: async () => {
@@ -156,35 +217,8 @@ export const useConventionalStore = create<ConventionalState>((set, get) => ({
   },
 
   buildCommitMessage: () => {
-    const {
-      commitType,
-      scope,
-      description,
-      body,
-      isBreaking,
-      breakingDescription,
-    } = get();
-
-    if (!commitType || !description) {
-      return "";
-    }
-
-    // Build header: type(scope)!: description
-    let header = commitType;
-    if (scope) header += `(${scope})`;
-    if (isBreaking) header += "!";
-    header += `: ${description}`;
-
-    // Build full message
-    let message = header;
-    if (body) {
-      message += `\n\n${body}`;
-    }
-    if (isBreaking && breakingDescription) {
-      message += `\n\nBREAKING CHANGE: ${breakingDescription}`;
-    }
-
-    return message;
+    const { commitType, scope, description, body, isBreaking, breakingDescription } = get();
+    return buildMessage({ commitType, scope, description, body, isBreaking, breakingDescription });
   },
 
   reset: () =>
@@ -195,6 +229,9 @@ export const useConventionalStore = create<ConventionalState>((set, get) => ({
       body: "",
       isBreaking: false,
       breakingDescription: "",
+      isAmend: false,
+      activeTemplate: null,
+      // Note: pushAfterCommit and scopeFrequencies are NOT reset (user preference + cached data)
       typeSuggestion: null,
       inferredScope: null,
       validation: null,
