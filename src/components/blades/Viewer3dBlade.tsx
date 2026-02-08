@@ -50,6 +50,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
       const gl =
         testCanvas.getContext("webgl2") || testCanvas.getContext("webgl");
       if (!gl) {
+        console.error("[Viewer3dBlade] WebGL not supported — neither webgl2 nor webgl context available");
         setFetchError("WebGL is not supported by your browser or GPU");
         setLoading(false);
         return;
@@ -63,6 +64,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
     try {
       const result = await commands.readRepoFile(filePath);
       if (result.status !== "ok") {
+        console.error("[Viewer3dBlade] readRepoFile failed:", result.error);
         setFetchError(getErrorMessage(result.error));
         setLoading(false);
         return;
@@ -70,6 +72,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
 
       const { content, isBinary, size } = result.data;
       setFileSize(size);
+      console.log("[Viewer3dBlade] readRepoFile OK:", { isBinary, size, contentLength: content.length });
 
       let arrayBuffer: ArrayBuffer;
 
@@ -82,6 +85,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
             bytes[i] = binaryString.charCodeAt(i);
           }
           arrayBuffer = bytes.buffer as ArrayBuffer;
+          console.log("[Viewer3dBlade] Base64 decode OK, arrayBuffer byteLength:", arrayBuffer.byteLength);
         } catch (decodeErr) {
           console.error("[Viewer3dBlade] Base64 decode failed:", decodeErr);
           setFetchError(
@@ -100,6 +104,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
 
       // Store the buffer for the Three.js effect to pick up
       bufferRef.current = arrayBuffer;
+      console.log("[Viewer3dBlade] Buffer ready, setting loading=false");
       setLoading(false);
     } catch (err) {
       console.error("[Viewer3dBlade] Model load failed:", err);
@@ -135,6 +140,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
 
     let disposed = false;
     const arrayBuffer = bufferRef.current;
+    console.log("[Viewer3dBlade] Three.js setup starting, buffer byteLength:", arrayBuffer.byteLength);
 
     // Create renderer
     const renderer = new THREE.WebGLRenderer({
@@ -236,6 +242,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
           controls.target.set(0, 0, 0);
           controls.update();
 
+          console.log("[Viewer3dBlade] Model parsed successfully, adding to scene");
           setModelReady(true);
 
           // Show interaction hint on first ever load
@@ -356,8 +363,8 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
   if (fetchError) {
     return (
       <BladeContentError
-        message="Failed to load 3D model"
-        detail={fetchError}
+        message={fetchError}
+        detail="Failed to load 3D model — check browser console for details"
         onRetry={handleRetry}
       />
     );
