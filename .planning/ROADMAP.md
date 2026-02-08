@@ -18,7 +18,7 @@ Six phases transform FlowForge's frontend architecture from implicit, store-driv
 
 ### Phases
 
-- [ ] **Phase 25: Test Infrastructure Foundation** - Establish Vitest with jsdom, typed Tauri mocks, and Zustand auto-reset so all subsequent changes are verifiable
+- [x] **Phase 25: Test Infrastructure Foundation** - Establish Vitest with jsdom, typed Tauri mocks, and Zustand auto-reset so all subsequent changes are verifiable
 - [ ] **Phase 26: XState Navigation FSM** - Replace imperative blade store with an explicit state machine governing push/pop/replace/reset with guards, constraints, and side effects
 - [ ] **Phase 27: Init Repo Blade** - Full-width blade for repository initialization with .gitignore template search, multi-template composition, and offline fallback
 - [ ] **Phase 28: Conventional Commit Blade** - Full-width blade workspace for conventional commits with commit-and-push workflow and post-commit navigation
@@ -40,9 +40,9 @@ Six phases transform FlowForge's frontend architecture from implicit, store-driv
 **Plans**: 3 plans
 
 Plans:
-- [ ] 25-01-PLAN.md -- Vitest config, global setup, Zustand auto-reset mock, blades store test
-- [ ] 25-02-PLAN.md -- Typed Tauri mock factories, custom render wrapper, store tests (repository + toast)
-- [ ] 25-03-PLAN.md -- Blade smoke tests (all 13 types) + XState machine test example
+- [x] 25-01-PLAN.md -- Vitest config, global setup, Zustand auto-reset mock, blades store test
+- [x] 25-02-PLAN.md -- Typed Tauri mock factories, custom render wrapper, store tests (repository + toast)
+- [x] 25-03-PLAN.md -- Blade smoke tests (all 13 types) + XState machine test example
 
 ### Phase 26: XState Navigation FSM
 **Goal**: Users navigate between blades via an explicit finite state machine that enforces valid transitions, prevents data loss, and provides observable state for debugging
@@ -184,7 +184,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 25. Test Infrastructure Foundation | 0/3 | Planning complete | - |
+| 25. Test Infrastructure Foundation | 3/3 | ✓ Complete | 2026-02-08 |
 | 26. XState Navigation FSM | 0/TBD | Not started | - |
 | 27. Init Repo Blade | 0/TBD | Not started | - |
 | 28. Conventional Commit Blade | 0/TBD | Not started | - |
@@ -193,4 +193,4 @@ Plans:
 
 ---
 *Last updated: 2026-02-08*
-*v1.4.0 roadmap created*
+*Phase 25 complete — test infrastructure established*

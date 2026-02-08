@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-08)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Phase 25 - Test Infrastructure Foundation
+**Current focus:** Phase 26 - XState Navigation FSM
 
 ## Current Position
 
-Phase: 25 of 30 (Test Infrastructure Foundation)
+Phase: 26 of 30 (XState Navigation FSM)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-02-08 -- Roadmap created for v1.4.0 (6 phases, 39 requirements)
+Last activity: 2026-02-08 -- Phase 25 complete (test infrastructure established, 34 tests passing)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██░░░░░░░░] 17%
 
 ## Milestone History
 
@@ -31,15 +31,15 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0 (v1.4.0)
-- Average duration: -
-- Total execution time: -
+- Total plans completed: 3 (v1.4.0)
+- Average duration: ~5 min/plan
+- Total execution time: ~15 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 25 | 3/3 | ~15 min | ~5 min |
 
 *Updated after each plan completion*
 
@@ -60,6 +60,12 @@ See `.planning/MILESTONES.md` for full history.
 ### Key Decisions
 
 All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
+
+**Phase 25 decisions:**
+- Zustand auto-reset mock placed at project root `__mocks__/` (Vitest convention for third-party mocking)
+- `vi.hoisted()` required for per-file mock objects (ESM hoisting)
+- ResizeObserver polyfill added to global setup for react-resizable-panels
+- Monaco loader mock requires `init()` returning `{ editor: { defineTheme } }`
 
 ### Pending Todos
 
@@ -83,9 +89,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Roadmap created for v1.4.0 milestone
+Stopped at: Phase 25 complete, ready for Phase 26
 Resume file: None
 
 ---
 *State updated: 2026-02-08*
-*v1.4.0 Architecture & Navigation Overhaul -- READY TO PLAN Phase 25*
+*v1.4.0 Architecture & Navigation Overhaul -- Phase 25 COMPLETE, ready for Phase 26*
