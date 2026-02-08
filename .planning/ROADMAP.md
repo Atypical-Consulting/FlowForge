@@ -90,12 +90,14 @@ Plans:
   3. User can commit and push in a single action from the CC blade, and is automatically navigated back to staging after success
   4. User can amend the previous commit with type, scope, and description fields pre-filled from the existing commit message
   5. User can still use the inline sidebar CC form for quick commits (both compact sidebar and full-width blade modes coexist)
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 28-01: TBD
-- [ ] 28-02: TBD
-- [ ] 28-03: TBD
+- [ ] 28-01-PLAN.md -- Extract pure utilities (buildCommitMessage, parseConventionalMessage) and extend store
+- [ ] 28-02-PLAN.md -- Extract commit execution hook, amend hook, and UI primitives (CommitPreview, CommitActionBar)
+- [ ] 28-03-PLAN.md -- Blade shell, registration, SplitPaneLayout, and sidebar coexistence
+- [ ] 28-04-PLAN.md -- Preview syntax highlighting, commit+push pipeline, auto-navigate, amend mode
+- [ ] 28-05-PLAN.md -- Commit templates and scope frequency chart
 
 ### Phase 29: Blade-Centric File Structure
 **Goal**: Developers find each blade's files co-located in a single feature module directory with enforced import boundaries, while auto-discovery and the blade registry continue to work
