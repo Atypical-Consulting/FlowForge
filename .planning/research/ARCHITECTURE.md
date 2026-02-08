@@ -1,671 +1,1263 @@
-# Architecture Patterns: Blade Expansion for v1.3.0
+# Architecture Patterns
 
-**Domain:** Blade-centric navigation expansion for Tauri + React Git client
-**Researched:** 2026-02-07
-**Confidence:** HIGH (based on direct codebase analysis of existing architecture)
+**Domain:** Frontend architecture improvements for Tauri + React desktop Git client
+**Researched:** 2026-02-08
+**Overall confidence:** HIGH
 
 ---
 
 ## Current Architecture Snapshot
 
-### Blade System (src/stores/blades.ts, ~79 lines)
+Before prescribing changes, here is what exists today:
 
-The blade store is a clean Zustand store with stack-based navigation:
-
-```
-ProcessType: "staging" | "topology"
-BladeType: "staging-changes" | "topology-graph" | "commit-details" | "diff" | "viewer-nupkg" | "viewer-image"
-
-BladeState {
-  activeProcess: ProcessType
-  bladeStack: Blade[]
-  setProcess(process) -> resets stack to root blade for process
-  pushBlade(blade) -> appends to stack with crypto.randomUUID()
-  popBlade() -> removes last (guards against popping root)
-  popToIndex(index) -> truncates stack to index+1
-  replaceBlade(blade) -> replaces last blade
-  resetStack() -> resets to root blade for current process
-}
-```
-
-Key design property: `setProcess()` completely resets the stack. Each process owns its own root blade. Blades pushed on top are "drill-in" views (commit-details, diff, viewer-*).
-
-### Rendering Pipeline
+### File Structure (Layer-Based)
 
 ```
-App.tsx
-  -> Header (contains ProcessNavigation buttons: staging | topology)
-  -> RepositoryView
-       -> ResizablePanelLayout (horizontal)
-            -> sidebar (20%, branches/stash/tags/gitflow/worktrees + CommitForm at bottom)
-            -> BladeContainer (80%)
-                 -> for each blade in stack:
-                      if not active: render BladeStrip (collapsed 40px vertical tab)
-                      if active: render via renderBlade(blade) switch statement
+src/
+  App.tsx                          # Root: theme/settings/nav init, repo-open guard
+  main.tsx                         # React entry point
+  bindings.ts                      # Tauri-specta auto-generated IPC types (~50k)
+  stores/                          # 21 Zustand stores (flat, one-file-per-store)
+    blades.ts                      # Blade stack FSM (pushBlade/popBlade/setProcess)
+    bladeTypes.ts                  # BladePropsMap + TypedBlade discriminated union
+    repository.ts                  # Open/close/refresh repo
+    navigation.ts                  # Pinned repos, recent branches (persisted)
+    branches.ts, branchMetadata.ts # Branch CRUD + metadata persistence
+    staging.ts                     # Selected file, view mode
+    conventional.ts                # Commit form state + validation
+    gitflow.ts                     # GitFlow operations (cross-store: branches, repo)
+    topology.ts                    # Graph data + pagination
+    settings.ts, theme.ts          # Persisted settings/theme
+    toast.ts                       # Global toast notifications
+    commandPalette.ts              # Cmd-K overlay state
+    clone.ts, stash.ts, tags.ts, undo.ts, worktrees.ts
+    changelogStore.ts, reviewChecklist.ts
+  components/
+    blades/                        # Blade infrastructure + 15 blade components
+      registrations/               # Auto-discovered via import.meta.glob
+    branches/, commit/, gitflow/, staging/, topology/  # Feature-area components
+    navigation/, settings/, ui/, layout/               # Shared/structural components
+    ...
+  hooks/                           # 10 shared hooks
+  lib/                             # 23 utility/registry files
+    bladeRegistry.ts               # Map<BladeType, BladeRegistration>
+    bladeOpener.ts                 # Non-React blade opener (command palette)
+    store.ts                       # Tauri plugin-store singleton
+    ...
+  commands/                        # 6 command registration files
 ```
 
-The `renderBlade` callback lives in `RepositoryView.tsx` as a `useCallback` with a switch statement over `blade.type`. This is the single integration point for all new blade types.
+### Store Dependency Graph (Cross-Store Calls)
 
-### Modal System (current)
+```
+gitflow.ts -----> branches.ts (loadBranches)
+           -----> repository.ts (refreshStatus)
 
-Three features currently use modals (Dialog component with fixed-position overlay):
+worktrees.ts ---> repository.ts (openRepository)
 
-| Modal | Trigger | Store | Mounted In |
-|-------|---------|-------|------------|
-| SettingsWindow | `openSettings()` via settings store | `useSettingsStore` (isOpen, activeCategory) | App.tsx (global) |
-| ChangelogDialog | `openDialog()` via changelog store | `useChangelogStore` (isDialogOpen) | App.tsx (global) |
-| ConventionalCommitModal | `setShowModal(true)` via local state | None (props: open, onOpenChange, onCommit) | CommitForm.tsx |
+App.tsx ----------> theme.ts (initTheme)
+             ----> settings.ts (initSettings)
+             ----> navigation.ts (initNavigation)
+             ----> branchMetadata.ts (initMetadata)
+             ----> reviewChecklist.ts (initChecklist)
+             ----> undo.ts (loadUndoInfo)
+             ----> topology.ts (loadGraph on file-watcher event)
 
-### IPC Pattern (Rust backend)
+Header.tsx ------> repository, branches, stash, tags, undo,
+                   blades, navigation, commandPalette, toast
+```
 
-All Tauri commands follow this pattern:
-1. Get `RepositoryState` (holds path, not git2::Repository -- thread safety)
-2. `spawn_blocking` with fresh `git2::Repository::open()` per operation
-3. Return typed results via `tauri-specta` auto-generated bindings
+### Blade System Architecture
 
-Existing file-content retrieval:
-- `get_file_diff(path, staged, context_lines)` -> FileDiff with old/new content
-- `get_commit_file_diff(oid, path, context_lines)` -> FileDiff
-- `get_file_base64(file_path)` -> data URI for binary files in working tree
-- `get_commit_file_base64(oid, file_path)` -> data URI for binary files at commit
+```
+BladePropsMap (bladeTypes.ts)    <-- Single source of truth for blade types
+  |
+  v
+BladeRegistration (bladeRegistry.ts)  <-- Runtime Map<BladeType, config>
+  |
+  v
+registrations/ (auto-glob)      <-- Each file calls registerBlade()
+  |
+  v
+BladeRenderer                   <-- Looks up registration, renders component
+  |
+  v
+BladeContainer                  <-- Reads bladeStack from useBladeStore
+  |                                  AnimatePresence for transitions
+  v
+BladeStrip                      <-- Collapsed previous blades in stack
+```
 
-**No generic "read file content" command exists.** The diff module reads file content but always in diff context. A repo file browser needs a new command.
+**Key insight:** The blade system already has a natural "module" shape -- each blade has a component, a registration, and often co-located sub-components. The registry pattern means blades are loosely coupled: they register themselves at import time and are resolved by type string.
 
 ---
 
-## Recommended Architecture for v1.3.0
+## Recommended Architecture
 
-### Decision 1: Settings as a Blade (NOT a third root process)
+### 1. Blade-Centric Module Structure
 
-**Recommendation: Keep settings as a blade, not a process. Use `pushBlade` with a "settings" type.**
+Move from layer-based to feature-based organization where each blade becomes a self-contained module. Shared infrastructure stays in a `shared/` layer. This is NOT a full rewrite -- it is a controlled migration that moves files while preserving all import paths via re-exports during transition.
 
-Rationale:
-- Adding a third process (`"settings"`) to ProcessType would make settings structurally parallel to staging/topology, which it is not. Settings is a utility surface, not a workflow.
-- The process model means `setProcess("settings")` would reset the blade stack and show a settings root blade. This loses the user's blade context -- they cannot quickly check a setting and return to their diff.
-- A process also adds a third tab to ProcessNavigation in the header, taking up horizontal space for something used infrequently.
+#### Target Structure
 
-**Instead:** Settings should be a blade that pushes onto the current stack via `pushBlade({ type: "settings" })`. The user can pop back with the existing back button. The settings blade replaces the modal overlay with an inline panel.
+```
+src/
+  app/
+    App.tsx
+    main.tsx
+    providers.tsx                     # QueryClientProvider, future XState provider
 
-Store change: Remove `isOpen` from `useSettingsStore`. The `activeCategory` stays (it is internal settings navigation state). Opening settings becomes `pushBlade({ type: "settings", title: "Settings", props: { category: "general" } })`.
+  blades/                             # One directory per blade module
+    staging-changes/
+      StagingChangesBlade.tsx         # Main blade component
+      StagingPanel.tsx                # Sub-components (moved from components/staging/)
+      FileItem.tsx
+      FileList.tsx
+      FileTreeView.tsx
+      InlineDiffViewer.tsx
+      DiffPreviewHeader.tsx
+      ...
+      staging.store.ts                # Co-located store (was stores/staging.ts)
+      useStagingKeyboard.ts           # Co-located hook
+      registration.ts                 # registerBlade() call
+      index.ts                        # Public API barrel
 
-Header change: The settings button in `Header.tsx` changes from `openSettings()` to `pushBlade({ type: "settings", ... })`.
+    topology-graph/
+      TopologyRootBlade.tsx
+      TopologyPanel.tsx
+      LaneHeader.tsx, CommitBadge.tsx, LaneBackground.tsx
+      layoutUtils.ts
+      topology.store.ts               # Was stores/topology.ts
+      registration.ts
+      index.ts
 
-**Alternative considered:** A third process. Rejected because settings is not a persistent workspace -- it is a transient drill-in. Processes are long-lived workspaces (staging area, topology view).
+    commit-details/
+      CommitDetailsBlade.tsx
+      CommitHistory.tsx
+      CommitSearch.tsx
+      CommitDetails.tsx               # Sub-component
+      registration.ts
+      index.ts
 
-### Decision 2: Modal-to-Blade Conversion Strategy
+    diff/
+      DiffBlade.tsx
+      registration.ts
+      index.ts
 
-**Recommendation: Convert all three modals to blades, but with different approaches based on their coupling.**
+    repo-browser/
+      RepoBrowserBlade.tsx
+      FileTreeBlade.tsx
+      registration.ts
+      index.ts
 
-#### Settings: Direct blade conversion
+    settings/
+      SettingsBlade.tsx
+      GeneralSettings.tsx
+      GitSettings.tsx
+      AppearanceSettings.tsx
+      IntegrationsSettings.tsx
+      ReviewSettings.tsx
+      SettingsField.tsx
+      settings.store.ts               # Was stores/settings.ts
+      registration.ts
+      index.ts
 
-The SettingsWindow has self-contained tabbed navigation (general, git, integrations, appearance). It already looks like a blade panel -- a left sidebar with tabs and a content area. The conversion is straightforward:
+    changelog/
+      ChangelogBlade.tsx
+      ChangelogPreview.tsx
+      changelog.store.ts
+      registration.ts
+      index.ts
 
-- New blade type: `"settings"`
-- New component: `SettingsBlade.tsx` (wraps existing AppearanceSettings, GeneralSettings, etc.)
-- Remove: Dialog/DialogContent wrapper from SettingsWindow
-- Remove: `isOpen`/`openSettings`/`closeSettings` from settings store
-- The `activeCategory` stays in the store (persists across opens)
-- Props: `{ category?: SettingsCategory }` (optional, defaults to store value)
+    gitflow-cheatsheet/
+      GitflowCheatsheetBlade.tsx
+      registration.ts
+      index.ts
 
-**Integration point:** `renderBlade` switch case in RepositoryView + BladePanel wrapper with back button.
+    viewer-code/
+      ViewerCodeBlade.tsx
+      registration.ts
+      index.ts
 
-#### Changelog: Direct blade conversion
+    viewer-image/
+      ViewerImageBlade.tsx
+      registration.ts
+      index.ts
 
-ChangelogDialog is already stateful via `useChangelogStore`. The Dialog wrapper is thin.
+    viewer-markdown/
+      ViewerMarkdownBlade.tsx
+      registration.ts
+      index.ts
 
-- New blade type: `"changelog"`
-- New component: `ChangelogBlade.tsx` (wraps existing ChangelogPreview + generation form)
-- Remove: Dialog/DialogContent wrapper from ChangelogDialog
-- Remove: `isDialogOpen`/`openDialog`/`closeDialog` from changelog store
-- Props: `{}` (state lives in store)
+    viewer-3d/
+      Viewer3dBlade.tsx
+      registration.ts
+      index.ts
 
-**Integration point:** `renderBlade` switch case + BladePanel wrapper.
+    viewer-nupkg/
+      ViewerNupkgBlade.tsx
+      NugetPackageViewer.tsx
+      registration.ts
+      index.ts
 
-#### Conventional Commit: Inline within staging blade (NOT a separate blade)
+  features/                           # Non-blade feature modules
+    commit-form/
+      CommitForm.tsx
+      ConventionalCommitForm.tsx
+      TypeSelector.tsx
+      ScopeAutocomplete.tsx
+      CharacterProgress.tsx
+      BreakingChangeSection.tsx
+      ValidationErrors.tsx
+      conventional.store.ts
+      useConventionalCommit.ts
+      index.ts
 
-**This is the tricky one.** The ConventionalCommitModal is triggered from CommitForm, which is in the sidebar (bottom of left panel). The modal overlays the entire screen. Converting to a blade would put the commit composer in the blade area (right 80%), but the CommitForm is in the sidebar (left 20%).
+    branches/
+      BranchList.tsx
+      BranchItem.tsx
+      BranchScopeSelector.tsx
+      BranchBulkActions.tsx
+      BulkDeleteDialog.tsx
+      CreateBranchDialog.tsx
+      MergeDialog.tsx
+      branches.store.ts
+      branchMetadata.store.ts
+      useBranches.ts
+      useBranchScopes.ts
+      useBulkSelect.ts
+      index.ts
 
-**Recommendation: Keep ConventionalCommitForm in the sidebar, but expand it inline instead of opening a modal.** Rationale:
-- The commit form belongs near the staging context (staged files list)
-- Moving it to a blade means the user looks at a full-width commit form while their staging list is in a collapsed BladeStrip -- poor UX
-- The two-column staging layout (Decision 5) will make inline expansion natural
+    gitflow/
+      GitflowPanel.tsx
+      GitflowActionCards.tsx
+      GitflowDiagram.tsx
+      GitflowBranchReference.tsx
+      InitGitflowDialog.tsx
+      StartFlowDialog.tsx
+      FinishFlowDialog.tsx
+      ReviewChecklist.tsx
+      gitflow.store.ts
+      reviewChecklist.store.ts
+      index.ts
 
-**If inline expansion is not feasible** due to sidebar space constraints, the fallback is a blade with type `"commit-composer"` that shows the ConventionalCommitForm in the blade area. But this should be the last resort.
+    stash/
+      StashList.tsx, StashItem.tsx, StashDialog.tsx
+      stash.store.ts
+      index.ts
 
-### Decision 3: New Blade Type Registry
+    tags/
+      TagList.tsx, TagItem.tsx, CreateTagDialog.tsx
+      tags.store.ts
+      index.ts
 
-**Recommendation: Extend BladeType union and renderBlade switch in one batch.**
+    worktrees/
+      WorktreePanel.tsx, WorktreeItem.tsx
+      CreateWorktreeDialog.tsx, DeleteWorktreeDialog.tsx
+      worktrees.store.ts
+      index.ts
 
-New blade types to add:
+    clone/
+      CloneForm.tsx, CloneProgress.tsx
+      clone.store.ts
+      index.ts
+
+    navigation/
+      BranchSwitcher.tsx, BranchSwitcherItem.tsx
+      RepoSwitcher.tsx, RepoSwitcherItem.tsx
+      SwitcherSearch.tsx
+      navigation.store.ts
+      index.ts
+
+    welcome/
+      WelcomeView.tsx
+      RecentRepos.tsx
+      AnimatedGradientBg.tsx
+      GitInitBanner.tsx
+      index.ts
+
+  shared/                             # Cross-cutting shared code
+    ui/                               # Primitives (button, input, dialog, etc.)
+      button.tsx
+      input.tsx
+      dialog.tsx
+      Toast.tsx, ToastContainer.tsx
+      EmptyState.tsx, Skeleton.tsx
+      ShortcutTooltip.tsx
+      ThemeToggle.tsx
+
+    layout/
+      ResizablePanelLayout.tsx
+      SplitPaneLayout.tsx
+      CollapsibleSidebar.tsx
+      Header.tsx
+      RepositoryView.tsx
+
+    blade-system/                     # Blade infrastructure (shared)
+      BladeContainer.tsx
+      BladePanel.tsx
+      BladeStrip.tsx
+      BladeRenderer.tsx
+      BladeErrorBoundary.tsx
+      BladeLoadingFallback.tsx
+      BladeContentEmpty.tsx
+      BladeContentError.tsx
+      BladeContentLoading.tsx
+      BladeToolbar.tsx
+      BladeBreadcrumb.tsx
+      ProcessNavigation.tsx
+
+    lib/
+      bladeRegistry.ts
+      bladeOpener.ts
+      bladeUtils.tsx
+      fileDispatch.ts
+      fileTypeUtils.ts
+      errors.ts
+      utils.ts
+      store.ts                        # Tauri plugin-store singleton
+      platform.ts
+      animations.ts
+      fuzzySearch.ts
+      commandRegistry.ts
+      ...
+
+    stores/                           # Truly global stores only
+      repository.store.ts             # Open/close repo -- global
+      theme.store.ts                  # Theme -- global
+      toast.store.ts                  # Toast -- global
+      commandPalette.store.ts         # Cmd-K -- global
+      undo.store.ts                   # Undo -- global
+
+    hooks/
+      useKeyboardShortcuts.ts
+      useRecentRepos.ts
+      useRepoFile.ts
+      useBladeNavigation.ts
+      useCommitGraph.ts
+
+    icons/
+      CommitTypeIcon.tsx
+      FileTypeIcon.tsx
+
+    markdown/
+      MarkdownRenderer.tsx
+      markdownComponents.tsx
+      ...
+
+    animations/
+      AnimatedList.tsx
+      FadeIn.tsx
+
+    types/
+      ...
+
+  machines/                           # XState navigation FSM (NEW)
+    navigation.machine.ts
+    navigation.types.ts
+    navigation.actions.ts
+    navigation.guards.ts
+    useNavigationMachine.ts
+    navigationActor.ts
+    navigation.persistence.ts
+    index.ts
+
+  commands/                           # Command registrations (kept as-is)
+    index.ts
+    branches.ts, navigation.ts, repository.ts, settings.ts, sync.ts
+
+  bindings.ts                         # Auto-generated (stays at root)
+  index.css
+  vite-env.d.ts
+```
+
+#### Import Boundary Rules
+
+```
+shared/       --> can import from: shared/ only
+blades/X/     --> can import from: shared/, blades/X/ only (not other blades)
+features/X/   --> can import from: shared/, features/X/ only (not other features)
+machines/     --> can import from: shared/ only
+app/          --> can import from: anything
+commands/     --> can import from: shared/, blades/, features/
+```
+
+Cross-feature communication goes through shared stores or events, never direct imports between feature modules.
+
+#### Migration Strategy
+
+**Phase 1:** Create the directory structure and move files one blade/feature at a time. Add re-export shims at old paths so nothing breaks:
 
 ```typescript
-export type BladeType =
-  // Existing
-  | "staging-changes"
-  | "topology-graph"
-  | "commit-details"
-  | "diff"
-  | "viewer-nupkg"
-  | "viewer-image"
-  // New - v1.3.0
-  | "settings"
-  | "changelog"
-  | "markdown-preview"
-  | "viewer-3d"
-  | "repo-browser"
-  | "gitflow-cheatsheet"
-  | "commit-composer";    // fallback if inline doesn't work
+// src/stores/staging.ts (old location -- re-export shim)
+export { useStagingStore } from "../blades/staging-changes/staging.store";
 ```
 
-Each new blade type needs:
-1. A `*Blade.tsx` component in `src/components/blades/`
-2. A case in the `renderBlade` switch in `RepositoryView.tsx`
-3. An export in `src/components/blades/index.ts`
-4. A navigation helper in `useBladeNavigation.ts` (for those triggered programmatically)
+**Phase 2:** Update all consumers to use new import paths. Remove shims.
 
-### Decision 4: Markdown Preview Blade
+**Phase 3:** Add ESLint `import/no-restricted-paths` to enforce boundaries.
 
-**Recommendation: Add a toggle within the diff blade for `.md` files, AND support a standalone markdown-preview blade for the repo browser.**
+**Confidence:** HIGH -- This pattern is proven in bulletproof-react and widely adopted for React apps of this size. The blade registry already provides natural module boundaries.
 
-Two usage scenarios require different approaches:
+---
 
-**Scenario A -- Diff context:** User clicks a `.md` file from commit details or staging. They see the diff. A "Preview" toggle button in the BladePanel trailing slot switches between diff view and rendered markdown. This is a toggle within the existing diff blade, not a separate blade type.
+### 2. XState Navigation FSM
 
-**Scenario B -- Repo browser context:** User browses repository files and opens a `.md` file. There is no diff context. A standalone `markdown-preview` blade renders the file content.
+#### Why XState for Navigation
 
-Data flow for Scenario A:
-1. DiffBlade already receives `source` props with filePath
-2. DiffBlade already has `new_content` from the diff fetch
-3. Add a `showPreview` local state toggle
-4. When toggled, render `<MarkdownPreview content={newContent} />` instead of Monaco DiffEditor
+The current blade navigation is a hand-rolled stack machine in `useBladeStore` with `pushBlade`, `popBlade`, `setProcess`, etc. This works but:
 
-Data flow for Scenario B:
-1. RepoBrowserBlade opens a `.md` file
-2. Pushes `{ type: "markdown-preview", props: { filePath, content } }` or fetches via `read_repo_file`
-3. MarkdownPreviewBlade renders with `react-markdown`
+1. **No explicit state transitions** -- any code can call any action at any time
+2. **No guard conditions** -- no validation that transitions are legal
+3. **No visualization** -- state flow is implicit in imperative code
+4. **No persistence API** -- would need manual serialization
 
-### Decision 5: Two-Column Staging Layout
+XState makes the navigation state machine explicit, type-safe, and persistable.
 
-**Recommendation: Split the `staging-changes` blade into a two-column layout: file list (left) + diff preview (right).**
+#### Recommended: XState v5 (5.26.0) + @xstate/react (6.0.0)
 
-Current flow: StagingChangesBlade shows StagingPanel (file list only). Clicking a file pushes a new diff blade. User loses sight of the file list.
-
-Proposed flow: StagingChangesBlade contains a horizontal ResizablePanelLayout:
-- Left panel: StagingPanel (file list, existing component)
-- Right panel: Inline diff viewer (DiffBlade content, reused)
-
-This means:
-- **StagingChangesBlade.tsx** becomes the orchestrator component
-- `onFileSelect` no longer calls `pushBlade` -- instead, it updates local state to show the diff inline
-- The existing DiffBlade component is reused (it already accepts `source` props)
-- The file list and diff are visible simultaneously
-
-**State management:** The selected file state moves from the blade store (push/pop) to local component state within StagingChangesBlade. The staging store's `selectedFile` already tracks this -- reuse it.
-
-**Component structure:**
-```
-StagingChangesBlade
-  -> ResizablePanelLayout (horizontal, autoSaveId="staging-columns")
-       -> StagingPanel (onFileSelect updates staging store selectedFile)
-       -> InlineDiffPanel (conditionally rendered when file selected)
-            -> DiffBlade (reused) OR ViewerImageBlade OR ViewerNupkgBlade
+```bash
+npm install xstate @xstate/react
 ```
 
-**Important:** The old behavior (push a diff blade for full-screen) should remain available. Add an "expand" button on the inline diff that pushes the full diff blade onto the stack. This gives users both quick inline preview and full-screen deep dive.
+**Confidence:** HIGH -- XState v5 is stable (released Dec 2023, latest 5.26.0 as of Feb 2026). The `setup()` API provides excellent TypeScript inference. `@xstate/react` 6.0.0 is the current stable React binding.
 
-### Decision 6: Repository File Browser
+#### Navigation Machine Design
 
-**Recommendation: New blade type `"repo-browser"` with new Rust backend commands for file listing and reading.**
-
-This requires new backend work:
-
-**New Rust command: `list_repo_files`**
-```rust
-#[tauri::command]
-#[specta::specta]
-pub async fn list_repo_files(
-    path: Option<String>,  // subdirectory path, None = root
-    state: State<'_, RepositoryState>,
-) -> Result<Vec<RepoFileEntry>, GitError>
-```
-
-Where `RepoFileEntry` is:
-```rust
-#[derive(Debug, Clone, Serialize, Deserialize, Type)]
-#[serde(rename_all = "camelCase")]
-pub struct RepoFileEntry {
-    pub name: String,
-    pub path: String,
-    pub is_directory: bool,
-    pub size: u64,
-    pub extension: Option<String>,
-}
-```
-
-**New Rust command: `read_repo_file`**
-```rust
-#[tauri::command]
-#[specta::specta]
-pub async fn read_repo_file(
-    file_path: String,
-    state: State<'_, RepositoryState>,
-) -> Result<FileContent, GitError>
-```
-
-Where `FileContent` uses a tagged enum:
-```rust
-#[derive(Debug, Clone, Serialize, Deserialize, Type)]
-#[serde(tag = "type", rename_all = "camelCase")]
-pub enum FileContent {
-    Text { content: String, language: String },
-    Binary { data_uri: String },
-}
-```
-
-This follows the existing pattern in diff.rs (`detect_language`, `mime_from_extension`, base64 encoding).
-
-**Frontend component:** `RepoBrowserBlade.tsx` with:
-- Directory tree (reuse tree-building logic from FileTreeBlade)
-- File preview panel (text files in Monaco read-only, images via img tag)
-- Breadcrumb navigation within the browser
-- Clicking a file opens the appropriate viewer blade (diff for text, viewer-image, viewer-3d, markdown-preview)
-
-**Navigation:** Add to `useBladeNavigation`:
 ```typescript
-const openRepoBrowser = (path?: string) => {
-  store.pushBlade({
-    type: "repo-browser",
-    title: "Files",
-    props: { path: path ?? "" },
-  });
+// src/machines/navigation.types.ts
+import type { BladeType, BladePropsMap, TypedBlade } from "../shared/blade-system/bladeTypes";
+
+export type ProcessType = "staging" | "topology";
+
+export type NavigationContext = {
+  activeProcess: ProcessType;
+  bladeStack: TypedBlade[];
 };
+
+export type NavigationEvent =
+  | { type: "SWITCH_PROCESS"; process: ProcessType }
+  | { type: "PUSH_BLADE"; bladeType: BladeType; title: string; props: BladePropsMap[BladeType] }
+  | { type: "POP_BLADE" }
+  | { type: "POP_TO_INDEX"; index: number }
+  | { type: "REPLACE_BLADE"; bladeType: BladeType; title: string; props: BladePropsMap[BladeType] }
+  | { type: "RESET_STACK" }
+  | { type: "OPEN_REPO" }
+  | { type: "CLOSE_REPO" };
 ```
 
-### Decision 7: 3D Viewer Blade
-
-**Recommendation: Use BabylonJS viewer for `.glb`/`.gltf`/`.fbx`/`.obj` files, lazy-loaded.**
-
-Data flow:
-1. `bladeTypeForFile()` returns `"viewer-3d"` for 3D model extensions
-2. Blade pushes with props `{ filePath, oid? }`
-3. Component fetches binary content via `get_file_base64` or `get_commit_file_base64`
-4. Converts base64 data URI to blob URL
-5. Passes to BabylonJS SceneLoader
-
-**Dependency:** `@babylonjs/core` and `@babylonjs/loaders` (~2-3MB gzipped). This is significant.
-
-**Recommendation: Lazy-load BabylonJS.** Use `React.lazy()` + Suspense to only load the 3D engine when a 3D file is actually opened. This avoids bloating the main bundle.
-
 ```typescript
-const Viewer3DBlade = React.lazy(() => import("./Viewer3DBlade"));
+// src/machines/navigation.machine.ts
+import { setup, assign } from "xstate";
+import type { NavigationContext, NavigationEvent, ProcessType } from "./navigation.types";
+import type { TypedBlade } from "../shared/blade-system/bladeTypes";
+
+function rootBladeForProcess(process: ProcessType): TypedBlade {
+  if (process === "staging") {
+    return {
+      id: "root",
+      type: "staging-changes",
+      title: "Changes",
+      props: {} as Record<string, never>,
+    };
+  }
+  return {
+    id: "root",
+    type: "topology-graph",
+    title: "Topology",
+    props: {} as Record<string, never>,
+  };
+}
+
+export const navigationMachine = setup({
+  types: {
+    context: {} as NavigationContext,
+    events: {} as NavigationEvent,
+  },
+  actions: {
+    pushBlade: assign({
+      bladeStack: ({ context, event }) => {
+        if (event.type !== "PUSH_BLADE") return context.bladeStack;
+        return [
+          ...context.bladeStack,
+          {
+            id: crypto.randomUUID(),
+            type: event.bladeType,
+            title: event.title,
+            props: event.props,
+          } as TypedBlade,
+        ];
+      },
+    }),
+    popBlade: assign({
+      bladeStack: ({ context }) =>
+        context.bladeStack.length > 1
+          ? context.bladeStack.slice(0, -1)
+          : context.bladeStack,
+    }),
+    popToIndex: assign({
+      bladeStack: ({ context, event }) => {
+        if (event.type !== "POP_TO_INDEX") return context.bladeStack;
+        return context.bladeStack.slice(0, event.index + 1);
+      },
+    }),
+    replaceBlade: assign({
+      bladeStack: ({ context, event }) => {
+        if (event.type !== "REPLACE_BLADE") return context.bladeStack;
+        return [
+          ...context.bladeStack.slice(0, -1),
+          {
+            id: crypto.randomUUID(),
+            type: event.bladeType,
+            title: event.title,
+            props: event.props,
+          } as TypedBlade,
+        ];
+      },
+    }),
+    resetStack: assign({
+      bladeStack: ({ context }) => [rootBladeForProcess(context.activeProcess)],
+    }),
+    switchProcess: assign(({ event }) => {
+      if (event.type !== "SWITCH_PROCESS") return {};
+      return {
+        activeProcess: event.process,
+        bladeStack: [rootBladeForProcess(event.process)],
+      };
+    }),
+  },
+  guards: {
+    canPop: ({ context }) => context.bladeStack.length > 1,
+    isValidIndex: ({ context, event }) => {
+      if (event.type !== "POP_TO_INDEX") return false;
+      return event.index >= 0 && event.index < context.bladeStack.length;
+    },
+  },
+}).createMachine({
+  id: "navigation",
+  initial: "welcome",
+  context: {
+    activeProcess: "staging",
+    bladeStack: [rootBladeForProcess("staging")],
+  },
+  states: {
+    welcome: {
+      on: {
+        OPEN_REPO: { target: "repository" },
+      },
+    },
+    repository: {
+      on: {
+        CLOSE_REPO: { target: "welcome", actions: "resetStack" },
+        PUSH_BLADE: { actions: "pushBlade" },
+        POP_BLADE: { guard: "canPop", actions: "popBlade" },
+        POP_TO_INDEX: { guard: "isValidIndex", actions: "popToIndex" },
+        REPLACE_BLADE: { actions: "replaceBlade" },
+        RESET_STACK: { actions: "resetStack" },
+        SWITCH_PROCESS: { actions: "switchProcess" },
+      },
+    },
+  },
+});
 ```
 
-In `renderBlade`:
+**Confidence:** HIGH for the machine definition pattern (verified via official XState v5 `setup()` docs). The `assign()` API with context/event destructuring is the canonical v5 pattern.
+
+#### XState + React Integration Pattern
+
+**Recommended approach:** Use `createActorContext` from `@xstate/react` to provide the navigation machine globally. This avoids prop-drilling and gives every component access to the actor via React context.
+
+Do NOT use the `zustand-middleware-xstate` package -- it is unmaintained and designed for XState v4. Instead, use the official `@xstate/react` hooks.
+
 ```typescript
-case "viewer-3d":
-  return (
-    <Suspense fallback={<LoadingSpinner />}>
-      <Viewer3DBlade ... />
-    </Suspense>
-  );
+// src/machines/useNavigationMachine.ts
+import { createActorContext } from "@xstate/react";
+import { navigationMachine } from "./navigation.machine";
+
+export const NavigationMachineContext = createActorContext(navigationMachine);
+
+// Selectors for common state reads (avoid re-rendering on unrelated changes)
+export const selectActiveProcess = (snapshot: any) =>
+  snapshot.context.activeProcess;
+
+export const selectBladeStack = (snapshot: any) =>
+  snapshot.context.bladeStack;
+
+export const selectActiveBlade = (snapshot: any) => {
+  const stack = snapshot.context.bladeStack;
+  return stack[stack.length - 1];
+};
+
+export const selectIsWelcome = (snapshot: any) =>
+  snapshot.matches("welcome");
+
+export const selectIsRepository = (snapshot: any) =>
+  snapshot.matches("repository");
 ```
 
-### Decision 8: Branch Management Hub
+**Confidence:** HIGH for `createActorContext` API (verified via official `@xstate/react` docs, returns Provider + useSelector + useActorRef).
 
-**Recommendation: Sidebar enhancement, not a blade.**
+#### Persistence via Tauri Plugin-Store
 
-The branch management hub (local, remote, last-used, cleanup) is contextual navigation data -- it belongs in the sidebar alongside the existing BranchList, StashList, and TagList sections.
-
-Reasons:
-- Branch operations (checkout, delete, create) are quick actions, not deep inspections
-- A blade would compete with the user's current work context
-- The sidebar already has a "Branches" section with the BranchList component
-
-**Enhancement plan:**
-1. Enhance the existing `<details>` Branches section in RepositoryView's sidebar
-2. Add sub-tabs or filter within BranchList: "Local" | "Remote" | "Recent"
-3. Add branch cleanup actions (delete merged branches) inline
-4. Show last-used timestamps (data already in `useNavigationStore.recentBranchesPerRepo`)
-5. Feature branch tags displayed in purple (style enhancement in BranchList)
-
-### Decision 9: GitFlow Cheatsheet Blade
-
-**Recommendation: Static content blade, no backend needed.**
-
-- New blade type: `"gitflow-cheatsheet"`
-- Content: Hardcoded JSX with Gitflow diagrams, workflow descriptions, and command references
-- Trigger: Button in GitflowPanel sidebar section, or command palette action
-- No IPC needed -- purely frontend
-
-### Decision 10: `useBladeNavigation` Hook Extension
-
-The hook needs new navigation helpers for the expanded blade set:
+XState v5 supports `actor.getPersistedSnapshot()` and `createActor(machine, { snapshot })` for persistence. Integrate with the existing Tauri `plugin-store`:
 
 ```typescript
-// Existing
-openCommitDetails(oid: string)
-openDiff(oid: string, filePath: string)
-openStagingDiff(file: FileChange, section: string)
-goBack()
-goToRoot()
+// src/machines/navigation.persistence.ts
+import { getStore } from "../shared/lib/store";
 
-// New
-openSettings(category?: SettingsCategory)
-openChangelog()
-openRepoBrowser(path?: string)
-openGitflowCheatsheet()
-```
+const NAV_SNAPSHOT_KEY = "nav-machine-snapshot";
 
-The `bladeTypeForFile()` function also needs updating:
-```typescript
-function bladeTypeForFile(filePath: string): BladeType {
-  const lower = filePath.toLowerCase();
-  if (lower.endsWith(".nupkg")) return "viewer-nupkg";
-  if (IMAGE_EXTENSIONS.some(ext => lower.endsWith(ext))) return "viewer-image";
-  if (MODEL_3D_EXTENSIONS.some(ext => lower.endsWith(ext))) return "viewer-3d";
-  // .md files stay as "diff" when in diff context; markdown preview is a toggle
-  return "diff";
+export async function persistNavigationSnapshot(
+  snapshot: unknown,
+): Promise<void> {
+  try {
+    const store = await getStore();
+    await store.set(NAV_SNAPSHOT_KEY, JSON.stringify(snapshot));
+    await store.save();
+  } catch (e) {
+    console.error("Failed to persist navigation snapshot:", e);
+  }
+}
+
+export async function loadNavigationSnapshot(): Promise<unknown | undefined> {
+  try {
+    const store = await getStore();
+    const raw = await store.get<string>(NAV_SNAPSHOT_KEY);
+    return raw ? JSON.parse(raw) : undefined;
+  } catch (e) {
+    console.error("Failed to load navigation snapshot:", e);
+    return undefined;
+  }
 }
 ```
 
----
+In the provider, subscribe to snapshot changes and persist:
 
-## Component Inventory
+```typescript
+// In app/providers.tsx
+import { useEffect, useState } from "react";
+import {
+  NavigationMachineContext,
+} from "../machines/useNavigationMachine";
+import {
+  loadNavigationSnapshot,
+  persistNavigationSnapshot,
+} from "../machines/navigation.persistence";
 
-### New Components (create)
+export function NavigationProvider({
+  children,
+}: { children: React.ReactNode }) {
+  const [restoredSnapshot, setRestoredSnapshot] = useState<unknown>(undefined);
+  const [ready, setReady] = useState(false);
 
-| Component | Path | Purpose |
-|-----------|------|---------|
-| SettingsBlade | `src/components/blades/SettingsBlade.tsx` | Settings as blade (wraps existing settings panels) |
-| ChangelogBlade | `src/components/blades/ChangelogBlade.tsx` | Changelog generation as blade |
-| RepoBrowserBlade | `src/components/blades/RepoBrowserBlade.tsx` | Repository file browser |
-| Viewer3DBlade | `src/components/blades/Viewer3DBlade.tsx` | 3D model viewer (lazy-loaded) |
-| GitflowCheatsheetBlade | `src/components/blades/GitflowCheatsheetBlade.tsx` | Static Gitflow reference |
-| InlineDiffPanel | `src/components/staging/InlineDiffPanel.tsx` | Inline diff viewer for two-column staging |
-| MarkdownPreview | `src/components/viewers/MarkdownPreview.tsx` | Markdown rendering component (shared) |
-| MarkdownPreviewBlade | `src/components/blades/MarkdownPreviewBlade.tsx` | Standalone markdown viewer blade |
+  useEffect(() => {
+    loadNavigationSnapshot().then((snap) => {
+      setRestoredSnapshot(snap);
+      setReady(true);
+    });
+  }, []);
 
-### Modified Components
+  if (!ready) return null;
 
-| Component | Changes |
-|-----------|---------|
-| `src/stores/blades.ts` | Extend BladeType union with 7 new types |
-| `src/components/RepositoryView.tsx` | Add cases to renderBlade switch for each new type |
-| `src/hooks/useBladeNavigation.ts` | Add new navigation helpers, extend bladeTypeForFile |
-| `src/components/blades/index.ts` | Export new blade components |
-| `src/components/blades/StagingChangesBlade.tsx` | Rewrite for two-column layout with ResizablePanelLayout |
-| `src/components/blades/DiffBlade.tsx` | Add markdown preview toggle for .md files |
-| `src/stores/settings.ts` | Remove isOpen/openSettings/closeSettings |
-| `src/stores/changelogStore.ts` | Remove isDialogOpen/openDialog/closeDialog |
-| `src/components/Header.tsx` | Change settings/changelog triggers to use blade push |
-| `src/App.tsx` | Remove ChangelogDialog and SettingsWindow mounts |
-| `src/components/branches/BranchList.tsx` | Add local/remote/recent filter tabs, cleanup actions |
-| `src/components/commit/CommitForm.tsx` | Inline ConventionalCommitForm expansion (remove modal trigger) |
-| `src/components/commit/ConventionalCommitModal.tsx` | Remove (replaced by inline expansion) |
+  return (
+    <NavigationMachineContext.Provider
+      options={
+        restoredSnapshot ? { snapshot: restoredSnapshot } : undefined
+      }
+    >
+      <PersistenceSubscriber />
+      {children}
+    </NavigationMachineContext.Provider>
+  );
+}
 
-### New Rust Backend
+function PersistenceSubscriber() {
+  const actorRef = NavigationMachineContext.useActorRef();
 
-| File | Purpose |
-|------|---------|
-| `src-tauri/src/git/browser.rs` | `list_repo_files` and `read_repo_file` commands |
-| `src-tauri/src/git/mod.rs` | Add `pub mod browser;` |
-| `src-tauri/src/lib.rs` | Register `list_repo_files` and `read_repo_file` commands |
+  useEffect(() => {
+    const sub = actorRef.subscribe(() => {
+      persistNavigationSnapshot(actorRef.getPersistedSnapshot());
+    });
+    return () => sub.unsubscribe();
+  }, [actorRef]);
 
-### Removed After Migration
-
-| Component | Reason |
-|-----------|--------|
-| `src/components/settings/SettingsWindow.tsx` | Replaced by SettingsBlade (sub-panels survive) |
-| `src/components/changelog/ChangelogDialog.tsx` | Replaced by ChangelogBlade (ChangelogPreview survives) |
-| `src/components/commit/ConventionalCommitModal.tsx` | Replaced by inline expansion in CommitForm |
-
----
-
-## Data Flow Diagrams
-
-### Modal-to-Blade State Migration
-
-**Before (Settings):**
-```
-Header button -> useSettingsStore.openSettings() -> sets isOpen=true
-  -> SettingsWindow reads isOpen from store -> renders Dialog overlay
-  -> Close: Dialog.onOpenChange(false) -> closeSettings() -> isOpen=false
+  return null;
+}
 ```
 
-**After (Settings):**
-```
-Header button -> useBladeStore.pushBlade({ type: "settings" })
-  -> BladeContainer renders SettingsBlade as active blade
-  -> Back: useBladeStore.popBlade() -> blade removed from stack
-  -> activeCategory persists in settings store for next open
+**Confidence:** HIGH for XState persistence API (`getPersistedSnapshot` + `createActor` with `snapshot` option -- verified via official docs). MEDIUM for the exact `createActorContext.Provider` options prop shape -- verify at implementation time with `@xstate/react` 6.0.0 source or docs.
+
+**Important caveats from XState docs:**
+- "Actions from machine actors will not be re-executed, because they are assumed to have been already executed." This means entry actions on the restored state will NOT fire -- which is correct for navigation (we don't want to re-push blades on restore).
+- If `restoredSnapshot` is `undefined`, the actor starts at the initial state, which is the correct fallback.
+
+#### Non-React Access (Command Palette, Keyboard Shortcuts)
+
+For code outside the React component tree that needs to trigger navigation:
+
+```typescript
+// src/machines/navigationActor.ts
+import type { ActorRefFrom } from "xstate";
+import type { navigationMachine } from "./navigation.machine";
+
+let _actorRef: ActorRefFrom<typeof navigationMachine> | null = null;
+
+export function setNavigationActorRef(
+  ref: ActorRefFrom<typeof navigationMachine>,
+) {
+  _actorRef = ref;
+}
+
+export function getNavigationActorRef() {
+  if (!_actorRef) throw new Error("Navigation actor not initialized");
+  return _actorRef;
+}
 ```
 
-**Before (Changelog):**
-```
-Header button -> useChangelogStore.openDialog() -> isDialogOpen=true
-  -> ChangelogDialog reads isDialogOpen -> renders Dialog overlay
-  -> Close: closeDialog() + reset() -> isDialogOpen=false
-```
-
-**After (Changelog):**
-```
-Header button -> useBladeStore.pushBlade({ type: "changelog" })
-  -> BladeContainer renders ChangelogBlade
-  -> ChangelogBlade uses useChangelogStore for generation state
-  -> Back: popBlade() (changelog store state persists until explicit reset)
-  -> ChangelogBlade useEffect cleanup calls reset() on unmount
-```
-
-### Repo Browser Data Flow
-
-```
-User triggers "Browse Files" (command palette or sidebar action)
-  -> pushBlade({ type: "repo-browser", props: { path: "" } })
-  -> RepoBrowserBlade mounts
-  -> useQuery(["repoFiles", path], () => commands.listRepoFiles(path))
-  -> Rust: list_repo_files reads working directory via std::fs
-  -> Returns Vec<RepoFileEntry> to frontend
-  -> User clicks directory -> updates path prop, re-fetches
-  -> User clicks file:
-     -> Text file: commands.readRepoFile(path)
-        -> Rust: reads file, detects language, returns FileContent::Text
-        -> Frontend: Monaco Editor (read-only) for code, MarkdownPreview for .md
-     -> Image file: commands.getFileBase64(path) (existing command)
-        -> Frontend: img tag with data URI
-     -> 3D model: pushBlade({ type: "viewer-3d", props: { filePath } })
-```
-
-### Two-Column Staging Data Flow
-
-```
-StagingChangesBlade (redesigned)
-  -> ResizablePanelLayout (horizontal)
-       -> Left: StagingPanel (unchanged component)
-            -> onFileSelect(file, section) -> useStagingStore.selectFile()
-       -> Right: InlineDiffPanel
-            -> Reads selectedFile from useStagingStore
-            -> Determines viewer type via bladeTypeForFile
-            -> Renders DiffBlade / ViewerImageBlade / ViewerNupkgBlade inline
-            -> "Expand" button -> pushBlade(full diff blade) for full-screen
-
-Key change: StagingPanel.onFileSelect no longer triggers pushBlade.
-Instead it updates staging store. Blade push is optional (expand button).
-```
+This mirrors the existing `bladeOpener.ts` pattern which calls `useBladeStore.getState()` for non-React contexts. The `PersistenceSubscriber` component (or the Provider itself) calls `setNavigationActorRef(actorRef)` on mount.
 
 ---
 
-## Suggested Build Order
+### 3. Zustand Store Consolidation
 
-Based on dependencies and risk analysis:
+#### Current State: 21 Stores
 
-### Phase A: Blade Type Infrastructure (Foundation)
+| Store | Category | Persistence | Cross-Store Deps |
+|-------|----------|-------------|------------------|
+| `blades` | Navigation | No | None (replaced by XState) |
+| `bladeTypes` | Types only | N/A | N/A |
+| `repository` | Global | No | None |
+| `navigation` | Global | Tauri store | None |
+| `branches` | Feature | No | None |
+| `branchMetadata` | Feature | Tauri store | None |
+| `staging` | Feature | No | None |
+| `conventional` | Feature | No | None |
+| `gitflow` | Feature | No | branches, repository |
+| `topology` | Feature | No | None |
+| `settings` | Global | Tauri store | None |
+| `theme` | Global | Tauri store + localStorage | None |
+| `toast` | Global | No | None |
+| `commandPalette` | Global | No | None |
+| `clone` | Feature | No | None |
+| `stash` | Feature | No | None |
+| `tags` | Feature | No | None |
+| `undo` | Global | No | None |
+| `worktrees` | Feature | No | repository |
+| `changelogStore` | Feature | No | None |
+| `reviewChecklist` | Feature | Tauri store | None |
 
-**Do first.** All subsequent work depends on this.
+#### Consolidation Strategy: Keep Separate Stores, Co-locate
 
-1. Extend `BladeType` union in blades.ts with all new types
-2. Add empty case stubs in renderBlade switch (return placeholder divs)
-3. Extend `useBladeNavigation` with new helpers (openSettings, openChangelog, etc.)
-4. Update `bladeTypeForFile` for 3D model extensions
+**Recommendation: Do NOT merge stores into slices.** The Zustand maintainers (TkDodo, dai-shi) explicitly recommend multiple separate stores over the slices pattern when stores are independent. From Zustand discussion #2496: multiple stores are marginally more performant than slices, and the stores in FlowForge are almost entirely independent (only `gitflow` and `worktrees` have cross-store deps).
 
-**Risk: LOW.** Additive changes only, no breaking modifications. Existing blade types untouched.
+Merging them into slices would:
+- Add coupling where none exists
+- Make the combined store harder to tree-shake
+- Complicate the persistence story (different stores persist differently via Tauri plugin-store)
+- Create a single mega-store file that is harder to navigate
 
-### Phase B: Modal-to-Blade Conversions (Quick Wins)
+**Instead, co-locate stores with their feature modules:**
 
-**Do second.** Removes modal infrastructure, proves the blade expansion pattern works.
+| Store | New Location |
+|-------|-------------|
+| `blades.ts` | **REMOVED** -- replaced by XState navigation machine |
+| `bladeTypes.ts` | `shared/blade-system/bladeTypes.ts` |
+| `repository.ts` | `shared/stores/repository.store.ts` |
+| `navigation.ts` | `features/navigation/navigation.store.ts` |
+| `branches.ts` | `features/branches/branches.store.ts` |
+| `branchMetadata.ts` | `features/branches/branchMetadata.store.ts` |
+| `staging.ts` | `blades/staging-changes/staging.store.ts` |
+| `conventional.ts` | `features/commit-form/conventional.store.ts` |
+| `gitflow.ts` | `features/gitflow/gitflow.store.ts` |
+| `topology.ts` | `blades/topology-graph/topology.store.ts` |
+| `settings.ts` | `blades/settings/settings.store.ts` |
+| `theme.ts` | `shared/stores/theme.store.ts` |
+| `toast.ts` | `shared/stores/toast.store.ts` |
+| `commandPalette.ts` | `shared/stores/commandPalette.store.ts` |
+| `clone.ts` | `features/clone/clone.store.ts` |
+| `stash.ts` | `features/stash/stash.store.ts` |
+| `tags.ts` | `features/tags/tags.store.ts` |
+| `undo.ts` | `shared/stores/undo.store.ts` |
+| `worktrees.ts` | `features/worktrees/worktrees.store.ts` |
+| `changelogStore.ts` | `blades/changelog/changelog.store.ts` |
+| `reviewChecklist.ts` | `features/gitflow/reviewChecklist.store.ts` |
 
-1. SettingsBlade -- most self-contained, has its own store for category state
-2. ChangelogBlade -- small, stateful store already exists
-3. Remove SettingsWindow and ChangelogDialog from App.tsx
-4. Update Header.tsx to use blade push instead of store open
-5. Update settings store (remove isOpen/openSettings/closeSettings)
-6. Update changelog store (remove isDialogOpen/openDialog/closeDialog)
-7. Inline ConventionalCommitForm expansion in CommitForm (remove modal)
+**Confidence:** HIGH -- Zustand docs and community consensus strongly favor separate stores for independent state.
 
-**Risk: LOW-MEDIUM.** The settings keyboard shortcut `mod+,` currently calls `openSettings()`. This needs rewiring to `pushBlade`. The changelog store's `reset()` behavior needs care -- ensure it triggers on blade unmount via useEffect cleanup.
+#### Store Naming Convention
 
-**Important subtlety:** Modals auto-reset on close (component unmounts). Blades in a stack stay mounted (only behind BladeStrips, which do NOT render blade content -- they are separate button components). However, when popped from the stack, the blade component unmounts. Use `useEffect` cleanup to reset changelog store state on unmount.
+Rename all stores to `{feature}.store.ts` for consistency:
+- `changelogStore.ts` becomes `changelog.store.ts`
+- `conventional.ts` becomes `conventional.store.ts`
+- etc.
 
-### Phase C: Two-Column Staging (High-Value UX)
+This makes auto-import and file search more predictable.
 
-**Do third.** Major UX improvement, self-contained within StagingChangesBlade.
+#### Cross-Store Dependencies: Keep Imperative, Add Type Safety
 
-1. Redesign StagingChangesBlade with ResizablePanelLayout (reuse `autoSaveId` pattern)
-2. Create InlineDiffPanel wrapper component
-3. Wire to useStagingStore's existing selectedFile state
-4. Add "expand to full blade" button on inline diff
-5. Keep backward compatibility (push-blade still works from expand button)
+The `gitflow.store.ts` pattern of calling `useBranchStore.getState().loadBranches()` is the recommended Zustand pattern for cross-store communication. This should remain as-is but be formalized:
 
-**Risk: MEDIUM.** This changes a core interaction pattern. The StagingPanel's `onFileSelect` callback contract changes -- it must support both inline preview and full-blade navigation. Test with keyboard navigation. The ResizablePanelLayout is already used in RepositoryView so the pattern is proven.
+```typescript
+// features/gitflow/gitflow.store.ts
+import { useBranchStore } from "../branches/branches.store";
+import { useRepositoryStore } from "../../shared/stores/repository.store";
 
-### Phase D: New Content Blades (Feature Expansion)
+// Cross-module import is explicit and trackable
+```
 
-**Do fourth.** Each is independent, can be parallelized.
+This is a "features imports shared" pattern -- `gitflow` importing from `branches` is technically a cross-feature import. Since both are sidebar features with tightly coupled operations, this is acceptable. The alternative (routing through shared stores or events) would add complexity for no benefit.
 
-1. GitflowCheatsheetBlade (pure frontend, zero risk, no dependencies)
-2. MarkdownPreview component + DiffBlade toggle for .md files (small scope)
-3. RepoBrowserBlade + Rust backend commands (new IPC, medium risk)
-   - Create `src-tauri/src/git/browser.rs` with `list_repo_files` and `read_repo_file`
-   - Register in lib.rs
-   - Build frontend RepoBrowserBlade with directory tree and file preview
-4. Viewer3DBlade with BabylonJS (new dependency, lazy-loaded, medium risk)
-   - `npm install @babylonjs/core @babylonjs/loaders`
-   - React.lazy + Suspense wrapper
-   - Extend bladeTypeForFile for 3D extensions
+**However:** if more cross-feature imports emerge, extract the shared operations to `shared/stores/` or use an event bus pattern.
 
-**Risk varies:** Cheatsheet is trivial. Markdown is low risk. Repo browser requires new Rust code (follow existing patterns in diff.rs -- the `detect_language` and `mime_from_extension` functions can be moved to a shared module). 3D viewer introduces a large dependency but lazy-loading mitigates bundle impact.
+---
 
-### Phase E: Branch Management Enhancement (Sidebar Polish)
+### 4. App Initialization Flow (Revised)
 
-**Do last.** Incremental improvement to existing sidebar, lowest priority.
+#### Current Init (App.tsx)
 
-1. Add local/remote/recent filter tabs to BranchList
-2. Feature branch purple tags (CSS/style change)
-3. Branch cleanup actions (delete merged branches)
-4. Last-used timestamps from navigation store data
+```
+App mount --> initTheme() + initSettings() + initNavigation() + initMetadata() + initChecklist()
+             Repo-change listener --> invalidate queries + loadUndoInfo + loadGraph
+             status ? <RepositoryView /> : <WelcomeView />
+```
 
-**Risk: LOW.** Additive changes to existing BranchList component. No architectural changes.
+#### Proposed Init (with XState)
+
+```
+main.tsx
+  |
+  v
+NavigationProvider (loads persisted snapshot, creates actor)
+  |
+  v
+App.tsx
+  |-- initTheme(), initSettings(), initMetadata(), initChecklist()
+  |-- XState navigation machine handles welcome/repo transitions
+  |
+  v
+On OPEN_REPO event:
+  machine transitions "welcome" --> "repository"
+  Repo-change listener starts
+
+On CLOSE_REPO event:
+  machine transitions "repository" --> "welcome"
+  Blade stack resets via exit action
+```
+
+The key change is that `status ? <RepositoryView /> : <WelcomeView />` becomes derived from the navigation machine state:
+
+```typescript
+function App() {
+  const isWelcome = NavigationMachineContext.useSelector(selectIsWelcome);
+  // ...
+  return (
+    <main>
+      {isWelcome ? <WelcomeView /> : <RepositoryView />}
+    </main>
+  );
+}
+```
+
+The `useRepositoryStore.status` still exists for repository data (branch name, path, etc.) but no longer drives the top-level view toggle. The machine owns the "which view" decision; the store owns "what repo data."
+
+---
+
+## Component Boundaries
+
+| Component | Responsibility | Communicates With |
+|-----------|---------------|-------------------|
+| `NavigationMachineContext.Provider` | Owns navigation FSM, blade stack, process mode | All blade/feature modules via context |
+| `BladeContainer` | Reads blade stack, renders active blade + strips | Navigation machine (read), BladeRenderer |
+| `BladeRenderer` | Resolves blade type to registered component | BladeRegistry (read) |
+| `BladeRegistry` | Maps blade type strings to component configs | Registration files (write at init) |
+| `Header` | App chrome, repo/branch switcher, toolbar | Navigation machine (send), global stores |
+| `RepositoryView` | Layout: sidebar + blade area | Feature modules, BladeContainer |
+| `WelcomeView` | Repo open/clone/init | Navigation machine (OPEN_REPO), repository store |
+| Feature stores | Domain-specific state + IPC calls | Tauri bindings, other stores via getState() |
+| Global stores | Cross-cutting state (toast, theme, undo) | Consumed everywhere |
+
+---
+
+## Data Flow
+
+### Blade Navigation Flow (After XState)
+
+```
+User clicks "View Diff"
+  |
+  v
+Component calls actorRef.send({ type: "PUSH_BLADE", bladeType: "diff", ... })
+  |
+  v
+XState machine (in "repository" state) executes "pushBlade" action
+  |
+  v
+Machine context updated: bladeStack = [...stack, newBlade]
+  |
+  v
+PersistenceSubscriber saves snapshot to Tauri store
+  |
+  v
+BladeContainer re-renders via useSelector(selectBladeStack)
+  |
+  v
+BladeRenderer resolves "diff" -> DiffBlade component from registry
+  |
+  v
+DiffBlade mounts, fetches data via Tauri IPC
+```
+
+### Store Persistence Flow (Unchanged)
+
+```
+Store action modifies state
+  |
+  v
+Store calls getStore() -> Tauri plugin-store singleton
+  |
+  v
+store.set("key", value) + store.save()
+  |
+  v
+Persisted to flowforge-settings.json on disk
+  |
+  v
+On next app launch: initXxx() loads from store, sets Zustand state
+```
+
+### Cross-Store Communication Flow (Unchanged)
+
+```
+GitFlow "Finish Feature"
+  |
+  v
+gitflow.store.ts finishFeature()
+  |
+  v
+commands.finishFeature() (Tauri IPC)
+  |
+  v
+On success: gitflow.refresh()
+  |
+  v
+useBranchStore.getState().loadBranches()   <-- cross-store call
+useRepositoryStore.getState().refreshStatus()
+```
+
+---
+
+## Patterns to Follow
+
+### Pattern 1: Blade Module Self-Registration
+
+**What:** Each blade module has a `registration.ts` that calls `registerBlade()` and is auto-discovered via `import.meta.glob`.
+
+**When:** Every blade module, always.
+
+**Example:**
+
+```typescript
+// src/blades/staging-changes/registration.ts
+import { registerBlade } from "../../shared/lib/bladeRegistry";
+import { StagingChangesBlade } from "./StagingChangesBlade";
+
+registerBlade({
+  type: "staging-changes",
+  defaultTitle: "Changes",
+  component: StagingChangesBlade,
+  wrapInPanel: false,
+  showBack: false,
+});
+```
+
+The auto-glob in a dedicated init file discovers registrations:
+
+```typescript
+// src/blades/registrations.ts (replaces components/blades/registrations/index.ts)
+const modules = import.meta.glob("./*/registration.{ts,tsx}", { eager: true });
+
+// Dev-mode exhaustiveness check (carry over from existing)
+if (import.meta.env.DEV && Object.keys(modules).length === 0) {
+  console.error("[BladeRegistry] No registration modules found");
+}
+```
+
+### Pattern 2: Feature Module Public API via index.ts
+
+**What:** Each feature/blade module exports only its public API through `index.ts`. Internal components are NOT exported.
+
+**When:** Every feature module.
+
+**Example:**
+
+```typescript
+// src/features/branches/index.ts
+export { BranchList } from "./BranchList";
+export { CreateBranchDialog } from "./CreateBranchDialog";
+export { MergeDialog } from "./MergeDialog";
+export { useBranchStore } from "./branches.store";
+export { useBranchMetadataStore } from "./branchMetadata.store";
+```
+
+Internal components like `BranchItem.tsx`, `BranchScopeSelector.tsx` are NOT exported -- they are implementation details.
+
+**Note on barrel files:** The bulletproof-react docs warn that barrel files can hurt Vite tree-shaking. In this case, since these are feature modules with a small public API (not libraries), the risk is minimal. The barrel file serves as a documentation of the module's public surface. If build performance becomes a concern, switch to direct imports.
+
+### Pattern 3: XState Event Dispatch from Non-React Code
+
+**What:** Use a global actor ref for command palette, keyboard shortcuts, and other non-React contexts.
+
+**When:** Any code outside the React component tree needs to trigger navigation.
+
+**Example:**
+
+```typescript
+// src/commands/navigation.ts
+import { getNavigationActorRef } from "../machines/navigationActor";
+
+export function openSettingsBlade() {
+  getNavigationActorRef().send({
+    type: "PUSH_BLADE",
+    bladeType: "settings",
+    title: "Settings",
+    props: {} as Record<string, never>,
+  });
+}
+```
+
+### Pattern 4: Selective Re-rendering with useSelector
+
+**What:** Use `NavigationMachineContext.useSelector` with specific selectors instead of subscribing to entire snapshots.
+
+**When:** Every component consuming navigation machine state.
+
+**Example:**
+
+```typescript
+// Only re-renders when activeProcess changes
+const activeProcess = NavigationMachineContext.useSelector(selectActiveProcess);
+
+// Only re-renders when the active blade changes
+const activeBlade = NavigationMachineContext.useSelector(selectActiveBlade);
+```
+
+This is equivalent to how Zustand selectors work: `useBladeStore((s) => s.activeProcess)`. The mental model is the same.
+
+### Pattern 5: Compatibility Shim for Gradual Migration
+
+**What:** Provide a Zustand-API-compatible wrapper around the XState machine during migration.
+
+**When:** During the transition period when some code still uses `useBladeStore`.
+
+**Example:**
+
+```typescript
+// src/shared/hooks/useBladeStore.ts (compatibility shim)
+import {
+  NavigationMachineContext,
+  selectBladeStack,
+  selectActiveProcess,
+} from "../../machines/useNavigationMachine";
+
+/** @deprecated Migrate to NavigationMachineContext.useSelector/useActorRef */
+export function useBladeStore() {
+  const actorRef = NavigationMachineContext.useActorRef();
+  const bladeStack = NavigationMachineContext.useSelector(selectBladeStack);
+  const activeProcess = NavigationMachineContext.useSelector(selectActiveProcess);
+
+  return {
+    bladeStack,
+    activeProcess,
+    pushBlade: <K extends BladeType>(blade: {
+      type: K;
+      title: string;
+      props: BladePropsMap[K];
+    }) =>
+      actorRef.send({
+        type: "PUSH_BLADE",
+        bladeType: blade.type,
+        title: blade.title,
+        props: blade.props,
+      }),
+    popBlade: () => actorRef.send({ type: "POP_BLADE" }),
+    popToIndex: (index: number) =>
+      actorRef.send({ type: "POP_TO_INDEX", index }),
+    replaceBlade: <K extends BladeType>(blade: {
+      type: K;
+      title: string;
+      props: BladePropsMap[K];
+    }) =>
+      actorRef.send({
+        type: "REPLACE_BLADE",
+        bladeType: blade.type,
+        title: blade.title,
+        props: blade.props,
+      }),
+    resetStack: () => actorRef.send({ type: "RESET_STACK" }),
+    setProcess: (process: ProcessType) =>
+      actorRef.send({ type: "SWITCH_PROCESS", process }),
+  };
+}
+```
+
+This allows migrating consumers one at a time rather than all at once.
 
 ---
 
 ## Anti-Patterns to Avoid
 
-### 1. Process Proliferation
+### Anti-Pattern 1: Dual State Ownership (XState + Zustand for Same Data)
 
-**Do NOT** add more root processes unless they represent genuinely separate workspaces. The process model (staging, topology) represents distinct user activities. Settings, changelog, and file browsing are contextual drill-ins, not workspaces.
+**What:** Having both an XState machine AND a Zustand store managing the blade stack, with sync logic between them.
 
-**Warning sign:** If you find yourself adding process-specific root blades that do not have drill-in children, it is probably a pushBlade, not a setProcess.
+**Why bad:** Two sources of truth for the same state leads to sync bugs, race conditions, and confusion about which is authoritative. Defeats the purpose of using XState.
 
-### 2. Blade State Leaks on Unmount
+**Instead:** XState owns the blade stack completely. Remove `useBladeStore` (the Zustand store). Provide the compatibility shim (Pattern 5) during migration, then remove it. The shim wraps XState, it does not duplicate state.
 
-**Do NOT** rely on blade component mount/unmount for state cleanup without explicit useEffect cleanup. When a blade is popped from the stack, it unmounts. But if the blade component does not clean up its store state (e.g., changelog generation state), reopening the blade shows stale data.
+### Anti-Pattern 2: Zustand Store Slices for Independent State
 
-**Prevention:** Add `useEffect(() => { return () => store.reset(); }, [])` in blade components that use external stores with generation/form state.
+**What:** Merging independent stores (e.g., branches + tags + stash) into a single combined store using Zustand's slices pattern.
 
-### 3. renderBlade Switch Bloat
+**Why bad:** Adds coupling between unrelated features, makes it harder to co-locate stores with their modules, and provides no real performance benefit for independent state. Persistence becomes awkward when different slices have different persistence strategies.
 
-**Do NOT** let the renderBlade switch in RepositoryView grow unbounded without structure. With 13+ blade types, consider extracting to a blade registry object.
+**Instead:** Keep separate Zustand stores. Co-locate them with their feature module. Use cross-store `getState()` calls when needed.
 
-**Prevention after migration:** Extract to a registry pattern:
+### Anti-Pattern 3: Deep Module Cross-Imports
+
+**What:** A blade module importing components or stores from another blade module directly.
+
+**Why bad:** Creates hidden coupling, circular dependency risks, and makes it impossible to move/refactor modules independently.
+
+**Instead:** Extract shared code to `shared/`. If two blades need to communicate, route through the navigation machine (events) or shared stores.
+
+### Anti-Pattern 4: Barrel Re-exports of Internal Implementation
+
+**What:** Having `index.ts` files that re-export every internal file from a module.
+
+**Why bad:** Vite cannot tree-shake barrel re-exports efficiently, leading to larger bundles and slower HMR. Also makes it unclear what the module's public API actually is.
+
+**Instead:** Export only the public API. Internal components import directly from their file path within the module.
+
+### Anti-Pattern 5: Persisting Navigation on Every Blade Push
+
+**What:** Writing to the Tauri store on every single navigation event (push, pop, switch process).
+
+**Why bad:** Disk I/O on every click. The Tauri plugin-store writes to a JSON file. High-frequency writes cause jank and wear.
+
+**Instead:** Debounce persistence. Subscribe to the actor snapshot and debounce writes to ~1 second. Or only persist on app blur/close using the Tauri window event:
+
 ```typescript
-const BLADE_REGISTRY: Record<BladeType, (blade: Blade, goBack: () => void) => ReactNode> = {
-  "staging-changes": () => <StagingChangesBlade />,
-  "settings": () => <BladePanel title="Settings" showBack onBack={goBack}><SettingsBlade /></BladePanel>,
-  // ...
-};
+import { listen } from "@tauri-apps/api/event";
+
+listen("tauri://blur", () => {
+  persistNavigationSnapshot(actorRef.getPersistedSnapshot());
+});
 ```
-
-The switch works fine for 13 cases, but the registry is cleaner for 20+. This is a refactor opportunity, not a blocker for v1.3.
-
-### 4. Tight Coupling Between Sidebar and Blade Area
-
-**Do NOT** create bidirectional dependencies between sidebar components and blade content. The current architecture is clean: sidebar triggers blade pushes via `useBladeNavigation`, blades read their own data. The two-column staging layout introduces a potential coupling point (sidebar file list controls blade-area diff display within the same blade). Keep the data flow unidirectional through the staging store.
-
-### 5. Eager Loading Heavy Dependencies
-
-**Do NOT** import BabylonJS at the top level of any commonly-used module. The 3D viewer is a rare-use feature. Eager loading it adds ~2-3MB to the initial bundle.
-
-**Prevention:** `React.lazy()` + dynamic `import()`. Never import `@babylonjs/*` in any file that is part of the main chunk.
 
 ---
 
 ## Scalability Considerations
 
-| Concern | Current (6 blade types) | After v1.3 (13 blade types) | Future (20+ types) |
-|---------|-------------------------|------------------------------|---------------------|
-| renderBlade switch | 6 cases, manageable | 13 cases, still fine | Extract to registry pattern |
-| BladeType union | Simple union | Growing but typed | Consider discriminated unions with per-type props |
-| useBladeNavigation | 5 helpers | 10+ helpers | Group by category (viewers, tools, navigation) |
-| Bundle size | ~2MB | ~2.5MB main + ~3MB lazy 3D | Keep lazy-loading discipline |
-| Rust commands | 50+ commands | 52+ (add browser commands) | Follow existing module pattern |
-| Blade props | Untyped `Record<string, unknown>` | Same but more usage | Consider typed props per blade type |
-
-### Future Consideration: Typed Blade Props
-
-The current `Blade` interface uses `props: Record<string, unknown>`, requiring casts in renderBlade. A future improvement would be a discriminated union:
-
-```typescript
-type TypedBlade =
-  | { type: "settings"; props: { category?: SettingsCategory } }
-  | { type: "diff"; props: { mode: "commit"; oid: string; filePath: string } | { mode: "staging"; filePath: string; staged: boolean } }
-  | { type: "repo-browser"; props: { path: string } }
-  // ...
-```
-
-This is NOT required for v1.3 but becomes increasingly valuable as blade types grow. The current cast approach works for 13 types.
+| Concern | Current (~30 files per layer) | At 20+ Blade Modules | At 50+ Modules |
+|---------|-------------------------------|----------------------|----------------|
+| File discovery | Flat dirs, easy to find | Blade-centric modules with predictable internal structure | Same pattern scales |
+| Registration | Auto-glob in registrations/ | Auto-glob in blades/*/registration.ts | Same pattern scales |
+| Bundle size | All blades eagerly loaded | Keep eager for now | Introduce `React.lazy()` per blade via `lazy: true` in registration |
+| State management | 21 stores, mostly independent | Co-located stores, same count minus blades store | Consider XState for complex multi-step flows (e.g., init repo wizard) |
+| Navigation depth | Stack rarely > 3 deep | Guard max depth in machine if needed | Same |
+| HMR speed | Fast with Vite | Module-scoped HMR (only changed blade reloads) | Same |
+| Import analysis | Flat makes all imports look similar | Module boundaries make cross-cuts visible | ESLint rules enforce boundaries |
 
 ---
 
-## Quality Gate Verification
+## Integration Points Summary (New vs Modified)
 
-- [x] Integration points clearly identified (renderBlade switch, useBladeNavigation hook, Header triggers, App.tsx modal mounts)
-- [x] New vs modified components explicit (8 new components, 13 modified, 2 new Rust files)
-- [x] Build order considers existing dependencies (infrastructure first, then conversions, then new features)
-- [x] Data flow changes documented (modal-to-blade state, repo browser IPC, two-column staging)
-- [x] Anti-patterns identified with prevention strategies
+### New Files
+
+| File | Purpose |
+|------|---------|
+| `src/machines/navigation.machine.ts` | XState navigation FSM definition |
+| `src/machines/navigation.types.ts` | TypeScript types for machine context/events |
+| `src/machines/navigation.actions.ts` | Named actions (optional, can inline in machine) |
+| `src/machines/navigation.guards.ts` | Guard conditions (optional, can inline in machine) |
+| `src/machines/useNavigationMachine.ts` | `createActorContext` + selectors |
+| `src/machines/navigationActor.ts` | Global actor ref for non-React code |
+| `src/machines/navigation.persistence.ts` | Tauri store persistence bridge |
+| `src/machines/index.ts` | Public API |
+| `src/app/providers.tsx` | `NavigationProvider` wrapper |
+| `src/blades/registrations.ts` | Auto-glob for blade-centric registrations |
+
+### Modified Files (Critical Path)
+
+| File | Change | Reason |
+|------|--------|--------|
+| `src/App.tsx` | Wrap with `NavigationProvider`, replace `status` guard with machine state | XState controls welcome/repo transition |
+| `src/components/blades/BladeContainer.tsx` | Read from `NavigationMachineContext.useSelector` instead of `useBladeStore` | XState owns blade stack |
+| `src/components/blades/ProcessNavigation.tsx` | Send `SWITCH_PROCESS` to machine instead of `useBladeStore.setProcess` | XState owns process mode |
+| `src/hooks/useBladeNavigation.ts` | Send events to machine instead of calling store methods | XState owns navigation |
+| `src/lib/bladeOpener.ts` | Use `getNavigationActorRef().send()` instead of `useBladeStore.getState()` | Non-React XState access |
+| `src/components/Header.tsx` | Use machine selectors for process state | Read from XState |
+
+### Removed After XState Migration
+
+| File | Replaced By |
+|------|-------------|
+| `src/stores/blades.ts` | `src/machines/navigation.machine.ts` |
+
+### Files Moved During Restructure (No Logic Change)
+
+Every file under `src/components/` and `src/stores/` moves to its blade/feature module. Logic stays the same; only import paths change. Re-export shims ensure no breakage during migration.
+
+---
+
+## Recommended Build Order (Dependency-Aware)
+
+### Phase 1: XState Navigation Machine (No File Moves)
+
+1. Install `xstate@5` + `@xstate/react@6`
+2. Create `src/machines/` with navigation machine definition
+3. Create `NavigationProvider` with persistence
+4. Wire into `App.tsx` alongside existing `useBladeStore` (compatibility shim)
+5. Migrate `BladeContainer`, `ProcessNavigation`, `useBladeNavigation`, `bladeOpener` to XState
+6. Run all existing flows manually to verify behavior parity
+7. Remove `useBladeStore` (the Zustand store, not the compatibility shim)
+8. Remove compatibility shim once all consumers are migrated
+
+**Rationale:** XState is the riskiest change (new dependency, new paradigm). Do it first while the file structure is familiar. Easier to debug issues when you know exactly what moved.
+
+### Phase 2: Blade-Centric File Restructure
+
+1. Create `src/blades/`, `src/features/`, `src/shared/` directories
+2. Move shared infrastructure (`shared/ui/`, `shared/blade-system/`, `shared/lib/`, `shared/stores/`)
+3. Move blade modules one at a time (start with leaf blades like viewers that have few sub-components)
+4. Move feature modules
+5. Update auto-glob path for registrations
+6. Add re-export shims at old paths, then remove as consumers update
+
+**Rationale:** File moves are mechanical and low-risk. Doing this after XState means the blade store is already gone, reducing cross-cutting changes.
+
+### Phase 3: Store Co-location + Naming
+
+1. Rename all store files to `{feature}.store.ts`
+2. Move stores to their feature/blade modules
+3. Update all imports (search-and-replace with TypeScript path resolution)
+4. Add ESLint `import/no-restricted-paths` to enforce module boundaries
+
+**Rationale:** This is the final cleanup pass. By this point the module structure is established and stores naturally slot into their modules.
 
 ---
 
 ## Sources
 
-All findings verified against source files (HIGH confidence):
-
-- `src/stores/blades.ts` -- Blade store architecture (79 lines)
-- `src/components/RepositoryView.tsx` -- renderBlade integration point (294 lines)
-- `src/hooks/useBladeNavigation.ts` -- Navigation pattern (71 lines)
-- `src/components/blades/BladeContainer.tsx` -- Rendering pipeline (46 lines)
-- `src/components/blades/BladePanel.tsx` -- Panel wrapper (45 lines)
-- `src/components/blades/BladeStrip.tsx` -- Collapsed blade tab (23 lines)
-- `src/components/blades/ProcessNavigation.tsx` -- Process tab bar (37 lines)
-- `src/components/blades/StagingChangesBlade.tsx` -- Current staging blade (7 lines)
-- `src/components/settings/SettingsWindow.tsx` -- Settings modal to convert (123 lines)
-- `src/stores/settings.ts` -- Settings store with isOpen state (107 lines)
-- `src/stores/changelogStore.ts` -- Changelog store with isDialogOpen (88 lines)
-- `src/components/changelog/ChangelogDialog.tsx` -- Changelog modal to convert (129 lines)
-- `src/components/commit/CommitForm.tsx` -- ConventionalCommit modal trigger (283 lines)
-- `src/components/commit/ConventionalCommitModal.tsx` -- Modal wrapper (36 lines)
-- `src/components/commit/ConventionalCommitForm.tsx` -- Form content (202 lines)
-- `src-tauri/src/git/diff.rs` -- File content retrieval patterns (457 lines)
-- `src-tauri/src/git/repository.rs` -- RepositoryState pattern (159 lines)
-- `src-tauri/src/lib.rs` -- Command registration (174 lines)
-- `src/App.tsx` -- Global modal mount points (82 lines)
-- `src/components/Header.tsx` -- Settings/changelog triggers (370 lines)
+- [XState v5 Persistence API](https://stately.ai/docs/persistence) -- HIGH confidence
+- [XState v5 setup() function](https://stately.ai/docs/setup) -- HIGH confidence
+- [@xstate/react hooks API](https://stately.ai/docs/xstate-react) -- HIGH confidence
+- [XState npm (v5.26.0)](https://www.npmjs.com/package/xstate) -- HIGH confidence
+- [@xstate/react npm (v6.0.0)](https://www.npmjs.com/package/@xstate/react) -- HIGH confidence
+- [Zustand Slices Pattern docs](https://zustand.docs.pmnd.rs/guides/slices-pattern) -- HIGH confidence
+- [Zustand Discussion #2496: When to use multiple stores vs slices](https://github.com/pmndrs/zustand/discussions/2496) -- HIGH confidence
+- [Bulletproof React Project Structure](https://github.com/alan2207/bulletproof-react/blob/master/docs/project-structure.md) -- HIGH confidence
+- [XState Global State with React](https://stately.ai/blog/2024-02-12-xstate-react-global-state) -- MEDIUM confidence
+- [zustand-middleware-xstate](https://github.com/biowaffeln/zustand-middleware-xstate) -- MEDIUM confidence (unmaintained, XState v4 only -- noted as anti-pattern)
+- [State Management Trends in React 2025](https://makersden.io/blog/react-state-management-in-2025) -- MEDIUM confidence
+- [React Folder Structure 2025](https://www.robinwieruch.de/react-folder-structure/) -- MEDIUM confidence

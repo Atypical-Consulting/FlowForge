@@ -1,426 +1,324 @@
-# Research Summary: v1.3.0 "Blades Blades Blades"
+# Project Research Summary
 
-**Project:** FlowForge
-**Milestone:** v1.3.0
-**Researched:** 2026-02-07
-**Overall Confidence:** HIGH
-
----
+**Project:** FlowForge v1.4.0 - Frontend Architecture Improvements
+**Domain:** Desktop Git client - navigation FSM, test infrastructure, API integration
+**Researched:** 2026-02-08
+**Confidence:** HIGH
 
 ## Executive Summary
 
-FlowForge v1.3.0 expands the blade navigation system with 7 new blade types, migrates 3 modal dialogs to blades, adds rich file preview capabilities (markdown, 3D models), and enhances branch management UX. The existing stack (Tauri 2 / React 19 / Zustand / Monaco / framer-motion) remains frozen — this milestone adds **only 4 production packages** to the frontend bundle, all lazy-loaded for zero startup impact.
+FlowForge v1.4.0 introduces critical architectural improvements to an existing Tauri desktop Git client: replacing imperative blade navigation with an XState finite state machine, establishing a test infrastructure foundation with Vitest, and adding GitHub .gitignore API integration for the Init Repo blade. The codebase currently has 21 Zustand stores, 13 blade types, and zero tests across ~30K lines of code.
+
+Research confirms that XState v5's `setup()` pattern is production-ready for navigation FSMs with TypeScript type safety, Vitest 4 with jsdom provides the right test infrastructure for a Vite-based project with complex DOM dependencies (Monaco, Three.js, framer-motion), and the GitHub gitignore API offers 163 templates accessible without authentication. The recommended approach isolates each architectural change into sequential phases: test infrastructure first, XState navigation second, new blades third, avoiding the "big bang" restructuring pitfall that would touch 100+ files simultaneously.
+
+The highest-risk pitfall is XState absorbing Zustand responsibilities, creating a god machine that manages all state. The boundary must be enforced: XState owns navigation flow control (which blade/process is active, valid transitions), Zustand owns data (repo state, settings, UI state). Secondary risks include breaking the blade registry auto-discovery during file restructuring, Tauri IPC mock type drift in tests, and GitHub API rate limiting without proper caching.
+
+## Key Findings
+
+### Recommended Stack Additions
+
+From STACK.md and v1.4.0-STACK.md:
+
+**XState Navigation FSM:**
+- `xstate` v5.26.0 + `@xstate/react` v6.0.0 - Finite state machine for navigation with TypeScript type safety
+- ~52KB total (tree-shakeable)
+- Replaces imperative `useBladeStore` (Zustand) for blade stack management
+- Use `createActorContext` pattern for global access, `useSelector` for selective re-renders
+
+**Test Infrastructure:**
+- `vitest` v4.0.18 - Native Vite integration, API-compatible with Jest
+- `jsdom` v28.0.0 - Complete DOM API coverage (required for Monaco, framer-motion, react-virtuoso, Three.js)
+- `@testing-library/react` v16.3.2 + `@testing-library/jest-dom` v6.9.1 + `@testing-library/user-event` v14.6.1
+- `@vitest/coverage-v8` v4.0.18 - V8-based code coverage
+- Why jsdom over happy-dom: happy-dom is faster but has incomplete Web API coverage; FlowForge's dependencies (Monaco, Three.js, etc.) probe many DOM APIs
+
+**Gitignore API Integration:**
+- `reqwest` v0.12 (Rust crate) with `json` feature - Async HTTP client for GitHub API
+- Approach: Rust Tauri command via `tauri-specta`, not `@tauri-apps/plugin-http`
+- Rationale: Consistent with existing 50+ Tauri commands, avoids plugin registration overhead, desktop apps have no CORS restrictions
+
+**Anti-recommendations:**
+- Do NOT use `@xstate/store` - For simple key-value stores, not FSMs
+- Do NOT use `@tauri-apps/plugin-http` - Overkill for 2 endpoints; Rust command approach is simpler
+- Do NOT use `happy-dom` - Incomplete DOM APIs for FlowForge's complex dependencies
+- Do NOT use `playwright` or `cypress` - E2e testing for Tauri requires special setup; defer to future milestone
+
+### Expected Features
+
+From FEATURES.md and v1.4.0-FEATURES.md:
+
+**Must have (table stakes):**
+- XState navigation FSM with push/pop/replace/reset events, blade stack in context, navigation guards (prevent invalid transitions), process switching (staging/topology), singleton blade enforcement, stack depth limit
+- Blade-centric file structure with feature modules per blade type, barrel exports, auto-discovery preservation, shared infrastructure stays central, gradual migration support
+- Init Repo blade with .gitignore template search/filter (163 GitHub templates), template preview panel, multi-template composition, offline fallback (bundle top 15-20 templates), default branch name selection, README auto-generation, initial commit option
+- Dedicated Conventional Commit blade (full-width workspace) with type selector, scope autocomplete, live validation, character progress, breaking change section, full-width preview, commit & push workflow, post-commit navigation (auto-pop to staging)
+- Test infrastructure with Vitest setup, XState machine unit tests, Zustand store unit tests, component smoke tests
+
+**Should have (differentiators):**
+- XState visual inspector (Stately Studio) in dev mode
+- Smart .gitignore recommendation (auto-detect project type from existing files)
+- CC blade scope tree visualization (frequency chart from history)
+- Blade transition animation variants (different animations for push vs pop vs replace)
+- Navigation guard "dirty form" indicator on blade strip
+- Test coverage threshold in CI (60% for feature modules)
 
-The blade navigation paradigm is FlowForge's signature UX advantage. Research shows zero desktop Git clients (GitKraken, Tower, Fork, GitHub Desktop, Sourcetree) offer blade-based settings, markdown preview, or integrated Gitflow reference. By leveraging this existing architecture, v1.3.0 delivers 4 genuine differentiators while addressing 3 table-stakes gaps (file browser, branch cleanup, two-column staging).
+**Defer (v2+):**
+- LICENSE picker in init blade
+- AI-powered commit message generation
+- Blade tabs (multiple active blades side-by-side)
+- E2E testing with Playwright/Cypress for Tauri
+- XState HMR for machine definitions
+- Navigation history (browser-style forward/back)
 
-The most critical risks are architectural: blade stack state corruption during dialog-to-blade migration (P1), WebGL context loss in Tauri for 3D viewer (P2), and XSS via unsanitized markdown (P3). Each requires phase-specific mitigation before dependent features ship. The frozen stack and lazy-loading discipline keep binary size under budget (<50MB) and memory under 200MB.
+**Anti-features (explicitly avoid):**
+- Replacing ALL Zustand stores with XState - XState is for navigation FSM only; Zustand for simple UI state
+- File-based routing (React Router v7 style) - FlowForge uses blade stack, not URL routing
+- Custom .gitignore text editor in init blade - Template picker + preview is sufficient
+- Snapshot testing - Brittle for UI; use behavior-based Testing Library tests
 
----
+### Architecture Approach
 
-## Key Stack Additions
+From ARCHITECTURE.md and v1.4.0-ARCHITECTURE.md:
 
-| Package | Version | Purpose | Bundle Impact | Priority |
-|---------|---------|---------|---------------|----------|
-| `@google/model-viewer` | 4.1.0 | GLB/GLTF 3D preview web component | ~350KB gzipped, lazy | P1 |
-| `react-markdown` | 10.1.0 | Render markdown to React elements (XSS-safe by default) | ~35KB gzipped, lazy | P0 |
-| `remark-gfm` | 4.0.1 | GitHub Flavored Markdown (tables, task lists, strikethrough) | ~15KB gzipped, lazy | P0 |
-| `rehype-highlight` | 7.0.2 | Syntax highlighting for markdown code blocks | ~45KB gzipped, lazy | P1 |
+**Blade-Centric Module Structure:**
+Move from layer-based (`components/`, `stores/`, `hooks/`) to feature-based (`blades/{blade-name}/`, `features/{feature-name}/`, `shared/`) organization. Each blade becomes a self-contained module with co-located component, registration, store, hooks, and tests. Shared infrastructure (UI primitives, blade system, global stores) stays in `shared/`.
 
-**Rejected alternatives:**
-- `@babylonjs/viewer` (pulls `lit` as transitive dep, 470KB, React integration issues)
-- `@react-three/fiber` + `@react-three/drei` (requires custom scene setup, 3 packages)
-- `rehype-raw` (security risk: enables raw HTML passthrough in markdown)
+**Import boundary rules:**
+- `shared/` can import from `shared/` only
+- `blades/X/` can import from `shared/`, `blades/X/` only (not other blades)
+- `features/X/` can import from `shared/`, `features/X/` only (not other features)
+- `app/` can import from anywhere
+- Cross-feature communication through shared stores or events, never direct imports
 
-**Total new production dependencies:** 4 packages, ~445KB gzipped total, all lazy-loaded.
+**XState Navigation FSM:**
+Machine states represent navigation contexts (`welcome`, `repository`). Events are explicit (`OPEN_REPO`, `PUSH_BLADE`, `POP_BLADE`, `SWITCH_PROCESS`). Guards prevent invalid transitions. Actions fire side effects. Context holds `bladeStack: TypedBlade[]`, `activeProcess: ProcessType`. Use `createActorContext` from `@xstate/react` for global access. Persist via Tauri plugin-store using `getPersistedSnapshot()`.
 
-**Rust backend:** Zero new crates. All new commands use existing `git2` v0.20 APIs.
+**XState + Zustand Coexistence:**
+Clear ownership: XState owns navigation FSM (blade stack, process switching, transition guards). Zustand owns simple UI state (toasts, theme, dropdowns, command palette), persisted preferences, async server state (via React Query). No duplication between systems.
 
----
+**Major components:**
+1. XState Navigation Actor - Owns blade stack, process type, transition guards, singleton enforcement
+2. Zustand UI Stores - Simple UI state with direct hook usage
+3. Zustand Persistence Stores - Persisted preferences via Tauri Store plugin
+4. React Query - Async server state (commit history, staging status, gitignore templates)
+5. Tauri IPC Layer - Type-safe Rust command invocation via specta bindings
+6. Blade Registry - Component resolution (maps BladeType to React component + metadata)
 
-## Feature Categories
+**Key patterns:**
+- Singleton XState actor created at app startup
+- XState guards for navigation rules (not ad-hoc conditionals)
+- React Query for gitignore template cache with `staleTime: Infinity`
+- Tauri mock factory for tests
+- Co-located test files (Component.test.tsx next to Component.tsx)
 
-### Table Stakes
+### Critical Pitfalls
 
-Features users expect. Missing means the product feels incomplete.
+From PITFALLS.md, v1.4.0-PITFALLS.md, and PITFALLS-v2-frontend.md:
 
-| Feature | Why Expected | Implementation | Status |
-|---------|--------------|----------------|--------|
-| Repository file browser | Fork, Tower, GitKraken all have this | New `repo-browser` blade + Rust `list_tree` command | Build |
-| Branch "merged" badge | All competitors show this | Already implemented in `BranchItem.tsx` | Done |
-| Vertical staging layout | Industry standard | Already implemented in `StagingPanel.tsx` | Done |
-| Remote branch pruning | Basic Git hygiene, Tower does auto | Extend existing `git2` commands | Build |
-| Recent branches list | GitHub Desktop has this (last 5), highly requested | Track in store or read reflog | Build |
-| Branch search/filter | All competitors have this | Already in `BranchSwitcher.tsx` | Done |
+**1. Big Bang Restructuring**
+Attempting file restructuring, store consolidation, and XState introduction simultaneously. Each touches 50-100+ files. Combined, they create an unreviewable diff that is impossible to debug.
+- **Prevention:** Phase strictly: (1) Path aliases first, (2) Move files second, (3) Consolidate stores third, (4) Add XState last. Each step is independently deployable.
 
-### Differentiators
+**2. XState Absorbing Zustand Responsibilities**
+XState machine context starts holding repo state, staging state, toast state - becoming a god machine with all concerns.
+- **Prevention:** Hard rule - XState manages ONLY which view/blade is active and valid transitions. Context should contain at most: `currentBlade`, `bladeStack`, `activeProcess`. No domain data.
 
-Features that leverage blade navigation to create competitive advantage.
+**3. Breaking the Blade Registration System**
+Moving files to blade-centric structure breaks `import.meta.glob` auto-discovery. The dev-mode exhaustiveness check only warns, doesn't throw.
+- **Prevention:** Before moving files, refactor glob to `../../features/**/registration.ts` or use explicit imports. Add runtime assertion (hard error in dev) that registry has expected number of entries.
 
-| Feature | Value Proposition | Blade Type | Priority |
-|---------|-------------------|------------|----------|
-| **Settings as a blade** | Only Azure Portal does this; zero Git clients | `"settings"` | P0 |
-| **Markdown preview blade** | Zero desktop Git clients have rendered markdown | `"viewer-markdown"` | P0 |
-| **Branch cleanup wizard** | Tower has badges but no guided workflow | `"branch-cleanup"` | P1 |
-| **Gitflow reference blade** | No client integrates Gitflow education inline | `"gitflow-reference"` | P1 |
-| **Pinned branches** | Only Tower has this; portable via Git config | Sidebar enhancement | P0 |
-| **Two-column staging** | Only SmartGit offers this as toggle | Layout mode | P1 |
-| **Commit-scoped file browser** | Extends blade paradigm for code archaeology | `"file-browser"` | P1 |
+**4. Tauri IPC Mock Type Drift**
+Hand-written mocks return stale/incorrect shapes when Rust command changes. TypeScript won't catch it because mock return types are often `any`.
+- **Prevention:** Type mock factories against actual binding types: `vi.fn<typeof commands.getStagingStatus>()`. Use `satisfies` to ensure mock return values match expected types. Run `tsc --noEmit` in CI separately from tests.
 
-### Anti-Features
+**5. Testing Zustand Stores Without Isolation**
+Zustand stores are module-level singletons. State persists across test cases without explicit reset.
+- **Prevention:** Create `src/__mocks__/zustand.ts` that wraps `create` with auto-reset on `afterEach`. Mock `@tauri-apps/plugin-store` globally in `vitest.setup.ts`. Mock `../bindings` with typed mocks.
 
-Things to deliberately NOT build in this milestone.
+**6. GitHub API Rate Limiting**
+Init Repo blade fetches template list on every open, hits 60/hour unauthenticated limit.
+- **Prevention:** React Query with `staleTime: Infinity`. Prefetch template list on app startup. Bundle top 10-20 templates as fallback JSON. Show clear error message when rate limited.
 
-| Anti-Feature | Why Not | Alternative |
-|--------------|---------|-------------|
-| **Full code review / PR review** | Duplicates GitHub/GitLab web UIs | Lightweight pre-commit checklist at most |
-| **3D asset preview (v1.3 scope)** | Niche audience, heavy dependency (3D engines ~500KB+) | Defer to v2+ or implement as optional/lazy |
-| **General-purpose file explorer** | Users browse files in their IDE | Commit-scoped browser only |
-| **Drag-and-drop staging** | Complex DnD, low ROI vs click-to-stage | Keep existing button-based staging |
-| **Built-in markdown editor** | Scope creep toward IDE territory | Preview only, not editing |
+**7. Circular Dependencies During Store Consolidation**
+Merging stores creates circular imports. Currently `gitflow.ts` imports from `branches.ts` and `repository.ts` at module level.
+- **Prevention:** Map full dependency graph BEFORE consolidating. Use Zustand slices pattern but keep slice creators in separate files that don't import each other. Cross-slice communication via `getState()` at call time, not import time.
 
----
+**8. `useActor` Performance Trap**
+Using `useActor` or `useMachine` in frequently-rendered components triggers re-render on every navigation state change.
+- **Prevention:** Use `useSelector(navActor, specificSelector)` everywhere. Use `useActorRef` for components that only dispatch events. Reserve `useActor` for top-level components or debugging only.
 
-## Architecture Decisions
+## Implications for Roadmap
 
-### 1. Settings as Blade, NOT a Third Root Process
+Based on research, suggested phase structure:
 
-**Decision:** Push settings as a blade (`pushBlade({ type: "settings" })`) rather than adding a third process.
+### Phase 1: Test Infrastructure Foundation
+**Rationale:** Zero tests exist. Test infrastructure must come first to verify all subsequent architectural changes. XState machine testing is highest-value target (pure logic, deterministic).
 
-**Rationale:**
-- Settings is a utility surface, not a workflow. Adding `"settings"` to `ProcessType` would make it structurally parallel to staging/topology, which it is not.
-- Process model means `setProcess("settings")` resets the blade stack, losing user context.
-- Blade approach preserves drill-down flow: user checks a setting, pops back to their diff.
+**Delivers:** Vitest config with jsdom, setup file, Tauri mock factory, and 5-10 example tests covering utility function, Zustand store, React component, and XState machine.
 
-**Store change:** Remove `isOpen` from `useSettingsStore`. Opening settings becomes `pushBlade()`.
+**Technologies:** Vitest 4, jsdom, @testing-library/react, @testing-library/jest-dom, @testing-library/user-event, @vitest/coverage-v8
 
-### 2. Modal-to-Blade Conversion Strategy
+**Addresses:** Table stakes feature "test infrastructure". Avoids Pitfall #4 (mock type drift) by establishing typed mock patterns from day one. Avoids Pitfall #5 (store isolation) by creating auto-reset Zustand mock.
 
-| Modal | Approach | Complexity |
-|-------|----------|------------|
-| **Settings** | Direct blade conversion with tabbed navigation | Medium |
-| **Changelog** | Direct blade conversion | Low |
-| **Conventional Commit** | Inline expansion in sidebar (NOT separate blade) | Medium |
+**Research flag:** Low - Vitest + React Testing Library patterns are well-documented.
 
-**Critical concern:** Blade stack state corruption (Pitfall P1). When blades pop, components unmount. Ephemeral state (form values, scroll position) is lost unless stored in separate Zustand stores. **Prevention:** Never store form state solely in blade `props`. Use `useRef` or dedicated stores.
+### Phase 2: XState Navigation FSM
+**Rationale:** Core architectural change. Replace imperative `useBladeStore` (Zustand) with XState machine. All blade features depend on this. Do it while file structure is familiar (before restructuring) to isolate issues.
 
-### 3. Two-Column Staging Layout
+**Delivers:** XState machine definition, `createActorContext` setup with persistence, migration of `BladeContainer`, `ProcessNavigation`, `useBladeNavigation`, `bladeOpener` to XState. Remove `useBladeStore` after compatibility shim verified.
 
-**Decision:** Split `StagingChangesBlade` into horizontal `ResizablePanelLayout` with file list (left) + inline diff (right).
+**Technologies:** xstate 5.26.0, @xstate/react 6.0.0
 
-**Current flow:** StagingChangesBlade shows file list only. Clicking a file pushes a new diff blade. User loses sight of file list.
+**Addresses:** Table stakes feature "XState navigation FSM". Avoids Pitfall #1 (big bang) by keeping file structure stable during migration. Avoids Pitfall #2 (XState absorbing Zustand) by enforcing clear ownership boundary.
 
-**New flow:** Inline diff viewer on the right. Selected file state managed by `useStagingStore.selectedFile`. Keeps existing push-blade behavior via "expand" button for full-screen diff.
+**Uses:** Tests from Phase 1 to verify navigation FSM behavior (guards, stack operations, edge cases).
 
-### 4. Repository File Browser
+**Research flag:** Medium - XState v5 `setup()` pattern is well-documented, but integration with existing blade system needs careful design.
 
-**New Rust commands:**
+### Phase 3: Init Repo Blade with Gitignore Templates
+**Rationale:** New blade type that depends on XState FSM for lifecycle (blade push/pop). GitHub API integration is independent of file restructuring and store consolidation.
 
-```rust
-// List directory entries at ref + path
-pub async fn list_tree(ref_name: String, path: Option<String>)
-    -> Result<Vec<TreeEntry>, GitError>
+**Delivers:** New `"init-repo"` blade type with .gitignore template search/filter (GitHub API via Rust Tauri command), template preview, multi-template composition, offline fallback (bundled top 15-20 templates), default branch name selection, README auto-generation, initial commit option.
 
-// Read file content at ref + path
-pub async fn get_file_text(ref_name: String, path: String)
-    -> Result<FileContent, GitError>
-```
+**Technologies:** reqwest 0.12 (Rust), React Query for template caching
 
-Uses standard `git2::Tree::walk` API. Returns `TreeEntry { name, entry_type, size, oid }`.
+**Addresses:** Table stakes feature "Init Repo blade with .gitignore template search". Avoids Pitfall #6 (rate limiting) with React Query `staleTime: Infinity` and offline fallback. Avoids Pitfall #3 (breaking registration) by following existing blade registration pattern.
 
-**Frontend:** Reuse existing `FileTreeView` pattern, add breadcrumb navigation, route to appropriate viewer blade based on file extension.
+**Uses:** XState from Phase 2 for blade lifecycle. React Query for gitignore template cache.
 
-### 5. Markdown Preview Implementation
+**Research flag:** Low - GitHub gitignore API is stable, unauthenticated, simple JSON responses. Blade registration pattern is proven.
 
-**Library choice:** `react-markdown` with `remark-gfm` and `rehype-highlight`.
+### Phase 4: Dedicated Conventional Commit Blade
+**Rationale:** New blade type that reuses all existing CC components. Depends on XState FSM for post-commit navigation (auto-pop to staging). Independent of file restructuring.
 
-**Why react-markdown:**
-- Converts markdown to React elements without HTML intermediary — XSS-safe by default
-- No `dangerouslySetInnerHTML` required
-- Plugin architecture for GFM (tables, task lists) and syntax highlighting
+**Delivers:** New `"conventional-commit"` blade type with full-width workspace, reusing existing `TypeSelector`, `ScopeAutocomplete`, `ValidationErrors`, `CharacterProgress`, `BreakingChangeSection` components. Adds commit & push workflow, post-commit navigation, amend mode support.
 
-**Why NOT `marked` + DOMPurify:**
-- Two-step process (parse to HTML, sanitize, inject) is error-prone
-- CVE-2025-24981 demonstrated XSS bypass in markdown library via HTML entities
-- `marked` does NOT sanitize by default
+**Technologies:** Existing conventional.ts store, existing Rust `validate_conventional_commit` command
 
-**Catppuccin theming:**
-- Import `highlight.js/styles/catppuccin-mocha.css` (highlight.js ships Catppuccin natively since v11.8)
-- Override `components` prop: `{ a: CustomLink, code: CustomCode }` for theme alignment
+**Addresses:** Table stakes feature "Dedicated Conventional Commit blade". All sub-components already exist and are well-factored - lowest-risk new blade type.
 
-### 6. 3D Viewer Blade
+**Uses:** XState from Phase 2 for post-commit navigation (`POP` event on commit success).
 
-**Library choice:** `@google/model-viewer` v4.1.0 (web component).
+**Research flag:** Low - All components exist, blade registration pattern is proven.
 
-**Why model-viewer:**
-- Self-contained: `<model-viewer src="model.glb" camera-controls>` gives orbit controls, lighting with zero config
-- Purpose-built for previewing 3D models, not building 3D apps
-- Framework-agnostic web component
-- ~350KB gzipped vs BabylonJS ~1.9MB minimum
+### Phase 5: Blade-Centric File Structure Migration
+**Rationale:** Do file restructuring AFTER new blades exist (init-repo, conventional-commit). New blades start in correct structure; migrate existing ones gradually. Easier to debug issues when blade system is stable.
 
-**Integration:**
-- New blade type `"viewer-3d"`
-- Fetch via existing `getFileBase64()` / `getCommitFileBase64()`
-- Decode base64 -> Blob -> createObjectURL -> pass to `<model-viewer src>`
-- Lazy-loaded via `React.lazy()` for zero startup impact
+**Delivers:** Feature modules (`blades/{blade-name}/`, `features/{feature-name}/`, `shared/`) with co-located components, stores, hooks, tests. Auto-discovery adapted to new paths. Import boundaries enforced.
 
-**Critical pitfall (P2):** WebGL context loss in Tauri WebViews (Linux WebKitGTK 2.40+ bug still open). **Mitigation:** Listen for `webglcontextlost` event, implement context restore.
+**Technologies:** No new dependencies - mechanical file moves
 
-### 7. Branch Management Enhancements
+**Addresses:** Table stakes feature "Blade-centric file structure". Avoids Pitfall #3 (breaking registration) by updating glob pattern first. Avoids Pitfall #1 (big bang) by migrating blade-by-blade with re-export shims.
 
-**Sidebar enhancements (NOT blades):**
-- Pinned branches stored in `.git/config` (portable across machines, Tower's approach)
-- Recent branches from reflog or local tracking
-- "Quick Access" section at top of branch list
-- Last commit timestamp via `branch.get().peel_to_commit()?.time()`
+**Uses:** Tests from Phase 1 to verify no behavior change during migration.
 
-**New Rust command:** `delete_branches(names: Vec<String>, force: bool)` for batch deletion.
+**Research flag:** Low - Feature-based architecture is consensus React pattern. Vite `import.meta.glob` supports multiple glob patterns.
 
-**Branch cleanup UX:** Multi-select, sort by last-used, filter merged, bulk delete. **Protection:** Gitflow-aware (never delete main/develop/release branches), worktree check before deletion.
+### Phase 6: Zustand Store Consolidation
+**Rationale:** After file structure is stable, co-locate stores with feature modules. Merge related stores (branches + branchMetadata, etc.). Remove blade store (already replaced by XState).
 
----
+**Delivers:** 18-20 stores reduced to 4-5 domain-grouped stores. Co-located with feature modules. Consistent `.store.ts` naming. Blade store removed (replaced by XState machine).
 
-## Critical Pitfalls
+**Technologies:** No new dependencies - store consolidation only
 
-### P1: Blade Stack State Corruption During Dialog-to-Blade Migration (CRITICAL)
+**Addresses:** Table stakes feature "Tech debt cleanup - store consolidation". Avoids Pitfall #7 (circular dependencies) by mapping dependency graph first. Avoids Pitfall #2 (XState overuse) by consolidating Zustand stores only, not converting to XState.
 
-**Problem:** Current blade stack stores `props: Record<string, unknown>`. When blade is popped and re-pushed, it gets new UUID, component remounts, loses scroll position, form state, ephemeral UI state.
+**Uses:** Tests from Phase 1 to verify merged stores behave identically to originals.
 
-**Warning signs:** Settings form resets on navigation, diff blade loses scroll when user drills deeper and pops back.
+**Research flag:** Low - Zustand docs and community consensus favor separate stores for independent state.
 
-**Prevention:**
-1. Never store ephemeral UI state in blade `props`. Use separate Zustand stores or `useRef`.
-2. Implement blade memoization: keep blade React subtrees mounted but hidden rather than unmounting.
-3. Add `bladeWillPop` guard for unsaved changes confirmation.
+### Phase Ordering Rationale
 
-**Phase:** Must address BEFORE any dialog-to-blade migration.
+- **Test infrastructure first** because it verifies all subsequent changes. XState machines are inherently testable; having tests ready enables confident FSM refactoring.
+- **XState navigation before file restructuring** because file moves are mechanical but touching navigation system is behavioral. Do the risky behavioral change while file structure is familiar to isolate issues.
+- **New blades after XState** because they depend on XState for lifecycle (push/pop/navigation). New blades can start in correct file structure as examples for migration.
+- **File restructuring before store consolidation** because store consolidation needs stable import paths. Moving files and consolidating stores simultaneously creates merge conflicts.
+- **Store consolidation last** because it's tech debt cleanup, not user-facing. It can happen incrementally alongside other work.
 
-### P2: WebGL Context Loss in Tauri WebViews (CRITICAL for 3D Viewer)
+This ordering avoids the "big bang" pitfall: each phase touches different files and can be deployed independently. Phase 1 (tests) touches `vitest.config.ts` + `src/test/`. Phase 2 (XState) touches `src/machines/` + 5-6 navigation files. Phase 3 (init blade) touches `src/blades/init-repo/` only. Phase 4 (CC blade) touches `src/blades/conventional-commit/` only. Phase 5 (file moves) is mechanical. Phase 6 (store consolidation) happens incrementally.
 
-**Problem:** BabylonJS/WebGL loses rendering context in Tauri's platform WebViews. Linux WebKitGTK 2.40+ has known bug (Tauri #6559, status: upstream). Canvas goes black, no recovery without full re-init.
+### Research Flags
 
-**Warning signs:** Black canvas after window minimize/restore, `CONTEXT_LOST_WEBGL` console warning.
+Phases likely needing deeper research during planning:
+- **Phase 2 (XState Navigation):** XState machine state design (how to model process switching + blade stack as states vs context). Integration pattern with existing blade registry. Persistence strategy with Tauri plugin-store.
+- **Phase 3 (Init Repo Blade):** Multi-template composition algorithm (concatenate + deduplicate rules). Offline fallback template selection (which 15-20 to bundle). GitHub API rate limit handling UI.
 
-**Prevention:**
-1. Add WebGL context loss recovery via `webglcontextlost` / `webglcontextrestored` events.
-2. Strict disposal protocol: meshes, materials, textures, scene, engine in order.
-3. Lazy-load 3D library so it's never in main bundle.
-4. Test on all platforms' **built apps**, not just dev mode.
-
-**Phase:** Address during 3D viewer implementation. Consider feature flag until verified.
-
-### P3: XSS via Repository Markdown Content (CRITICAL)
-
-**Problem:** Repository markdown from untrusted sources (README.md, CHANGELOG.md) can contain JavaScript. In Tauri with `"csp": null` and `assetProtocol: ["**"]`, XSS means full IPC access, local filesystem, arbitrary code execution.
-
-**Attack vectors:** `<img onerror="...">`, `[link](javascript:...)`, HTML entities bypassing denylists (CVE-2025-24981).
-
-**Prevention:**
-1. **Use `react-markdown`**, NOT `marked` + `dangerouslySetInnerHTML`. React-markdown converts to React elements without HTML intermediary.
-2. Enable CSP in `tauri.conf.json`: `"csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'"`
-3. Strip `javascript:` from all `href` attributes regardless of sanitizer.
-4. Never use `dangerouslySetInnerHTML` with markdown-derived content.
-
-**Phase:** Must address BEFORE any markdown rendering ships. Enable CSP now as baseline hardening.
-
-### P4: File Browser Performance on Large Repositories (HIGH)
-
-**Problem:** Existing `FileTreeView` builds full in-memory tree, renders all nodes eagerly (default expanded). Linux kernel (~74K files) creates tens of thousands of DOM nodes, >1s render, scroll jank.
-
-**Prevention:**
-1. Virtualize file tree via `react-virtuoso` (already installed).
-2. Collapse directories by default for repos >200 files.
-3. Debounce filter input (150ms).
-4. Paginate at Rust level via `TreeWalk` with limit.
-
-**Phase:** Address when building file browser blade.
-
-### P5: Keyboard Focus Management Across Blade Transitions (HIGH)
-
-**Problem:** When blade pushed, focus stays on triggering element in parent. New blade content not focused. Keyboard-only users cannot interact without Tab-cycling through `BladeStrip` buttons first.
-
-**Prevention:**
-1. Auto-focus new blade's first focusable element on mount.
-2. Restore focus on pop via parallel focus stack.
-3. Announce blade transitions to screen readers via `aria-live="polite"`.
-4. Focus-trap the active blade.
-
-**Phase:** Address during blade system enhancement, before migrating dialogs.
-
----
-
-## Suggested Build Order
-
-### Phase A: Blade Infrastructure (Foundation)
-
-**Do first.** All subsequent work depends on this.
-
-1. Extend `BladeType` union with all new types (`"settings"`, `"viewer-markdown"`, `"viewer-3d"`, `"repo-browser"`, `"gitflow-reference"`, `"changelog"`)
-2. Add empty case stubs in `renderBlade` switch
-3. Extend `useBladeNavigation` with new helpers (`openSettings`, `openChangelog`, `openRepoBrowser`, etc.)
-4. Update `bladeTypeForFile` for 3D model extensions
-5. **Enable CSP in `tauri.conf.json`** (defense-in-depth for P3)
-6. **Implement blade state preservation** (address P1)
-7. **Fix keyboard focus management** (address P5)
-
-**Risk:** LOW. Additive changes only.
-
-### Phase B: Modal-to-Blade Conversions (Quick Wins)
-
-**Do second.** Removes modal infrastructure, proves blade expansion pattern.
-
-1. SettingsBlade (most self-contained)
-2. ChangelogBlade (small, stateful store exists)
-3. Remove SettingsWindow and ChangelogDialog from App.tsx
-4. Update Header.tsx to use blade push instead of store open
-5. Update settings store (remove `isOpen`/`openSettings`/`closeSettings`)
-6. Update changelog store (remove `isDialogOpen`/`openDialog`/`closeDialog`)
-7. Inline ConventionalCommitForm expansion in CommitForm (remove modal)
-
-**Risk:** LOW-MEDIUM. Settings keyboard shortcut `mod+,` needs rewiring.
-
-### Phase C: Two-Column Staging (High-Value UX)
-
-**Do third.** Major UX improvement, self-contained.
-
-1. Redesign StagingChangesBlade with `ResizablePanelLayout`
-2. Create InlineDiffPanel wrapper component
-3. Wire to `useStagingStore.selectedFile`
-4. Add "expand to full blade" button
-5. Keep backward compatibility (push-blade still works)
-
-**Risk:** MEDIUM. Core interaction pattern change.
-
-### Phase D: New Content Blades (Feature Expansion)
-
-**Do fourth.** Independent features, can parallelize.
-
-1. **GitflowCheatsheetBlade** (pure frontend, zero dependencies, trivial)
-2. **MarkdownPreview component + DiffBlade toggle** (small scope, **requires P3 mitigation**)
-   - Install `react-markdown`, `remark-gfm`, `rehype-highlight`
-   - Add toggle in DiffBlade for `.md` files
-   - Create standalone MarkdownPreviewBlade for repo browser
-3. **RepoBrowserBlade + Rust backend** (new IPC, medium risk)
-   - Create `src-tauri/src/git/browser.rs` with `list_tree` and `get_file_text`
-   - Register commands in `lib.rs`
-   - Build frontend with directory tree (reuse `FileTreeView` pattern)
-   - **Address P4** (virtualization) from day one
-4. **Viewer3DBlade** (new dependency, lazy-loaded, **requires P2 mitigation**)
-   - Install `@google/model-viewer`
-   - Create TypeScript declaration (`model-viewer.d.ts`)
-   - Lazy-load via `React.lazy()`
-   - Extend `bladeTypeForFile` for `.glb`, `.gltf`, `.obj`, `.stl`
-   - Test WebGL context loss recovery on all platforms
-
-**Risk:** Varies. Cheatsheet is trivial. Markdown needs XSS mitigation. 3D viewer needs WebGL context handling.
-
-### Phase E: Branch Management Enhancement (Sidebar Polish)
-
-**Do last.** Incremental improvement, lowest priority.
-
-1. Pinned branches (Git config storage)
-2. Recent branches (reflog or local tracking)
-3. "Quick Access" section in BranchList
-4. Branch cleanup UI (multi-select, bulk delete, worktree protection per P6)
-5. Feature branch purple tags (CSS/style)
-
-**Risk:** LOW. Additive to existing sidebar.
-
----
-
-## New BladeTypes Summary
-
-| BladeType | Purpose | Priority | Rust Backend | Bundle Impact |
-|-----------|---------|----------|--------------|---------------|
-| `"settings"` | Settings as navigation blade (replaces modal) | P0 | None | 0KB (refactor) |
-| `"changelog"` | Changelog generation (replaces modal) | P0 | None | 0KB (refactor) |
-| `"viewer-markdown"` | Rendered markdown preview | P0 | Optional `get_file_text` | ~95KB lazy |
-| `"repo-browser"` | Commit-scoped file tree | P1 | New `list_tree`, `get_file_text` | 0KB (reuse UI) |
-| `"gitflow-reference"` | Gitflow cheat sheet with context | P1 | None | 0KB (static) |
-| `"viewer-3d"` | GLB/GLTF 3D model viewer | P1 | None | ~350KB lazy |
-
----
-
-## Research Flags
-
-### Needs Deeper Research During Planning
-
-- **Phase D (3D Viewer):** WebGL context loss recovery testing on Linux WebKitGTK 2.40+
-- **Phase D (Markdown Preview):** Relative path resolution for images/links in repository markdown
-
-### Standard Patterns (Skip Research)
-
-- **Phase B (Modal Migration):** Dialog-to-blade conversion is straightforward refactoring
-- **Phase C (Two-Column Staging):** `react-resizable-panels` already proven in codebase
-- **Phase E (Branch Management):** Git config storage is well-documented
-
----
+Phases with standard patterns (skip research-phase):
+- **Phase 1 (Test Infrastructure):** Vitest + React Testing Library is well-documented. Tauri mock factory pattern is established.
+- **Phase 4 (Conventional Commit Blade):** All components exist and are well-factored. Blade registration pattern is proven.
+- **Phase 5 (File Structure Migration):** Feature-based architecture is consensus. Mechanical file moves with Vite glob.
+- **Phase 6 (Store Consolidation):** Zustand consolidation pattern is documented. Dependency graph is clear.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack Additions | HIGH | All versions verified via npm registry 2026-02-07 |
-| Features (differentiators) | HIGH | Verified Azure Portal blade UX, GitHub Desktop issue #17248, Tower v15 release |
-| Architecture (blade system) | HIGH | Direct codebase analysis of `blades.ts`, `BladeContainer.tsx`, `RepositoryView.tsx` |
-| Pitfalls (P1, P5, P13, P14) | HIGH | Derived from source code analysis |
-| Pitfalls (P2 WebGL) | HIGH (problem), MEDIUM (mitigation) | Tauri GitHub issue #6559 verified, mitigation based on forum posts |
-| Pitfalls (P3 XSS) | HIGH | CSP null verified in `tauri.conf.json`, CVE-2025-24981 documented |
-| Build Order Dependencies | HIGH | Mapped from architectural analysis |
-| Bundle Size Impact | HIGH | Calculated from npm registry package sizes, lazy-loading verified |
+| Stack | HIGH | XState v5, Vitest 4, reqwest 0.12 versions verified via npm view and docs.rs. Peer dependencies cross-checked. |
+| Features | HIGH | All table stakes features validated against existing codebase. New blade types require entries in `BladePropsMap`, registration file, and component - pattern is proven. |
+| Architecture | HIGH | XState `setup()` + `createActorContext` pattern verified via official docs. Blade-centric structure is consensus React pattern. XState + Zustand coexistence validated via community examples. |
+| Pitfalls | HIGH | Critical pitfalls derived from codebase analysis (21 stores, 172 `../../` imports, 13 blade types, 6 cross-store dependencies). XState + Zustand integration risks well-documented in community. |
 
----
+**Overall confidence:** HIGH
 
-## Gaps to Address
+### Gaps to Address
 
-1. **WebGL context loss testing on Linux:** Requires actual testing on WebKitGTK 2.40+ systems. Cannot fully validate 3D viewer reliability until built and tested on all platforms.
+**XState machine granularity:** Tension between modeling process-level navigation as states vs modeling blade stack as states. Recommendation is to model processes as states (`welcome`, `repository.staging`, `repository.topology`) and keep blade stack as context array, but this needs validation during Phase 2 design.
 
-2. **Relative path resolution in markdown:** Needs implementation strategy for images/links in repo markdown. Tauri asset protocol or base64 data URIs.
+**Store consolidation dependencies:** Current cross-store dependencies (gitflow -> branches + repository, worktrees -> repository) need full mapping before consolidation. Use `madge --circular src/` after each consolidation step to verify no cycles introduced.
 
-3. **Blade stack depth limits:** No current mechanism to prevent unbounded blade stack growth. Need max depth policy or auto-collapse strategy.
+**GitHub API rate limiting UX:** 60 req/hr unauthenticated is sufficient with caching, but error message when rate limited needs design. Template list should be prefetched on app startup or first repo open to avoid hitting limit during experimentation.
 
-4. **CSP compatibility with Monaco Editor:** May require `worker-src 'self' blob:` for Monaco web workers. Needs testing.
+**Test coverage targets:** Recommendation is 60% coverage for feature modules, but this needs validation during Phase 1. Focus should be on store + hook coverage, not overall coverage.
 
----
+**Barrel file performance:** Recommendation is NO barrel files for feature modules (direct imports only), but this trades DX for build performance. Needs validation during Phase 5 migration.
 
 ## Sources
 
-### Official Documentation (HIGH confidence)
-- [Tower v15 Release Blog](https://www.git-tower.com/blog/tower-mac-15) — Branch cleanup, pinned branches
-- [GitHub Desktop Issue #17248](https://github.com/desktop/desktop/issues/17248) — Markdown rendering request
-- [Azure Portal Blade Architecture](https://github.com/Azure/portaldocs/blob/main/portal-sdk/generated/top-extensions-architecture.md) — Blade UX pattern
-- [react-markdown GitHub](https://github.com/remarkjs/react-markdown) — v10.1.0, unified pipeline
-- [Tauri WebGL Context Lost #6559](https://github.com/tauri-apps/tauri/issues/6559) — Linux WebKitGTK 2.40+ bug
-- [@google/model-viewer GitHub](https://github.com/google/model-viewer) — v4.1.0 web component
+### Primary (HIGH confidence)
+- [XState v5 Documentation](https://stately.ai/docs/xstate) - State machine patterns, `setup()` API, TypeScript types
+- [@xstate/react Hooks](https://stately.ai/docs/xstate-react) - `useActor`, `useMachine`, `useSelector`, `useActorRef`, `createActorContext`
+- [XState v5 Persistence API](https://stately.ai/docs/persistence) - `getPersistedSnapshot()`, `createActor` with `snapshot` option
+- [XState Guards](https://stately.ai/docs/guards) - Guard syntax, composition with `and`/`or`/`not`
+- [GitHub REST API: Gitignore](https://docs.github.com/en/rest/gitignore/gitignore) - List templates, get template content
+- [github/gitignore Repository](https://github.com/github/gitignore) - 163 templates, root/Global/Community structure
+- [Vitest official site](https://vitest.dev/) - v4.0.18, Vite 7 compat, test environment docs
+- [Zustand Slices Pattern Documentation](https://zustand.docs.pmnd.rs/guides/slices-pattern) - Store consolidation patterns
+- [Zustand Testing Guide](https://zustand.docs.pmnd.rs/guides/testing) - Auto-reset mock pattern
+- [Tauri v2 Documentation](https://v2.tauri.app/) - IPC, plugin-store, capabilities
+- [git2-rs GitHub](https://github.com/rust-lang/git2-rs) - libgit2 bindings, threading docs
+- [tauri-specta GitHub](https://github.com/specta-rs/tauri-specta) - TypeScript binding generation
+- [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) - Specification
+
+### Secondary (MEDIUM confidence)
+- [XState Global State with React](https://stately.ai/blog/2024-02-12-xstate-react-global-state) - Singleton actor patterns
+- [Improve React Navigation with XState v5](https://dev.to/gtodorov/improve-react-navigation-with-xstate-v5-2l15) - Navigation FSM patterns
+- [Scalable React Projects with Feature-Based Architecture](https://dev.to/naserrasouli/scalable-react-projects-with-feature-based-architecture-117c) - Feature module structure
+- [React Folder Structure in 5 Steps 2025](https://www.robinwieruch.de/react-folder-structure/) - Feature-first organization
+- [Bulletproof React: Project Structure](https://github.com/alan2207/bulletproof-react/blob/master/docs/project-structure.md) - Import boundaries, barrel files
+- [Vite Performance Guide - Barrel Files Warning](https://vite.dev/guide/performance) - Barrel file performance impact
+- [Vite Issue #16100: Barrel Files Make Vite Very Slow](https://github.com/vitejs/vite/issues/16100) - HMR degradation
+- [Zustand Discussion #2496: Multiple Stores vs Slices](https://github.com/pmndrs/zustand/discussions/2496) - When to use multiple stores
+- [GitKraken Init Documentation](https://help.gitkraken.com/gitkraken-desktop/open-clone-init/) - Init flow: path + .gitignore + license + README
+- [Testing Library philosophy](https://testing-library.com/docs/react-testing-library/intro/) - Behavior-based testing
+
+### Tertiary (LOW confidence - needs validation)
+- [zustand-middleware-xstate](https://github.com/biowaffeln/zustand-middleware-xstate) - Unmaintained, XState v4 only - noted as anti-pattern
 
 ### Codebase Analysis (HIGH confidence)
-- FlowForge `src/stores/blades.ts` (79 lines) — Blade store architecture
-- FlowForge `src/components/RepositoryView.tsx` (294 lines) — renderBlade integration
-- FlowForge `src/components/blades/BladeContainer.tsx` (46 lines) — Animation pipeline
-- FlowForge `src-tauri/tauri.conf.json` — CSP null, asset protocol scope
-- FlowForge `src/components/settings/SettingsWindow.tsx` (123 lines) — Settings modal to convert
-- FlowForge `src/stores/settings.ts` (107 lines) — Settings store with isOpen
-
-### Security Research (MEDIUM-HIGH confidence)
-- [CVE-2025-24981](https://thesecmaster.com/blog/how-to-fix-cve-2025-24981-mitigating-xss-vulnerability-in-markdown-library-for-we) — Markdown XSS via HTML entities
-- [Secure Markdown Rendering in React](https://www.hackerone.com/blog/secure-markdown-rendering-react-balancing-flexibility-and-safety) — react-markdown safe by default
-- [DOMPurify GitHub](https://github.com/cure53/DOMPurify) — Sanitization library
+- FlowForge `src/stores/blades.ts` - Current navigation: 97 lines, `pushBlade`/`popBlade`/`replaceBlade`/`resetStack`
+- FlowForge `src/stores/bladeTypes.ts` - `BladePropsMap` with 13 types, `TypedBlade` discriminated union
+- FlowForge `src/hooks/useBladeNavigation.ts` - Singleton guards, title resolution, 83 lines
+- FlowForge `src/lib/bladeOpener.ts` - Non-React blade opener, duplicates hook logic, 32 lines
+- FlowForge `src/lib/bladeRegistry.ts` - Registration pattern: `registerBlade()`, `getBladeRegistration()`, Map-based
+- FlowForge `src/components/blades/registrations/index.ts` - `import.meta.glob` auto-discovery, HMR support
+- FlowForge `src/stores/conventional.ts` - CC store: 11 types, suggestions, validation, message building
+- FlowForge `src/hooks/useConventionalCommit.ts` - Debounced validation, filtered scopes, canCommit flag
+- FlowForge `src/components/commit/ConventionalCommitForm.tsx` - 202 lines, TypeSelector + ScopeAutocomplete + validation
+- FlowForge `src/components/welcome/GitInitBanner.tsx` - 111 lines, basic init with branch name option only
+- FlowForge `src-tauri/src/git/init.rs` - `git_init` command: path validation, git2 init with branch name
+- FlowForge `package.json` - v1.3.0, React 19, Zustand 5, Tailwind 4, Vite 7, no XState or test deps
+- FlowForge codebase statistics: ~29,590 LOC, 21 Zustand stores, 13 blade types, 172 `../../` imports across 96 files, 20 `../../../` imports across 14 files
 
 ---
-
-## Ready for Requirements
-
-This research synthesis provides:
-
-1. **Clear technology choices** with rationale (4 new packages, all lazy-loaded)
-2. **Feature categorization** (table stakes vs differentiators vs anti-features)
-3. **Architecture decisions** for blade expansion, modal migration, file browser, markdown preview, 3D viewer
-4. **Critical pitfall mitigation** (P1-P5 with phase-specific prevention)
-5. **Suggested build order** in 5 phases (A: Infrastructure, B: Conversions, C: Staging, D: Content, E: Polish)
-6. **Confidence assessment** with identified gaps for validation during planning
-
-The roadmapper agent can proceed to structure phases based on:
-- Build order dependencies (Phase A must precede all others)
-- Pitfall mitigation requirements (P1, P5 before Phase B; P3 before markdown; P2 during 3D viewer)
-- Feature priority (P0: settings, markdown, pinned branches; P1: file browser, 3D viewer, Gitflow reference)
-
-**Next step:** Use SUMMARY.md implications to create roadmap phases that align with build order, integrate pitfall prevention, and deliver differentiators incrementally.
+**Research completed:** 2026-02-08
+**Ready for roadmap:** Yes

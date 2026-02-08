@@ -1,479 +1,239 @@
-# Feature Landscape: Blade Expansion & Branch Management
+# Feature Landscape
 
-> **Research Dimension**: Features (Milestone-Specific)
-> **Project**: FlowForge — Gitflow-enforcing Git client (Tauri + Rust + React)
-> **Milestone Focus**: Blade navigation expansion, rich file preview, branch management UX
-> **Competitors Analyzed**: GitKraken, Fork, Tower, Sourcetree, GitHub Desktop, SmartGit
-> **Researched**: 2026-02-07
+**Domain:** Desktop Git client frontend architecture improvements (v1.4.0 milestone)
+**Researched:** 2026-02-08
+**Confidence:** HIGH (based on codebase analysis, XState v5 docs, GitHub API docs, competitor analysis)
 
 ---
 
 ## Executive Summary
 
-Research across 9 proposed features reveals a clear split: **3 are table stakes that competitors already do well** (file browser, branch cleanup, two-column staging), **4 are differentiators that no competitor does in a blade-based paradigm** (settings blade, markdown preview blade, GitFlow reference blade, branch favorites), and **2 are niche features that should be scoped carefully** (3D asset preview, code review prompts). The blade navigation system is FlowForge's signature UX -- every feature should be evaluated through the lens of "does this become a blade, and does that create value?"
+This milestone introduces four connected architectural improvements to FlowForge: an XState v5 navigation finite state machine replacing the imperative Zustand blade store, blade-centric file organization grouping each feature into self-contained modules, an Init Repo blade with GitHub .gitignore template search, and a dedicated Conventional Commit blade promoting the cramped sidebar form to a full workspace. Additionally, tech debt cleanup (store consolidation, duplicate code removal) and test infrastructure (Vitest) provide the foundation for sustainable development.
+
+Research confirms XState v5's `setup()` + `createMachine()` pattern is production-ready for navigation FSMs with guards, the GitHub gitignore API provides 163 templates accessible without authentication, and the existing conventional commit components are well-factored for extraction into a standalone blade. The blade-centric file structure follows the established "feature-based architecture" pattern now standard in the React ecosystem.
 
 ---
 
-## Feature Analysis by Topic
+## Table Stakes
 
-### 1. Settings as Navigation Blade (vs Modal)
+Features users expect for this milestone. Missing means the architectural upgrade feels incomplete.
 
-**Current State**: FlowForge has a modal-based settings window (`SettingsWindow.tsx`) using `Dialog`/`DialogContent` with tabbed navigation (General, Git, Integrations, Appearance). This is a 500px tall, 672px wide overlay.
+### 1. XState Navigation FSM
 
-**How Competitors Handle This**:
+The current `useBladeStore` (Zustand) manages navigation imperatively with `pushBlade`, `popBlade`, `popToIndex`, `replaceBlade`, and `resetStack`. This works but lacks transition guards, state validation, and predictable state modeling. An XState FSM formalizes these operations as events with guarded transitions.
 
-| Client | Settings Pattern | Notes |
-|--------|-----------------|-------|
-| VS Code | Dedicated full-page view (sidebar Activity Bar item) | Non-modal, searchable, breadcrumb navigation |
-| GitHub Desktop | Native OS preferences window (macOS) / File > Options (Windows) | Separate window, not a panel |
-| GitKraken | Preferences via hamburger menu | Modal overlay, similar to FlowForge's current approach |
-| Tower | Preferences window (native macOS/Windows) | Separate OS window |
-| Fork | Native preferences window (Ctrl+,) | Separate OS window |
-| Azure Portal | **Blade pattern** -- settings slide open as a new blade | The original blade UX inspiration |
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|--------------|------------|--------------|-------|
+| Push/pop/replace/reset as machine events | Formalizes existing imperative operations into predictable, guarded transitions | Med | `xstate` v5, `@xstate/react` | Events: `PUSH`, `POP`, `POP_TO_INDEX`, `REPLACE`, `RESET` |
+| Blade stack in machine context | Current `bladeStack: TypedBlade[]` moves to XState context with `assign()` actions | Med | XState `assign` action | Stack manipulation logic moves from Zustand setter to XState actions |
+| Navigation guards | Prevent destructive navigation (pop/reset) when forms have unsaved state | Med | XState guards, dirty-state detection | Guards: `canNavigateAway` checks conventional commit store, init form state |
+| Process switching (staging/topology) | Currently `setProcess()` resets stack; FSM models as top-level state or parameterized event | Low | XState states or context | `SET_PROCESS` event transitions and resets stack atomically |
+| Singleton blade enforcement | `SINGLETON_TYPES` array prevents duplicate settings/changelog blades | Low | XState guards | Guard: `bladeNotAlreadyOpen` on `PUSH` transitions |
+| Stack depth limit | Prevent unbounded stack growth from power users drilling deep | Low | XState guards | Guard: `stackNotFull` with max depth (e.g., 20) |
+| Back navigation via blade strips | `BladeStrip` components allow clicking collapsed blades; maps to `POP_TO_INDEX` event | Low | Existing `BladeStrip` component | No visual change; behavior wired to machine events |
+| `createActorContext` for global access | Navigation machine must be accessible from hooks, command palette, and non-React contexts | Med | `@xstate/react` `createActorContext` | Replaces `useBladeStore.getState()` pattern in `bladeOpener.ts` |
 
-**Key Insight**: The Azure Portal is the canonical reference for blade-based settings navigation. When you click "Settings" on a resource, it opens as a new blade to the right, allowing you to see the resource context on the left while editing settings on the right. This is exactly the mental model FlowForge's blade system already implements.
+**Confidence:** HIGH. XState v5 `setup()` function provides full TypeScript type safety for context, events, guards, and actions. The `createActorContext` pattern from `@xstate/react` provides the same global access as Zustand's `getState()`. Guards are synchronous pure functions, matching the validation needs.
 
-**Recommendation**: **Convert settings to a blade** rather than keeping it as a modal. This is a genuine differentiator -- no Git client treats settings as part of the navigation flow. The blade approach means users can:
-- See the topology/staging context while adjusting settings
-- Navigate back naturally with the blade stack (back button)
-- Have settings "feel" like part of the app instead of an interruption
+### 2. Blade-Centric File Structure
 
-**Complexity**: Medium. The tab structure inside the modal maps directly to sections within a BladePanel. The store already supports `SettingsCategory`. Main work is replacing the Dialog wrapper with a blade registration and restructuring the layout for full-height rendering.
+The current codebase organizes by technical type: `components/blades/`, `components/staging/`, `stores/`, `hooks/`, `lib/`. Each blade's files are scattered across 3-4 directories. A blade-centric (feature-based) structure co-locates all files for a single blade type.
 
-**Dependencies**: Blade store needs a new `BladeType` value (e.g., `"settings"`). Settings store can remain unchanged.
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|--------------|------------|--------------|-------|
+| Feature module per blade type | Each blade gets own directory: component, registration, types, hooks, tests | Med | File moves only (no runtime changes) | e.g., `features/staging-changes/` contains component + registration + tests |
+| Barrel exports | Each module exports via `index.ts` | Low | None | Clean import paths: `from '@/features/staging-changes'` |
+| Auto-discovery preservation | Current `import.meta.glob` in `registrations/index.ts` must adapt to new paths | Med | Vite glob imports | Pattern: `import.meta.glob('../../features/*/registration.ts', { eager: true })` |
+| Shared blade infrastructure stays central | `BladeContainer`, `BladeRenderer`, `BladePanel`, `BladeStrip`, `BladeErrorBoundary` | Low | None | These are framework components, not feature modules |
+| Gradual migration support | Old and new structures can coexist during transition | Low | None | Move blade by blade; auto-discovery handles both locations |
 
----
+**Confidence:** HIGH. Feature-based architecture is the consensus React pattern in 2025-2026. Vite's `import.meta.glob` supports multiple glob patterns, enabling gradual migration.
 
-### 2. Markdown Preview in Git Clients
+### 3. Init Repo Blade with .gitignore Template Search
 
-**Current State**: FlowForge has a `DiffBlade` (Monaco diff editor) and `ViewerImageBlade` and `ViewerNupkgBlade` for specialized file viewers. No markdown preview exists.
+The current `GitInitBanner` is a small inline prompt (~110 lines) embedded in `WelcomeView`. It offers only branch name selection (main vs default). A dedicated blade provides space for template search, preview, and multi-select.
 
-**How Competitors Handle This**:
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|--------------|------------|--------------|-------|
+| Dedicated init-repo blade type | Full-width workspace for repo initialization options | Med | New `BladePropsMap` entry: `"init-repo": { path: string }` | Replaces inline `GitInitBanner` |
+| .gitignore template search/filter | 163 GitHub templates need fuzzy search for usability | Med | GitHub REST API `GET /gitignore/templates`, existing `fuzzySearch.ts` | Reuse existing fuzzy search utility |
+| Template preview panel | Show .gitignore contents before applying | Low | GitHub REST API `GET /gitignore/templates/{name}` | Fetch on selection, monospace preview |
+| Multi-template composition | Real projects need multiple templates (e.g., Node + macOS + JetBrains) | Med | Local merge/dedup logic | Concatenate selected templates, deduplicate comment headers and rules |
+| Offline fallback | GitHub API may be unreachable; bundle common templates | Med | Embedded JSON or Rust-side fallback | Ship top ~15-20 templates (Node, Python, Rust, Go, Java, C#, VisualStudio, macOS, Linux, Windows, JetBrains) |
+| Default branch name selection | Already exists in `GitInitBanner` | Low | Existing `git_init` Rust command | Port existing UI |
+| README.md auto-generation | GitKraken generates README on init; expected baseline | Low | Rust-side file write after `git_init` | Optional checkbox: writes `# {folder-name}\n` |
+| Initial commit option | Option to create first commit with generated files | Low | Existing `create_commit` command | Checkbox: "Create initial commit with .gitignore and README" |
+| Template category grouping | 163 flat templates are hard to scan; group by type | Med | Category mapping (manual or from github/gitignore repo structure) | Categories: Languages, Frameworks, Editors/IDEs, OS, Infrastructure |
 
-| Client | Markdown Preview | Quality |
-|--------|-----------------|---------|
-| GitHub Desktop | **None** -- open feature request since 2023 (issue #17248) | N/A |
-| GitKraken | **None** -- shows raw markdown in diff | N/A |
-| Tower | **None** -- syntax highlighted raw text only | N/A |
-| Fork | **None** -- syntax highlighted raw text only | N/A |
-| Sourcetree | **None** -- feature request SRCTREE-2631 open since 2015 | N/A |
-| GitHub (web) | **Yes** -- "rich diff" with source/rendered toggle for .md files | Excellent |
+**Confidence:** HIGH. GitHub gitignore API is stable, unauthenticated, returns simple JSON. 163 templates confirmed via direct API call. GitKraken's init flow (path + .gitignore + license + README) validates the expected feature set.
 
-**Key Insight**: This is a significant gap across ALL desktop Git clients. GitHub's web interface is the only place where rendered markdown preview exists in the Git ecosystem. Every desktop client shows markdown as raw text in diffs. This is a clear differentiator opportunity.
+**API Details (verified):**
+- List all: `GET https://api.github.com/gitignore/templates` returns `string[]`
+- Get one: `GET https://api.github.com/gitignore/templates/{name}` returns `{ name: string, source: string }`
+- No authentication required for public access
+- General GitHub API rate limits apply (60 req/hr unauthenticated, 5000 authenticated)
 
-**What GitHub Web Does Right** (HIGH confidence, verified via official docs):
-- Toggle between "source" and "rendered" views for markdown files
-- Rich diff highlights structural changes (bold added, link changed)
-- Supports GFM (tables, task lists, strikethrough)
+### 4. Dedicated Conventional Commit Blade
 
-**Implementation Approach for FlowForge**:
-- New `ViewerMarkdownBlade` that renders `.md` files using `react-markdown` (built on remark/rehype, actively maintained, v10 current)
-- Support GFM via `remark-gfm` plugin
-- Syntax highlighting for code blocks via `rehype-highlight` or `rehype-prism`
-- Catppuccin-themed styling for rendered output
-- Toggle between rendered preview and raw source (Monaco) within the blade
+The current `ConventionalCommitForm` is embedded inside `CommitForm` at the bottom of the left sidebar, constrained to `max-h-[60vh]` with an overflow scroll. The dedicated blade provides full-width workspace matching the importance of structured commit messages.
 
-**Complexity**: Medium. `react-markdown` is well-established and straightforward to integrate. The blade infrastructure is already proven. Main risk is ensuring the Catppuccin theme applies consistently to rendered HTML elements (headings, tables, code blocks, blockquotes).
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|--------------|------------|--------------|-------|
+| Standalone CC blade type | Full-width workspace for conventional commit composition | Med | New `BladePropsMap` entry: `"conventional-commit": Record<string, never>` | Reads staged files from existing stores |
+| Type selector with descriptions | Already exists as `TypeSelector` component | Low (reuse) | Existing `conventional.ts` store | Shared component, wider layout |
+| Scope autocomplete from history | Already exists as `ScopeAutocomplete` component | Low (reuse) | Existing `conventional.ts` store | Shared component |
+| Live validation with errors | Already exists as `ValidationErrors` component | Low (reuse) | Existing Rust `validate_conventional_commit` | Shared component |
+| Character progress indicator | Already exists as `CharacterProgress` component | Low (reuse) | None | Shared component |
+| Breaking change section | Already exists as `BreakingChangeSection` component | Low (reuse) | None | Shared component |
+| Full-width message preview | Current preview is `max-h-32`; blade gets generous space | Low | None | Larger monospace preview, possible syntax coloring |
+| Commit + Push workflow | After commit, offer inline "Push now" (currently toast-only) | Low | Existing push mutation | Add "Commit & Push" button |
+| Post-commit navigation | Auto-navigate back to staging after successful commit | Low | XState `POP` event | Machine sends `POP` on commit success |
+| Amend mode support | Currently only in simple form; CC blade should also support | Med | Existing `getLastCommitMessage` command | Parse last message to pre-fill type/scope/description fields |
+| Sidebar mode preserved | Keep existing inline CC form as a quick-commit option | Low | No changes to existing `CommitForm` | Both modes coexist: sidebar for quick, blade for full |
 
-**Dependencies**: Blade store needs new `BladeType` `"viewer-markdown"`. Needs `react-markdown`, `remark-gfm` npm packages. File type detection logic (already exists for image/nupkg) needs `.md` extension handling.
+**Confidence:** HIGH. All sub-components already exist and are well-factored. The blade registration pattern is proven (1 registration file + 1 component = new blade). The `useConventionalCommit` hook encapsulates all state logic and is reusable.
 
----
+### 5. Tech Debt Cleanup
 
-### 3. 3D Asset Preview in Development Tools
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|--------------|------------|--------------|-------|
+| Zustand store consolidation | 21 stores is excessive; merge related stores | Med | All consumers | Candidates: `branches` + `branchMetadata`, `blades` + (subsumed by XState), `clone` into `repository` |
+| Remove duplicate blade opener | `useBladeNavigation.ts` and `lib/bladeOpener.ts` share 90% logic | Low | All consumers | Single source in lib; hook wraps it |
+| Consistent error handling | Mix of `getErrorMessage()`, raw catches, console.error, toast | Med | All async store actions | Standardize: Result pattern + toast integration |
+| Remove deprecated type aliases | `Blade` type alias marked `@deprecated` in `blades.ts` | Low | Search for usage | Clean removal |
 
-**Current State**: FlowForge has image preview (`ViewerImageBlade`) for PNG/JPG/SVG and NuGet package preview (`ViewerNupkgBlade`). No 3D preview exists.
+**Confidence:** HIGH. Direct codebase inspection reveals the duplications and inconsistencies clearly.
 
-**How Competitors Handle This**:
+### 6. Test Infrastructure
 
-| Client | 3D Preview | Notes |
-|--------|-----------|-------|
-| All mainstream Git clients | **None** | Show "Binary file" for 3D formats |
-| Anchorpoint | **Yes** -- FBX, glTF, OBJ thumbnails and previews | Purpose-built for game dev asset management |
-| Artstash | **Yes** -- 2D and 3D previews synced from Git repos | Specialized asset browsing layer |
-| GitHub (web) | **STL only** -- basic 3D viewer for .stl files | Limited format support |
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|--------------|------------|--------------|-------|
+| Vitest setup | Zero test files exist; need testing framework | Med | `vitest`, `@testing-library/react`, `@testing-library/jest-dom`, `jsdom` | Configure in `vitest.config.ts` |
+| XState machine unit tests | Navigation FSM is highest-value test target (pure logic) | Med | `vitest`, direct `machine.transition()` calls | Test guards, stack ops, edge cases |
+| Zustand store unit tests | Stores contain testable logic | Low | `vitest` | Test `buildCommitMessage`, blade stack operations |
+| Component smoke tests | Basic render tests catch import/prop errors | Low | `@testing-library/react` | Each blade renders without crashing |
 
-**Key Insight**: 3D preview is a niche feature that only matters for game development and creative workflows. Mainstream Git clients uniformly ignore this. Specialized tools like Anchorpoint exist specifically because general Git clients do not serve this audience. The effort-to-value ratio is poor for a general Git client.
-
-**If Built Anyway**:
-- `react-three-fiber` + `@react-three/drei` for React-native 3D rendering
-- `@react-three/drei` provides `useGLTF` loader for glTF/GLB format
-- Would support glTF/GLB (industry standard), potentially OBJ/STL
-- Significant bundle size increase (~500KB+ for Three.js)
-
-**Recommendation**: **Anti-feature for now.** Defer to v2+ or implement as optional/lazy-loaded. The target audience for FlowForge (Gitflow-following teams) is primarily backend/frontend developers, not 3D artists. If implemented, it should be a `ViewerModel3dBlade` that lazy-loads the Three.js dependency only when a 3D file is selected.
-
-**Complexity**: High. Three.js is a large dependency, camera/lighting setup is non-trivial, format support varies, and performance with large models in a desktop app is risky.
-
-**Dependencies**: Would need `three`, `@react-three/fiber`, `@react-three/drei`. Lazy loading critical.
-
----
-
-### 4. Repository File Browser
-
-**Current State**: FlowForge has `FileTreeBlade` and `FileTreeView` for staging changes only (modified/staged/untracked files). There is no way to browse the full repository file tree at a specific commit or HEAD.
-
-**How Competitors Handle This**:
-
-| Client | File Browser | Quality |
-|--------|-------------|---------|
-| Fork | Tree/flat toggle, commit file tree in details | Good -- sorted directories first, search in Quick Launch |
-| GitKraken | File tree in commit details panel | Basic -- tied to commit selection |
-| Tower | "View all files in a folder structure or only changed files as a flat list" | Good -- toggle between modes |
-| GitHub Desktop | Changed files list only (no full repo browser) | Minimal |
-| Sourcetree | Changed files list only | Minimal |
-
-**Key Insight**: Full repository file browsing is a "nice to have" rather than table stakes in Git GUIs. Most users browse files in their IDE, not their Git client. However, the ability to browse files at a specific commit is genuinely useful for code archaeology. Fork and Tower do this well.
-
-**Recommendation**: **Build as a commit-scoped file browser blade**, not a general-purpose file explorer. When viewing commit details, allow pushing a `FileTreeBlade` that shows all files at that commit (not just changed files). This leverages the blade stack naturally: Topology > Commit Details > File Tree > Diff/Viewer.
-
-**Table Stakes Features**:
-- Tree view with directory collapsing
-- Sort: directories first, then alphabetical
-- File type icons (already have `FileTypeIcon.tsx`)
-- Click to open in appropriate viewer blade (diff, markdown, image, etc.)
-
-**Differentiator Features**:
-- Search/filter within the file tree
-- Show file size and last-modified info per file
-- Quick navigation with breadcrumb path
-
-**Complexity**: Medium. The `FileTreeView` component infrastructure already exists for staging. Needs a backend command to enumerate files at a given commit OID via git2's tree walking API. The blade infrastructure is already proven.
-
-**Dependencies**: New Rust backend command (e.g., `get_commit_file_tree`). Extends existing `FileTreeView` or creates a new variant. Needs `BladeType` `"file-browser"`.
+**Confidence:** HIGH. Vitest is the standard React + Vite testing tool. XState machines are inherently testable (pure functions, deterministic transitions).
 
 ---
 
-### 5. Branch Cleanup UX
+## Differentiators
 
-**Current State**: FlowForge's `BranchItem.tsx` shows a "merged" badge and per-branch delete button. There is no bulk operation, no stale detection, no automated cleanup.
+Features that set FlowForge apart. Not strictly expected but significantly enhance the experience.
 
-**How Competitors Handle This**:
-
-| Client | Branch Cleanup | Quality |
-|--------|---------------|---------|
-| Tower (v15) | **Best in class** -- "Fully Merged" and "Stale" badges, auto-archive, pinned branch protection, "Branches Review" view | Excellent |
-| GitKraken | Manual right-click delete only, no batch operations, feature request pending | Poor |
-| Fork | Manual delete, right-click context menu | Basic |
-| GitHub Desktop | Manual delete only | Basic |
-| Sourcetree | Manual delete, "Delete branch on server" option | Basic |
-
-**Key Insight**: Tower v15 (released 2025) set a new standard for branch cleanup UX. Their approach includes:
-1. **Visual indicators**: "Fully Merged" and "Stale" badges inline with branch names
-2. **Automatic archiving**: Option to auto-archive stale and merged branches
-3. **Protected branches**: "Skips Auto-Archiving" flag for important branches
-4. **Branches Review view**: Filter by "Fully Merged" to find deletable branches
-5. **One-click cleanup**: Hint views with delete buttons
-
-**Recommendation**: **Build a branch cleanup blade** that surpasses Tower's approach by leveraging the blade navigation system and Gitflow awareness.
-
-**Table Stakes Features**:
-| Feature | Complexity | Notes |
-|---------|------------|-------|
-| "Merged" badge on branches | Low | Already implemented in `BranchItem.tsx` |
-| "Stale" badge (no commits in N days, configurable) | Low | Compare `HEAD` timestamps via git2 |
-| Bulk select and delete merged branches | Medium | Multi-select UI + batch `deleteBranch` calls |
-| Prune remote-tracking branches (`git remote prune`) | Low | Single backend command |
-
-**Differentiator Features**:
-| Feature | Complexity | Notes |
-|---------|------------|-------|
-| Gitflow-aware cleanup (protect main/develop/release) | Medium | State machine knows which branches are sacred |
-| Branch age visualization (days since last commit) | Low | Relative timestamp display |
-| "Cleanup Wizard" blade with preview before bulk delete | Medium | Show exactly what will be deleted, confirm |
-| Auto-prune on fetch (configurable in settings) | Low | Add setting, hook into fetch command |
-
-**Complexity**: Medium overall. Individual features are Low-Medium, but the cleanup wizard blade is a new UX pattern that needs design attention.
-
-**Dependencies**: Extends existing `BranchList` and `BranchItem`. Needs git2 commit timestamp queries. New settings for auto-prune and stale threshold. New `BladeType` if implementing cleanup wizard.
+| Feature | Value Proposition | Complexity | Dependencies | Notes |
+|---------|-------------------|------------|--------------|-------|
+| XState visual inspector (dev-only) | Stately Inspector shows live machine state in separate window; exceptional for debugging navigation transitions | Low | `@stately-ai/inspect` (dev dep) | Only in DEV mode; opt-in via settings or env var |
+| Smart .gitignore recommendation | Auto-detect project type from existing files (package.json = Node, Cargo.toml = Rust) and pre-select templates | Med | File system scan via Tauri backend | Meaningful UX improvement over blind template search |
+| CC blade scope tree visualization | Show commit scopes as frequency chart or tree from history | Med | Existing `getScopeSuggestions` command | Helps users pick meaningful scopes |
+| Blade transition animation variants | Different enter/exit animations for push vs pop vs replace | Low | framer-motion variants, XState transition metadata | Currently all transitions use same animation |
+| Navigation guard "dirty form" indicator | Visual badge on blade strip when a form has unsaved changes | Low | XState guard + blade strip UI | Warns users before they accidentally navigate away |
+| Test coverage threshold in CI | Enforce minimum coverage for new code | Low | vitest coverage (istanbul) | Pragmatic: 60% threshold for feature modules |
+| Commit message templates | Pre-defined CC templates for common patterns (e.g., "fix(ci): ..." for CI fixes) | Low | Local storage or repo config | Quick-start for repetitive commit types |
 
 ---
 
-### 6. Code Review Prompts/Guidance
+## Anti-Features
 
-**Current State**: FlowForge has no code review features. The existing FEATURES.md explicitly listed "Code review features" as an anti-feature because "GitHub/GitLab do this well."
+Features to explicitly NOT build in this milestone. These would add complexity without proportional value or conflict with architecture goals.
 
-**How Competitors Handle This**:
-
-| Client | Code Review | Quality |
-|--------|------------|---------|
-| GitKraken | Full PR review mode -- inline comments, code suggestions, approve/merge | Best in class (paid feature) |
-| Tower | PR creation, review, comment, merge across GitHub/GitLab/Bitbucket/Azure | Good |
-| GitHub Desktop | Create PR (opens browser), no inline review | Minimal |
-| Fork | Create PR (opens browser) | Minimal |
-| Sourcetree | Create PR for Bitbucket only | Minimal |
-
-**Key Insight**: GitKraken invested heavily in code review features (Code Suggestions, inline editing, PR review mode). This is a major revenue driver for their paid tier. Tower followed with cross-platform PR support. However, both essentially duplicate what the web UIs of GitHub/GitLab already do.
-
-**Recommendation**: **Do NOT build full code review.** This remains an anti-feature for FlowForge's scope. However, there is a lighter-weight option worth considering:
-
-**Lightweight Alternative -- "Pre-Commit Review Checklist"**:
-- When a user is about to commit on a release or hotfix branch, show a configurable checklist
-- Items like: "Tests passing?", "Documentation updated?", "Breaking changes noted?"
-- This is Gitflow-aware guidance, not full code review
-- Stored per-repo in `.flowforge/review-checklist.json` or settings
-
-**Complexity**: Low for checklist, Very High for full code review. Recommend the checklist approach only.
-
-**Dependencies**: Settings store for checklist items. Could be a section within the commit flow, not a separate blade.
-
----
-
-### 7. Two-Column Staging (Changes vs Staged Side-by-Side)
-
-**Current State**: FlowForge's `StagingPanel.tsx` shows staged, unstaged, and untracked files in a **vertical stack** within a single scrollable column. Users can toggle between tree and flat view modes.
-
-**How Competitors Handle This**:
-
-| Client | Staging Layout | Notes |
-|--------|---------------|-------|
-| SmartGit | **Two separate lists** -- toggle between stacked and side-by-side via `files.split.vertical` setting | Most flexible |
-| Sourcetree | **Split pane** -- staged on top, unstaged on bottom with fixed visual anchor | Standard approach |
-| GitKraken | **Vertical stack** -- Unstaged Files, then Staged Files, then Commit Message (all in right panel) | Similar to FlowForge |
-| Tower | **Single list with toggle** -- "Staged" and "Unstaged" buttons above diff | Different approach |
-| GitHub Desktop | **Single list** -- changed files, no separate staged/unstaged sections | Simplified model |
-| Fork | **Vertical stack** -- staged changes section above unstaged | Standard approach |
-
-**Key Insight**: The dominant pattern is vertical stacking (staged on top, unstaged below). SmartGit is the only client offering true side-by-side columns, and it is positioned as a power-user option. The Zed editor has an open feature request for side-by-side staging, indicating community interest but no established standard.
-
-**Recommendation**: **Implement as an optional layout mode**, not the default. The current vertical stack is the industry standard and works well for most screen sizes. Add a toggle (like SmartGit's approach) that splits the staging panel into two columns when the user has sufficient horizontal space.
-
-**Table Stakes Features**:
-| Feature | Complexity | Notes |
-|---------|------------|-------|
-| Current vertical stack (already built) | Done | Keep as default |
-| Count badges on section headers | Done | Already implemented |
-| Collapse/expand sections | Done | Already implemented |
-
-**Differentiator Features**:
-| Feature | Complexity | Notes |
-|---------|------------|-------|
-| Side-by-side toggle (two columns) | Medium | Need min-width guard, responsive layout |
-| Drag-and-drop between columns | High | Complex DnD with file items |
-| Visual "flow" animation when staging/unstaging | Low | Framer Motion slide animation |
-
-**Complexity**: Medium for the toggle layout, High if adding drag-and-drop.
-
-**Dependencies**: Modifies `StagingPanel.tsx`. May need `StagingChangesBlade` layout awareness. Settings store for default layout preference.
-
----
-
-### 8. Last-Used Branches / Branch Favorites
-
-**Current State**: FlowForge's `BranchList.tsx` shows all branches in a flat list with the current branch highlighted. The `BranchSwitcher.tsx` exists as a dropdown with search but no "recent" or "favorites" section.
-
-**How Competitors Handle This**:
-
-| Client | Recent/Favorites | Notes |
-|--------|-----------------|-------|
-| Tower (v15) | **Pinned Branches** -- stored in Git config, auto-expanded section, multi-select pin/unpin, Pin checkbox in Create Branch dialog | Best in class |
-| GitHub Desktop | **Recent Branches** -- shows last 5 checked-out branches, users requesting more (issues #14311, #19664, #20972) | Basic but useful |
-| GitKraken | No dedicated recent/favorites section | N/A |
-| Fork | No dedicated recent/favorites section | N/A |
-| Sourcetree | No dedicated recent/favorites section | N/A |
-
-**Key Insight**: Tower's "Pinned Branches" is the best implementation. Key design decisions from Tower:
-1. **Stored in Git config** -- persists across machines, survives app reinstall
-2. **Separate sidebar section** -- always visible, auto-expanded
-3. **Multi-select** -- pin/unpin multiple branches at once
-4. **Create Branch dialog integration** -- "Pin this branch" checkbox when creating
-
-GitHub Desktop's "Recent Branches" (last 5 checked out) is simpler but still highly valued by users -- multiple feature requests asking for more than 5.
-
-**Recommendation**: **Implement both recent and pinned branches** as a combined "Quick Access" section at the top of the branch list.
-
-**Table Stakes Features**:
-| Feature | Complexity | Notes |
-|---------|------------|-------|
-| Recent branches (last N checked out, track via reflog or local store) | Low | Read `git reflog` or track in app state |
-| Pinned/favorite branches (star icon toggle) | Low | Store in local settings or `.git/config` |
-| Quick Access section at top of sidebar BranchList | Low | New UI section above existing list |
-
-**Differentiator Features**:
-| Feature | Complexity | Notes |
-|---------|------------|-------|
-| Store pins in Git config (Tower's approach -- portable) | Low | Write to `.git/config` via git2 |
-| "Pin on create" checkbox in CreateBranchDialog | Low | UI addition |
-| Gitflow-aware pinning (auto-pin develop and main) | Low | Auto-detect Gitflow branches |
-| Branch age/last-commit indicator in favorites | Low | Timestamp from git log |
-
-**Complexity**: Low overall. This is primarily a UI/UX feature with minimal backend work.
-
-**Dependencies**: Extends `BranchList.tsx` and `BranchSwitcher.tsx`. Settings or Git config for persistence. Reflog access via git2 for recent tracking.
-
----
-
-### 9. GitFlow Reference/Cheat Sheet Integration
-
-**Current State**: FlowForge has a `GitflowPanel.tsx` that shows start/finish buttons for feature, release, and hotfix flows. Buttons are disabled with tooltip explanations when actions are unavailable. No reference documentation or educational content is integrated.
-
-**How Competitors Handle This**:
-
-| Client | Gitflow Education | Notes |
-|--------|-------------------|-------|
-| GitKraken | Links to external documentation | No in-app reference |
-| Tower | Links to tower.com/learn Gitflow guide | External docs |
-| Sourcetree | No Gitflow reference | N/A |
-| Fork | No Gitflow support at all | N/A |
-| GitHub Desktop | No Gitflow support | N/A |
-
-**Key Insight**: No Git client integrates Gitflow education inline. The best resources are external:
-- danielkummer.github.io/git-flow-cheatsheet (interactive, popular)
-- Atlassian's Gitflow Workflow tutorial (comprehensive)
-- Various Medium posts and cheat sheets
-
-Since FlowForge uniquely **enforces** Gitflow, having inline reference material would be genuinely differentiated. Users who are new to Gitflow or who use it infrequently would benefit from contextual guidance.
-
-**Recommendation**: **Build a GitFlow Reference Blade** that serves as both cheat sheet and contextual help.
-
-**Table Stakes Features**:
-| Feature | Complexity | Notes |
-|---------|------------|-------|
-| Static reference card showing branch types and their purposes | Low | Markdown or JSX content |
-| Visual diagram of Gitflow branch model | Medium | SVG or static image |
-| Link to external resources | Low | Outbound links |
-
-**Differentiator Features**:
-| Feature | Complexity | Notes |
-|---------|------------|-------|
-| **Contextual highlighting** -- highlight the current workflow step in the diagram | Medium | Connect to GitflowStore state |
-| **"You are here" indicator** -- show which branch type you are on and what actions are available | Low | Read from gitflow status |
-| **Suggested next action** -- "You are on a feature branch. When ready, Finish Feature to merge to develop." | Low | State-driven text |
-| **Hotkey integration** -- accessible via `?` or help menu | Low | Register in command palette |
-
-**Complexity**: Low-Medium. Content is static/semi-static. The contextual highlighting is the main engineering work.
-
-**Dependencies**: New `BladeType` `"gitflow-reference"`. Reads from `useGitflowStore()` for context. Could also be a side panel rather than a full blade.
-
----
-
-## Feature Categories Summary
-
-### Table Stakes
-
-Features users expect. Missing means the product feels incomplete in the context of the planned features.
-
-| Feature | Expected Because | Complexity | Existing Dep. |
-|---------|-----------------|------------|---------------|
-| Branch "merged" badge | All competitors show this | Done | `BranchItem.tsx` |
-| Vertical staging layout | Industry standard | Done | `StagingPanel.tsx` |
-| File tree in commit details | Fork, Tower, GitKraken all have this | Medium | `FileTreeView` pattern exists |
-| Remote branch pruning | Basic Git hygiene, Tower does auto | Low | New backend command |
-| Recent branches list | GitHub Desktop has this, highly requested | Low | Track in store or reflog |
-| Branch search/filter | All competitors have this | Done | `BranchSwitcher.tsx` |
-
-### Differentiators
-
-Features that leverage the blade navigation paradigm to create competitive advantage.
-
-| Feature | Value Proposition | Complexity | Blade? |
-|---------|-------------------|------------|--------|
-| **Settings as a blade** | Only Azure Portal does this; no Git client | Medium | Yes -- `"settings"` |
-| **Markdown preview blade** | Zero desktop Git clients have this | Medium | Yes -- `"viewer-markdown"` |
-| **Branch cleanup wizard blade** | Tower has badges but no guided workflow | Medium | Yes -- `"branch-cleanup"` |
-| **GitFlow reference blade with context** | No client integrates Gitflow education inline | Low-Med | Yes -- `"gitflow-reference"` |
-| **Pinned branches (Git config stored)** | Only Tower has this; portable across machines | Low | No -- sidebar enhancement |
-| **Two-column staging toggle** | Only SmartGit offers this | Medium | No -- layout mode |
-| **Staging animation on stage/unstage** | No client does this; framer-motion is already in stack | Low | No -- animation enhancement |
-| **Commit-scoped file browser blade** | Extends existing blade paradigm for code archaeology | Medium | Yes -- `"file-browser"` |
-
-### Anti-Features
-
-Things to deliberately NOT build in this milestone.
-
-| Anti-Feature | Why Not | What to Do Instead |
-|--------------|---------|-------------------|
-| **Full code review / PR review mode** | Duplicates GitHub/GitLab web UIs; GitKraken spent years on this | Lightweight pre-commit checklist at most |
-| **3D asset preview** | Niche audience, heavy dependency (Three.js ~500KB), poor effort/value | Show "Binary file" with file size; defer to v2+ |
-| **General-purpose file explorer** | Users browse files in their IDE | Build commit-scoped file browser only |
-| **Drag-and-drop staging** | Complex DnD implementation, low ROI vs click-to-stage | Keep existing click/button staging |
-| **Built-in markdown editor** | Scope creep toward IDE territory | Preview only, not editing |
-| **Branch comparison/diff blade** | Complex feature, better done on GitHub/GitLab | Link to web comparison instead |
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| Replace all Zustand with XState | XState is ideal for navigation FSM (complex transitions, guards) but overkill for data stores (theme, toast, settings with simple get/set). Migrating 21 stores would be a rewrite with no UX benefit | Use XState ONLY for navigation; keep Zustand for data stores. They coexist cleanly -- XState handles flow, Zustand handles data |
+| File-based routing (React Router v7 style) | FlowForge uses blade stack navigation, not URL-mapped pages. File-based routing solves a fundamentally different problem | Keep blade stack pattern; XState governs transitions, not URL routes |
+| Custom .gitignore text editor in init blade | Full editor at init time adds complexity; users can edit .gitignore after repo creation in any editor | Template picker + preview is sufficient; post-init editing is the escape hatch |
+| AI-powered commit message generation | Requires LLM integration, API keys, privacy concerns, latency. Orthogonal to architecture goals | Existing type/scope inference from staged files is the right level of automation |
+| Blade tabs (multiple active blades side-by-side) | Fundamentally breaks the stack metaphor; requires complete layout rethinking | Stack with collapsible strips IS the established UX. Enhance, do not replace |
+| E2E testing (Playwright for Tauri) | Tauri E2E testing ecosystem is immature. Setup complexity is high. Unit tests provide better ROI | Start with Vitest unit tests for machines and stores. E2E in future milestone |
+| XState HMR for machine definitions | Machine configs are static; HMR creates ghost states and race conditions | Accept page reload on machine changes; component HMR still works |
+| Navigation history (browser-style forward/back) | Requires maintaining a separate forward stack alongside the blade stack; complex edge cases | Simple push/pop/replace covers all current use cases. Add forward stack only if users request it |
+| LICENSE file picker in init blade | Low-priority feature that adds scope to init blade | Defer to future enhancement; users can add LICENSE manually |
 
 ---
 
 ## Feature Dependencies
 
 ```
-Blade Store Extension (new BladeTypes)
-       |
-       +---> Settings Blade
-       |         |
-       |         +---> Two-column staging toggle (setting stored here)
-       |         +---> Branch cleanup auto-prune (setting stored here)
-       |         +---> Stale branch threshold (setting stored here)
-       |
-       +---> Markdown Preview Blade
-       |         |
-       |         +---> File type detection routing (extend existing)
-       |
-       +---> File Browser Blade
-       |         |
-       |         +---> New backend command (get_commit_file_tree)
-       |         +---> File type detection routing (open in viewer blade)
-       |
-       +---> GitFlow Reference Blade
-       |         |
-       |         +---> GitflowStore (for contextual state)
-       |
-       +---> Branch Cleanup Blade
-                 |
-                 +---> Stale detection (git2 commit timestamps)
-                 +---> Bulk delete (batch branch deletion)
-                 +---> Gitflow protection (state machine knows sacred branches)
+Test Infrastructure (Vitest setup)
+  [no upstream deps -- do first]
 
-Branch Management Enhancements (sidebar, not blades)
-       |
-       +---> Pinned Branches section
-       |         |
-       |         +---> Git config persistence
-       |         +---> CreateBranchDialog "Pin" checkbox
-       |
-       +---> Recent Branches section
-                 |
-                 +---> Reflog or local tracking
+XState Navigation FSM
+  |- depends on: Vitest (for machine tests)
+  |-> enables: Dedicated CC Blade (post-commit navigation)
+  |-> enables: Init Repo Blade (blade lifecycle)
+  |-> enables: Navigation Guards (dirty form protection)
+  |-> enables: Tech debt - blade store removal (replaced by machine)
+
+Blade-Centric File Structure
+  |- depends on: nothing (pure reorganization)
+  |-> enables: Co-located tests (tests live in feature dirs)
+  |-> enables: Clean onboarding for new blade types
+
+Init Repo Blade
+  |- depends on: XState FSM (for blade push/pop)
+  |- depends on: BladePropsMap extension (new "init-repo" type)
+  |-> requires: GitHub gitignore API integration (frontend fetch or Rust HTTP)
+  |-> requires: Offline fallback templates (bundled asset)
+
+Dedicated CC Blade
+  |- depends on: XState FSM (for post-commit navigation)
+  |- depends on: BladePropsMap extension (new "conventional-commit" type)
+  |- depends on: Existing CC components (TypeSelector, ScopeAutocomplete, etc.)
+  |-> shares: conventional.ts store (unchanged)
+
+Tech Debt Cleanup
+  |- depends on: XState FSM complete (blade store removal)
+  |-> Store consolidation (branches + branchMetadata, etc.)
+  |-> Duplicate blade opener removal
+  |-> Error handling standardization
+
+Test Coverage
+  |- depends on: Vitest setup
+  |- depends on: XState FSM (primary test target)
+  |-> XState machine tests
+  |-> Store unit tests
+  |-> Component smoke tests
 ```
 
 ---
 
-## MVP Recommendation (This Milestone)
+## MVP Recommendation
 
-**Must build (highest value, lowest risk):**
+### Phase 1: Foundation (do first, everything depends on it)
 
-1. **Settings blade** -- Foundation for all other settings-dependent features. Converts existing modal to blade with minimal risk. Unblocks two-column staging toggle and cleanup settings.
+1. **Vitest setup** -- Zero test files exist. Configure vitest, jsdom, testing-library. Enables all subsequent testing.
+2. **XState navigation FSM** -- Core architectural change. Replace `useBladeStore` with XState machine. All blade features depend on this.
+3. **Duplicate blade opener consolidation** -- Quick win before FSM integration; reduces confusion.
 
-2. **Markdown preview blade** -- Massive differentiation for zero competition. `react-markdown` is battle-tested. Reuses proven blade infrastructure.
+### Phase 2: Feature Blades (builds on FSM)
 
-3. **Pinned + recent branches** -- Low complexity, high daily-use value. Tower proved this pattern works.
+4. **Init Repo blade** with .gitignore template search -- Replaces basic `GitInitBanner`. GitHub API integration with offline fallback. Multi-template composition with preview.
+5. **Dedicated Conventional Commit blade** -- Promotes inline form to full blade. Reuses all existing CC components. Adds amend mode and Commit & Push.
 
-4. **Branch cleanup with stale/merged badges** -- Tower set the bar; FlowForge can match and add Gitflow awareness.
+### Phase 3: Structure and Polish (best after new blades exist)
 
-**Should build (strong value, moderate effort):**
+6. **Blade-centric file structure migration** -- Move blade files into feature modules. New blades (init-repo, CC) start in correct structure; migrate existing ones gradually.
+7. **Zustand store consolidation** -- Merge related stores. Remove blade store (replaced by XState).
+8. **XState machine + store unit tests** -- Write tests for navigation FSM guards and transitions. Test conventional store logic.
 
-5. **GitFlow reference blade** -- Unique to FlowForge's Gitflow-enforcing identity. Low complexity for static content, medium for contextual highlighting.
+### Defer to Future Milestones
 
-6. **Commit-scoped file browser blade** -- Extends the blade stack naturally. Needs one backend command.
-
-**Defer (lower priority or high effort):**
-
-7. **Two-column staging toggle** -- Nice-to-have; current vertical layout works. Implement after core features.
-
-8. **Branch cleanup wizard blade** -- The badges and bulk delete can ship without a wizard. Wizard is polish.
-
-9. **3D asset preview** -- Defer entirely. Not aligned with target audience.
-
-10. **Code review prompts** -- Lightweight checklist is optional polish.
+- LICENSE picker: Add to init blade later
+- Smart .gitignore recommendation: Nice differentiator, not blocking
+- Navigation history (forward/back): High complexity, no user demand yet
+- E2E testing: Wait for Tauri testing maturity
+- Scope tree visualization: Polish feature for CC blade
 
 ---
 
 ## New BladeTypes Required
 
-| BladeType | Purpose | Priority |
-|-----------|---------|----------|
-| `"settings"` | Settings as navigation blade | P0 |
-| `"viewer-markdown"` | Rendered markdown preview | P0 |
-| `"file-browser"` | Commit-scoped repository file tree | P1 |
-| `"gitflow-reference"` | Gitflow cheat sheet with context | P1 |
-| `"branch-cleanup"` | Branch cleanup wizard (if built) | P2 |
+| BladeType | Props | Purpose | Priority |
+|-----------|-------|---------|----------|
+| `"init-repo"` | `{ path: string }` | Full init experience with .gitignore templates | P0 |
+| `"conventional-commit"` | `Record<string, never>` | Dedicated CC workspace blade | P0 |
+
+**Note:** Both new types require entries in `BladePropsMap` (in `bladeTypes.ts`), a registration file, and a component. The existing blade registry auto-discovery pattern handles the rest.
 
 ---
 
@@ -481,26 +241,32 @@ Branch Management Enhancements (sidebar, not blades)
 
 | Package | Purpose | Size Impact | Priority |
 |---------|---------|-------------|----------|
-| `react-markdown` | Markdown rendering | ~50KB | P0 |
-| `remark-gfm` | GitHub Flavored Markdown (tables, task lists) | ~15KB | P0 |
-| `rehype-highlight` or `rehype-prism` | Code syntax highlighting in markdown | ~30KB | P1 |
+| `xstate` | Navigation FSM | ~45KB (tree-shakeable) | P0 |
+| `@xstate/react` | React hooks for XState | ~5KB | P0 |
+| `vitest` | Unit testing framework | Dev dep | P0 |
+| `@testing-library/react` | Component testing | Dev dep | P0 |
+| `@testing-library/jest-dom` | DOM matchers | Dev dep | P0 |
+| `jsdom` | DOM environment for tests | Dev dep | P0 |
+| `@stately-ai/inspect` | XState visual debugger (dev-only) | Dev dep | P2 (differentiator) |
 
-**NOT recommended for this milestone:**
-| Package | Purpose | Why Not |
-|---------|---------|---------|
-| `three` / `@react-three/fiber` | 3D preview | ~500KB+, niche audience |
-| Any PR/review library | Code review | Anti-feature |
+**Not needed:**
+| Package | Why Not |
+|---------|---------|
+| `@xstate/store` | Full XState machine is needed for guards/transitions; `@xstate/store` is for simpler cases |
+| `react-router` v7 upgrade | Blade navigation does not use URL routing |
 
 ---
 
 ## Quality Gate Verification
 
-- [x] Categories are clear (table stakes vs differentiators vs anti-features)
-- [x] Complexity noted for each feature
-- [x] Dependencies on existing features identified
-- [x] Blade vs non-blade classification for each feature
-- [x] New BladeTypes enumerated
+- [x] Categories clear (table stakes vs differentiators vs anti-features)
+- [x] Complexity noted for each feature with Low/Med/High
+- [x] Dependencies on existing features identified with arrows
+- [x] New BladeTypes enumerated with props
 - [x] NPM dependencies identified with size impact
+- [x] Feature dependency graph documented
+- [x] MVP phasing recommendation with rationale
+- [x] Anti-features explicitly called out with alternatives
 
 ---
 
@@ -508,39 +274,47 @@ Branch Management Enhancements (sidebar, not blades)
 
 | Area | Level | Reason |
 |------|-------|--------|
-| Settings blade pattern | HIGH | Azure Portal blade UX is well-documented; VS Code settings-as-page pattern is verified |
-| Markdown preview gap | HIGH | Verified via GitHub Desktop issue #17248, Sourcetree SRCTREE-2631, direct testing |
-| Tower branch cleanup | HIGH | Verified via Tower v15 blog post (official source) |
-| Branch favorites | HIGH | Verified via Tower release notes and GitHub Desktop issues |
-| Two-column staging | MEDIUM | SmartGit docs confirm feature; other clients mostly use vertical stack |
-| 3D preview ecosystem | MEDIUM | Anchorpoint/Artstash are niche; mainstream clients confirmed to lack this |
-| Code review in Git clients | HIGH | GitKraken and Tower official feature pages verified |
-| GitFlow reference gap | HIGH | Checked all 5 major competitors; none integrate education inline |
-| react-markdown maturity | HIGH | Verified via npm (v10, active maintenance, Dec 2024 release) |
+| XState v5 navigation FSM | HIGH | Official docs verified: `setup()`, guards, `createActorContext`, `@xstate/react` hooks |
+| GitHub gitignore API | HIGH | Direct API call confirmed 163 templates; endpoints, response format, auth verified |
+| Blade-centric file structure | HIGH | Industry consensus on feature-based React architecture; Vite glob supports it |
+| Conventional Commit blade | HIGH | All sub-components inspected; well-factored, reusable, proven pattern |
+| Tech debt scope | HIGH | Direct codebase inspection of 21 stores, duplicate code, inconsistent patterns |
+| XState + Zustand coexistence | MEDIUM | Multiple community examples but no official "best practice" doc; pattern is straightforward |
+| Offline gitignore fallback | MEDIUM | Bundling approach is standard but exact template selection and format needs validation |
+| Test infrastructure (Vitest) | HIGH | Standard tool for Vite + React; well-documented setup |
 
 ---
 
 ## Sources
 
 ### Official Documentation (HIGH confidence)
-- [Tower v15 Release Blog](https://www.git-tower.com/blog/tower-mac-15) -- Branch cleanup, pinned branches, auto-archive
-- [Tower All Features](https://www.git-tower.com/features/all-features) -- Feature overview
-- [GitKraken Desktop Interface](https://help.gitkraken.com/gitkraken-desktop/interface/) -- Layout, staging, panels
-- [GitKraken Code Review](https://www.gitkraken.com/solutions/code-review) -- PR review features
-- [GitHub Desktop Issue #17248](https://github.com/desktop/desktop/issues/17248) -- Markdown rendering request
-- [GitHub Working with Non-Code Files](https://docs.github.com/en/repositories/working-with-files/using-files/working-with-non-code-files) -- Rich diff for markdown
-- [VS Code Sidebars UX Guidelines](https://code.visualstudio.com/api/ux-guidelines/sidebars) -- Sidebar navigation patterns
-- [Azure Portal Blade Architecture](https://github.com/Azure/portaldocs/blob/main/portal-sdk/generated/top-extensions-architecture.md) -- Blade UX pattern
-- [react-markdown on GitHub](https://github.com/remarkjs/react-markdown) -- Current version, API
+- [XState v5 Documentation](https://stately.ai/docs/xstate)
+- [@xstate/react Hooks](https://stately.ai/docs/xstate-react) -- `useActor`, `useMachine`, `useSelector`, `useActorRef`, `createActorContext`
+- [XState Guards](https://stately.ai/docs/guards) -- Guard syntax, composition with `and`/`or`/`not`
+- [XState State Machines](https://stately.ai/docs/machines) -- `createMachine`, `setup()`, context, transitions
+- [XState TypeScript](https://stately.ai/docs/typescript) -- Type-safe setup, requires TS 5.0+
+- [XState Setup Function](https://stately.ai/docs/setup) -- Recommended approach for typed machines
+- [GitHub REST API: Gitignore](https://docs.github.com/en/rest/gitignore/gitignore) -- List templates, get template content
+- [github/gitignore Repository](https://github.com/github/gitignore) -- 163 templates, root/Global/Community structure
+- [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) -- Specification
 
-### Verified Web Sources (MEDIUM confidence)
-- [SmartGit Split File List](https://smartgit.userecho.com/communities/1/topics/77-split-list-of-files-to-two-separate-list-as-in-sourcetree) -- Two-column staging
-- [GitHub Desktop Recent Branches Issues](https://github.com/desktop/desktop/issues/19664) -- Users wanting more than 5 recent branches
-- [Sourcetree Markdown Request SRCTREE-2631](https://jira.atlassian.com/browse/SRCTREE-2631) -- Open since 2015
-- [Git-Flow Cheatsheet](https://danielkummer.github.io/git-flow-cheatsheet/) -- Reference content
-- [Anchorpoint 3D Asset Management](https://www.anchorpoint.app/blog/a-comparison-of-3d-asset-management-software-for-game-art) -- Specialized 3D Git tools
+### Verified Sources (MEDIUM confidence)
+- [GitKraken Init Documentation](https://help.gitkraken.com/gitkraken-desktop/open-clone-init/) -- Init flow: path + .gitignore + license + README
+- [Global State with XState and React](https://stately.ai/blog/2024-02-12-xstate-react-global-state) -- Global actor patterns
+- [Improve React Navigation with XState v5](https://dev.to/gtodorov/improve-react-navigation-with-xstate-v5-2l15) -- Navigation FSM patterns
+- [Scalable React Projects with Feature-Based Architecture](https://dev.to/naserrasouli/scalable-react-projects-with-feature-based-architecture-117c) -- Feature module structure
+- [React Folder Structure in 5 Steps 2025](https://www.robinwieruch.de/react-folder-structure/) -- Feature-first organization
 
-### UX Pattern Sources (MEDIUM confidence)
-- [Side Drawer UI Guide](https://www.designmonks.co/blog/side-drawer-ui) -- Sidebar vs modal patterns
-- [UX Planet Sidebar Best Practices](https://uxplanet.org/best-ux-practices-for-designing-a-sidebar-9174ee0ecaa2) -- Settings navigation
-- [Material Design Side Sheets](https://m3.material.io/components/side-sheets/guidelines) -- Panel patterns
+### Codebase Analysis (HIGH confidence)
+- FlowForge `src/stores/blades.ts` -- Current navigation: 97 lines, `pushBlade`/`popBlade`/`replaceBlade`/`resetStack`
+- FlowForge `src/stores/bladeTypes.ts` -- `BladePropsMap` with 13 types, `TypedBlade` discriminated union
+- FlowForge `src/hooks/useBladeNavigation.ts` -- Singleton guards, title resolution, 83 lines
+- FlowForge `src/lib/bladeOpener.ts` -- Non-React blade opener, duplicates hook logic, 32 lines
+- FlowForge `src/lib/bladeRegistry.ts` -- Registration pattern: `registerBlade()`, `getBladeRegistration()`, Map-based
+- FlowForge `src/components/blades/registrations/index.ts` -- `import.meta.glob` auto-discovery, HMR support
+- FlowForge `src/stores/conventional.ts` -- CC store: 11 types, suggestions, validation, message building
+- FlowForge `src/hooks/useConventionalCommit.ts` -- Debounced validation, filtered scopes, canCommit flag
+- FlowForge `src/components/commit/ConventionalCommitForm.tsx` -- 202 lines, TypeSelector + ScopeAutocomplete + validation
+- FlowForge `src/components/welcome/GitInitBanner.tsx` -- 111 lines, basic init with branch name option only
+- FlowForge `src-tauri/src/git/init.rs` -- `git_init` command: path validation, git2 init with branch name
+- FlowForge `package.json` -- v1.3.0, React 19, Zustand 5, Tailwind 4, Vite 7, no XState or test deps
