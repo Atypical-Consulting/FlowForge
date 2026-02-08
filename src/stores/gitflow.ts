@@ -59,7 +59,8 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
       await get().refresh();
       return result.data;
     }
-    set({ error: getErrorMessage(result.error), isLoading: false });
+    await get().refresh();
+    set({ error: getErrorMessage(result.error) });
     return null;
   },
 
@@ -70,7 +71,8 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
       await get().refresh();
       return true;
     }
-    set({ error: getErrorMessage(result.error), isLoading: false });
+    await get().refresh();
+    set({ error: getErrorMessage(result.error) });
     return false;
   },
 
@@ -81,7 +83,8 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
       await get().refresh();
       return result.data;
     }
-    set({ error: getErrorMessage(result.error), isLoading: false });
+    await get().refresh();
+    set({ error: getErrorMessage(result.error) });
     return null;
   },
 
@@ -92,7 +95,8 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
       await get().refresh();
       return result.data;
     }
-    set({ error: getErrorMessage(result.error), isLoading: false });
+    await get().refresh();
+    set({ error: getErrorMessage(result.error) });
     return null;
   },
 
@@ -103,7 +107,8 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
       await get().refresh();
       return result.data;
     }
-    set({ error: getErrorMessage(result.error), isLoading: false });
+    await get().refresh();
+    set({ error: getErrorMessage(result.error) });
     return null;
   },
 
@@ -114,7 +119,8 @@ export const useGitflowStore = create<GitflowState>((set, get) => ({
       await get().refresh();
       return result.data;
     }
-    set({ error: getErrorMessage(result.error), isLoading: false });
+    await get().refresh();
+    set({ error: getErrorMessage(result.error) });
     return null;
   },
 
