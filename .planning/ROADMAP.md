@@ -116,8 +116,8 @@ Plans:
 - [x] 22-20-PLAN.md -- W8: Gap Closure — Monaco 0px height fix and HMR registration cleanup
 - [x] 22-21-PLAN.md -- W8: Gap Closure — Replace model-viewer with Three.js + GLTFLoader
 - [x] 22-22-PLAN.md -- W8: Gap Closure — Redesign Gitflow SVG diagram (opacity, cubic curves, geometry)
-- [ ] 22-23-PLAN.md -- W9: Gap Closure — DiffBlade toolbar order fix and Viewer3dBlade silent failure fix
-- [ ] 22-24-PLAN.md -- W9: Gap Closure — Gitflow SVG complete redesign (canonical layout, arrowheads, readability)
+- [x] 22-23-PLAN.md -- W9: Gap Closure — DiffBlade toolbar order fix and Viewer3dBlade silent failure fix
+- [x] 22-24-PLAN.md -- W9: Gap Closure — Gitflow SVG complete redesign (canonical layout, arrowheads, readability)
 
 ---
 
