@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-08)
 ## Current Position
 
 Phase: 30 of 30 (Store Consolidation & Tech Debt)
-Plan: 4 of 4 in current phase
-Status: Phase 30 COMPLETE — v1.4.0 MILESTONE COMPLETE
-Last activity: 2026-02-09 - Completed Phase 30: stores consolidated (21→5), tech debt resolved, 9/9 must-haves verified
+Plan: 7 of 7 in current phase (including gap closure)
+Status: Phase 30 FULLY COMPLETE — v1.4.0 MILESTONE COMPLETE (all gaps closed)
+Last activity: 2026-02-09 - Gap closure: Cmd+K shortcut, singleton toast, 58 new store tests (140 total)
 
 Progress: [██████████] 100%
 

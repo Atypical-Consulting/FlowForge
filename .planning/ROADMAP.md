@@ -135,9 +135,9 @@ Plans:
 - [x] 30-02-PLAN.md -- Fix stale blade stack, topology empty state, command palette entry, review toasts, defaultTab wiring
 - [x] 30-03-PLAN.md -- Store registry, blade store factory, and GitOps domain store consolidation (9 slices)
 - [x] 30-04-PLAN.md -- UI State + Preferences stores, blade store factory migration, closeRepository reset wiring, barrel export
-- [ ] 30-05-PLAN.md -- Fix Cmd+K shortcut and singleton blade feedback (gap closure)
-- [ ] 30-06-PLAN.md -- Tests for store infrastructure and GitOps domain store (gap closure)
-- [ ] 30-07-PLAN.md -- Tests for UI State and Preferences domain stores (gap closure)
+- [x] 30-05-PLAN.md -- Fix Cmd+K shortcut and singleton blade feedback (gap closure)
+- [x] 30-06-PLAN.md -- Tests for store infrastructure and GitOps domain store (gap closure)
+- [x] 30-07-PLAN.md -- Tests for UI State and Preferences domain stores (gap closure)
 
 ## Progress
 
@@ -197,8 +197,8 @@ Plans:
 | 27. Init Repo Blade | 4/4 | ✓ Complete | 2026-02-08 |
 | 28. Conventional Commit Blade | 5/5 | ✓ Complete | 2026-02-09 |
 | 29. Blade-Centric File Structure | 6/6 | ✓ Complete | 2026-02-09 |
-| 30. Store Consolidation & Tech Debt | 4/7 | Gap closure | |
+| 30. Store Consolidation & Tech Debt | 7/7 | ✓ Complete | 2026-02-09 |
 
 ---
 *Last updated: 2026-02-09*
-*Phase 30 gap closure: 3 new plans for Cmd+K fix and store test coverage*
+*Phase 30 complete: all 7 plans done including gap closure (Cmd+K fix + 58 new store tests)*
