@@ -5,9 +5,6 @@
 
 
 export const commands = {
-async greet(name: string) : Promise<string> {
-    return await TAURI_INVOKE("greet", { name });
-},
 /**
  * Open a Git repository at the specified path.
  * 
@@ -873,6 +870,20 @@ async writeInitFiles(path: string, files: InitFile[]) : Promise<Result<null, Git
 }
 },
 /**
+ * Fetch NuGet package information by package ID.
+ * 
+ * Queries the NuGet Search API and Registration API, returning
+ * combined package metadata.
+ */
+async fetchNugetInfo(packageId: string) : Promise<Result<NugetPackageInfo, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("fetch_nuget_info", { packageId }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * List files and directories at a given path within the repository.
  * 
  * Merges entries from the HEAD tree and the working directory so that
@@ -1560,6 +1571,7 @@ inProgress: boolean;
  * List of conflicted file paths
  */
 conflictedFiles: string[] }
+export type NugetPackageInfo = { id: string; version: string; description: string; authors: string; totalDownloads: number; published: string; projectUrl: string | null; licenseUrl: string | null; tags: string[]; nugetUrl: string }
 export type ProjectDetection = { detectedTypes: DetectedProject[] }
 /**
  * A recently checked-out branch extracted from the reflog.

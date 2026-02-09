@@ -10,6 +10,7 @@ pub mod diff;
 pub mod error;
 pub mod gitignore;
 pub mod graph;
+pub mod nuget;
 pub mod history;
 pub mod init;
 pub mod merge;

@@ -23,6 +23,7 @@ use git::{
     gitignore::{
         detect_project_type, get_gitignore_template, list_gitignore_templates, write_init_files,
     },
+    nuget::fetch_nuget_info,
     init::git_init,
     graph::get_commit_graph,
     history::{get_commit_details, get_commit_history, search_commits},
@@ -135,6 +136,8 @@ pub fn run() {
         get_gitignore_template,
         detect_project_type,
         write_init_files,
+        // NuGet proxy commands
+        fetch_nuget_info,
         // Browse commands
         list_repo_files,
         read_repo_file,

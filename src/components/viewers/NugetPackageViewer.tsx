@@ -8,20 +8,8 @@ import {
   Package,
   User,
 } from "lucide-react";
+import { commands } from "../../bindings";
 import type { ViewerProps } from "./ViewerRegistry";
-
-interface NugetPackageInfo {
-  id: string;
-  version: string;
-  description: string;
-  authors: string;
-  totalDownloads: number;
-  published: string;
-  projectUrl?: string;
-  licenseUrl?: string;
-  tags: string[];
-  nugetUrl: string;
-}
 
 // Extract package ID and version from filename: PackageName.1.2.3.nupkg
 function parseNupkgFilename(
@@ -35,53 +23,6 @@ function parseNupkgFilename(
   return { id: match[1], version: match[2] };
 }
 
-async function fetchNugetInfo(
-  packageId: string,
-): Promise<NugetPackageInfo | null> {
-  // Use the search API which provides totalDownloads
-  const searchUrl = `https://azuresearch-usnc.nuget.org/query?q=packageid:${encodeURIComponent(packageId)}&prerelease=true&take=1`;
-
-  const response = await fetch(searchUrl);
-  if (!response.ok) return null;
-
-  const data = await response.json();
-  const pkg = data.data?.[0];
-
-  if (!pkg) return null;
-
-  // Get the latest version's details from registration API for published date
-  const lowerId = packageId.toLowerCase();
-  const registrationUrl = `https://api.nuget.org/v3/registration5-gz-semver2/${lowerId}/index.json`;
-
-  let published = "";
-  try {
-    const regResponse = await fetch(registrationUrl);
-    if (regResponse.ok) {
-      const regData = await regResponse.json();
-      const items = regData.items?.[0]?.items || regData.items || [];
-      const latestEntry = items[items.length - 1];
-      published = latestEntry?.catalogEntry?.published || "";
-    }
-  } catch {
-    // Ignore registration fetch errors, published date is optional
-  }
-
-  return {
-    id: pkg.id || packageId,
-    version: pkg.version,
-    description: pkg.description || "No description available",
-    authors: Array.isArray(pkg.authors)
-      ? pkg.authors.join(", ")
-      : pkg.authors || "Unknown",
-    totalDownloads: pkg.totalDownloads || 0,
-    published,
-    projectUrl: pkg.projectUrl,
-    licenseUrl: pkg.licenseUrl,
-    tags: pkg.tags || [],
-    nugetUrl: `https://www.nuget.org/packages/${pkg.id || packageId}`,
-  };
-}
-
 export function NugetPackageViewer({ file }: ViewerProps) {
   const parsed = parseNupkgFilename(file.path);
 
@@ -91,7 +32,12 @@ export function NugetPackageViewer({ file }: ViewerProps) {
     error,
   } = useQuery({
     queryKey: ["nuget-package", parsed?.id],
-    queryFn: () => (parsed ? fetchNugetInfo(parsed.id) : null),
+    queryFn: async () => {
+      if (!parsed) return null;
+      const result = await commands.fetchNugetInfo(parsed.id);
+      if (result.status === "error") throw new Error(result.error.type);
+      return result.data;
+    },
     enabled: !!parsed,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
