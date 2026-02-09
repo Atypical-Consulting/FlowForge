@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
-import { useSettingsStore } from "../../stores/settings";
+import { useSettingsStore } from "../../../stores/settings";
 import {
   type AppOption,
   getEditorOptions,
   getTerminalOptions,
-} from "../../lib/integrations-options";
+} from "../../../lib/integrations-options";
 import { SettingsField } from "./SettingsField";
 
 const CUSTOM_SENTINEL = "__custom__";

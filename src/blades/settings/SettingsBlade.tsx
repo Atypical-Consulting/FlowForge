@@ -7,11 +7,11 @@ import {
   Wrench,
 } from "lucide-react";
 import { type SettingsCategory, useSettingsStore } from "../../stores/settings";
-import { AppearanceSettings } from "../settings/AppearanceSettings";
-import { GeneralSettings } from "../settings/GeneralSettings";
-import { GitSettings } from "../settings/GitSettings";
-import { IntegrationsSettings } from "../settings/IntegrationsSettings";
-import { ReviewSettings } from "../settings/ReviewSettings";
+import { AppearanceSettings } from "./components/AppearanceSettings";
+import { GeneralSettings } from "./components/GeneralSettings";
+import { GitSettings } from "./components/GitSettings";
+import { IntegrationsSettings } from "./components/IntegrationsSettings";
+import { ReviewSettings } from "./components/ReviewSettings";
 
 interface SettingsTab {
   id: SettingsCategory;

@@ -4,7 +4,7 @@ import {
   DEFAULT_CHECKLIST,
   type FlowType,
   useReviewChecklistStore,
-} from "../../stores/reviewChecklist";
+} from "../../../stores/reviewChecklist";
 
 const inputClassName =
   "w-full max-w-xs px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 rounded-md text-sm text-ctp-text placeholder-ctp-overlay0 focus:outline-none focus:ring-2 focus:ring-ctp-blue focus:border-transparent";

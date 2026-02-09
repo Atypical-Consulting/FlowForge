@@ -3,9 +3,9 @@ import { useGitflowStore } from "../../stores/gitflow";
 import { useRepositoryStore } from "../../stores/repository";
 import { classifyBranch, BRANCH_TYPE_COLORS } from "../../lib/branchClassifier";
 import type { GitflowBranchType } from "../../lib/branchClassifier";
-import { GitflowDiagram } from "../gitflow/GitflowDiagram";
-import { GitflowActionCards } from "../gitflow/GitflowActionCards";
-import { GitflowBranchReference } from "../gitflow/GitflowBranchReference";
+import { GitflowDiagram } from "../../components/gitflow/GitflowDiagram";
+import { GitflowActionCards } from "../../components/gitflow/GitflowActionCards";
+import { GitflowBranchReference } from "../../components/gitflow/GitflowBranchReference";
 
 export function GitflowCheatsheetBlade() {
   const { status: gitflowStatus } = useGitflowStore();

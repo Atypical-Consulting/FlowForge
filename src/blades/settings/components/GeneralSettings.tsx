@@ -1,4 +1,4 @@
-import { useSettingsStore } from "../../stores/settings";
+import { useSettingsStore } from "../../../stores/settings";
 
 const tabOptions = [
   { value: "changes", label: "Changes" },
