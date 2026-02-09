@@ -198,6 +198,11 @@ export const navigationMachine = setup({
       // Side effect: toast notification. Overridable via machine.provide() in tests.
       toast.info("Maximum blade depth reached. Close some blades first.");
     },
+    notifySingletonExists: ({ event }) => {
+      if (event.type === "PUSH_BLADE") {
+        toast.info(`${event.title ?? event.bladeType} is already open`);
+      }
+    },
   },
 }).createMachine({
   id: "bladeNavigation",
@@ -221,6 +226,10 @@ export const navigationMachine = setup({
           {
             guard: and(["isNotSingleton", "isUnderMaxDepth"]),
             actions: "pushBlade",
+          },
+          {
+            // Fallback: singleton already in stack
+            actions: "notifySingletonExists",
           },
         ],
         POP_BLADE: [

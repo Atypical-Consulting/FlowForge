@@ -708,6 +708,38 @@ describe("navigationMachine", () => {
     actor.stop();
   });
 
+  it("singleton duplicate push triggers notifySingletonExists (not silently dropped)", () => {
+    const notifyFn = vi.fn();
+    const testMachine = navigationMachine.provide({
+      actions: {
+        notifySingletonExists: notifyFn,
+      },
+    });
+
+    const actor = createActor(testMachine);
+    actor.start();
+
+    actor.send({
+      type: "PUSH_BLADE",
+      bladeType: "settings",
+      title: "Settings",
+      props: {} as Record<string, never>,
+    });
+    actor.send({
+      type: "PUSH_BLADE",
+      bladeType: "settings",
+      title: "Settings",
+      props: {} as Record<string, never>,
+    });
+
+    // Stack should still be 2 (root + settings, not 3)
+    expect(actor.getSnapshot().context.bladeStack).toHaveLength(2);
+    // But the action should have been called
+    expect(notifyFn).toHaveBeenCalled();
+
+    actor.stop();
+  });
+
   it("notifyMaxDepth action is called when push is blocked at max depth", () => {
     const notifyFn = vi.fn();
     const testMachine = navigationMachine.provide({
