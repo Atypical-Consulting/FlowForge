@@ -4,6 +4,24 @@ A comprehensive guide to enhancing the user experience and interface design of F
 
 ---
 
+## Progress Overview
+
+| # | Feature | Status | Notes |
+|---|---------|--------|-------|
+| 1 | Command Palette (⌘K) | Done | Custom fuzzy search, categories, keyboard nav |
+| 2 | Contextual Empty States | Done | Staging, topology, history, commit panels |
+| 3 | Progressive Disclosure (Commit) | Done | Inline pills, smart scope, collapsible breaking changes, AI inference |
+| 4 | Enhanced Diff Viewer | Partial | Split/unified toggle done; line-level staging, collapsible regions, word-level diff remaining |
+| 5 | Micro-Feedback & Notifications | Done | Custom toast system, skeleton loaders, button spinners, pulse animations |
+| 6 | Enhanced Spatial Design | Done | Frosted glass, backdrop-blur, panel headers |
+| 7 | Branch & Commit Visualization | Partial | Branch colors and node shapes done; author avatars and heat map remaining |
+| 8 | Welcome Screen Enhancement | Partial | Repo cards and drag-drop done; pinned repos and health indicators remaining |
+| 9 | Inline Conflict Resolution | Not started | MergeDialog lists conflicts but no resolution UI |
+| 10 | Git Insights Dashboard | Not started | — |
+| 11 | Customizable Workspace Layouts | Not started | Resizable panels exist but no presets/focus mode |
+
+---
+
 ## Current State Summary
 
 FlowForge is built on a solid foundation:
@@ -18,10 +36,10 @@ FlowForge is built on a solid foundation:
 
 ## High-Impact UX Improvements
 
-### 1. Command Palette (⌘K)
+### 1. Command Palette (⌘K) — Done
 
-**Priority:** Critical  
-**Effort:** Medium  
+**Priority:** Critical
+**Effort:** Medium
 **Impact:** Very High
 
 The #1 power-user feature for desktop applications. A unified command palette provides instant access to any action without the mouse.
@@ -37,6 +55,12 @@ The #1 power-user feature for desktop applications. A unified command palette pr
 - Recent actions history
 - Keyboard-first navigation (↑↓ to select, Enter to execute, Esc to close)
 
+**What was built:**
+- `src/components/command-palette/CommandPalette.tsx` — full palette UI
+- `src/lib/fuzzySearch.ts` — custom fuzzy search with match highlighting
+- Triggers: `Cmd/Ctrl+K` and `Cmd/Ctrl+Shift+P`
+- Category-based grouping, backdrop blur, smooth animations
+
 **Actions to include:**
 | Category | Actions |
 |----------|---------|
@@ -48,10 +72,10 @@ The #1 power-user feature for desktop applications. A unified command palette pr
 
 ---
 
-### 2. Contextual Empty States
+### 2. Contextual Empty States — Done
 
-**Priority:** High  
-**Effort:** Low  
+**Priority:** High
+**Effort:** Low
 **Impact:** Medium-High
 
 Transform blank panels into helpful, actionable guidance.
@@ -65,6 +89,13 @@ Transform blank panels into helpful, actionable guidance.
 | Branches | Only main | "Create a feature branch" + branching strategy hint |
 | Tags | No tags | "Tag a release" + semantic versioning hint |
 
+**What was built:**
+- `src/components/ui/EmptyState.tsx` — reusable empty state component
+- Staging: "All clear! No changes to commit"
+- Topology: "No commits yet" with custom SVG illustration
+- Commit history: "Fresh start!" / "No matching commits"
+- All include icons, descriptions, and optional action buttons
+
 **Design principles:**
 - Use Catppuccin `subtext0` for secondary text
 - Include relevant Lucide icon or custom illustration
@@ -73,22 +104,23 @@ Transform blank panels into helpful, actionable guidance.
 
 ---
 
-### 3. Progressive Disclosure in Commit Form
+### 3. Progressive Disclosure in Commit Form — Done
 
-**Priority:** High  
-**Effort:** Medium  
+**Priority:** High
+**Effort:** Medium
 **Impact:** High
 
 Streamline the commit workflow while maintaining conventional commit support.
 
-**Current issues:**
-- Breaking changes section always visible (rarely used)
-- Type selector requires dropdown interaction
-- Scope field lacks smart suggestions
+**What was built:**
+- `src/components/commit/ConventionalCommitForm.tsx`
+- Inline type pills with grid layout and color coding
+- Smart scope autocomplete from recent commit history
+- Collapsible breaking change section (checkbox reveals textarea)
+- AI-powered type and scope inference with "Apply" buttons
+- Scope frequency chart with collapsible history
 
-**Proposed changes:**
-
-#### 3.1 Inline Type Selector
+#### 3.1 Inline Type Selector — Done
 Replace dropdown with horizontal pill/chip selector:
 ```
 [ feat ] [ fix ] [ docs ] [ style ] [ refactor ] [ test ] [ chore ]
@@ -97,66 +129,84 @@ Replace dropdown with horizontal pill/chip selector:
 - Visual distinction for selected type
 - Color coding per type (feat=green, fix=red, docs=blue, etc.)
 
-#### 3.2 Smart Scope Suggestions
+#### 3.2 Smart Scope Suggestions — Done
 - Extract scopes from recent commits
 - Show as autocomplete dropdown
 - Learn from repository patterns
 
-#### 3.3 Collapsible Advanced Options
+#### 3.3 Collapsible Advanced Options — Done
 - Hide "Breaking Changes" by default
 - Expand when user types `!` after type or clicks "Advanced"
 - Include co-authors field in collapsed section
 
-#### 3.4 AI-Assisted Messages (Future)
+#### 3.4 AI-Assisted Messages — Done
 - Analyze staged diff
 - Suggest commit message based on changes
 - "Generate message" button with loading state
 
 ---
 
-### 4. Enhanced Diff Viewer
+### 4. Enhanced Diff Viewer — Partial
 
-**Priority:** High  
-**Effort:** High  
+**Priority:** High
+**Effort:** High
 **Impact:** Very High
 
 Monaco Editor is powerful but needs Git-specific enhancements.
 
+**What was built:**
+- `src/blades/diff/DiffBlade.tsx`
+- Split/unified view toggle ("Side-by-side" vs "Inline")
+- Monaco Editor integration with custom Catppuccin theme
+- File navigation (prev/next) in staging mode
+- Markdown preview mode for `.md`/`.mdx` files
+
 **Improvements:**
 
-#### 4.1 Collapsible Unchanged Regions
+#### 4.1 Collapsible Unchanged Regions — Not started
 - Collapse blocks of unchanged code (like GitHub)
 - Show "Show 23 unchanged lines" expander
 - Preserve context lines at boundaries
 
-#### 4.2 Line-Level Staging
+#### 4.2 Line-Level Staging — Not started
 - Gutter controls for staging individual lines/hunks
 - Checkbox or +/- buttons per line
 - Visual indication of staged vs unstaged lines
 
-#### 4.3 View Mode Toggle
+#### 4.3 View Mode Toggle — Done
 - Split view (side-by-side)
 - Unified view (inline)
 - Persist preference per user
 
-#### 4.4 Syntax-Aware Highlighting
+#### 4.4 Syntax-Aware Highlighting — Not started
 - Highlight semantic changes (function renamed, variable changed)
 - Dim unchanged syntax (brackets, keywords)
 - Word-level diff highlighting within lines
 
 ---
 
-### 5. Micro-Feedback & Notifications
+### 5. Micro-Feedback & Notifications — Done
 
-**Priority:** High  
-**Effort:** Low  
+**Priority:** High
+**Effort:** Low
 **Impact:** High
 
 Provide immediate feedback for all user actions.
 
-#### 5.1 Toast Notification System
-Position: Bottom-right corner  
-Types: Success, Error, Warning, Info  
+#### 5.1 Toast Notification System — Done
+
+**What was built:**
+- `src/components/ui/Toast.tsx` and `src/components/ui/ToastContainer.tsx`
+- `src/stores/toast.ts` — Zustand store
+- 4 types: success, error, info, warning
+- Auto-dismiss with progress bar animation
+- Action buttons support
+- AnimatePresence with spring animations
+- Backdrop blur and shadow effects
+- Max 3 visible toasts
+
+Position: Bottom-right corner
+Types: Success, Error, Warning, Info
 Features:
 - Auto-dismiss with progress indicator
 - Action buttons (Undo, View, Retry)
@@ -173,33 +223,44 @@ Features:
 | Branch switched | "Switched to feature/xyz" |
 | Commit created | "Committed: feat(ui): add button" |
 
-#### 5.2 Optimistic UI Updates
+#### 5.2 Optimistic UI Updates — Done
 - Update UI immediately on user action
 - Show subtle loading indicator
 - Rollback with error toast if operation fails
 
-#### 5.3 Enhanced Loading States
-- Button spinner matching Catppuccin theme
-- Skeleton loaders for async content
-- Progress indicators for long operations (clone, large push)
+#### 5.3 Enhanced Loading States — Done
 
-#### 5.4 Dirty State Enhancement
-Current: Yellow dot  
-Proposed: Subtle pulse animation + tooltip showing change count
+**What was built:**
+- `src/components/ui/Skeleton.tsx` — uses `motion-safe:animate-pulse`
+- `src/components/ui/button.tsx` — `loading` prop with Loader2 spinner + optional `loadingText`
+- Skeleton loaders in: StagingPanel, CommitHistory, ScopeFrequencyChart
+- 28+ files use `isLoading` or `isPending` states
+
+#### 5.4 Dirty State Enhancement — Done
+
+**What was built:**
+- Custom keyframes in `src/index.css`: `--animate-dirty-pulse` and `--animate-gentle-pulse`
+- GitflowDiagram "YOU ARE HERE" indicator uses `motion-safe:animate-gentle-pulse`
+- Skeleton component uses `motion-safe:animate-pulse`
 
 ---
 
 ## Design Refinements
 
-### 6. Enhanced Spatial Design
+### 6. Enhanced Spatial Design — Done
 
-**Priority:** Medium  
-**Effort:** Low-Medium  
+**Priority:** Medium
+**Effort:** Low-Medium
 **Impact:** High (Visual Polish)
 
 Elevate the visual hierarchy and create depth.
 
-#### 6.1 Panel Headers
+**What was built:**
+- Frosted glass with `backdrop-blur` across 12+ files (command palette, toasts, headers, dialogs, ShortcutTooltip)
+- Panel headers in gitflow, worktree, stash, tags components
+- `src/components/layout/ResizablePanelLayout.tsx` — resizable panel system
+
+#### 6.1 Panel Headers — Done
 ```css
 /* Frosted glass effect */
 .panel-header {
@@ -209,42 +270,49 @@ Elevate the visual hierarchy and create depth.
 }
 ```
 
-#### 6.2 Depth & Shadows
+#### 6.2 Depth & Shadows — Done
 - Add subtle shadows using `ctp-crust` with low opacity
 - Layer panels with z-index for visual hierarchy
 - Hover states that lift elements slightly
 
-#### 6.3 Divider Refinement
+#### 6.3 Divider Refinement — Done
 - Replace solid borders with gradient fades
 - Or remove dividers entirely, relying on spacing
 - Subtle separator dots for horizontal lists
 
-#### 6.4 Floating Action Buttons
+#### 6.4 Floating Action Buttons — Done
 - Primary actions float above content
 - "Stage All" and "Commit" as prominent FABs
 - Keyboard shortcut badges on hover
 
 ---
 
-### 7. Branch & Commit Visualization
+### 7. Branch & Commit Visualization — Partial
 
-**Priority:** Medium  
-**Effort:** Medium  
+**Priority:** Medium
+**Effort:** Medium
 **Impact:** Medium-High
 
 Enhance the topology view for better Git understanding.
 
-#### 7.1 Author Avatars
+**What was built:**
+- `src/components/gitflow/GitflowDiagram.tsx`
+- Branch color coding (5 branch types with Catppuccin colors)
+- Node differentiation (commit dots, merge connectors, version labels)
+- Animated "YOU ARE HERE" indicator with pulse
+- Glow filter for highlighted lanes
+
+#### 7.1 Author Avatars — Not started
 - Fetch from Gravatar or GitHub API
 - Fallback to initials with generated colors
 - Show on commit nodes and in history list
 
-#### 7.2 Branch Color Coding
+#### 7.2 Branch Color Coding — Done
 - Assign consistent colors per branch name
 - Hash branch name to Catppuccin accent color
 - Persist across sessions
 
-#### 7.3 Node Differentiation
+#### 7.3 Node Differentiation — Done
 | Commit Type | Node Shape | Color |
 |-------------|------------|-------|
 | Regular | Circle | `ctp-blue` |
@@ -253,22 +321,29 @@ Enhance the topology view for better Git understanding.
 | HEAD | Circle with ring | `ctp-yellow` |
 | Tag | Hexagon | `ctp-peach` |
 
-#### 7.4 Commit Heat Map
+#### 7.4 Commit Heat Map — Not started
 - Color intensity based on recency
 - Fade older commits
 - Highlight recent activity
 
 ---
 
-### 8. Welcome Screen Enhancement
+### 8. Welcome Screen Enhancement — Partial
 
-**Priority:** Medium  
-**Effort:** Low  
+**Priority:** Medium
+**Effort:** Low
 **Impact:** Medium
 
 Polish the first impression and improve recent repos UX.
 
-#### 8.1 Recent Repository Cards
+**What was built:**
+- `src/components/WelcomeView.tsx`
+- Repository cards in RecentRepos component
+- Drag-drop support for folders
+- Animated gradient background
+- Time-based "last opened" display
+
+#### 8.1 Recent Repository Cards — Done
 Replace list with rich cards showing:
 - Repository name and path
 - Current branch
@@ -276,12 +351,12 @@ Replace list with rich cards showing:
 - Change indicator (uncommitted changes)
 - Quick actions on hover (Open, Terminal, Remove, Pin)
 
-#### 8.2 Pinned Repositories
+#### 8.2 Pinned Repositories — Not started
 - Star/pin favorite repos
 - Pinned repos appear first
 - Persist across sessions
 
-#### 8.3 Repository Health Indicators
+#### 8.3 Repository Health Indicators — Not started
 | Indicator | Icon | Meaning |
 |-----------|------|---------|
 | Green dot | Clean, up to date |
@@ -289,7 +364,7 @@ Replace list with rich cards showing:
 | Red dot | Behind remote |
 | Blue arrow | Ahead of remote |
 
-#### 8.4 Drag & Drop Enhancement
+#### 8.4 Drag & Drop Enhancement — Done
 - Larger drop zone with dashed border
 - Animated border on drag hover
 - Support dropping `.git` folders
@@ -298,13 +373,15 @@ Replace list with rich cards showing:
 
 ## Advanced UX Features
 
-### 9. Inline Conflict Resolution
+### 9. Inline Conflict Resolution — Not started
 
-**Priority:** Medium  
-**Effort:** High  
+**Priority:** Medium
+**Effort:** High
 **Impact:** Very High
 
 Git conflicts are painful—make them manageable.
+
+*Note: `MergeDialog` currently lists conflicted files but has no inline resolution UI.*
 
 #### 9.1 Conflict Detection
 - Visual conflict markers in file tree (red warning icon)
@@ -328,10 +405,10 @@ Git conflicts are painful—make them manageable.
 
 ---
 
-### 10. Git Insights Dashboard
+### 10. Git Insights Dashboard — Not started
 
-**Priority:** Low  
-**Effort:** High  
+**Priority:** Low
+**Effort:** High
 **Impact:** Medium
 
 A new view for repository analytics.
@@ -352,13 +429,15 @@ A new view for repository analytics.
 
 ---
 
-### 11. Customizable Workspace Layouts
+### 11. Customizable Workspace Layouts — Not started
 
-**Priority:** Low  
-**Effort:** Medium  
+**Priority:** Low
+**Effort:** Medium
 **Impact:** Medium
 
 Let users optimize their workflow.
+
+*Note: Resizable panels already exist via `ResizablePanelLayout`, but no presets or focus mode.*
 
 #### 11.1 Layout Presets
 | Preset | Configuration |
@@ -382,35 +461,39 @@ Let users optimize their workflow.
 
 ## Implementation Priority Matrix
 
-### Quick Wins (Low Effort, High Impact)
+### Quick Wins (Sprint 1) — All Done
 
-| Improvement | Effort | Impact | Suggested Sprint |
-|-------------|--------|--------|------------------|
-| Toast notification system | 2-3 days | High | Sprint 1 |
-| Empty state illustrations | 1-2 days | Medium | Sprint 1 |
-| Keyboard shortcut tooltips | 1 day | Medium | Sprint 1 |
-| Button loading spinners | 1 day | Medium | Sprint 1 |
-| Panel header frosted glass | 1 day | High (visual) | Sprint 1 |
-| Dirty state pulse animation | 0.5 day | Low | Sprint 1 |
+| Improvement | Effort | Impact | Status |
+|-------------|--------|--------|--------|
+| Toast notification system | 2-3 days | High | Done |
+| Empty state illustrations | 1-2 days | Medium | Done |
+| Keyboard shortcut tooltips | 1 day | Medium | Done |
+| Button loading spinners | 1 day | Medium | Done |
+| Panel header frosted glass | 1 day | High (visual) | Done |
+| Dirty state pulse animation | 0.5 day | Low | Done |
 
-### Medium Term
+### Medium Term (Sprint 2-3) — Mostly Done
 
-| Improvement | Effort | Impact | Suggested Sprint |
-|-------------|--------|--------|------------------|
-| Command palette (⌘K) | 1 week | Very High | Sprint 2 |
-| Commit type inline pills | 2-3 days | Medium | Sprint 2 |
-| Recent repos as cards | 2-3 days | Medium | Sprint 2 |
-| Branch color coding | 2 days | Medium | Sprint 2 |
-| Collapsible diff regions | 3-4 days | High | Sprint 3 |
+| Improvement | Effort | Impact | Status |
+|-------------|--------|--------|--------|
+| Command palette (⌘K) | 1 week | Very High | Done |
+| Commit type inline pills | 2-3 days | Medium | Done |
+| Recent repos as cards | 2-3 days | Medium | Done |
+| Branch color coding | 2 days | Medium | Done |
+| Collapsible diff regions | 3-4 days | High | Not started |
 
-### Long Term
+### Long Term (Sprint 4+) — Remaining Work
 
-| Improvement | Effort | Impact | Suggested Sprint |
-|-------------|--------|--------|------------------|
-| Line-level staging | 2 weeks | Very High | Sprint 4 |
-| Three-way merge view | 2 weeks | Very High | Sprint 5 |
-| Git insights dashboard | 2 weeks | Medium | Sprint 6 |
-| Workspace layouts | 1 week | Medium | Sprint 6 |
+| Improvement | Effort | Impact | Status |
+|-------------|--------|--------|--------|
+| Line-level staging | 2 weeks | Very High | Not started |
+| Three-way merge view | 2 weeks | Very High | Not started |
+| Git insights dashboard | 2 weeks | Medium | Not started |
+| Workspace layouts | 1 week | Medium | Not started |
+| Author avatars | 3-4 days | Medium | Not started |
+| Commit heat map | 2-3 days | Medium | Not started |
+| Pinned repositories | 2-3 days | Low | Not started |
+| Repo health indicators | 2-3 days | Medium | Not started |
 
 ---
 
@@ -474,14 +557,16 @@ For each improvement, ensure:
 
 ## Next Steps
 
-1. **Review and prioritize** this document with the team
-2. **Create issues** in the project tracker for approved items
-3. **Design mockups** for complex features (command palette, merge view)
-4. **Implement Sprint 1** quick wins for immediate impact
-5. **User testing** after each sprint to validate improvements
+1. ~~**Review and prioritize** this document with the team~~ Done
+2. ~~**Implement Sprint 1** quick wins for immediate impact~~ Done
+3. ~~**Implement Sprint 2** medium-term features~~ Mostly done
+4. **Collapsible diff regions** — last remaining Sprint 3 item
+5. **Line-level staging** and **three-way merge view** — highest-impact remaining features
+6. **Welcome screen polish** — pinned repos, health indicators
+7. **Git insights dashboard** and **workspace layouts** — lower priority, future sprints
 
 ---
 
-*Document created: February 2026*  
-*Last updated: February 2026*  
-*Version: 1.0*
+*Document created: February 2026*
+*Last updated: February 2026*
+*Version: 2.0 — Updated with implementation status*

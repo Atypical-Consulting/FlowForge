@@ -19,8 +19,14 @@ const CATEGORY_ORDER: CommandCategory[] = [
 ];
 
 export function CommandPalette() {
-  const { paletteIsOpen: isOpen, paletteQuery: query, paletteSelectedIndex: selectedIndex, closePalette: close, setPaletteQuery: setQuery, setPaletteSelectedIndex: setSelectedIndex } =
-    useCommandPaletteStore();
+  const {
+    paletteIsOpen: isOpen,
+    paletteQuery: query,
+    paletteSelectedIndex: selectedIndex,
+    closePalette: close,
+    setPaletteQuery: setQuery,
+    setPaletteSelectedIndex: setSelectedIndex,
+  } = useCommandPaletteStore();
 
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -136,7 +142,7 @@ export function CommandPalette() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.98, y: -8 }}
             transition={{ duration, ease: "easeOut" as const }}
-            className="fixed top-[15%] left-1/2 -translate-x-1/2 z-50 w-full max-w-[560px]"
+            className="fixed top-[15%] left-1/2 -translate-x-1/2 z-50 w-full max-w-140"
           >
             <div className="bg-ctp-mantle border border-ctp-surface0 rounded-lg shadow-xl overflow-hidden">
               {/* Search input */}
@@ -167,7 +173,7 @@ export function CommandPalette() {
                 id="command-palette-list"
                 role="listbox"
                 aria-label="Commands"
-                className="max-h-[320px] overflow-y-auto py-1"
+                className="max-h-80 overflow-y-auto py-1"
               >
                 {results.length > 0 ? (
                   groupedResults ? (

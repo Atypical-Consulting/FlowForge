@@ -35,13 +35,11 @@ export function CommitPreview({
   if (variant === "compact") {
     return (
       <div className="space-y-2">
-        <label className="text-sm font-medium text-ctp-subtext1">
-          Preview
-        </label>
+        <label className="text-sm font-medium text-ctp-subtext1">Preview</label>
         <pre
           className={cn(
             "p-3 text-sm bg-ctp-mantle border border-ctp-surface0 rounded",
-            "text-ctp-subtext1 font-mono whitespace-pre-wrap break-words",
+            "text-ctp-subtext1 font-mono whitespace-pre-wrap wrap-break-word",
             "max-h-32 overflow-y-auto",
           )}
           aria-live="polite"
@@ -82,7 +80,7 @@ export function CommitPreview({
       </div>
 
       {/* Preview with ruler */}
-      <div className="relative flex-1 min-h-[300px]">
+      <div className="relative flex-1 min-h-75">
         {/* Column-72 ruler */}
         <div
           className="absolute top-0 bottom-0 border-l border-dashed border-ctp-surface2 pointer-events-none z-10"
@@ -96,7 +94,7 @@ export function CommitPreview({
         <pre
           className={cn(
             "p-3 text-sm bg-ctp-mantle border border-ctp-surface0 rounded",
-            "font-mono whitespace-pre-wrap break-words",
+            "font-mono whitespace-pre-wrap wrap-break-word",
             "h-full overflow-y-auto",
           )}
           aria-live="polite"
@@ -166,12 +164,8 @@ function HighlightedSubject({
   return (
     <>
       <span className={typeColor}>{parsed.commitType}</span>
-      {parsed.scope && (
-        <span className="text-ctp-teal">({parsed.scope})</span>
-      )}
-      {parsed.isBreaking && (
-        <span className="text-ctp-red font-bold">!</span>
-      )}
+      {parsed.scope && <span className="text-ctp-teal">({parsed.scope})</span>}
+      {parsed.isBreaking && <span className="text-ctp-red font-bold">!</span>}
       <span className="text-ctp-overlay1">: </span>
       <span className="text-ctp-text">{parsed.description}</span>
     </>
