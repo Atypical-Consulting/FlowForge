@@ -1,9 +1,9 @@
 import { lazy } from "react";
-import { registerBlade } from "../../../lib/bladeRegistry";
-import { BladeBreadcrumb } from "../../../blades/_shared/BladeBreadcrumb";
+import { registerBlade } from "../../lib/bladeRegistry";
+import { BladeBreadcrumb } from "../_shared/BladeBreadcrumb";
 
 const RepoBrowserBlade = lazy(() =>
-  import("../RepoBrowserBlade").then((m) => ({
+  import("./RepoBrowserBlade").then((m) => ({
     default: m.RepoBrowserBlade,
   })),
 );
@@ -16,6 +16,7 @@ registerBlade<{ path?: string }>({
   },
   component: RepoBrowserBlade,
   lazy: true,
+  singleton: true,
   renderTitleContent: (props) => (
     <BladeBreadcrumb path={props.path || ""} />
   ),

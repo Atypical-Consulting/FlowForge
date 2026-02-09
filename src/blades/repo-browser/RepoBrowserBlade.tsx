@@ -5,10 +5,10 @@ import { commands } from "../../bindings";
 import type { RepoFileEntry } from "../../bindings";
 import { bladeTypeForFile } from "../../lib/fileDispatch";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
-import { FileTypeIcon } from "../icons/FileTypeIcon";
-import { BladeContentLoading } from "../../blades/_shared/BladeContentLoading";
-import { BladeContentError } from "../../blades/_shared/BladeContentError";
-import { BladeContentEmpty } from "../../blades/_shared/BladeContentEmpty";
+import { FileTypeIcon } from "../../components/icons/FileTypeIcon";
+import { BladeContentLoading } from "../_shared/BladeContentLoading";
+import { BladeContentError } from "../_shared/BladeContentError";
+import { BladeContentEmpty } from "../_shared/BladeContentEmpty";
 
 interface RepoBrowserBladeProps {
   path?: string;

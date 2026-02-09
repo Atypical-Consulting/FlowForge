@@ -8,12 +8,9 @@ export { BladeLoadingFallback } from "../../blades/_shared/BladeLoadingFallback"
 export { ProcessNavigation } from "../../blades/_shared/ProcessNavigation";
 export { FileTreeBlade } from "../../blades/_shared/FileTreeBlade";
 
-// Blade components — still in old location during migration
-export { ChangelogBlade } from "./ChangelogBlade";
-export { CommitDetailsBlade } from "./CommitDetailsBlade";
+// Blade components — migrated to new locations
+export { ChangelogBlade } from "../../blades/changelog/ChangelogBlade";
 export { DiffBlade } from "./DiffBlade";
-export { SettingsBlade } from "./SettingsBlade";
 export { StagingChangesBlade } from "./StagingChangesBlade";
 export { TopologyRootBlade } from "./TopologyRootBlade";
-export { ViewerImageBlade } from "./ViewerImageBlade";
-export { ViewerNupkgBlade } from "./ViewerNupkgBlade";
+export { ViewerNupkgBlade } from "../../blades/viewer-nupkg/ViewerNupkgBlade";
