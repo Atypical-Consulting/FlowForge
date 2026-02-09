@@ -151,7 +151,14 @@ Each layer adds value; each inner layer stands without the outer ones.
 
 ### Active
 
-(No active milestone — next milestone to be defined)
+## Current Milestone: v1.5 GitHub Extension
+
+**Goal:** Add an extension system to FlowForge and ship GitHub integration (PRs, issues, OAuth) as the first extension, alongside a top bar UX overhaul.
+
+**Target features:**
+- Extension platform: manifest format, public API (blades, commands, stores), lifecycle hooks, install from GitHub URL, manager UI, permissions model, versioning/compatibility
+- GitHub extension: OAuth Device Flow auth, view/merge PRs, view/close issues, link account to repo
+- Top bar: regroup by intent, overflow menu, consistent iconography, show/hide toggle customization, contextual repo-aware actions
 
 ### Deferred to v2+
 
@@ -168,9 +175,7 @@ Each layer adds value; each inner layer stands without the outer ones.
 - Smart staging with automatic changeset grouping — underserved not unserved, v3
 - Branch health monitoring (staleness, drift indicators) — ambient UX enhancement, v3
 - Built-in code editor — scope creep, IDE competition
-- Issue tracker integration — v1 scope control
 - Mercurial/SVN support — Git-only focus
-- Plugin/extension system — complexity, security risks
 - CI/CD integration — feature creep
 - Built-in terminal — users have terminals
 - Code review features — GitHub/GitLab do this well (lightweight checklist added in v1.3)
@@ -244,4 +249,4 @@ Documentation website live on GitHub Pages.
 | Direction-aware blade animations (v1.4) | Push slides right, pop slides left, replace crossfades; respects prefers-reduced-motion | ✓ Good — polished UX |
 
 ---
-*Last updated: 2026-02-09 after v1.4.0 milestone completed*
+*Last updated: 2026-02-09 after v1.5.0 milestone started*

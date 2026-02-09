@@ -5,16 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Planning next milestone
+**Current focus:** v1.5 GitHub Extension
 
 ## Current Position
 
-Phase: None — between milestones
-Plan: N/A
-Status: v1.4.0 shipped, next milestone to be defined
-Last activity: 2026-02-09 - Milestone v1.4.0 archived
-
-Progress: [██████████] 100% (v1.4.0)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-09 — Milestone v1.5 started
 
 ## Milestone History
 
@@ -76,9 +74,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: v1.4.0 milestone archived
+Stopped at: Defining v1.5 requirements
 Resume file: None
 
 ---
 *State updated: 2026-02-09*
-*v1.4.0 Architecture & Navigation Overhaul -- SHIPPED*
+*v1.5.0 GitHub Extension -- DEFINING REQUIREMENTS*
