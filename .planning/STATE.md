@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Phase 31 - Security Hardening
+**Current focus:** Phase 32 - Toolbar Overhaul
 
 ## Current Position
 
-Phase: 31 of 36 (Security Hardening)
+Phase: 32 of 36 (Toolbar Overhaul)
 Plan: — (not yet planned)
 Status: Ready to plan
-Last activity: 2026-02-09 — v1.5 roadmap created (6 phases, 34 requirements)
+Last activity: 2026-02-10 — Phase 31 Security Hardening complete (2/2 plans, verified)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 17%
 
 ## Milestone History
 
@@ -32,9 +32,9 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 30 complete + 6 planned = 36
-- Total plans: ~185 complete
-- Total requirements validated: 175 (+ 34 v1.5 pending)
+- Total phases: 31 complete + 5 planned = 36
+- Total plans: ~187 complete
+- Total requirements validated: 178 (+ 31 v1.5 pending)
 - Codebase: ~36,946 LOC (28,155 TypeScript + 8,791 Rust)
 - Tests: 140 (Vitest + jsdom)
 
@@ -58,7 +58,7 @@ None.
 
 ### Blockers/Concerns
 
-- CSP is currently null — must be hardened before any extension or GitHub work (Phase 31 addresses this)
+- ~~CSP is currently null~~ — RESOLVED: Strict CSP applied in Phase 31
 - OAuth token storage must use OS keychain from day one, never plaintext (Phase 34 addresses this)
 
 ### Quick Tasks Completed
@@ -79,10 +79,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-09
-Stopped at: v1.5 roadmap created — 6 phases (31-36), 34 requirements mapped
+Last session: 2026-02-10
+Stopped at: Phase 31 complete — ready to plan Phase 32
 Resume file: None
 
 ---
-*State updated: 2026-02-09*
-*v1.5.0 GitHub Extension -- READY TO PLAN PHASE 31*
+*State updated: 2026-02-10*
+*v1.5.0 GitHub Extension -- READY TO PLAN PHASE 32*

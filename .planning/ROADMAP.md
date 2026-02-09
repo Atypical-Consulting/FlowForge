@@ -76,7 +76,7 @@
 
 ## Phases
 
-- [ ] **Phase 31: Security Hardening** - Lock down CSP, asset protocol scope, and Tauri capabilities before introducing external network access and extension code
+- [x] **Phase 31: Security Hardening** - Lock down CSP, asset protocol scope, and Tauri capabilities before introducing external network access and extension code (completed 2026-02-10)
 - [ ] **Phase 32: Toolbar Overhaul** - Transform hardcoded Header.tsx buttons into a data-driven toolbar registry with overflow handling and contextual visibility
 - [ ] **Phase 33: Extension System Foundation** - Build the manifest-driven extension platform with lifecycle management, namespaced registrations, and API versioning
 - [ ] **Phase 34: GitHub Authentication** - Implement OAuth Device Flow with secure OS keychain token storage and automatic GitHub remote detection
@@ -94,8 +94,8 @@
   2. The asset protocol scope is narrowed to specific allowed directories instead of wildcard access
   3. Tauri capability permissions in default.json contain only the minimum scopes needed for current features with no overly broad grants
 **Plans**: 2 plans
-- [ ] 31-01-PLAN.md -- Bundle Monaco locally and proxy NuGet API through Rust backend
-- [ ] 31-02-PLAN.md -- Apply strict CSP, disable asset protocol, audit capabilities
+- [x] 31-01-PLAN.md -- Bundle Monaco locally and proxy NuGet API through Rust backend
+- [x] 31-02-PLAN.md -- Apply strict CSP, disable asset protocol, audit capabilities
 
 ### Phase 32: Toolbar Overhaul
 **Goal**: Users interact with a responsive, grouped toolbar that adapts to window width and hides irrelevant actions based on context
@@ -197,4 +197,4 @@ All 34 v1.5 requirements mapped:
 | EXT-13 | 36 | Extension System |
 
 ---
-*Last updated: 2026-02-09 after v1.5.0 roadmap created*
+*Last updated: 2026-02-10 after Phase 31 completed*
