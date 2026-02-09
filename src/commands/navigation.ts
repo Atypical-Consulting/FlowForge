@@ -9,7 +9,7 @@ registerCommand({
   title: "Command Palette",
   description: "Open the command palette",
   category: "Navigation",
-  shortcut: "mod+shift+p",
+  shortcut: "mod+k",
   icon: Search,
   action: () => {
     useCommandPaletteStore.getState().togglePalette();

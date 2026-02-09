@@ -16,6 +16,7 @@ import { toast } from "../stores/toast";
  * - Cmd/Ctrl+O: Open repository
  * - Cmd/Ctrl+,: Open settings
  * - Cmd/Ctrl+Shift+A: Stage all files
+ * - Cmd/Ctrl+K: Open command palette
  * - Cmd/Ctrl+Shift+P: Open command palette
  * - Cmd/Ctrl+Shift+U: Push (Upload)
  * - Cmd/Ctrl+Shift+L: Pull (L for "pull Latest")
@@ -177,6 +178,16 @@ export function useKeyboardShortcuts() {
   // Command palette shortcut
   useHotkeys(
     "mod+shift+p",
+    (e) => {
+      e.preventDefault();
+      useCommandPaletteStore.getState().togglePalette();
+    },
+    { preventDefault: true },
+  );
+
+  // Command palette shortcut (discoverable alias)
+  useHotkeys(
+    "mod+k",
     (e) => {
       e.preventDefault();
       useCommandPaletteStore.getState().togglePalette();
