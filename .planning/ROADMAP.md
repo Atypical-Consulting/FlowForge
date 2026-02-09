@@ -93,7 +93,9 @@
   1. The app enforces a strict Content-Security-Policy that allows only self-origin scripts and whitelisted GitHub API/CDN domains for connect-src and img-src
   2. The asset protocol scope is narrowed to specific allowed directories instead of wildcard access
   3. Tauri capability permissions in default.json contain only the minimum scopes needed for current features with no overly broad grants
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 31-01-PLAN.md -- Bundle Monaco locally and proxy NuGet API through Rust backend
+- [ ] 31-02-PLAN.md -- Apply strict CSP, disable asset protocol, audit capabilities
 
 ### Phase 32: Toolbar Overhaul
 **Goal**: Users interact with a responsive, grouped toolbar that adapts to window width and hides irrelevant actions based on context
