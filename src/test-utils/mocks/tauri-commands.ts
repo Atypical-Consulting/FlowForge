@@ -233,7 +233,6 @@ export function createFileChanged(
 // Full mock commands object
 export function createMockCommands() {
   return {
-    greet: vi.fn().mockResolvedValue("Hello, test!"),
     openRepository: vi.fn().mockResolvedValue(ok(createRepoStatus())),
     getRepositoryStatus: vi.fn().mockResolvedValue(ok(createRepoStatus())),
     isGitRepository: vi.fn().mockResolvedValue(ok(true)),

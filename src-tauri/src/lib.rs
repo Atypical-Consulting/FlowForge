@@ -45,16 +45,9 @@ use specta_typescript::Typescript;
 use tauri::Manager;
 use tauri_specta::{Builder, collect_commands};
 
-#[tauri::command]
-#[specta::specta]
-async fn greet(name: String) -> String {
-    format!("Hello, {}! Welcome to FlowForge.", name)
-}
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let builder = Builder::<tauri::Wry>::new().commands(collect_commands![
-        greet,
         // Repository commands
         open_repository,
         get_repository_status,
