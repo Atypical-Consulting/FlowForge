@@ -8,7 +8,7 @@ import { useRecentRepos } from "../hooks/useRecentRepos";
 import { fadeInUp, staggerContainer, staggerItem } from "../lib/animations";
 import { modKeyLabel } from "../lib/platform";
 import { useRepositoryStore } from "../stores/repository";
-import { InitRepoBlade } from "./blades/InitRepoBlade";
+import { InitRepoBlade } from "../blades/init-repo";
 import { CloneForm } from "./clone/CloneForm";
 import { RecentRepos } from "./RecentRepos";
 import { Button } from "./ui/button";

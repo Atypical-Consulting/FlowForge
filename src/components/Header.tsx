@@ -23,7 +23,7 @@ import { useStashStore } from "../stores/stash";
 import { useTagStore } from "../stores/tags";
 import { toast } from "../stores/toast";
 import { useUndoStore } from "../stores/undo";
-import { ProcessNavigation } from "./blades";
+import { ProcessNavigation } from "../blades/_shared";
 import { BranchSwitcher } from "./navigation/BranchSwitcher";
 import { RepoSwitcher } from "./navigation/RepoSwitcher";
 import { SyncButtons } from "./sync/SyncButtons";

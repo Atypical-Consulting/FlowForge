@@ -5,8 +5,8 @@ import type { DiffSource } from "../blades/diff";
  *
  * TO ADD A NEW BLADE TYPE:
  * 1. Add an entry to this interface
- * 2. Create the component in src/components/blades/YourBlade.tsx
- * 3. Create src/components/blades/registrations/your-type.ts with registerBlade()
+ * 2. Create src/blades/your-type/ with YourBlade.tsx
+ * 3. Create src/blades/your-type/registration.ts with registerBlade()
  * 4. If file-type-based: add mapping in src/lib/fileDispatch.ts
  *
  * The dev-mode exhaustiveness check will warn if step 3 is forgotten.

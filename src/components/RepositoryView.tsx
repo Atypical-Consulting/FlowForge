@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRepositoryStore } from "../stores/repository";
-import { BladeContainer } from "./blades";
+import { BladeContainer } from "../blades/_shared";
 import { BranchList } from "./branches/BranchList";
 import { CommitForm } from "./commit/CommitForm";
 import { GitflowPanel } from "./gitflow";

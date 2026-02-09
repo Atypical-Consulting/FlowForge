@@ -1,19 +1,14 @@
 import { clearRegistry, getAllBladeTypes } from "../lib/bladeRegistry";
 
-// Dual-glob: scan new per-blade registrations AND old flat directory
+// Single-glob: scan per-blade registration files
 const modules = import.meta.glob(
-  [
-    "./*/registration.{ts,tsx}",                         // New location
-    "../components/blades/registrations/*.{ts,tsx}",     // Old location (migration period)
-    "!../components/blades/registrations/index.ts",      // Exclude old barrel
-    "!./_shared/**",                                     // Exclude infrastructure
-  ],
+  ["./*/registration.{ts,tsx}", "!./_shared/**"],
   { eager: true }
 );
 
 // Guard against misconfigured paths
 if (import.meta.env.DEV && Object.keys(modules).length === 0) {
-  console.error("[BladeRegistry] No registration modules found -- check blade directories and registrations/");
+  console.error("[BladeRegistry] No registration modules found -- check src/blades/*/registration.{ts,tsx}");
 }
 
 // Dev-mode exhaustiveness check
