@@ -38,17 +38,17 @@ interface StashConfirmTarget {
 
 export function Header() {
   const queryClient = useQueryClient();
-  const { status, isLoading, openRepository, closeRepository, refreshStatus } =
+  const { repoStatus: status, repoIsLoading: isLoading, openRepository, closeRepository, refreshRepoStatus: refreshStatus } =
     useRepositoryStore();
   const {
     loadBranches,
     checkoutBranch,
     checkoutRemoteBranch,
-    isLoading: branchesLoading,
+    branchIsLoading: branchesLoading,
   } = useBranchStore();
-  const { loadStashes, saveStash, isLoading: stashesLoading } = useStashStore();
-  const { loadTags, isLoading: tagsLoading } = useTagStore();
-  const { undoInfo, isUndoing, loadUndoInfo, performUndo } = useUndoStore();
+  const { loadStashes, saveStash, stashIsLoading: stashesLoading } = useStashStore();
+  const { loadTags, tagIsLoading: tagsLoading } = useTagStore();
+  const { undoInfo, undoIsUndoing: isUndoing, loadUndoInfo, performUndo } = useUndoStore();
   const { openBlade } = useBladeNavigation();
   const { addRecentRepo } = useRecentRepos();
   const navigationStore = useNavigationStore();

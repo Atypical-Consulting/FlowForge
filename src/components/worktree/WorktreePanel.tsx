@@ -8,15 +8,15 @@ interface WorktreePanelProps {
 
 export function WorktreePanel({ onOpenDeleteDialog }: WorktreePanelProps) {
   const {
-    worktrees,
-    isLoading,
-    error,
-    selectedWorktree,
+    worktreeList: worktrees,
+    worktreeIsLoading: isLoading,
+    worktreeError: error,
+    worktreeSelected: selectedWorktree,
     loadWorktrees,
     selectWorktree,
     openInExplorer,
     switchToWorktree,
-    clearError,
+    clearWorktreeError: clearError,
   } = useWorktreeStore();
 
   // Load worktrees on mount

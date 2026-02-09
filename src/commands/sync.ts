@@ -28,7 +28,7 @@ registerCommand({
       toast.error(`Push failed: ${String(error)}`);
     }
   },
-  enabled: () => !!useRepositoryStore.getState().status,
+  enabled: () => !!useRepositoryStore.getState().repoStatus,
 });
 
 registerCommand({
@@ -47,7 +47,7 @@ registerCommand({
       toast.error(`Pull failed: ${String(error)}`);
     }
   },
-  enabled: () => !!useRepositoryStore.getState().status,
+  enabled: () => !!useRepositoryStore.getState().repoStatus,
 });
 
 registerCommand({
@@ -66,7 +66,7 @@ registerCommand({
       toast.error(`Fetch failed: ${String(error)}`);
     }
   },
-  enabled: () => !!useRepositoryStore.getState().status,
+  enabled: () => !!useRepositoryStore.getState().repoStatus,
 });
 
 registerCommand({
@@ -84,7 +84,7 @@ registerCommand({
       toast.error(`Failed to stage: ${String(error)}`);
     }
   },
-  enabled: () => !!useRepositoryStore.getState().status,
+  enabled: () => !!useRepositoryStore.getState().repoStatus,
 });
 
 registerCommand({
@@ -97,5 +97,5 @@ registerCommand({
   action: () => {
     document.dispatchEvent(new CustomEvent("toggle-amend"));
   },
-  enabled: () => !!useRepositoryStore.getState().status,
+  enabled: () => !!useRepositoryStore.getState().repoStatus,
 });

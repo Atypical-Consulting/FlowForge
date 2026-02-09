@@ -1,39 +1,5 @@
-import { create } from "zustand";
-import type { CloneProgress } from "../bindings";
+// @deprecated - Import from "./domain/git-ops" directly.
+// This shim exists for backward compatibility during Phase 30 migration.
+import { useGitOpsStore } from "./domain/git-ops";
 
-interface CloneState {
-  isCloning: boolean;
-  progress: CloneProgress | null;
-  error: string | null;
-  startClone: () => void;
-  updateProgress: (progress: CloneProgress) => void;
-  finishClone: () => void;
-  setError: (error: string) => void;
-  reset: () => void;
-}
-
-export const useCloneStore = create<CloneState>((set) => ({
-  isCloning: false,
-  progress: null,
-  error: null,
-
-  startClone: () => {
-    set({ isCloning: true, progress: null, error: null });
-  },
-
-  updateProgress: (progress) => {
-    set({ progress });
-  },
-
-  finishClone: () => {
-    set({ isCloning: false });
-  },
-
-  setError: (error) => {
-    set({ isCloning: false, error });
-  },
-
-  reset: () => {
-    set({ isCloning: false, progress: null, error: null });
-  },
-}));
+export const useCloneStore = useGitOpsStore;

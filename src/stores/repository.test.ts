@@ -26,9 +26,9 @@ describe("useRepositoryStore", () => {
 
   it("has correct initial state", () => {
     const state = useRepositoryStore.getState();
-    expect(state.status).toBeNull();
-    expect(state.isLoading).toBe(false);
-    expect(state.error).toBeNull();
+    expect(state.repoStatus).toBeNull();
+    expect(state.repoIsLoading).toBe(false);
+    expect(state.repoError).toBeNull();
   });
 
   it("openRepository sets status on success", async () => {
@@ -38,9 +38,9 @@ describe("useRepositoryStore", () => {
     await useRepositoryStore.getState().openRepository("/test/repo");
 
     const state = useRepositoryStore.getState();
-    expect(state.status).toEqual(repoStatus);
-    expect(state.isLoading).toBe(false);
-    expect(state.error).toBeNull();
+    expect(state.repoStatus).toEqual(repoStatus);
+    expect(state.repoIsLoading).toBe(false);
+    expect(state.repoError).toBeNull();
   });
 
   it("openRepository sets error on failure", async () => {
@@ -53,15 +53,15 @@ describe("useRepositoryStore", () => {
     ).rejects.toThrow();
 
     const state = useRepositoryStore.getState();
-    expect(state.status).toBeNull();
-    expect(state.isLoading).toBe(false);
-    expect(state.error).toBeTruthy();
+    expect(state.repoStatus).toBeNull();
+    expect(state.repoIsLoading).toBe(false);
+    expect(state.repoError).toBeTruthy();
   });
 
   it("resets state between tests (auto-reset verification)", () => {
     const state = useRepositoryStore.getState();
-    expect(state.status).toBeNull();
-    expect(state.isLoading).toBe(false);
-    expect(state.error).toBeNull();
+    expect(state.repoStatus).toBeNull();
+    expect(state.repoIsLoading).toBe(false);
+    expect(state.repoError).toBeNull();
   });
 });

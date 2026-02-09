@@ -33,7 +33,7 @@ registerCommand({
   action: () => {
     useRepositoryStore.getState().closeRepository();
   },
-  enabled: () => !!useRepositoryStore.getState().status,
+  enabled: () => !!useRepositoryStore.getState().repoStatus,
 });
 
 registerCommand({
@@ -56,7 +56,7 @@ registerCommand({
   action: () => {
     openBlade("changelog", {} as Record<string, never>);
   },
-  enabled: () => !!useRepositoryStore.getState().status,
+  enabled: () => !!useRepositoryStore.getState().repoStatus,
 });
 
 registerCommand({
@@ -72,5 +72,5 @@ registerCommand({
       useTagStore.getState().loadTags(),
     ]);
   },
-  enabled: () => !!useRepositoryStore.getState().status,
+  enabled: () => !!useRepositoryStore.getState().repoStatus,
 });

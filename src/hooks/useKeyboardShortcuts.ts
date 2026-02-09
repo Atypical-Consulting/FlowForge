@@ -25,7 +25,7 @@ import { toast } from "../stores/toast";
  */
 export function useKeyboardShortcuts() {
   const queryClient = useQueryClient();
-  const { status } = useRepositoryStore();
+  const { repoStatus: status } = useRepositoryStore();
 
   // Stage all mutation
   const stageAllMutation = useMutation({
@@ -213,10 +213,10 @@ export function useKeyboardShortcuts() {
       const topologyStore = useTopologyStore.getState();
       if (
         ctx.activeProcess === "topology" &&
-        topologyStore.selectedCommit &&
+        topologyStore.topologySelectedCommit &&
         ctx.bladeStack.length === 1
       ) {
-        openBlade("commit-details", { oid: topologyStore.selectedCommit });
+        openBlade("commit-details", { oid: topologyStore.topologySelectedCommit });
       }
     },
     { enableOnFormTags: false, enabled: !!status },

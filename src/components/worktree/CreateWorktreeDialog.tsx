@@ -22,8 +22,8 @@ export function CreateWorktreeDialog({
   open: isOpen,
   onOpenChange,
 }: CreateWorktreeDialogProps) {
-  const { branches, loadBranches } = useBranchStore();
-  const { createWorktree, isLoading, error, clearError } = useWorktreeStore();
+  const { branchList: branches, loadBranches } = useBranchStore();
+  const { createWorktree, worktreeIsLoading: isLoading, worktreeError: error, clearWorktreeError: clearError } = useWorktreeStore();
 
   const [name, setName] = useState("");
   const [path, setPath] = useState("");

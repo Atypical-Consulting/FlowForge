@@ -11,5 +11,5 @@ registerCommand({
   action: () => {
     document.dispatchEvent(new CustomEvent("create-branch-dialog"));
   },
-  enabled: () => !!useRepositoryStore.getState().status,
+  enabled: () => !!useRepositoryStore.getState().repoStatus,
 });

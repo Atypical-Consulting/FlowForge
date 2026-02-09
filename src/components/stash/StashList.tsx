@@ -15,14 +15,14 @@ export function StashList({
   onCloseSaveDialog,
 }: StashListProps) {
   const {
-    stashes,
-    isLoading,
-    error,
+    stashList: stashes,
+    stashIsLoading: isLoading,
+    stashError: error,
     loadStashes,
     applyStash,
     popStash,
     dropStash,
-    clearError,
+    clearStashError: clearError,
   } = useStashStore();
 
   useEffect(() => {

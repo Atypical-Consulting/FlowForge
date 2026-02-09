@@ -16,7 +16,7 @@ export function TagList({
   onCloseCreateDialog,
   onOpenCreateDialog,
 }: TagListProps) {
-  const { tags, isLoading, error, loadTags, deleteTag, clearError } =
+  const { tagList: tags, tagIsLoading: isLoading, tagError: error, loadTags, deleteTag, clearTagError: clearError } =
     useTagStore();
 
   useEffect(() => {

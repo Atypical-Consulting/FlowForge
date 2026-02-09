@@ -10,10 +10,10 @@ import { StartFlowDialog } from "./StartFlowDialog";
 type FlowType = "feature" | "release" | "hotfix";
 
 export function GitflowPanel() {
-  const { status, isLoading, error, refresh, abort, clearError } =
+  const { gitflowStatus: status, gitflowIsLoading: isLoading, gitflowError: error, refreshGitflow: refresh, abortGitflow: abort, clearGitflowError: clearError } =
     useGitflowStore();
   const { openBlade } = useBladeNavigation();
-  const { branches } = useBranchStore();
+  const branches = useBranchStore((s) => s.branchList);
   const [showStartDialog, setShowStartDialog] = useState<FlowType | null>(null);
   const [showFinishDialog, setShowFinishDialog] = useState<FlowType | null>(
     null,

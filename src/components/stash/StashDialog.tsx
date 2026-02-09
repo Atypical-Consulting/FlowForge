@@ -15,7 +15,7 @@ interface StashDialogProps {
 }
 
 export function StashDialog({ onClose }: StashDialogProps) {
-  const { saveStash, isLoading, error } = useStashStore();
+  const { saveStash, stashIsLoading: isLoading, stashError: error } = useStashStore();
   const [message, setMessage] = useState("");
   const [includeUntracked, setIncludeUntracked] = useState(false);
 

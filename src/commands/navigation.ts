@@ -26,5 +26,5 @@ registerCommand({
   action: () => {
     openBlade("gitflow-cheatsheet", {} as Record<string, never>);
   },
-  enabled: () => !!useRepositoryStore.getState().status,
+  enabled: () => !!useRepositoryStore.getState().repoStatus,
 });

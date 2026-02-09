@@ -8,8 +8,8 @@ import { GitflowActionCards } from "../../components/gitflow/GitflowActionCards"
 import { GitflowBranchReference } from "../../components/gitflow/GitflowBranchReference";
 
 export function GitflowCheatsheetBlade() {
-  const { status: gitflowStatus } = useGitflowStore();
-  const { status: repoStatus } = useRepositoryStore();
+  const gitflowStatus = useGitflowStore((s) => s.gitflowStatus);
+  const repoStatus = useRepositoryStore((s) => s.repoStatus);
 
   // Determine branch type from current branch name
   // Prefer gitflow status (has currentBranch), fall back to repo status (has branchName)

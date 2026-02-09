@@ -20,9 +20,9 @@ export function DeleteWorktreeDialog({
   worktreeName,
   onOpenChange,
 }: DeleteWorktreeDialogProps) {
-  const { worktrees, deleteWorktree, isLoading, error, clearError } =
+  const { worktreeList: worktrees, deleteWorktree, worktreeIsLoading: isLoading, worktreeError: error, clearWorktreeError: clearError } =
     useWorktreeStore();
-  const { branches } = useBranchStore();
+  const { branchList: branches } = useBranchStore();
 
   const [deleteBranch, setDeleteBranch] = useState(false);
   const [forceDelete, setForceDelete] = useState(false);

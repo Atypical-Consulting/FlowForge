@@ -21,7 +21,7 @@ import { useUndoStore } from "./stores/undo";
 
 function App() {
   const queryClient = useQueryClient();
-  const { status } = useRepositoryStore();
+  const status = useRepositoryStore((s) => s.repoStatus);
   const initTheme = useThemeStore((s) => s.initTheme);
   const initSettings = useSettingsStore((s) => s.initSettings);
   const initNavigation = useNavigationStore((s) => s.initNavigation);

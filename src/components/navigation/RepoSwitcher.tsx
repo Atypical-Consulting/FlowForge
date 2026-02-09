@@ -29,7 +29,7 @@ export function RepoSwitcher({ onSelectRepo }: RepoSwitcherProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
-  const status = useRepositoryStore((s) => s.status);
+  const status = useRepositoryStore((s) => s.repoStatus);
   const {
     repoDropdownOpen: isOpen,
     toggleRepoDropdown,

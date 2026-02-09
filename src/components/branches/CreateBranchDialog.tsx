@@ -7,7 +7,7 @@ interface CreateBranchDialogProps {
 }
 
 export function CreateBranchDialog({ onClose }: CreateBranchDialogProps) {
-  const { createBranch, isLoading, error } = useBranchStore();
+  const { createBranch, branchIsLoading: isLoading, branchError: error } = useBranchStore();
   const [name, setName] = useState("");
   const [checkout, setCheckout] = useState(true);
 

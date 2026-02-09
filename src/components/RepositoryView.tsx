@@ -22,7 +22,7 @@ import {
 } from "./worktree";
 
 export function RepositoryView() {
-  const { status } = useRepositoryStore();
+  const status = useRepositoryStore((s) => s.repoStatus);
   const [showBranchDialog, setShowBranchDialog] = useState(false);
   const [showStashDialog, setShowStashDialog] = useState(false);
   const [showTagDialog, setShowTagDialog] = useState(false);

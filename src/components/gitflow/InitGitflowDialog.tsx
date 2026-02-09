@@ -16,10 +16,10 @@ export function InitGitflowDialog({
   open,
   onOpenChange,
 }: InitGitflowDialogProps) {
-  const { status, initGitflow, isLoading, error, clearError } =
+  const { gitflowStatus: status, initGitflow, gitflowIsLoading: isLoading, gitflowError: error, clearGitflowError: clearError } =
     useGitflowStore();
   const { loadBranches } = useBranchStore();
-  const { refreshStatus } = useRepositoryStore();
+  const { refreshRepoStatus: refreshStatus } = useRepositoryStore();
 
   // Detect default main branch name
   const defaultMainBranch = status?.context.hasMain ? "main" : "master";

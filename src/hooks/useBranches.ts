@@ -5,8 +5,8 @@ import { useRepositoryStore } from "../stores/repository";
 import { classifyBranch, type EnrichedBranch } from "../lib/branchClassifier";
 
 export function useBranches() {
-  const repoPath = useRepositoryStore((s) => s.status?.repoPath ?? "");
-  const { branches, allBranches, isLoading, error, loadBranches, loadAllBranches } =
+  const repoPath = useRepositoryStore((s) => s.repoStatus?.repoPath ?? "");
+  const { branchList: branches, branchAllList: allBranches, branchIsLoading: isLoading, branchError: error, loadBranches, loadAllBranches } =
     useBranchStore();
   const metadata = useBranchMetadataStore();
 

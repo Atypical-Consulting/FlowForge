@@ -15,7 +15,7 @@ import { Button } from "./ui/button";
 import { AnimatedGradientBg, GitInitBanner } from "./welcome";
 
 export function WelcomeView() {
-  const { openRepository, isLoading, error, clearError } = useRepositoryStore();
+  const { openRepository, repoIsLoading: isLoading, repoError: error, clearRepoError: clearError } = useRepositoryStore();
   const { addRecentRepo } = useRecentRepos();
   const [isDragOver, setIsDragOver] = useState(false);
   const [showCloneForm, setShowCloneForm] = useState(false);

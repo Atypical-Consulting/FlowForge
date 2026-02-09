@@ -34,8 +34,8 @@ export function BranchSwitcher({ onSelectBranch }: BranchSwitcherProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [includeRemote, setIncludeRemote] = useState(false);
 
-  const status = useRepositoryStore((s) => s.status);
-  const { allBranches, loadAllBranches } = useBranchStore();
+  const status = useRepositoryStore((s) => s.repoStatus);
+  const { branchAllList: allBranches, loadAllBranches } = useBranchStore();
   const {
     branchDropdownOpen: isOpen,
     toggleBranchDropdown,

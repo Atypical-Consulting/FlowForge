@@ -50,13 +50,13 @@ export function CloneForm({ onCancel }: CloneFormProps) {
   const [destination, setDestination] = useState("");
   const [userOverrodeDestination, setUserOverrodeDestination] = useState(false);
   const {
-    isCloning,
-    progress,
+    cloneIsCloning: isCloning,
+    cloneProgress: progress,
     startClone,
-    updateProgress,
+    updateCloneProgress: updateProgress,
     finishClone,
-    setError,
-    reset,
+    setCloneError: setError,
+    resetClone: reset,
   } = useCloneStore();
   const { openRepository } = useRepositoryStore();
   const { addRecentRepo } = useRecentRepos();

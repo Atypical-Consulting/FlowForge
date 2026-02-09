@@ -37,7 +37,7 @@ export function BranchList({
     loadAllBranches,
   } = useBranchScopes();
 
-  const { checkoutBranch, deleteBranch, mergeBranch, lastMergeResult, clearError, clearMergeResult } = useBranchStore();
+  const { checkoutBranch, deleteBranch, mergeBranch, branchLastMergeResult: lastMergeResult, clearBranchError: clearError, clearBranchMergeResult: clearMergeResult } = useBranchStore();
   const [mergingBranch, setMergingBranch] = useState<string | null>(null);
 
   // Bulk delete state
@@ -46,7 +46,7 @@ export function BranchList({
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Protected branches
-  const gitflowStatus = useGitflowStore((s) => s.status);
+  const gitflowStatus = useGitflowStore((s) => s.gitflowStatus);
   const protectedBranches = useMemo(
     () => getProtectedBranches(gitflowStatus),
     [gitflowStatus],

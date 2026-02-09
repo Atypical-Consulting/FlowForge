@@ -30,7 +30,7 @@ const config = {
 };
 
 export function StartFlowDialog({ flowType, onClose }: StartFlowDialogProps) {
-  const { startFeature, startRelease, startHotfix, isLoading, error } =
+  const { startFeature, startRelease, startHotfix, gitflowIsLoading: isLoading, gitflowError: error } =
     useGitflowStore();
   const { loadBranches } = useBranchStore();
   const [name, setName] = useState("");

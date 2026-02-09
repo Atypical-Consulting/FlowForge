@@ -3,18 +3,18 @@ import { useRepositoryStore } from "../stores/repository";
 import { useTopologyStore } from "../stores/topology";
 
 export function useCommitGraph() {
-  const repoStatus = useRepositoryStore((s) => s.status);
+  const repoStatus = useRepositoryStore((s) => s.repoStatus);
   const {
     nodes,
     edges,
-    isLoading,
-    error,
-    hasMore,
-    selectedCommit,
+    topologyIsLoading: isLoading,
+    topologyError: error,
+    topologyHasMore: hasMore,
+    topologySelectedCommit: selectedCommit,
     loadGraph,
     loadMore,
     selectCommit,
-    reset,
+    resetTopology: reset,
   } = useTopologyStore();
 
   // Load graph when repo is open

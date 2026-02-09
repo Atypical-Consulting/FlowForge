@@ -15,7 +15,7 @@ export function MergeDialog({
   onConfirm,
   onClose,
 }: MergeDialogProps) {
-  const { isLoading, abortMerge } = useBranchStore();
+  const { branchIsLoading: isLoading, abortMerge } = useBranchStore();
 
   const handleAbort = async () => {
     await abortMerge();

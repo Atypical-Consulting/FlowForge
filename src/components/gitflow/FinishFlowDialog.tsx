@@ -12,15 +12,15 @@ interface FinishFlowDialogProps {
 
 export function FinishFlowDialog({ flowType, onClose }: FinishFlowDialogProps) {
   const {
-    status,
+    gitflowStatus: status,
     finishFeature,
     finishRelease,
     finishHotfix,
-    isLoading,
-    error,
+    gitflowIsLoading: isLoading,
+    gitflowError: error,
   } = useGitflowStore();
   const { loadBranches } = useBranchStore();
-  const { refreshStatus } = useRepositoryStore();
+  const { refreshRepoStatus: refreshStatus } = useRepositoryStore();
   const [tagMessage, setTagMessage] = useState("");
 
   const needsTagMessage = flowType === "release" || flowType === "hotfix";
