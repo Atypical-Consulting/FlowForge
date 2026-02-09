@@ -2,19 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-08)
+See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Phase 30 COMPLETE - Store Consolidation & Tech Debt — MILESTONE v1.4.0 COMPLETE
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 30 of 30 (Store Consolidation & Tech Debt)
-Plan: 7 of 7 in current phase (including gap closure)
-Status: Phase 30 FULLY COMPLETE — v1.4.0 MILESTONE COMPLETE (all gaps closed)
-Last activity: 2026-02-09 - Gap closure: Cmd+K shortcut, singleton toast, 58 new store tests (140 total)
+Phase: None — between milestones
+Plan: N/A
+Status: v1.4.0 shipped, next milestone to be defined
+Last activity: 2026-02-09 - Milestone v1.4.0 archived
 
-Progress: [██████████] 100%
+Progress: [██████████] 100% (v1.4.0)
 
 ## Milestone History
 
@@ -30,90 +30,26 @@ See `.planning/MILESTONES.md` for full history.
 
 ## Performance Metrics
 
-**Velocity:**
-- Total plans completed: 26 (v1.4.0)
-- Average duration: ~5 min/plan
-- Total execution time: ~130 min
-
-**By Phase:**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 25 | 3/3 | ~15 min | ~5 min |
-| 26 | 4/4 | ~20 min | ~5 min |
-| 27 | 4/4 | ~20 min | ~5 min |
-| 28 | 5/5 | ~25 min | ~5 min |
-| 29 | 6/6 | ~30 min | ~5 min |
-| 30 | 4/4 | ~20 min | ~5 min |
-
-*Updated after each plan completion*
+**Cumulative:**
+- Total phases: 30 (across 5 milestones)
+- Total plans: ~185
+- Total requirements validated: 175
+- Codebase: ~36,946 LOC (28,155 TypeScript + 8,791 Rust)
+- Tests: 140 (Vitest + jsdom)
 
 ## Accumulated Context
 
-### Tech Debt (resolved in Phase 30)
+### Known Tech Debt
 
-All 9 core tech debt items resolved:
-- ✓ closeRepository() calls resetAllStores() + RESET_STACK atomically
-- ✓ defaultTab setting wired to navigation FSM on app startup
-- ✓ Topology shows illustrated empty state for zero-commit repos
-- ✓ Orphaned v1.0 code removed (greet, CollapsibleSidebar, AnimatedList, FadeIn)
-- ✓ Debug page (viewer3d-test.html) removed
-- ✓ Gitflow cheatsheet registered in command palette
-- ✓ Review store errors surface as user-facing toasts
-- ✓ 21 Zustand stores consolidated into ~5 domain stores
-- ✓ Deprecated blade store removed (replaced by XState FSM)
-
-### Remaining CC Blade Polish (future)
-
-- CC blade: Debounce aria-live preview by 500-800ms for screen readers
-- CC blade: Apply peach/caution color to Commit button in amend mode
-- CC blade: Add aria-label attributes for amend mode buttons
-- CC blade: Extract pushAfterCommit to preferences store
-- CC blade: Refactor useAmendPrefill to own the effect instead of callback pattern
-- CC blade: Consolidate scopeSuggestions and scopeFrequencies into single fetch
-- CC blade: Monitor useConventionalCommit.ts size; split at ~100 lines of logic
+- 16 backward-compatibility re-export shims (@deprecated) — gradual migration needed
+- CC blade accessibility polish (aria-live debounce, amend mode styling, aria-labels)
+- Init Repo blade UX refinements (focus behavior, listbox pattern, aria-describedby)
+- 3D viewer reliability on some hardware (diagnostic logging only)
+- Pre-existing TS2440 in auto-generated bindings.ts
 
 ### Key Decisions
 
 All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
-
-**Phase 29 decisions:**
-- Blade-centric file structure: `src/blades/{blade-name}/` with co-located component, registration, sub-components, hooks, store, tests
-- Shared infrastructure in `src/blades/_shared/` (14 files: BladeContainer, BladePanel, BladeStrip, etc.)
-- Single-glob auto-discovery: `import.meta.glob("./*/registration.{ts,tsx}")` with dev-mode exhaustiveness check
-- Exclusive stores (changelog, initRepo) moved into blade directories; shared stores stay in `src/stores/`
-- DiffSource type extracted to `src/blades/diff/types.ts` to break circular dependency
-- CI boundary enforcement via `scripts/check-blade-boundaries.sh` (no cross-blade imports)
-- Biome `noPrivateImports` skipped (v2 feature, current is 1.9.0); CI script serves as fallback
-- Wave-based parallel migration: 3 waves with dependency management for safe concurrent execution
-
-**Phase 25 decisions:**
-- Zustand auto-reset mock placed at project root `__mocks__/` (Vitest convention for third-party mocking)
-- `vi.hoisted()` required for per-file mock objects (ESM hoisting)
-- ResizeObserver polyfill added to global setup for react-resizable-panels
-- Monaco loader mock requires `init()` returning `{ editor: { defineTheme } }`
-
-**Phase 26 decisions:**
-- XState v5 navigation machine with explicit push/pop/replace/reset events
-- Direction-aware blade animations with AnimatePresence
-- NavigationGuardDialog for dirty-form protection
-- Singleton blade metadata enforced at FSM guard level
-
-**Phase 27 decisions:**
-- `reqwest` with `rustls-tls` for GitHub API (cross-platform TLS)
-- `include_str!` for bundled templates (compile-time embedding, no runtime resource loading)
-- Dual-mode blade rendering via `onCancel`/`onComplete` props for standalone welcome screen use
-- Path traversal validation added to `write_init_files` after security review
-- Team review identified 13 improvement items for future iteration (see 27-REVIEW-FINDINGS.md)
-
-**Phase 28 decisions:**
-- Pure utility extraction (`conventional-utils.ts`) enables testability and shared logic between sidebar and blade
-- `useCommitExecution` and `useAmendPrefill` hooks shared between CommitForm (sidebar) and ConventionalCommitBlade
-- Singleton blade enforcement via XState FSM guard (SINGLETON_TYPES Set)
-- Syntax highlighting uses CC theme colors from `commit-type-theme.ts`
-- Success overlay with framer-motion spring animation and 1.5s auto-navigate timer
-- 7 built-in commit templates with Lucide icons as chip bar (shows when form empty, collapses on input)
-- ScopeFrequencyChart uses pure CSS horizontal bars with Catppuccin accent colors (no charting library)
 
 ### Pending Todos
 
@@ -137,23 +73,12 @@ None.
 | 029 | Fix XState navigation machine stopped actor preventing blade opens | 2026-02-09 | 0410d3d | [29-fix-xstate-navigation-machine-stopped-ac](./quick/29-fix-xstate-navigation-machine-stopped-ac/) |
 | 030 | Make repo-browser a singleton blade in XState navigation machine | 2026-02-09 | 415f2e7 | [30-make-repo-browser-a-singleton-blade-in-x](./quick/30-make-repo-browser-a-singleton-blade-in-x/) |
 
-### Phase 30 decisions:
-
-- Store reset registry: `resetAllStores()` + `registerStoreForReset()` for atomic repo-close reset
-- `createBladeStore` factory: auto-registers for reset + devtools — extensibility pattern for new blades
-- GitOps domain store: 9 slices composed via Zustand slices pattern with prefixed state keys
-- UI State store: staging + commandPalette (registered for reset)
-- Preferences store: settings + theme + navigation + branchMetadata + reviewChecklist (NOT registered — survives repo switches)
-- Toast remains standalone (infrastructure used by non-React code)
-- Re-export shims at original paths for zero-breaking-change migration
-- Barrel export at `src/stores/index.ts`
-
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Phase 30 complete, v1.4.0 milestone complete
+Stopped at: v1.4.0 milestone archived
 Resume file: None
 
 ---
 *State updated: 2026-02-09*
-*v1.4.0 Architecture & Navigation Overhaul -- MILESTONE COMPLETE, all 6 phases (25-30) done*
+*v1.4.0 Architecture & Navigation Overhaul -- SHIPPED*

@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A cross-platform desktop Git client built on Tauri (Rust backend + React frontend) that makes Gitflow, conventional commits, and worktrees the structural foundation of the interface — not afterthoughts buried in menus. The client enforces workflow conventions through its architecture, preventing invalid operations rather than just warning about them. Features a blade-based navigation system with 13 blade types for rich content preview and inline workflows.
+A cross-platform desktop Git client built on Tauri (Rust backend + React frontend) that makes Gitflow, conventional commits, and worktrees the structural foundation of the interface — not afterthoughts buried in menus. The client enforces workflow conventions through its architecture, preventing invalid operations rather than just warning about them. Features a blade-based navigation system with 15 blade types managed by an XState finite state machine, co-located feature modules, and 3 consolidated domain stores.
 
 ## Core Value
 
@@ -109,20 +109,49 @@ Each layer adds value; each inner layer stands without the outer ones.
 - ✓ Lazy-loaded viewer dependencies (react-markdown, three.js, Monaco) — v1.3
 - ✓ Unified branch classification and color system — v1.3
 
+- ✓ XState navigation FSM with push/pop/replace/reset events and guards — v1.4
+- ✓ Type-safe blade stack with TypedBlade entries in XState context — v1.4
+- ✓ Navigation guards preventing data loss from unsaved forms — v1.4
+- ✓ Atomic process switching (staging/topology) via FSM events — v1.4
+- ✓ Singleton blade enforcement via FSM guards — v1.4
+- ✓ Max blade depth limit with toast notification — v1.4
+- ✓ Navigation accessible from hooks, palette, and non-React contexts — v1.4
+- ✓ XState visual inspector in dev mode — v1.4
+- ✓ Direction-aware blade transition animations — v1.4
+- ✓ Dirty-form indicator on blade strips — v1.4
+- ✓ Init Repo blade with .gitignore template search (163 templates) — v1.4
+- ✓ .gitignore template preview, multi-template composition — v1.4
+- ✓ Offline .gitignore bundled fallback (top 15-20 templates) — v1.4
+- ✓ Smart .gitignore recommendations via project type detection — v1.4
+- ✓ .gitignore templates grouped by category (Languages, Frameworks, Editors, OS) — v1.4
+- ✓ Default branch name selection during init — v1.4
+- ✓ Optional README and initial commit during init — v1.4
+- ✓ Full-width Conventional Commit blade workspace — v1.4
+- ✓ Commit-and-push workflow with auto-navigate back — v1.4
+- ✓ Amend commit with pre-filled type/scope/description — v1.4
+- ✓ Commit templates (7 built-in patterns) — v1.4
+- ✓ Scope frequency chart from commit history — v1.4
+- ✓ Inline sidebar CC form coexists with blade mode — v1.4
+- ✓ Co-located blade feature modules (src/blades/{name}/) — v1.4
+- ✓ Single-glob blade auto-discovery — v1.4
+- ✓ Import boundary enforcement (CI script) — v1.4
+- ✓ Vitest + jsdom test infrastructure with 140 tests — v1.4
+- ✓ Zustand auto-reset mock for test isolation — v1.4
+- ✓ Typed Tauri mock factories (18+ commands) — v1.4
+- ✓ Domain-grouped stores (GitOps, UIState, Preferences) — v1.4
+- ✓ Store registry with resetAllStores for atomic repo close — v1.4
+- ✓ Blade store factory with auto-reset registration — v1.4
+- ✓ closeRepository resets blade stack (stale content fix) — v1.4
+- ✓ Topology empty state for zero-commit repos — v1.4
+- ✓ Orphaned v1.0 code removed, debug page excluded — v1.4
+- ✓ Gitflow cheatsheet registered in command palette — v1.4
+- ✓ Review store errors surface as user-facing toasts — v1.4
+- ✓ defaultTab setting wired in blade initialization — v1.4
+- ✓ Cmd+K keyboard shortcut for command palette — v1.4
+
 ### Active
 
-## Current Milestone: v1.4.0 Architecture & Navigation Overhaul
-
-**Goal:** Reorganize the frontend around blade-centric modules, replace implicit navigation with an XState finite state machine, migrate remaining flows to blades, and resolve all accumulated tech debt with a testing foundation.
-
-**Target features:**
-- Blade-centric file structure with co-located modules + shared layer
-- XState navigation FSM (push/pop/replace/reset with guards, constraints, side effects) persisted in Zustand
-- Init Repository blade with optional README, .gitignore template search (GitHub API + bundled fallback)
-- Dedicated Conventional Commit blade (full-screen standalone composer)
-- Tech debt cleanup (all 9 accumulated items)
-- Zustand store consolidation and cleaner data flow patterns
-- Test infrastructure + initial test coverage
+(No active milestone — next milestone to be defined)
 
 ### Deferred to v2+
 
@@ -150,22 +179,19 @@ Each layer adds value; each inner layer stands without the outer ones.
 
 ## Context
 
-**Current state:** Shipped v1.3.0 with ~29,590 LOC (8,401 Rust + 21,189 TypeScript).
-Tech stack: Tauri 2.x, React 19, Zustand, React Query, Monaco Editor, Three.js, framer-motion.
-All 136 requirements implemented across 25 phases (~156 plans) in four milestones.
-13 blade types in registry-based navigation system.
+**Current state:** Shipped v1.4.0 with ~36,946 LOC (8,791 Rust + 28,155 TypeScript).
+Tech stack: Tauri 2.x, React 19, XState v5, Zustand (3 domain stores), React Query, Monaco Editor, Three.js, framer-motion.
+All 175 requirements implemented across 30 phases (~185 plans) in five milestones.
+15 blade types in co-located feature modules with XState FSM navigation.
+140 tests (Vitest + jsdom) covering stores, components, and machine logic.
 Documentation website live on GitHub Pages.
 
 **Known tech debt:**
-- closeRepository() does not call resetStack() (stale blade content in memory after close)
-- defaultTab setting not wired in blade store initialization (hard-coded to "staging")
-- Topology lacks EmptyState for repos with zero commits
-- Orphaned v1.0 code: greet command, getMergeStatus, CollapsibleSidebar, AnimatedList, FadeIn
-- Pre-existing TS2440 in auto-generated bindings.ts
+- 16 backward-compatibility re-export shims (@deprecated) for gradual consumer migration
+- CC blade accessibility polish (aria-live debounce, amend mode styling, aria-labels)
+- Init Repo blade UX refinements (focus behavior, listbox pattern, aria-describedby)
 - 3D viewer reliability on some hardware (diagnostic logging only)
-- Debug page (viewer3d-test.html) ships in production bundle
-- Gitflow cheatsheet not registered in command palette
-- Review store errors logged to console only (no user-facing toast)
+- Pre-existing TS2440 in auto-generated bindings.ts
 
 **v2 vision:** MCP server exposing repository state (branches, worktrees, commit history, diffs, Gitflow context) as structured resources and tools. Tiered autonomy model:
 - **Tier 1 (full autonomy):** Reversible, local, convention-clear operations
@@ -206,6 +232,16 @@ Documentation website live on GitHub Pages.
 | Lazy-loaded content blades (v1.3) | Heavy dependencies (Three.js, Monaco, react-markdown) loaded on demand, zero startup impact | ✓ Good — no performance regression |
 | Lightweight review checklist over full PR review (v1.3) | Avoids duplicating GitHub/GitLab; encourages review habits without blocking merges | ✓ Good — non-intrusive guidance |
 | VitePress for documentation (v1.3) | Vue-based SSG with excellent DX, Catppuccin theme integration, GitHub Pages deployment | ✓ Good — fast, polished docs site |
+| XState v5 for navigation FSM (v1.4) | Explicit state machine replaces imperative Zustand store; provides guards, observers, inspector | ✓ Good — type-safe, debuggable |
+| Zustand slices pattern for domain stores (v1.4) | Compose 9+ slices into single store; prefixed keys prevent collision | ✓ Good — clean composition |
+| Store registry for atomic reset (v1.4) | resetAllStores() ensures clean state on repo close without manual per-store calls | ✓ Good — no stale state |
+| createBladeStore factory (v1.4) | Auto-registers for reset + devtools; extensibility pattern for new blades | ✓ Good — consistent behavior |
+| Blade-centric file structure (v1.4) | Co-located modules reduce context switching; single-glob discovery eliminates manual registration | ✓ Good — 15 blade modules |
+| Backward-compat re-export shims (v1.4) | Zero-breaking-change migration; @deprecated annotations guide gradual adoption | ✓ Good — no consumer changes needed |
+| reqwest with rustls-tls for GitHub API (v1.4) | Cross-platform TLS without system dependency; gitignore template fetching | ✓ Good — works on all OS |
+| Bundled templates via include_str! (v1.4) | Compile-time embedding for offline fallback; no runtime resource loading | ✓ Good — reliable offline |
+| Vitest + jsdom for testing (v1.4) | Fast, modern test runner with excellent Vite integration; jsdom for component tests | ✓ Good — 140 tests, <5s |
+| Direction-aware blade animations (v1.4) | Push slides right, pop slides left, replace crossfades; respects prefers-reduced-motion | ✓ Good — polished UX |
 
 ---
-*Last updated: 2026-02-08 after v1.4.0 milestone started*
+*Last updated: 2026-02-09 after v1.4.0 milestone completed*

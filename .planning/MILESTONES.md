@@ -120,3 +120,40 @@
 - Orphaned code: greet, getMergeStatus, CollapsibleSidebar, AnimatedList, FadeIn
 
 ---
+
+## v1.4.0 Architecture & Navigation Overhaul (Shipped: 2026-02-09)
+
+**Delivered:** Replaced implicit navigation with an XState finite state machine, added Init Repo and Conventional Commit blades, migrated all 15 blades to co-located feature modules, consolidated 21 Zustand stores into 3 domain stores, resolved all 9 accumulated tech debt items, and established a test infrastructure with 140 tests.
+
+**Phases completed:** 25-30 (6 phases, 29 plans, 39 requirements)
+
+**Key accomplishments:**
+
+- Established Vitest test infrastructure with jsdom, Zustand auto-reset mock, typed Tauri factories, and 13 blade smoke tests (34 → 140 tests, 4.1x growth)
+- Replaced imperative blade store with XState v5 navigation FSM — push/pop/replace/reset with dirty-form guards, singleton enforcement, direction-aware animations, and visual inspector
+- Built Init Repo blade with .gitignore template discovery (163 templates), multi-template composition, project type detection, and offline bundled fallback
+- Built Conventional Commit blade with full-width workspace, commit-and-push pipeline, amend mode with pre-filled fields, 7 commit templates, and scope frequency chart
+- Migrated all 15 blades to co-located feature modules (`src/blades/{name}/`) with single-glob auto-discovery and CI boundary enforcement
+- Consolidated 21 Zustand stores into 3 domain stores (GitOps, UIState, Preferences) + store registry + blade store factory; resolved all 9 tech debt items including stale blade stack, topology empty state, orphaned code removal, command palette Cmd+K shortcut
+
+**Stats:**
+
+- 376 files changed (+42,164/-4,807 lines)
+- ~36,946 lines of code (28,155 TypeScript + 8,791 Rust)
+- 6 phases, 29 plans, 39 requirements
+- 2 days (2026-02-08 → 2026-02-09)
+- 79 commits
+
+**Git range:** `v1.3.0` → `v1.4.0`
+
+**Tech debt accepted:**
+- 16 backward-compatibility re-export shims (@deprecated) for gradual consumer migration
+- CC blade accessibility polish (aria-live debounce, amend mode styling, aria-labels)
+- Init Repo blade UX refinements (focus behavior, listbox pattern, aria-describedby)
+- Missing formal VERIFICATION.md for phases 26-29 (mitigated by UAT and summary evidence)
+- Pre-existing TS2440 in auto-generated bindings.ts
+
+**What's next:** v2.0 — MCP server, tiered autonomy model, or further polish
+
+---
+
