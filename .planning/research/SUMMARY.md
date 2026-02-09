@@ -1,324 +1,314 @@
 # Project Research Summary
 
-**Project:** FlowForge v1.4.0 - Frontend Architecture Improvements
-**Domain:** Desktop Git client - navigation FSM, test infrastructure, API integration
-**Researched:** 2026-02-08
+**Project:** FlowForge v1.5.0 — Extension System, GitHub Integration, Toolbar UX
+**Domain:** Desktop Git client with extension architecture and GitHub platform integration
+**Researched:** 2026-02-09
 **Confidence:** HIGH
 
 ## Executive Summary
 
-FlowForge v1.4.0 introduces critical architectural improvements to an existing Tauri desktop Git client: replacing imperative blade navigation with an XState finite state machine, establishing a test infrastructure foundation with Vitest, and adding GitHub .gitignore API integration for the Init Repo blade. The codebase currently has 21 Zustand stores, 13 blade types, and zero tests across ~30K lines of code.
+FlowForge v1.5 adds three major capabilities to an existing Tauri + React + XState Git client: a manifest-driven extension system, GitHub PR/issue integration as the first extension, and a responsive toolbar with overflow handling. The research reveals that this milestone is fundamentally about **opening a previously local-only application to untrusted code execution and external network access**, which introduces security and architectural challenges that existing Git clients either don't solve (GitHub Desktop has no extension system) or solve poorly (VS Code extensions run unsandboxed with full process permissions).
 
-Research confirms that XState v5's `setup()` pattern is production-ready for navigation FSMs with TypeScript type safety, Vitest 4 with jsdom provides the right test infrastructure for a Vite-based project with complex DOM dependencies (Monaco, Three.js, framer-motion), and the GitHub gitignore API offers 163 templates accessible without authentication. The recommended approach isolates each architectural change into sequential phases: test infrastructure first, XState navigation second, new blades third, avoiding the "big bang" restructuring pitfall that would touch 100+ files simultaneously.
+The recommended approach is a **three-layer architecture**: (1) a sandboxed ExtensionHost that loads extensions from manifest.json files in `.flowforge/extensions/`, (2) a mediated ExtensionAPI facade that tracks registrations per-extension for lifecycle cleanup, and (3) namespace-qualified blade types and commands (`ext:{id}:{name}`) to prevent collisions with core registrations. GitHub OAuth tokens must be stored in OS keychain via Rust's keyring crate, not the existing tauri-plugin-store which writes plaintext JSON. The toolbar requires a ResizeObserver-based overflow menu to prevent items from disappearing at narrow widths — especially critical before adding new GitHub action buttons.
 
-The highest-risk pitfall is XState absorbing Zustand responsibilities, creating a god machine that manages all state. The boundary must be enforced: XState owns navigation flow control (which blade/process is active, valid transitions), Zustand owns data (repo state, settings, UI state). Secondary risks include breaking the blade registry auto-discovery during file restructuring, Tauri IPC mock type drift in tests, and GitHub API rate limiting without proper caching.
+The key risks are sandbox escape (extensions accessing core stores/FSM/IPC directly), OAuth token leakage (storing in plaintext), and lifecycle mismanagement (extensions leaving orphaned registrations after deactivation). Mitigation requires iframe or Web Worker isolation for extension code, keyring-based token storage from day one, and a dispose() protocol that cleans up all registrations when extensions are unloaded.
 
 ## Key Findings
 
-### Recommended Stack Additions
+### Recommended Stack
 
-From STACK.md and v1.4.0-STACK.md:
+**No new Rust dependencies except keyring**. The extension system reuses existing serde_json (manifest parsing), tokio::fs (file loading), and notify (directory watching). GitHub OAuth Device Flow uses the existing reqwest 0.12 dependency with direct implementation (3 functions: request_device_code, poll_for_token, refresh_token) rather than adding oauth2-rs which is overkill for 3 HTTP calls. Token storage uses `keyring = "3"` crate for OS-native secure storage (macOS Keychain, Windows Credential Manager, Linux Secret Service).
 
-**XState Navigation FSM:**
-- `xstate` v5.26.0 + `@xstate/react` v6.0.0 - Finite state machine for navigation with TypeScript type safety
-- ~52KB total (tree-shakeable)
-- Replaces imperative `useBladeStore` (Zustand) for blade stack management
-- Use `createActorContext` pattern for global access, `useSelector` for selective re-renders
+**Frontend adds only Octokit packages**. The GitHub extension uses `@octokit/rest@^22`, `@octokit/graphql@^8`, and `@octokit/auth-oauth-device@^8` — all from the official GitHub SDK. These provide complete TypeScript types for 700+ GitHub API endpoints, handle pagination/rate limiting/error handling, and avoid implementing a custom HTTP client.
 
-**Test Infrastructure:**
-- `vitest` v4.0.18 - Native Vite integration, API-compatible with Jest
-- `jsdom` v28.0.0 - Complete DOM API coverage (required for Monaco, framer-motion, react-virtuoso, Three.js)
-- `@testing-library/react` v16.3.2 + `@testing-library/jest-dom` v6.9.1 + `@testing-library/user-event` v14.6.1
-- `@vitest/coverage-v8` v4.0.18 - V8-based code coverage
-- Why jsdom over happy-dom: happy-dom is faster but has incomplete Web API coverage; FlowForge's dependencies (Monaco, Three.js, etc.) probe many DOM APIs
+**Core technologies remain unchanged:** Tauri 2.x, React 19, TypeScript, Tailwind v4, Catppuccin, XState v5, Zustand 5, React Query v5, framer-motion. The toolbar overflow menu uses built-in ResizeObserver API, not a library. Extension blade rendering reuses the existing bladeRegistry Map and BladeRenderer component. Extension command registration extends the existing commandRegistry array.
 
-**Gitignore API Integration:**
-- `reqwest` v0.12 (Rust crate) with `json` feature - Async HTTP client for GitHub API
-- Approach: Rust Tauri command via `tauri-specta`, not `@tauri-apps/plugin-http`
-- Rationale: Consistent with existing 50+ Tauri commands, avoids plugin registration overhead, desktop apps have no CORS restrictions
-
-**Anti-recommendations:**
-- Do NOT use `@xstate/store` - For simple key-value stores, not FSMs
-- Do NOT use `@tauri-apps/plugin-http` - Overkill for 2 endpoints; Rust command approach is simpler
-- Do NOT use `happy-dom` - Incomplete DOM APIs for FlowForge's complex dependencies
-- Do NOT use `playwright` or `cypress` - E2e testing for Tauri requires special setup; defer to future milestone
+**What NOT to add:**
+- ~~tauri-plugin-stronghold~~ (deprecated in v3, requires user password)
+- ~~tauri-plugin-http~~ (GitHub API calls via frontend Octokit using fetch)
+- ~~iframe sandboxing for v1.5~~ (premature; adds message-passing complexity for first-party extension only)
+- ~~@radix-ui/react-dropdown-menu~~ (already have framer-motion for overflow menu)
+- ~~Full JSON Schema validator~~ (TypeScript type guards sufficient for <15 manifest fields)
 
 ### Expected Features
 
-From FEATURES.md and v1.4.0-FEATURES.md:
+**Must have (table stakes) — Extension System:**
+- Extension manifest format (flowforge.extension.json declaring blades, commands, metadata)
+- Install from GitHub URL (clone, validate manifest, activate without restart)
+- Lifecycle hooks (onActivate/onDeactivate with cleanup)
+- Extension manager UI blade (list installed, enable/disable, uninstall)
+- Enable/disable toggle (persist state, skip activation when disabled)
+- Uninstall cleanly (deactivate, unregister, delete files)
 
-**Must have (table stakes):**
-- XState navigation FSM with push/pop/replace/reset events, blade stack in context, navigation guards (prevent invalid transitions), process switching (staging/topology), singleton blade enforcement, stack depth limit
-- Blade-centric file structure with feature modules per blade type, barrel exports, auto-discovery preservation, shared infrastructure stays central, gradual migration support
-- Init Repo blade with .gitignore template search/filter (163 GitHub templates), template preview panel, multi-template composition, offline fallback (bundle top 15-20 templates), default branch name selection, README auto-generation, initial commit option
-- Dedicated Conventional Commit blade (full-width workspace) with type selector, scope autocomplete, live validation, character progress, breaking change section, full-width preview, commit & push workflow, post-commit navigation (auto-pop to staging)
-- Test infrastructure with Vitest setup, XState machine unit tests, Zustand store unit tests, component smoke tests
+**Must have (table stakes) — GitHub Integration:**
+- OAuth sign-in (Device Flow with localhost redirect or deep linking)
+- View PRs (list with title, author, status, CI checks)
+- View issues (list with filters)
+- Merge PR (with strategy selector: merge/squash/rebase)
+- Close/reopen issues
+- Account-repo linking (detect GitHub remotes, associate with OAuth account)
+- Secure token storage (OS keychain, not plaintext)
 
-**Should have (differentiators):**
-- XState visual inspector (Stately Studio) in dev mode
-- Smart .gitignore recommendation (auto-detect project type from existing files)
-- CC blade scope tree visualization (frequency chart from history)
-- Blade transition animation variants (different animations for push vs pop vs replace)
-- Navigation guard "dirty form" indicator on blade strip
-- Test coverage threshold in CI (60% for feature modules)
+**Must have (table stakes) — Toolbar UX:**
+- Action grouping by intent (Navigation, Git Actions, Views, App — separated by dividers)
+- Overflow menu (kebab icon, collapse secondary actions at narrow widths)
+- Consistent iconography (icon-only with ShortcutTooltip, no mixing icon+text)
+- Contextual actions (hide repo actions when no repo open)
+- Keyboard shortcuts for all actions (already have most, add missing)
+- Tooltips on every action (WCAG 2.1 AA requirement)
+
+**Should have (competitive differentiators):**
+- Hot-reload extensions in dev mode (watch extension dir, clear/re-register)
+- Extension permissions model (manifest declares `network`, `filesystem`, `git-operations`; install flow shows review)
+- PR diff viewer integrated with existing diff blade (reuse DiffSource union with github-pr variant)
+- PR status checks display (CI badges on PR list items)
+- Create PR from current branch (pre-fill title/body from commits)
+- Customizable toolbar (drag-and-drop reorder, show/hide toggles)
 
 **Defer (v2+):**
-- LICENSE picker in init blade
-- AI-powered commit message generation
-- Blade tabs (multiple active blades side-by-side)
-- E2E testing with Playwright/Cypress for Tauri
-- XState HMR for machine definitions
-- Navigation history (browser-style forward/back)
-
-**Anti-features (explicitly avoid):**
-- Replacing ALL Zustand stores with XState - XState is for navigation FSM only; Zustand for simple UI state
-- File-based routing (React Router v7 style) - FlowForge uses blade stack, not URL routing
-- Custom .gitignore text editor in init blade - Template picker + preview is sufficient
-- Snapshot testing - Brittle for UI; use behavior-based Testing Library tests
+- Extension marketplace/registry (start with GitHub URL install only)
+- Full PR review with inline comments (complex position mapping logic)
+- Extension dependency resolution (extensionDependencies in manifest)
+- Toolbar profiles per workflow ("review" vs "develop" configurations)
+- Extension auto-update (security risk; manual update with changelog review)
 
 ### Architecture Approach
 
-From ARCHITECTURE.md and v1.4.0-ARCHITECTURE.md:
+**Three-layer extension system** that extends the existing blade/command/store registries without breaking type safety. ExtensionHost is a singleton that discovers manifests from `.flowforge/extensions/*/manifest.json`, dynamically imports extension code via `import(/* @vite-ignore */ mainUrl)`, and calls `activate(api)`. ExtensionAPI is a per-extension facade that wraps `registerBlade()`, `registerCommand()`, `toolbarRegistry.contribute()`, and `stores.create()` while tracking all registrations for cleanup. On deactivation, `api.dispose()` removes all registrations, resets stores, and removes event listeners.
 
-**Blade-Centric Module Structure:**
-Move from layer-based (`components/`, `stores/`, `hooks/`) to feature-based (`blades/{blade-name}/`, `features/{feature-name}/`, `shared/`) organization. Each blade becomes a self-contained module with co-located component, registration, store, hooks, and tests. Shared infrastructure (UI primitives, blade system, global stores) stays in `shared/`.
+**Type system changes for extension blade types**: The existing `BladeType` union of 15 core types (string literals from `BladePropsMap`) is extended with `ExtensionBladeType = \`ext:${string}:${string}\`` to allow runtime-registered types while preserving type safety for core blades. Extension blade types are namespace-qualified (`ext:github:pr-list`) to prevent collisions. The navigation machine's singleton guard checks both the hardcoded `SINGLETON_TYPES` set and extension manifests.
 
-**Import boundary rules:**
-- `shared/` can import from `shared/` only
-- `blades/X/` can import from `shared/`, `blades/X/` only (not other blades)
-- `features/X/` can import from `shared/`, `features/X/` only (not other features)
-- `app/` can import from anywhere
-- Cross-feature communication through shared stores or events, never direct imports
+**Toolbar transforms from static JSX to data-driven registry**: The current `Header.tsx` has 16 hardcoded buttons in a flat row. The new `toolbarRegistry` (Map of ToolbarAction objects) enables both core and extension-contributed actions. Actions have priority (core 0-99, extensions 100+), group (for overflow menu sections), and `when` conditions (e.g., `"repo.isOpen && github.isAuthenticated"`). A `useToolbarOverflow` hook with ResizeObserver measures available space and splits actions into visible vs. overflow based on priority.
 
-**XState Navigation FSM:**
-Machine states represent navigation contexts (`welcome`, `repository`). Events are explicit (`OPEN_REPO`, `PUSH_BLADE`, `POP_BLADE`, `SWITCH_PROCESS`). Guards prevent invalid transitions. Actions fire side effects. Context holds `bladeStack: TypedBlade[]`, `activeProcess: ProcessType`. Use `createActorContext` from `@xstate/react` for global access. Persist via Tauri plugin-store using `getPersistedSnapshot()`.
-
-**XState + Zustand Coexistence:**
-Clear ownership: XState owns navigation FSM (blade stack, process switching, transition guards). Zustand owns simple UI state (toasts, theme, dropdowns, command palette), persisted preferences, async server state (via React Query). No duplication between systems.
+**Hybrid Rust + JS architecture for GitHub integration**: OAuth Device Flow runs in Rust (requires background polling, OS keychain access, browser launching via opener plugin). API calls run in frontend via Octokit (TypeScript types, React Query integration, avoids 50+ Tauri commands for GitHub endpoints). Rust exposes 3 commands: `store_github_token()`, `get_github_token()`, `delete_github_token()` using keyring crate.
 
 **Major components:**
-1. XState Navigation Actor - Owns blade stack, process type, transition guards, singleton enforcement
-2. Zustand UI Stores - Simple UI state with direct hook usage
-3. Zustand Persistence Stores - Persisted preferences via Tauri Store plugin
-4. React Query - Async server state (commit history, staging status, gitignore templates)
-5. Tauri IPC Layer - Type-safe Rust command invocation via specta bindings
-6. Blade Registry - Component resolution (maps BladeType to React component + metadata)
-
-**Key patterns:**
-- Singleton XState actor created at app startup
-- XState guards for navigation rules (not ad-hoc conditionals)
-- React Query for gitignore template cache with `staleTime: Infinity`
-- Tauri mock factory for tests
-- Co-located test files (Component.test.tsx next to Component.tsx)
+1. **ExtensionHost (new)** — Discovers, loads, activates, deactivates extensions. Manages lifecycle. Owns ExtensionAPI factory.
+2. **ExtensionAPI (new)** — Sandboxed per-extension facade tracking registrations for cleanup. Exposes blades, commands, toolbar, stores, events, context namespaces.
+3. **toolbarRegistry (new)** — Ordered list of toolbar actions with priority, visibility rules, overflow grouping.
+4. **SecureTokenStore (new)** — Rust keyring wrapper for OAuth tokens. Exposes via Tauri commands.
+5. **GitHubClient (new)** — Frontend Octokit wrapper with token from keyring, used by React Query.
+6. **bladeRegistry (modified)** — Add `unregisterBlade()`, accept ExtensionBladeType strings.
+7. **commandRegistry (modified)** — Add `unregisterCommand()`, change `CommandCategory` from union to string.
+8. **navigationMachine (modified)** — Singleton guard checks extension manifests for blade singleton status.
 
 ### Critical Pitfalls
 
-From PITFALLS.md, v1.4.0-PITFALLS.md, and PITFALLS-v2-frontend.md:
+1. **Extension Code Escaping the Sandbox (#25)** — Extensions loaded via `import()` run in the same JavaScript Realm as core app, gaining full access to Zustand stores, XState actor, Tauri IPC. Prevention: Run extension logic in sandboxed iframe with `sandbox="allow-scripts"` and no `allow-same-origin`, communicating via postMessage(), OR use Web Worker with Blob URL for non-UI extensions. Never allow extensions to import from core modules or access `window.__TAURI__`.
 
-**1. Big Bang Restructuring**
-Attempting file restructuring, store consolidation, and XState introduction simultaneously. Each touches 50-100+ files. Combined, they create an unreviewable diff that is impossible to debug.
-- **Prevention:** Phase strictly: (1) Path aliases first, (2) Move files second, (3) Consolidate stores third, (4) Add XState last. Each step is independently deployable.
+2. **GitHub OAuth Token Stored in Plaintext (#27)** — Using the existing `tauri-plugin-store` (which writes `flowforge-settings.json` as plaintext) leaks tokens to filesystem. Prevention: Use `keyring` crate in Rust for OS-native secure storage (macOS Keychain, Windows Credential Manager, Linux Secret Service). Never store tokens in tauri-plugin-store or any JSON file. Store only boolean `isGitHubConnected` flag in preferences; retrieve token from keyring at runtime.
 
-**2. XState Absorbing Zustand Responsibilities**
-XState machine context starts holding repo state, staging state, toast state - becoming a god machine with all concerns.
-- **Prevention:** Hard rule - XState manages ONLY which view/blade is active and valid transitions. Context should contain at most: `currentBlade`, `bladeStack`, `activeProcess`. No domain data.
+3. **CSP is Null — Extensions Widen Attack Surface (#28)** — Current `tauri.conf.json` has `"csp": null`. Adding external network requests (GitHub API) and extension system without CSP means any XSS grants full IPC access. Prevention: Set strict CSP before adding GitHub/extensions: `default-src 'self'; script-src 'self'; connect-src 'self' https://api.github.com https://github.com; img-src 'self' https://avatars.githubusercontent.com data:; style-src 'self' 'unsafe-inline'`. Sanitize all GitHub API responses (PR bodies can contain XSS payloads) before rendering.
 
-**3. Breaking the Blade Registration System**
-Moving files to blade-centric structure breaks `import.meta.glob` auto-discovery. The dev-mode exhaustiveness check only warns, doesn't throw.
-- **Prevention:** Before moving files, refactor glob to `../../features/**/registration.ts` or use explicit imports. Add runtime assertion (hard error in dev) that registry has expected number of entries.
+4. **Extension BladeType Collisions with Core Registry (#26)** — Extensions registering blade types that collide with 15 core types or other extensions. The `BladeType` union is compile-time closed; `registerBlade()` silently overwrites. Prevention: Namespace extension blade types (`ext:{extension-id}:{blade-name}`). Create `ExtensionBladeType` string type with runtime validation alongside compile-time `BladeType` union. Add guard in `registerBlade()` rejecting registration of core blade types by extensions.
 
-**4. Tauri IPC Mock Type Drift**
-Hand-written mocks return stale/incorrect shapes when Rust command changes. TypeScript won't catch it because mock return types are often `any`.
-- **Prevention:** Type mock factories against actual binding types: `vi.fn<typeof commands.getStagingStatus>()`. Use `satisfies` to ensure mock return values match expected types. Run `tsc --noEmit` in CI separately from tests.
+5. **Extension Lifecycle Misalignment with Navigation Machine (#32)** — Extensions register blades/commands/stores, then user navigates (`SWITCH_PROCESS`, `RESET_STACK`) or extension is deactivated. Registrations persist as orphans. Prevention: Extension activation must return `dispose()` function removing all registrations. Track registrations per extension in `Map<extensionId, Registration[]>`. On deactivation: call `dispose()`, verify cleanup. Never allow extensions to modify global store reset.
 
-**5. Testing Zustand Stores Without Isolation**
-Zustand stores are module-level singletons. State persists across test cases without explicit reset.
-- **Prevention:** Create `src/__mocks__/zustand.ts` that wraps `create` with auto-reset on `afterEach`. Mock `@tauri-apps/plugin-store` globally in `vitest.setup.ts`. Mock `../bindings` with typed mocks.
+6. **Toolbar Overflow Menu Loses Items Without User Awareness (#33)** — Current `Header.tsx` renders 10+ buttons in flex row. At narrow widths items overflow invisibly or wrap to second line. Prevention: Implement `useToolbarOverflow` hook using ResizeObserver to measure space, split actions into visible vs. overflow based on priority, show overflow menu button with count badge ("... +4"), follow W3C APG toolbar pattern for keyboard accessibility.
 
-**6. GitHub API Rate Limiting**
-Init Repo blade fetches template list on every open, hits 60/hour unauthenticated limit.
-- **Prevention:** React Query with `staleTime: Infinity`. Prefetch template list on app startup. Bundle top 10-20 templates as fallback JSON. Show clear error message when rate limited.
-
-**7. Circular Dependencies During Store Consolidation**
-Merging stores creates circular imports. Currently `gitflow.ts` imports from `branches.ts` and `repository.ts` at module level.
-- **Prevention:** Map full dependency graph BEFORE consolidating. Use Zustand slices pattern but keep slice creators in separate files that don't import each other. Cross-slice communication via `getState()` at call time, not import time.
-
-**8. `useActor` Performance Trap**
-Using `useActor` or `useMachine` in frequently-rendered components triggers re-render on every navigation state change.
-- **Prevention:** Use `useSelector(navActor, specificSelector)` everywhere. Use `useActorRef` for components that only dispatch events. Reserve `useActor` for top-level components or debugging only.
+7. **GitHub API Rate Limits Hit Silently (#31)** — 5,000 req/hr authenticated, 60/hr unauthenticated. API calls start returning 403/429 with no user feedback. Prevention: Read `X-RateLimit-Remaining` header on every response, store in Zustand, show indicator when remaining < 100, show toast with reset time when limited, use conditional requests with ETag (304 responses don't count), prefer GraphQL over REST (single request vs. 3+ REST calls), cache with React Query `staleTime: 30_000`.
 
 ## Implications for Roadmap
 
-Based on research, suggested phase structure:
+Based on research, the milestone naturally decomposes into a **3-phase structure with security hardening as a prerequisite**. The extension system must be fully operational before GitHub integration ships as the first extension (dogfooding the API). Toolbar overhaul precedes GitHub button additions to avoid worsening existing overflow issues.
 
-### Phase 1: Test Infrastructure Foundation
-**Rationale:** Zero tests exist. Test infrastructure must come first to verify all subsequent architectural changes. XState machine testing is highest-value target (pure logic, deterministic).
+### Phase 0: Security Hardening (Prerequisite)
+**Rationale:** CSP enforcement and capability scoping must happen before introducing external network access (GitHub API) or untrusted code execution (extensions). Retrofitting security after architectural decisions is a rewrite.
 
-**Delivers:** Vitest config with jsdom, setup file, Tauri mock factory, and 5-10 example tests covering utility function, Zustand store, React component, and XState machine.
+**Delivers:**
+- Strict CSP in `tauri.conf.json`: `default-src 'self'; script-src 'self'; connect-src 'self' https://api.github.com https://github.com`
+- Asset protocol scope narrowed from `["**"]` to specific directories
+- Capability audit: ensure no overly broad permissions in `default.json`
 
-**Technologies:** Vitest 4, jsdom, @testing-library/react, @testing-library/jest-dom, @testing-library/user-event, @vitest/coverage-v8
+**Addresses Pitfalls:** #28 (CSP null)
 
-**Addresses:** Table stakes feature "test infrastructure". Avoids Pitfall #4 (mock type drift) by establishing typed mock patterns from day one. Avoids Pitfall #5 (store isolation) by creating auto-reset Zustand mock.
+**Duration:** 1-2 days (config changes, testing)
 
-**Research flag:** Low - Vitest + React Testing Library patterns are well-documented.
+### Phase 1: Extension System Foundation + Toolbar Overhaul (Parallel)
+**Rationale:** Build the extension infrastructure before GitHub integration because GitHub ships AS an extension. This dogfoods the extension API and proves the architecture. Toolbar overhaul in parallel prepares the header for new GitHub action buttons without worsening overflow.
 
-### Phase 2: XState Navigation FSM
-**Rationale:** Core architectural change. Replace imperative `useBladeStore` (Zustand) with XState machine. All blade features depend on this. Do it while file structure is familiar (before restructuring) to isolate issues.
+**Delivers:**
 
-**Delivers:** XState machine definition, `createActorContext` setup with persistence, migration of `BladeContainer`, `ProcessNavigation`, `useBladeNavigation`, `bladeOpener` to XState. Remove `useBladeStore` after compatibility shim verified.
+**Extension System:**
+- Extension manifest schema (`flowforge.extension.json` with id, version, name, contributes.blades/commands/toolbar)
+- Rust: `extensions.rs` module (discover manifests via tokio::fs, validate schema)
+- TypeScript: ExtensionHost singleton (discover, activate, deactivate lifecycle)
+- ExtensionAPI facade (per-extension API wrapper tracking registrations)
+- Type system changes: `ExtensionBladeType`, widen `BladeType` union, namespace enforcement
+- bladeRegistry modifications: add `unregisterBlade()`, accept string types
+- commandRegistry modifications: add `unregisterCommand()`, make `CommandCategory` string
+- navigationMachine singleton guard: check extension manifests
+- Extension enable/disable toggle (persist in preferences, skip activation)
 
-**Technologies:** xstate 5.26.0, @xstate/react 6.0.0
+**Toolbar Overhaul:**
+- toolbarRegistry (Map of ToolbarAction with priority, group, when, badge)
+- Core toolbar actions migrated from Header.tsx to registry
+- useToolbarActions hook (subscribe to registry changes)
+- useToolbarOverflow hook (ResizeObserver-based space measurement)
+- ToolbarButton component (enforces aria-label, icon, tooltip pattern)
+- OverflowMenu component (grouped dropdown with framer-motion animations)
+- Action grouping with visual dividers (Navigation | Git Actions | Views | App)
+- Consistent iconography audit (all icon-only with ShortcutTooltip)
 
-**Addresses:** Table stakes feature "XState navigation FSM". Avoids Pitfall #1 (big bang) by keeping file structure stable during migration. Avoids Pitfall #2 (XState absorbing Zustand) by enforcing clear ownership boundary.
+**Addresses Features:**
+- Extension manifest format (table stakes)
+- Extension lifecycle hooks (table stakes)
+- Extension enable/disable (table stakes)
+- Action grouping by intent (table stakes)
+- Overflow menu (table stakes)
+- Consistent iconography and tooltips (table stakes)
 
-**Uses:** Tests from Phase 1 to verify navigation FSM behavior (guards, stack operations, edge cases).
+**Avoids Pitfalls:** #26 (blade collisions), #29 (command collisions), #32 (lifecycle mismanagement), #33 (toolbar overflow), #37 (inconsistent patterns)
 
-**Research flag:** Medium - XState v5 `setup()` pattern is well-documented, but integration with existing blade system needs careful design.
+**Research Flag:** LOW — Extension system patterns well-documented (VS Code), toolbar overflow is standard UX pattern (PatternFly, APG). Implementation straightforward given existing registries.
 
-### Phase 3: Init Repo Blade with Gitignore Templates
-**Rationale:** New blade type that depends on XState FSM for lifecycle (blade push/pop). GitHub API integration is independent of file restructuring and store consolidation.
+**Duration:** 1-2 weeks
 
-**Delivers:** New `"init-repo"` blade type with .gitignore template search/filter (GitHub API via Rust Tauri command), template preview, multi-template composition, offline fallback (bundled top 15-20 templates), default branch name selection, README auto-generation, initial commit option.
+### Phase 2: GitHub Integration as First Extension
+**Rationale:** GitHub integration proves the extension system works. It's the killer demo and the most-requested feature for any Git client. Ships as an installable extension in `.flowforge/extensions/github-integration/`, demonstrating the full extension lifecycle.
 
-**Technologies:** reqwest 0.12 (Rust), React Query for template caching
+**Delivers:**
 
-**Addresses:** Table stakes feature "Init Repo blade with .gitignore template search". Avoids Pitfall #6 (rate limiting) with React Query `staleTime: Infinity` and offline fallback. Avoids Pitfall #3 (breaking registration) by following existing blade registration pattern.
+**Credential Infrastructure:**
+- Rust: `credentials.rs` module (keyring crate integration)
+- Tauri commands: `store_github_token()`, `get_github_token()`, `delete_github_token()`
+- Frontend: DeviceFlowDialog component (show code, polling state, time remaining)
 
-**Uses:** XState from Phase 2 for blade lifecycle. React Query for gitignore template cache.
+**GitHub Extension:**
+- Extension manifest (`flowforge.extension.json` declaring blades, commands, toolbar contributions)
+- OAuth Device Flow implementation (`@octokit/auth-oauth-device` with `onVerification` callback)
+- GitHubClient wrapper (Octokit + token from keyring)
+- useGitHubPRs / useGitHubIssues React Query hooks (cache with 30s staleTime)
+- GitHubPRListBlade component (list with status indicators, click to open detail blade)
+- GitHubIssueListBlade component (list with filters)
+- GitHubPRDetailBlade component (fetch PR details, comments, checks)
+- Toolbar contributions (PR count badge, "Open PRs" action with `when: "github.isAuthenticated && repo.hasRemote"`)
+- Remote detection (parse `.git/config` remotes for `github.com` patterns)
+- Rate limit tracking (read `X-RateLimit-Remaining` header, store in Zustand, show UI indicator)
 
-**Research flag:** Low - GitHub gitignore API is stable, unauthenticated, simple JSON responses. Blade registration pattern is proven.
+**Extension Manager UI:**
+- Extension manager blade (list installed, enable/disable toggles, uninstall buttons)
+- Extension installation from GitHub URL (clone, validate manifest, activate)
+- Extension categories display (blade, integration, theme, workflow, tool)
 
-### Phase 4: Dedicated Conventional Commit Blade
-**Rationale:** New blade type that reuses all existing CC components. Depends on XState FSM for post-commit navigation (auto-pop to staging). Independent of file restructuring.
+**Addresses Features:**
+- GitHub OAuth sign-in (table stakes)
+- View PRs/issues (table stakes)
+- Merge PR (deferred to Phase 3 — write actions need careful UX)
+- Close/reopen issues (table stakes)
+- Account-repo linking (table stakes)
+- Secure token storage (table stakes)
+- Install from GitHub URL (table stakes)
+- Extension manager UI (table stakes)
 
-**Delivers:** New `"conventional-commit"` blade type with full-width workspace, reusing existing `TypeSelector`, `ScopeAutocomplete`, `ValidationErrors`, `CharacterProgress`, `BreakingChangeSection` components. Adds commit & push workflow, post-commit navigation, amend mode support.
+**Avoids Pitfalls:** #25 (sandbox escape — deferred to v2), #27 (plaintext tokens), #30 (Device Flow polling cleanup), #31 (rate limits), #34 (identity mismatch), #35 (FSM corruption)
 
-**Technologies:** Existing conventional.ts store, existing Rust `validate_conventional_commit` command
+**Research Flag:** MEDIUM — OAuth Device Flow well-documented, but Tauri integration needs validation. Octokit setup straightforward. Extension lifecycle dogfooding may reveal gaps in Phase 1 API design.
 
-**Addresses:** Table stakes feature "Dedicated Conventional Commit blade". All sub-components already exist and are well-factored - lowest-risk new blade type.
+**Duration:** 2-3 weeks
 
-**Uses:** XState from Phase 2 for post-commit navigation (`POP` event on commit success).
+### Phase 3: GitHub Write Actions + Extension Polish
+**Rationale:** After read operations (view PRs/issues) work, add write actions (merge, close, create PR). Polish the extension experience with hot-reload for development, permissions display, and error boundaries.
 
-**Research flag:** Low - All components exist, blade registration pattern is proven.
+**Delivers:**
 
-### Phase 5: Blade-Centric File Structure Migration
-**Rationale:** Do file restructuring AFTER new blades exist (init-repo, conventional-commit). New blades start in correct structure; migrate existing ones gradually. Easier to debug issues when blade system is stable.
+**GitHub Write Actions:**
+- Merge PR with strategy selector (merge commit, squash, rebase) and confirmation dialog
+- Close/reopen issues with confirmation
+- Create PR from current branch (pre-fill title from branch name, body from commit messages since divergence)
+- PR status checks display (CI badges on PR list items using Octokit `checks.listForRef()`)
 
-**Delivers:** Feature modules (`blades/{blade-name}/`, `features/{feature-name}/`, `shared/`) with co-located components, stores, hooks, tests. Auto-discovery adapted to new paths. Import boundaries enforced.
+**Extension Polish:**
+- Hot-reload extensions in dev mode (watch extension dir with `@tauri-apps/plugin-fs` watcher, clear/re-register)
+- Extension error boundaries (catch activation/deactivation failures, show error UI)
+- Extension settings UI (enable/disable via settings blade, not just extension manager)
+- GitHub extension: reviews display (show review status on PR detail blade)
+- GitHub extension: branch-PR association (show PR badge on branch list items)
 
-**Technologies:** No new dependencies - mechanical file moves
+**Addresses Features:**
+- Merge PR (table stakes)
+- Close/reopen issues (table stakes, deferred from Phase 2)
+- Create PR (differentiator)
+- PR status checks display (differentiator)
+- Hot-reload extensions (differentiator)
 
-**Addresses:** Table stakes feature "Blade-centric file structure". Avoids Pitfall #3 (breaking registration) by updating glob pattern first. Avoids Pitfall #1 (big bang) by migrating blade-by-blade with re-export shims.
+**Avoids Pitfalls:** #41 (HMR subscription leaks), #38 (manifest validation too late)
 
-**Uses:** Tests from Phase 1 to verify no behavior change during migration.
+**Research Flag:** LOW — Write operations are straightforward Octokit calls with confirmation UX.
 
-**Research flag:** Low - Feature-based architecture is consensus React pattern. Vite `import.meta.glob` supports multiple glob patterns.
-
-### Phase 6: Zustand Store Consolidation
-**Rationale:** After file structure is stable, co-locate stores with feature modules. Merge related stores (branches + branchMetadata, etc.). Remove blade store (already replaced by XState).
-
-**Delivers:** 18-20 stores reduced to 4-5 domain-grouped stores. Co-located with feature modules. Consistent `.store.ts` naming. Blade store removed (replaced by XState machine).
-
-**Technologies:** No new dependencies - store consolidation only
-
-**Addresses:** Table stakes feature "Tech debt cleanup - store consolidation". Avoids Pitfall #7 (circular dependencies) by mapping dependency graph first. Avoids Pitfall #2 (XState overuse) by consolidating Zustand stores only, not converting to XState.
-
-**Uses:** Tests from Phase 1 to verify merged stores behave identically to originals.
-
-**Research flag:** Low - Zustand docs and community consensus favor separate stores for independent state.
+**Duration:** 1-2 weeks
 
 ### Phase Ordering Rationale
 
-- **Test infrastructure first** because it verifies all subsequent changes. XState machines are inherently testable; having tests ready enables confident FSM refactoring.
-- **XState navigation before file restructuring** because file moves are mechanical but touching navigation system is behavioral. Do the risky behavioral change while file structure is familiar to isolate issues.
-- **New blades after XState** because they depend on XState for lifecycle (push/pop/navigation). New blades can start in correct file structure as examples for migration.
-- **File restructuring before store consolidation** because store consolidation needs stable import paths. Moving files and consolidating stores simultaneously creates merge conflicts.
-- **Store consolidation last** because it's tech debt cleanup, not user-facing. It can happen incrementally alongside other work.
+**Why security hardening first:** CSP enforcement is a config change that breaks nothing but must be in place before network access or extension loading. Retrofitting is painful.
 
-This ordering avoids the "big bang" pitfall: each phase touches different files and can be deployed independently. Phase 1 (tests) touches `vitest.config.ts` + `src/test/`. Phase 2 (XState) touches `src/machines/` + 5-6 navigation files. Phase 3 (init blade) touches `src/blades/init-repo/` only. Phase 4 (CC blade) touches `src/blades/conventional-commit/` only. Phase 5 (file moves) is mechanical. Phase 6 (store consolidation) happens incrementally.
+**Why extension system before GitHub integration:** GitHub integration dogfoods the extension API. Building the extension first would lead to a bespoke integration that doesn't use the extension system, defeating the purpose. Building them simultaneously risks the extension API being designed around a single use case (GitHub) instead of being general-purpose.
+
+**Why toolbar overhaul before GitHub buttons:** The current toolbar has no overflow strategy. Adding 2-3 GitHub buttons (PRs, Issues, Create PR) would push the toolbar past the breaking point at narrow widths. Fix overflow first, then add buttons.
+
+**Why read operations before write operations:** Users need to view PRs/issues before merging/closing them. Read-only operations establish the data flow patterns (Octokit + React Query + Zustand) before adding confirmation dialogs and error handling for write operations.
+
+**Dependencies:** Phase 0 → Phase 1 (CSP must be set before extensions load). Phase 1 → Phase 2 (extension system must exist before GitHub extension). Phase 2 → Phase 3 (write actions depend on read operations working). Toolbar overhaul (Phase 1) is independent of extension system and can run in parallel, but both must complete before Phase 2.
 
 ### Research Flags
 
-Phases likely needing deeper research during planning:
-- **Phase 2 (XState Navigation):** XState machine state design (how to model process switching + blade stack as states vs context). Integration pattern with existing blade registry. Persistence strategy with Tauri plugin-store.
-- **Phase 3 (Init Repo Blade):** Multi-template composition algorithm (concatenate + deduplicate rules). Offline fallback template selection (which 15-20 to bundle). GitHub API rate limit handling UI.
+**Phases likely needing deeper research during planning:**
+- **Phase 2:** OAuth Device Flow integration with Tauri (localhost redirect vs. deep linking trade-offs), keyring crate platform quirks, extension manifest schema validation approach.
+- **Phase 3:** Hot-reload mechanism for extensions (HMR integration with dynamic import), error boundary patterns for async extension loading.
 
-Phases with standard patterns (skip research-phase):
-- **Phase 1 (Test Infrastructure):** Vitest + React Testing Library is well-documented. Tauri mock factory pattern is established.
-- **Phase 4 (Conventional Commit Blade):** All components exist and are well-factored. Blade registration pattern is proven.
-- **Phase 5 (File Structure Migration):** Feature-based architecture is consensus. Mechanical file moves with Vite glob.
-- **Phase 6 (Store Consolidation):** Zustand consolidation pattern is documented. Dependency graph is clear.
+**Phases with standard patterns (skip research-phase):**
+- **Phase 0:** CSP configuration is documented in Tauri v2 security guide.
+- **Phase 1:** Extension lifecycle (VS Code pattern), toolbar overflow (PatternFly, W3C APG), registry modifications (existing patterns in codebase).
+- **Phase 3:** GitHub write actions (Octokit documentation is comprehensive), PR status checks (standard REST API calls).
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | XState v5, Vitest 4, reqwest 0.12 versions verified via npm view and docs.rs. Peer dependencies cross-checked. |
-| Features | HIGH | All table stakes features validated against existing codebase. New blade types require entries in `BladePropsMap`, registration file, and component - pattern is proven. |
-| Architecture | HIGH | XState `setup()` + `createActorContext` pattern verified via official docs. Blade-centric structure is consensus React pattern. XState + Zustand coexistence validated via community examples. |
-| Pitfalls | HIGH | Critical pitfalls derived from codebase analysis (21 stores, 172 `../../` imports, 13 blade types, 6 cross-store dependencies). XState + Zustand integration risks well-documented in community. |
+| Stack | HIGH | All dependencies verified: keyring 3.6.3 on crates.io, @octokit/rest 22.0.1 on npm, @octokit/auth-oauth-device 8.0.3 on npm. No new dependencies required for extension system (reuses existing serde/tokio/notify). |
+| Features | HIGH | Table stakes validated against competitor analysis (GitHub Desktop lacks PR review, GitKraken has it but paywalled). VS Code extension manifest format is industry gold standard (17 years, 30+ contribution points). |
+| Architecture | MEDIUM | Extension system patterns well-established in VS Code/Figma docs. Integration with FlowForge's specific blade/store/FSM architecture needs validation during implementation. Type system changes (ExtensionBladeType) are novel but TypeScript's template literal types support this pattern. |
+| Pitfalls | HIGH | Sandbox escape (#25) validated by Figma post-mortem and Zendesk engineering blog. Token storage (#27) confirmed by Tauri docs (Stronghold deprecated). CSP (#28) directly verified from codebase `tauri.conf.json`. Collision pitfalls (#26, #29) verified from registry source code. |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-**XState machine granularity:** Tension between modeling process-level navigation as states vs modeling blade stack as states. Recommendation is to model processes as states (`welcome`, `repository.staging`, `repository.topology`) and keep blade stack as context array, but this needs validation during Phase 2 design.
+**Sandbox approach for v1.5:** Research recommends iframe or Web Worker isolation, but the proposed Phase 1 does NOT include sandboxing because the GitHub extension is first-party code shipped with FlowForge. The manifest-driven architecture and namespace enforcement prevent accidental collisions, but do not prevent intentional malicious behavior. Decision: defer full sandboxing to v2 when third-party extensions are supported. Phase 1 establishes the extension API surface that will be sandboxed later.
 
-**Store consolidation dependencies:** Current cross-store dependencies (gitflow -> branches + repository, worktrees -> repository) need full mapping before consolidation. Use `madge --circular src/` after each consolidation step to verify no cycles introduced.
+**GraphQL vs REST for GitHub API:** Research recommends GraphQL-first for read operations (single query fetches PR + reviews + CI status vs. 3+ REST calls), but Octokit REST has better TypeScript types and simpler pagination. Decision: start with REST for Phase 2 MVP (view PRs/issues, merge PR). Consider GraphQL in Phase 3 if N+1 query problems emerge or rate limits become an issue.
 
-**GitHub API rate limiting UX:** 60 req/hr unauthenticated is sufficient with caching, but error message when rate limited needs design. Template list should be prefetched on app startup or first repo open to avoid hitting limit during experimentation.
+**Extension hot-reload mechanism:** Research identifies the need but does not specify implementation. Gap: how does dynamic `import()` interact with Vite HMR? Does the extension need its own Vite config? Does the extension host need to bust import caches? Address during Phase 3 planning with a research spike.
 
-**Test coverage targets:** Recommendation is 60% coverage for feature modules, but this needs validation during Phase 1. Focus should be on store + hook coverage, not overall coverage.
+**Toolbar action priority values:** Research establishes priority-based ordering (core 0-99, extensions 100+) but does not assign specific values to existing core actions. Gap: audit existing Header.tsx buttons, assign priority values (e.g., Settings 10, Refresh 20, Sync 30), document the priority ranges per group. Address during Phase 1 planning.
 
-**Barrel file performance:** Recommendation is NO barrel files for feature modules (direct imports only), but this trades DX for build performance. Needs validation during Phase 5 migration.
+**Extension API version negotiation:** Research identifies the need for `apiVersion` in manifests and version checking at load time, but does not specify the versioning scheme or compatibility rules. Gap: define semantic versioning for extension API (1.0.0 for v1.5 launch?), define compatibility shim strategy (support one major version back?). Address during Phase 1 planning.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- [XState v5 Documentation](https://stately.ai/docs/xstate) - State machine patterns, `setup()` API, TypeScript types
-- [@xstate/react Hooks](https://stately.ai/docs/xstate-react) - `useActor`, `useMachine`, `useSelector`, `useActorRef`, `createActorContext`
-- [XState v5 Persistence API](https://stately.ai/docs/persistence) - `getPersistedSnapshot()`, `createActor` with `snapshot` option
-- [XState Guards](https://stately.ai/docs/guards) - Guard syntax, composition with `and`/`or`/`not`
-- [GitHub REST API: Gitignore](https://docs.github.com/en/rest/gitignore/gitignore) - List templates, get template content
-- [github/gitignore Repository](https://github.com/github/gitignore) - 163 templates, root/Global/Community structure
-- [Vitest official site](https://vitest.dev/) - v4.0.18, Vite 7 compat, test environment docs
-- [Zustand Slices Pattern Documentation](https://zustand.docs.pmnd.rs/guides/slices-pattern) - Store consolidation patterns
-- [Zustand Testing Guide](https://zustand.docs.pmnd.rs/guides/testing) - Auto-reset mock pattern
-- [Tauri v2 Documentation](https://v2.tauri.app/) - IPC, plugin-store, capabilities
-- [git2-rs GitHub](https://github.com/rust-lang/git2-rs) - libgit2 bindings, threading docs
-- [tauri-specta GitHub](https://github.com/specta-rs/tauri-specta) - TypeScript binding generation
-- [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) - Specification
+- [STACK.md] — Technology recommendations with version verification, rationale for keyring over Stronghold, Octokit package selection, justification for no new extension system dependencies
+- [FEATURES.md] — Table stakes vs. differentiators from VS Code extension patterns, GitHub Desktop/GitKraken competitive analysis, feature dependencies graph, MVP recommendations per phase
+- [ARCHITECTURE.md] — Three-layer extension system design, ExtensionHost/ExtensionAPI architecture, type system changes for ExtensionBladeType, toolbar registry patterns, data flow diagrams, build order dependency graph
+- [PITFALLS.md] — 18 new pitfalls (#25-42) specific to extension system, GitHub integration, toolbar UX; prevention strategies with code examples; phase mapping; anti-patterns section
 
 ### Secondary (MEDIUM confidence)
-- [XState Global State with React](https://stately.ai/blog/2024-02-12-xstate-react-global-state) - Singleton actor patterns
-- [Improve React Navigation with XState v5](https://dev.to/gtodorov/improve-react-navigation-with-xstate-v5-2l15) - Navigation FSM patterns
-- [Scalable React Projects with Feature-Based Architecture](https://dev.to/naserrasouli/scalable-react-projects-with-feature-based-architecture-117c) - Feature module structure
-- [React Folder Structure in 5 Steps 2025](https://www.robinwieruch.de/react-folder-structure/) - Feature-first organization
-- [Bulletproof React: Project Structure](https://github.com/alan2207/bulletproof-react/blob/master/docs/project-structure.md) - Import boundaries, barrel files
-- [Vite Performance Guide - Barrel Files Warning](https://vite.dev/guide/performance) - Barrel file performance impact
-- [Vite Issue #16100: Barrel Files Make Vite Very Slow](https://github.com/vitejs/vite/issues/16100) - HMR degradation
-- [Zustand Discussion #2496: Multiple Stores vs Slices](https://github.com/pmndrs/zustand/discussions/2496) - When to use multiple stores
-- [GitKraken Init Documentation](https://help.gitkraken.com/gitkraken-desktop/open-clone-init/) - Init flow: path + .gitignore + license + README
-- [Testing Library philosophy](https://testing-library.com/docs/react-testing-library/intro/) - Behavior-based testing
+- [GitHub OAuth Device Flow docs](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps) — polling protocol, timeout behavior, error codes
+- [VS Code Extension Manifest](https://code.visualstudio.com/api/references/extension-manifest) — contribution points pattern, activation events, engine compatibility
+- [Figma Plugin Security Update](https://www.figma.com/blog/an-update-on-plugin-security/) — sandbox escape vulnerabilities in Realm-based approach
+- [Tauri v2 Security](https://v2.tauri.app/security/) — CSP configuration, capability scoping, IPC attack surface
+- [W3C APG Toolbar Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/) — keyboard navigation, roving tabindex, accessibility requirements
+- [PatternFly Overflow Menu](https://www.patternfly.org/components/overflow-menu/design-guidelines/) — priority-based collapse, grouped overflow patterns
 
-### Tertiary (LOW confidence - needs validation)
-- [zustand-middleware-xstate](https://github.com/biowaffeln/zustand-middleware-xstate) - Unmaintained, XState v4 only - noted as anti-pattern
-
-### Codebase Analysis (HIGH confidence)
-- FlowForge `src/stores/blades.ts` - Current navigation: 97 lines, `pushBlade`/`popBlade`/`replaceBlade`/`resetStack`
-- FlowForge `src/stores/bladeTypes.ts` - `BladePropsMap` with 13 types, `TypedBlade` discriminated union
-- FlowForge `src/hooks/useBladeNavigation.ts` - Singleton guards, title resolution, 83 lines
-- FlowForge `src/lib/bladeOpener.ts` - Non-React blade opener, duplicates hook logic, 32 lines
-- FlowForge `src/lib/bladeRegistry.ts` - Registration pattern: `registerBlade()`, `getBladeRegistration()`, Map-based
-- FlowForge `src/components/blades/registrations/index.ts` - `import.meta.glob` auto-discovery, HMR support
-- FlowForge `src/stores/conventional.ts` - CC store: 11 types, suggestions, validation, message building
-- FlowForge `src/hooks/useConventionalCommit.ts` - Debounced validation, filtered scopes, canCommit flag
-- FlowForge `src/components/commit/ConventionalCommitForm.tsx` - 202 lines, TypeSelector + ScopeAutocomplete + validation
-- FlowForge `src/components/welcome/GitInitBanner.tsx` - 111 lines, basic init with branch name option only
-- FlowForge `src-tauri/src/git/init.rs` - `git_init` command: path validation, git2 init with branch name
-- FlowForge `package.json` - v1.3.0, React 19, Zustand 5, Tailwind 4, Vite 7, no XState or test deps
-- FlowForge codebase statistics: ~29,590 LOC, 21 Zustand stores, 13 blade types, 172 `../../` imports across 96 files, 20 `../../../` imports across 14 files
+### Tertiary (LOW confidence)
+- [keyring-rs crate docs](https://docs.rs/keyring) — OS keychain integration, platform-specific features
+- [Octokit REST v22 docs](https://octokit.github.io/rest.js/v22/) — API coverage, pagination, type definitions
+- [Zendesk: Sandboxing JavaScript](https://medium.com/zendesk-engineering/sandboxing-javascript-e4def55e855e) — Web Worker vs iframe isolation trade-offs
 
 ---
-**Research completed:** 2026-02-08
+
+**Research completed:** 2026-02-09
+
 **Ready for roadmap:** Yes
+
+**Key takeaway for roadmapper:** This is a security-sensitive milestone. Extension system and GitHub integration introduce untrusted code execution and external network access to a previously local-only app. CSP hardening is non-negotiable prerequisite. Extension API design in Phase 1 must support future sandboxing even if v1.5 ships without full isolation. OAuth token storage in keyring (not plaintext) is mandatory from day one.

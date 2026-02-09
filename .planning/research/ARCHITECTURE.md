@@ -1,1263 +1,1099 @@
-# Architecture Patterns
+# Architecture Patterns: Extension System, GitHub Integration, and Toolbar
 
-**Domain:** Frontend architecture improvements for Tauri + React desktop Git client
-**Researched:** 2026-02-08
-**Overall confidence:** HIGH
+**Domain:** Desktop Git client -- extension system, GitHub integration, extensible toolbar
+**Researched:** 2026-02-09
 
----
-
-## Current Architecture Snapshot
-
-Before prescribing changes, here is what exists today:
-
-### File Structure (Layer-Based)
+## Current Architecture (v1.4.0 Baseline)
 
 ```
-src/
-  App.tsx                          # Root: theme/settings/nav init, repo-open guard
-  main.tsx                         # React entry point
-  bindings.ts                      # Tauri-specta auto-generated IPC types (~50k)
-  stores/                          # 21 Zustand stores (flat, one-file-per-store)
-    blades.ts                      # Blade stack FSM (pushBlade/popBlade/setProcess)
-    bladeTypes.ts                  # BladePropsMap + TypedBlade discriminated union
-    repository.ts                  # Open/close/refresh repo
-    navigation.ts                  # Pinned repos, recent branches (persisted)
-    branches.ts, branchMetadata.ts # Branch CRUD + metadata persistence
-    staging.ts                     # Selected file, view mode
-    conventional.ts                # Commit form state + validation
-    gitflow.ts                     # GitFlow operations (cross-store: branches, repo)
-    topology.ts                    # Graph data + pagination
-    settings.ts, theme.ts          # Persisted settings/theme
-    toast.ts                       # Global toast notifications
-    commandPalette.ts              # Cmd-K overlay state
-    clone.ts, stash.ts, tags.ts, undo.ts, worktrees.ts
-    changelogStore.ts, reviewChecklist.ts
-  components/
-    blades/                        # Blade infrastructure + 15 blade components
-      registrations/               # Auto-discovered via import.meta.glob
-    branches/, commit/, gitflow/, staging/, topology/  # Feature-area components
-    navigation/, settings/, ui/, layout/               # Shared/structural components
-    ...
-  hooks/                           # 10 shared hooks
-  lib/                             # 23 utility/registry files
-    bladeRegistry.ts               # Map<BladeType, BladeRegistration>
-    bladeOpener.ts                 # Non-React blade opener (command palette)
-    store.ts                       # Tauri plugin-store singleton
-    ...
-  commands/                        # 6 command registration files
-```
-
-### Store Dependency Graph (Cross-Store Calls)
-
-```
-gitflow.ts -----> branches.ts (loadBranches)
-           -----> repository.ts (refreshStatus)
-
-worktrees.ts ---> repository.ts (openRepository)
-
-App.tsx ----------> theme.ts (initTheme)
-             ----> settings.ts (initSettings)
-             ----> navigation.ts (initNavigation)
-             ----> branchMetadata.ts (initMetadata)
-             ----> reviewChecklist.ts (initChecklist)
-             ----> undo.ts (loadUndoInfo)
-             ----> topology.ts (loadGraph on file-watcher event)
-
-Header.tsx ------> repository, branches, stash, tags, undo,
-                   blades, navigation, commandPalette, toast
-```
-
-### Blade System Architecture
-
-```
-BladePropsMap (bladeTypes.ts)    <-- Single source of truth for blade types
-  |
-  v
-BladeRegistration (bladeRegistry.ts)  <-- Runtime Map<BladeType, config>
-  |
-  v
-registrations/ (auto-glob)      <-- Each file calls registerBlade()
-  |
-  v
-BladeRenderer                   <-- Looks up registration, renders component
-  |
-  v
-BladeContainer                  <-- Reads bladeStack from useBladeStore
-  |                                  AnimatePresence for transitions
-  v
-BladeStrip                      <-- Collapsed previous blades in stack
-```
-
-**Key insight:** The blade system already has a natural "module" shape -- each blade has a component, a registration, and often co-located sub-components. The registry pattern means blades are loosely coupled: they register themselves at import time and are resolved by type string.
-
----
-
-## Recommended Architecture
-
-### 1. Blade-Centric Module Structure
-
-Move from layer-based to feature-based organization where each blade becomes a self-contained module. Shared infrastructure stays in a `shared/` layer. This is NOT a full rewrite -- it is a controlled migration that moves files while preserving all import paths via re-exports during transition.
-
-#### Target Structure
-
-```
-src/
-  app/
-    App.tsx
-    main.tsx
-    providers.tsx                     # QueryClientProvider, future XState provider
-
-  blades/                             # One directory per blade module
-    staging-changes/
-      StagingChangesBlade.tsx         # Main blade component
-      StagingPanel.tsx                # Sub-components (moved from components/staging/)
-      FileItem.tsx
-      FileList.tsx
-      FileTreeView.tsx
-      InlineDiffViewer.tsx
-      DiffPreviewHeader.tsx
-      ...
-      staging.store.ts                # Co-located store (was stores/staging.ts)
-      useStagingKeyboard.ts           # Co-located hook
-      registration.ts                 # registerBlade() call
-      index.ts                        # Public API barrel
-
-    topology-graph/
-      TopologyRootBlade.tsx
-      TopologyPanel.tsx
-      LaneHeader.tsx, CommitBadge.tsx, LaneBackground.tsx
-      layoutUtils.ts
-      topology.store.ts               # Was stores/topology.ts
-      registration.ts
-      index.ts
-
-    commit-details/
-      CommitDetailsBlade.tsx
-      CommitHistory.tsx
-      CommitSearch.tsx
-      CommitDetails.tsx               # Sub-component
-      registration.ts
-      index.ts
-
-    diff/
-      DiffBlade.tsx
-      registration.ts
-      index.ts
-
-    repo-browser/
-      RepoBrowserBlade.tsx
-      FileTreeBlade.tsx
-      registration.ts
-      index.ts
-
-    settings/
-      SettingsBlade.tsx
-      GeneralSettings.tsx
-      GitSettings.tsx
-      AppearanceSettings.tsx
-      IntegrationsSettings.tsx
-      ReviewSettings.tsx
-      SettingsField.tsx
-      settings.store.ts               # Was stores/settings.ts
-      registration.ts
-      index.ts
-
-    changelog/
-      ChangelogBlade.tsx
-      ChangelogPreview.tsx
-      changelog.store.ts
-      registration.ts
-      index.ts
-
-    gitflow-cheatsheet/
-      GitflowCheatsheetBlade.tsx
-      registration.ts
-      index.ts
-
-    viewer-code/
-      ViewerCodeBlade.tsx
-      registration.ts
-      index.ts
-
-    viewer-image/
-      ViewerImageBlade.tsx
-      registration.ts
-      index.ts
-
-    viewer-markdown/
-      ViewerMarkdownBlade.tsx
-      registration.ts
-      index.ts
-
-    viewer-3d/
-      Viewer3dBlade.tsx
-      registration.ts
-      index.ts
-
-    viewer-nupkg/
-      ViewerNupkgBlade.tsx
-      NugetPackageViewer.tsx
-      registration.ts
-      index.ts
-
-  features/                           # Non-blade feature modules
-    commit-form/
-      CommitForm.tsx
-      ConventionalCommitForm.tsx
-      TypeSelector.tsx
-      ScopeAutocomplete.tsx
-      CharacterProgress.tsx
-      BreakingChangeSection.tsx
-      ValidationErrors.tsx
-      conventional.store.ts
-      useConventionalCommit.ts
-      index.ts
-
-    branches/
-      BranchList.tsx
-      BranchItem.tsx
-      BranchScopeSelector.tsx
-      BranchBulkActions.tsx
-      BulkDeleteDialog.tsx
-      CreateBranchDialog.tsx
-      MergeDialog.tsx
-      branches.store.ts
-      branchMetadata.store.ts
-      useBranches.ts
-      useBranchScopes.ts
-      useBulkSelect.ts
-      index.ts
-
-    gitflow/
-      GitflowPanel.tsx
-      GitflowActionCards.tsx
-      GitflowDiagram.tsx
-      GitflowBranchReference.tsx
-      InitGitflowDialog.tsx
-      StartFlowDialog.tsx
-      FinishFlowDialog.tsx
-      ReviewChecklist.tsx
-      gitflow.store.ts
-      reviewChecklist.store.ts
-      index.ts
-
-    stash/
-      StashList.tsx, StashItem.tsx, StashDialog.tsx
-      stash.store.ts
-      index.ts
-
-    tags/
-      TagList.tsx, TagItem.tsx, CreateTagDialog.tsx
-      tags.store.ts
-      index.ts
-
-    worktrees/
-      WorktreePanel.tsx, WorktreeItem.tsx
-      CreateWorktreeDialog.tsx, DeleteWorktreeDialog.tsx
-      worktrees.store.ts
-      index.ts
-
-    clone/
-      CloneForm.tsx, CloneProgress.tsx
-      clone.store.ts
-      index.ts
-
-    navigation/
-      BranchSwitcher.tsx, BranchSwitcherItem.tsx
-      RepoSwitcher.tsx, RepoSwitcherItem.tsx
-      SwitcherSearch.tsx
-      navigation.store.ts
-      index.ts
-
-    welcome/
-      WelcomeView.tsx
-      RecentRepos.tsx
-      AnimatedGradientBg.tsx
-      GitInitBanner.tsx
-      index.ts
-
-  shared/                             # Cross-cutting shared code
-    ui/                               # Primitives (button, input, dialog, etc.)
-      button.tsx
-      input.tsx
-      dialog.tsx
-      Toast.tsx, ToastContainer.tsx
-      EmptyState.tsx, Skeleton.tsx
-      ShortcutTooltip.tsx
-      ThemeToggle.tsx
-
-    layout/
-      ResizablePanelLayout.tsx
-      SplitPaneLayout.tsx
-      CollapsibleSidebar.tsx
-      Header.tsx
-      RepositoryView.tsx
-
-    blade-system/                     # Blade infrastructure (shared)
-      BladeContainer.tsx
-      BladePanel.tsx
-      BladeStrip.tsx
-      BladeRenderer.tsx
-      BladeErrorBoundary.tsx
-      BladeLoadingFallback.tsx
-      BladeContentEmpty.tsx
-      BladeContentError.tsx
-      BladeContentLoading.tsx
-      BladeToolbar.tsx
-      BladeBreadcrumb.tsx
-      ProcessNavigation.tsx
-
-    lib/
-      bladeRegistry.ts
-      bladeOpener.ts
-      bladeUtils.tsx
-      fileDispatch.ts
-      fileTypeUtils.ts
-      errors.ts
-      utils.ts
-      store.ts                        # Tauri plugin-store singleton
-      platform.ts
-      animations.ts
-      fuzzySearch.ts
-      commandRegistry.ts
-      ...
-
-    stores/                           # Truly global stores only
-      repository.store.ts             # Open/close repo -- global
-      theme.store.ts                  # Theme -- global
-      toast.store.ts                  # Toast -- global
-      commandPalette.store.ts         # Cmd-K -- global
-      undo.store.ts                   # Undo -- global
-
-    hooks/
-      useKeyboardShortcuts.ts
-      useRecentRepos.ts
-      useRepoFile.ts
-      useBladeNavigation.ts
-      useCommitGraph.ts
-
-    icons/
-      CommitTypeIcon.tsx
-      FileTypeIcon.tsx
-
-    markdown/
-      MarkdownRenderer.tsx
-      markdownComponents.tsx
-      ...
-
-    animations/
-      AnimatedList.tsx
-      FadeIn.tsx
-
-    types/
-      ...
-
-  machines/                           # XState navigation FSM (NEW)
-    navigation.machine.ts
-    navigation.types.ts
-    navigation.actions.ts
-    navigation.guards.ts
-    useNavigationMachine.ts
-    navigationActor.ts
-    navigation.persistence.ts
-    index.ts
-
-  commands/                           # Command registrations (kept as-is)
-    index.ts
-    branches.ts, navigation.ts, repository.ts, settings.ts, sync.ts
-
-  bindings.ts                         # Auto-generated (stays at root)
-  index.css
-  vite-env.d.ts
-```
-
-#### Import Boundary Rules
-
-```
-shared/       --> can import from: shared/ only
-blades/X/     --> can import from: shared/, blades/X/ only (not other blades)
-features/X/   --> can import from: shared/, features/X/ only (not other features)
-machines/     --> can import from: shared/ only
-app/          --> can import from: anything
-commands/     --> can import from: shared/, blades/, features/
-```
-
-Cross-feature communication goes through shared stores or events, never direct imports between feature modules.
-
-#### Migration Strategy
-
-**Phase 1:** Create the directory structure and move files one blade/feature at a time. Add re-export shims at old paths so nothing breaks:
-
-```typescript
-// src/stores/staging.ts (old location -- re-export shim)
-export { useStagingStore } from "../blades/staging-changes/staging.store";
-```
-
-**Phase 2:** Update all consumers to use new import paths. Remove shims.
-
-**Phase 3:** Add ESLint `import/no-restricted-paths` to enforce boundaries.
-
-**Confidence:** HIGH -- This pattern is proven in bulletproof-react and widely adopted for React apps of this size. The blade registry already provides natural module boundaries.
-
----
-
-### 2. XState Navigation FSM
-
-#### Why XState for Navigation
-
-The current blade navigation is a hand-rolled stack machine in `useBladeStore` with `pushBlade`, `popBlade`, `setProcess`, etc. This works but:
-
-1. **No explicit state transitions** -- any code can call any action at any time
-2. **No guard conditions** -- no validation that transitions are legal
-3. **No visualization** -- state flow is implicit in imperative code
-4. **No persistence API** -- would need manual serialization
-
-XState makes the navigation state machine explicit, type-safe, and persistable.
-
-#### Recommended: XState v5 (5.26.0) + @xstate/react (6.0.0)
-
-```bash
-npm install xstate @xstate/react
-```
-
-**Confidence:** HIGH -- XState v5 is stable (released Dec 2023, latest 5.26.0 as of Feb 2026). The `setup()` API provides excellent TypeScript inference. `@xstate/react` 6.0.0 is the current stable React binding.
-
-#### Navigation Machine Design
-
-```typescript
-// src/machines/navigation.types.ts
-import type { BladeType, BladePropsMap, TypedBlade } from "../shared/blade-system/bladeTypes";
-
-export type ProcessType = "staging" | "topology";
-
-export type NavigationContext = {
-  activeProcess: ProcessType;
-  bladeStack: TypedBlade[];
-};
-
-export type NavigationEvent =
-  | { type: "SWITCH_PROCESS"; process: ProcessType }
-  | { type: "PUSH_BLADE"; bladeType: BladeType; title: string; props: BladePropsMap[BladeType] }
-  | { type: "POP_BLADE" }
-  | { type: "POP_TO_INDEX"; index: number }
-  | { type: "REPLACE_BLADE"; bladeType: BladeType; title: string; props: BladePropsMap[BladeType] }
-  | { type: "RESET_STACK" }
-  | { type: "OPEN_REPO" }
-  | { type: "CLOSE_REPO" };
-```
-
-```typescript
-// src/machines/navigation.machine.ts
-import { setup, assign } from "xstate";
-import type { NavigationContext, NavigationEvent, ProcessType } from "./navigation.types";
-import type { TypedBlade } from "../shared/blade-system/bladeTypes";
-
-function rootBladeForProcess(process: ProcessType): TypedBlade {
-  if (process === "staging") {
-    return {
-      id: "root",
-      type: "staging-changes",
-      title: "Changes",
-      props: {} as Record<string, never>,
-    };
-  }
-  return {
-    id: "root",
-    type: "topology-graph",
-    title: "Topology",
-    props: {} as Record<string, never>,
-  };
-}
-
-export const navigationMachine = setup({
-  types: {
-    context: {} as NavigationContext,
-    events: {} as NavigationEvent,
-  },
-  actions: {
-    pushBlade: assign({
-      bladeStack: ({ context, event }) => {
-        if (event.type !== "PUSH_BLADE") return context.bladeStack;
-        return [
-          ...context.bladeStack,
-          {
-            id: crypto.randomUUID(),
-            type: event.bladeType,
-            title: event.title,
-            props: event.props,
-          } as TypedBlade,
-        ];
-      },
-    }),
-    popBlade: assign({
-      bladeStack: ({ context }) =>
-        context.bladeStack.length > 1
-          ? context.bladeStack.slice(0, -1)
-          : context.bladeStack,
-    }),
-    popToIndex: assign({
-      bladeStack: ({ context, event }) => {
-        if (event.type !== "POP_TO_INDEX") return context.bladeStack;
-        return context.bladeStack.slice(0, event.index + 1);
-      },
-    }),
-    replaceBlade: assign({
-      bladeStack: ({ context, event }) => {
-        if (event.type !== "REPLACE_BLADE") return context.bladeStack;
-        return [
-          ...context.bladeStack.slice(0, -1),
-          {
-            id: crypto.randomUUID(),
-            type: event.bladeType,
-            title: event.title,
-            props: event.props,
-          } as TypedBlade,
-        ];
-      },
-    }),
-    resetStack: assign({
-      bladeStack: ({ context }) => [rootBladeForProcess(context.activeProcess)],
-    }),
-    switchProcess: assign(({ event }) => {
-      if (event.type !== "SWITCH_PROCESS") return {};
-      return {
-        activeProcess: event.process,
-        bladeStack: [rootBladeForProcess(event.process)],
-      };
-    }),
-  },
-  guards: {
-    canPop: ({ context }) => context.bladeStack.length > 1,
-    isValidIndex: ({ context, event }) => {
-      if (event.type !== "POP_TO_INDEX") return false;
-      return event.index >= 0 && event.index < context.bladeStack.length;
-    },
-  },
-}).createMachine({
-  id: "navigation",
-  initial: "welcome",
-  context: {
-    activeProcess: "staging",
-    bladeStack: [rootBladeForProcess("staging")],
-  },
-  states: {
-    welcome: {
-      on: {
-        OPEN_REPO: { target: "repository" },
-      },
-    },
-    repository: {
-      on: {
-        CLOSE_REPO: { target: "welcome", actions: "resetStack" },
-        PUSH_BLADE: { actions: "pushBlade" },
-        POP_BLADE: { guard: "canPop", actions: "popBlade" },
-        POP_TO_INDEX: { guard: "isValidIndex", actions: "popToIndex" },
-        REPLACE_BLADE: { actions: "replaceBlade" },
-        RESET_STACK: { actions: "resetStack" },
-        SWITCH_PROCESS: { actions: "switchProcess" },
-      },
-    },
-  },
-});
-```
-
-**Confidence:** HIGH for the machine definition pattern (verified via official XState v5 `setup()` docs). The `assign()` API with context/event destructuring is the canonical v5 pattern.
-
-#### XState + React Integration Pattern
-
-**Recommended approach:** Use `createActorContext` from `@xstate/react` to provide the navigation machine globally. This avoids prop-drilling and gives every component access to the actor via React context.
-
-Do NOT use the `zustand-middleware-xstate` package -- it is unmaintained and designed for XState v4. Instead, use the official `@xstate/react` hooks.
-
-```typescript
-// src/machines/useNavigationMachine.ts
-import { createActorContext } from "@xstate/react";
-import { navigationMachine } from "./navigation.machine";
-
-export const NavigationMachineContext = createActorContext(navigationMachine);
-
-// Selectors for common state reads (avoid re-rendering on unrelated changes)
-export const selectActiveProcess = (snapshot: any) =>
-  snapshot.context.activeProcess;
-
-export const selectBladeStack = (snapshot: any) =>
-  snapshot.context.bladeStack;
-
-export const selectActiveBlade = (snapshot: any) => {
-  const stack = snapshot.context.bladeStack;
-  return stack[stack.length - 1];
-};
-
-export const selectIsWelcome = (snapshot: any) =>
-  snapshot.matches("welcome");
-
-export const selectIsRepository = (snapshot: any) =>
-  snapshot.matches("repository");
-```
-
-**Confidence:** HIGH for `createActorContext` API (verified via official `@xstate/react` docs, returns Provider + useSelector + useActorRef).
-
-#### Persistence via Tauri Plugin-Store
-
-XState v5 supports `actor.getPersistedSnapshot()` and `createActor(machine, { snapshot })` for persistence. Integrate with the existing Tauri `plugin-store`:
-
-```typescript
-// src/machines/navigation.persistence.ts
-import { getStore } from "../shared/lib/store";
-
-const NAV_SNAPSHOT_KEY = "nav-machine-snapshot";
-
-export async function persistNavigationSnapshot(
-  snapshot: unknown,
-): Promise<void> {
-  try {
-    const store = await getStore();
-    await store.set(NAV_SNAPSHOT_KEY, JSON.stringify(snapshot));
-    await store.save();
-  } catch (e) {
-    console.error("Failed to persist navigation snapshot:", e);
-  }
-}
-
-export async function loadNavigationSnapshot(): Promise<unknown | undefined> {
-  try {
-    const store = await getStore();
-    const raw = await store.get<string>(NAV_SNAPSHOT_KEY);
-    return raw ? JSON.parse(raw) : undefined;
-  } catch (e) {
-    console.error("Failed to load navigation snapshot:", e);
-    return undefined;
-  }
-}
-```
-
-In the provider, subscribe to snapshot changes and persist:
-
-```typescript
-// In app/providers.tsx
-import { useEffect, useState } from "react";
-import {
-  NavigationMachineContext,
-} from "../machines/useNavigationMachine";
-import {
-  loadNavigationSnapshot,
-  persistNavigationSnapshot,
-} from "../machines/navigation.persistence";
-
-export function NavigationProvider({
-  children,
-}: { children: React.ReactNode }) {
-  const [restoredSnapshot, setRestoredSnapshot] = useState<unknown>(undefined);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    loadNavigationSnapshot().then((snap) => {
-      setRestoredSnapshot(snap);
-      setReady(true);
-    });
-  }, []);
-
-  if (!ready) return null;
-
-  return (
-    <NavigationMachineContext.Provider
-      options={
-        restoredSnapshot ? { snapshot: restoredSnapshot } : undefined
-      }
-    >
-      <PersistenceSubscriber />
-      {children}
-    </NavigationMachineContext.Provider>
-  );
-}
-
-function PersistenceSubscriber() {
-  const actorRef = NavigationMachineContext.useActorRef();
-
-  useEffect(() => {
-    const sub = actorRef.subscribe(() => {
-      persistNavigationSnapshot(actorRef.getPersistedSnapshot());
-    });
-    return () => sub.unsubscribe();
-  }, [actorRef]);
-
-  return null;
-}
-```
-
-**Confidence:** HIGH for XState persistence API (`getPersistedSnapshot` + `createActor` with `snapshot` option -- verified via official docs). MEDIUM for the exact `createActorContext.Provider` options prop shape -- verify at implementation time with `@xstate/react` 6.0.0 source or docs.
-
-**Important caveats from XState docs:**
-- "Actions from machine actors will not be re-executed, because they are assumed to have been already executed." This means entry actions on the restored state will NOT fire -- which is correct for navigation (we don't want to re-push blades on restore).
-- If `restoredSnapshot` is `undefined`, the actor starts at the initial state, which is the correct fallback.
-
-#### Non-React Access (Command Palette, Keyboard Shortcuts)
-
-For code outside the React component tree that needs to trigger navigation:
-
-```typescript
-// src/machines/navigationActor.ts
-import type { ActorRefFrom } from "xstate";
-import type { navigationMachine } from "./navigation.machine";
-
-let _actorRef: ActorRefFrom<typeof navigationMachine> | null = null;
-
-export function setNavigationActorRef(
-  ref: ActorRefFrom<typeof navigationMachine>,
-) {
-  _actorRef = ref;
-}
-
-export function getNavigationActorRef() {
-  if (!_actorRef) throw new Error("Navigation actor not initialized");
-  return _actorRef;
-}
-```
-
-This mirrors the existing `bladeOpener.ts` pattern which calls `useBladeStore.getState()` for non-React contexts. The `PersistenceSubscriber` component (or the Provider itself) calls `setNavigationActorRef(actorRef)` on mount.
-
----
-
-### 3. Zustand Store Consolidation
-
-#### Current State: 21 Stores
-
-| Store | Category | Persistence | Cross-Store Deps |
-|-------|----------|-------------|------------------|
-| `blades` | Navigation | No | None (replaced by XState) |
-| `bladeTypes` | Types only | N/A | N/A |
-| `repository` | Global | No | None |
-| `navigation` | Global | Tauri store | None |
-| `branches` | Feature | No | None |
-| `branchMetadata` | Feature | Tauri store | None |
-| `staging` | Feature | No | None |
-| `conventional` | Feature | No | None |
-| `gitflow` | Feature | No | branches, repository |
-| `topology` | Feature | No | None |
-| `settings` | Global | Tauri store | None |
-| `theme` | Global | Tauri store + localStorage | None |
-| `toast` | Global | No | None |
-| `commandPalette` | Global | No | None |
-| `clone` | Feature | No | None |
-| `stash` | Feature | No | None |
-| `tags` | Feature | No | None |
-| `undo` | Global | No | None |
-| `worktrees` | Feature | No | repository |
-| `changelogStore` | Feature | No | None |
-| `reviewChecklist` | Feature | Tauri store | None |
-
-#### Consolidation Strategy: Keep Separate Stores, Co-locate
-
-**Recommendation: Do NOT merge stores into slices.** The Zustand maintainers (TkDodo, dai-shi) explicitly recommend multiple separate stores over the slices pattern when stores are independent. From Zustand discussion #2496: multiple stores are marginally more performant than slices, and the stores in FlowForge are almost entirely independent (only `gitflow` and `worktrees` have cross-store deps).
-
-Merging them into slices would:
-- Add coupling where none exists
-- Make the combined store harder to tree-shake
-- Complicate the persistence story (different stores persist differently via Tauri plugin-store)
-- Create a single mega-store file that is harder to navigate
-
-**Instead, co-locate stores with their feature modules:**
-
-| Store | New Location |
-|-------|-------------|
-| `blades.ts` | **REMOVED** -- replaced by XState navigation machine |
-| `bladeTypes.ts` | `shared/blade-system/bladeTypes.ts` |
-| `repository.ts` | `shared/stores/repository.store.ts` |
-| `navigation.ts` | `features/navigation/navigation.store.ts` |
-| `branches.ts` | `features/branches/branches.store.ts` |
-| `branchMetadata.ts` | `features/branches/branchMetadata.store.ts` |
-| `staging.ts` | `blades/staging-changes/staging.store.ts` |
-| `conventional.ts` | `features/commit-form/conventional.store.ts` |
-| `gitflow.ts` | `features/gitflow/gitflow.store.ts` |
-| `topology.ts` | `blades/topology-graph/topology.store.ts` |
-| `settings.ts` | `blades/settings/settings.store.ts` |
-| `theme.ts` | `shared/stores/theme.store.ts` |
-| `toast.ts` | `shared/stores/toast.store.ts` |
-| `commandPalette.ts` | `shared/stores/commandPalette.store.ts` |
-| `clone.ts` | `features/clone/clone.store.ts` |
-| `stash.ts` | `features/stash/stash.store.ts` |
-| `tags.ts` | `features/tags/tags.store.ts` |
-| `undo.ts` | `shared/stores/undo.store.ts` |
-| `worktrees.ts` | `features/worktrees/worktrees.store.ts` |
-| `changelogStore.ts` | `blades/changelog/changelog.store.ts` |
-| `reviewChecklist.ts` | `features/gitflow/reviewChecklist.store.ts` |
-
-**Confidence:** HIGH -- Zustand docs and community consensus strongly favor separate stores for independent state.
-
-#### Store Naming Convention
-
-Rename all stores to `{feature}.store.ts` for consistency:
-- `changelogStore.ts` becomes `changelog.store.ts`
-- `conventional.ts` becomes `conventional.store.ts`
-- etc.
-
-This makes auto-import and file search more predictable.
-
-#### Cross-Store Dependencies: Keep Imperative, Add Type Safety
-
-The `gitflow.store.ts` pattern of calling `useBranchStore.getState().loadBranches()` is the recommended Zustand pattern for cross-store communication. This should remain as-is but be formalized:
-
-```typescript
-// features/gitflow/gitflow.store.ts
-import { useBranchStore } from "../branches/branches.store";
-import { useRepositoryStore } from "../../shared/stores/repository.store";
-
-// Cross-module import is explicit and trackable
-```
-
-This is a "features imports shared" pattern -- `gitflow` importing from `branches` is technically a cross-feature import. Since both are sidebar features with tightly coupled operations, this is acceptable. The alternative (routing through shared stores or events) would add complexity for no benefit.
-
-**However:** if more cross-feature imports emerge, extract the shared operations to `shared/stores/` or use an event bus pattern.
-
----
-
-### 4. App Initialization Flow (Revised)
-
-#### Current Init (App.tsx)
-
-```
-App mount --> initTheme() + initSettings() + initNavigation() + initMetadata() + initChecklist()
-             Repo-change listener --> invalidate queries + loadUndoInfo + loadGraph
-             status ? <RepositoryView /> : <WelcomeView />
-```
-
-#### Proposed Init (with XState)
-
-```
-main.tsx
-  |
-  v
-NavigationProvider (loads persisted snapshot, creates actor)
-  |
-  v
 App.tsx
-  |-- initTheme(), initSettings(), initMetadata(), initChecklist()
-  |-- XState navigation machine handles welcome/repo transitions
   |
-  v
-On OPEN_REPO event:
-  machine transitions "welcome" --> "repository"
-  Repo-change listener starts
+  +--> Header (top bar: repo/branch switcher, process tabs, toolbar buttons)
+  |       Static button list, not data-driven
+  |
+  +--> NavigationProvider (XState actor context)
+  |       |
+  |       +--> navigationMachine (XState v5 FSM)
+  |       |       States: navigating | confirmingDiscard
+  |       |       Context: { activeProcess, bladeStack, dirtyBladeIds }
+  |       |       ProcessType: "staging" | "topology"
+  |       |
+  |       +--> BladeContainer
+  |               +--> BladeStrip (collapsed previous blades)
+  |               +--> BladeRenderer --> bladeRegistry.get(type) --> Component
+  |
+  +--> RepositoryView
+  |       +--> Left sidebar (branches, stash, tags, gitflow, worktrees)
+  |       +--> BladeContainer (right, main content)
+  |
+  +--> CommandPalette (mod+k, searches commandRegistry)
+  |
+  +--> ToastContainer
 
-On CLOSE_REPO event:
-  machine transitions "repository" --> "welcome"
-  Blade stack resets via exit action
+Registry systems:
+  - bladeRegistry: Map<BladeType, BladeRegistration> -- component resolution
+  - commandRegistry: Command[] -- palette + shortcuts
+  - storeRegistry: Set<() => void> -- resetAllStores()
+  - BladePropsMap interface -- type-safe blade props discriminator
 ```
 
-The key change is that `status ? <RepositoryView /> : <WelcomeView />` becomes derived from the navigation machine state:
+### Key Extension Points in Current Code
 
-```typescript
-function App() {
-  const isWelcome = NavigationMachineContext.useSelector(selectIsWelcome);
-  // ...
-  return (
-    <main>
-      {isWelcome ? <WelcomeView /> : <RepositoryView />}
-    </main>
-  );
-}
-```
-
-The `useRepositoryStore.status` still exists for repository data (branch name, path, etc.) but no longer drives the top-level view toggle. The machine owns the "which view" decision; the store owns "what repo data."
+| System | Extension Mechanism | Current Limitation |
+|--------|--------------------|--------------------|
+| **bladeRegistry** | `registerBlade({ type, component, ... })` in `registration.ts` | `BladeType` is a union of literal strings in `BladePropsMap`; cannot add types at runtime without expanding the interface |
+| **commandRegistry** | `registerCommand({ id, title, action, ... })` | `CommandCategory` is a fixed union type; no `enabled()` beyond boolean, no visibility scoping |
+| **storeRegistry** | `registerStoreForReset(store)` on creation | No per-extension store lifecycle or cleanup on extension unload |
+| **BladePropsMap** | Static interface in `stores/bladeTypes.ts` | Extension blade props would need `Record<string, unknown>` escape hatch |
+| **ProcessType** | `"staging" \| "topology"` | Hard-coded in FSM and `ProcessNavigation` component |
+| **Header** | Static JSX with hardcoded buttons | No contribution API; extensions cannot add toolbar actions |
+| **_discovery.ts** | `import.meta.glob("./*/registration.{ts,tsx}")` | Compile-time only; runtime extension loading impossible via this path |
 
 ---
 
-## Component Boundaries
+## Recommended Architecture: Three-Layer Extension System
+
+### High-Level Overview
+
+```
+                         Extension Lifecycle
+                         ==================
+
+.flowforge/extensions/github-integration/
+    manifest.json           <-- declares capabilities
+    index.js                <-- bundled extension code (ESM)
+
+        |  discovered by
+        v
+
+ExtensionHost (singleton)
+    |
+    +--> ExtensionManifest[] (parsed manifests)
+    +--> loadExtension(id) --> dynamic import() --> activate()
+    +--> unloadExtension(id) --> deactivate() --> cleanup registrations
+    |
+    +--> ExtensionAPI (sandboxed facade)
+            |
+            +--> blades.register(type, config)      --> bladeRegistry
+            +--> commands.register(cmd)              --> commandRegistry
+            +--> toolbar.contribute(action)          --> toolbarRegistry (NEW)
+            +--> stores.create(name, creator)        --> storeRegistry
+            +--> github.getToken()                   --> SecureTokenStore
+            +--> events.on("repository-changed", cb) --> event bus
+```
+
+### Component Boundaries
 
 | Component | Responsibility | Communicates With |
 |-----------|---------------|-------------------|
-| `NavigationMachineContext.Provider` | Owns navigation FSM, blade stack, process mode | All blade/feature modules via context |
-| `BladeContainer` | Reads blade stack, renders active blade + strips | Navigation machine (read), BladeRenderer |
-| `BladeRenderer` | Resolves blade type to registered component | BladeRegistry (read) |
-| `BladeRegistry` | Maps blade type strings to component configs | Registration files (write at init) |
-| `Header` | App chrome, repo/branch switcher, toolbar | Navigation machine (send), global stores |
-| `RepositoryView` | Layout: sidebar + blade area | Feature modules, BladeContainer |
-| `WelcomeView` | Repo open/clone/init | Navigation machine (OPEN_REPO), repository store |
-| Feature stores | Domain-specific state + IPC calls | Tauri bindings, other stores via getState() |
-| Global stores | Cross-cutting state (toast, theme, undo) | Consumed everywhere |
+| **ExtensionHost** | Discovers, loads, unloads extensions. Manages lifecycle. Owns ExtensionAPI factory. | File system (manifest discovery), all registries |
+| **ExtensionAPI** | Sandboxed facade per-extension. Tracks what each extension registered for cleanup. | bladeRegistry, commandRegistry, toolbarRegistry, storeRegistry |
+| **bladeRegistry** (modified) | Unchanged Map-based lookup, but now accepts `ExtensionBladeType` (string) in addition to core `BladeType` | BladeRenderer, ExtensionAPI |
+| **commandRegistry** (modified) | Unchanged array-based registry, but `CommandCategory` becomes `string` (extensible) | CommandPalette, ExtensionAPI |
+| **toolbarRegistry** (NEW) | Ordered list of toolbar action contributions, with priority, visibility rules, and overflow grouping | Header component, ExtensionAPI |
+| **SecureTokenStore** (NEW) | OAuth tokens stored in OS keychain via Rust `keyring` crate, exposed through Tauri commands | GitHub API client, ExtensionAPI |
+| **GitHubClient** (NEW) | Authenticated Octokit wrapper in frontend, token from SecureTokenStore | GitHub extension blades, React Query |
 
 ---
 
-## Data Flow
+## Integration Point 1: Extension System
 
-### Blade Navigation Flow (After XState)
+### 1a. Manifest Format
 
-```
-User clicks "View Diff"
-  |
-  v
-Component calls actorRef.send({ type: "PUSH_BLADE", bladeType: "diff", ... })
-  |
-  v
-XState machine (in "repository" state) executes "pushBlade" action
-  |
-  v
-Machine context updated: bladeStack = [...stack, newBlade]
-  |
-  v
-PersistenceSubscriber saves snapshot to Tauri store
-  |
-  v
-BladeContainer re-renders via useSelector(selectBladeStack)
-  |
-  v
-BladeRenderer resolves "diff" -> DiffBlade component from registry
-  |
-  v
-DiffBlade mounts, fetches data via Tauri IPC
-```
+Extensions live in `.flowforge/extensions/{name}/` per-repository (or `~/.flowforge/extensions/` for global). Each extension has a `manifest.json`:
 
-### Store Persistence Flow (Unchanged)
-
-```
-Store action modifies state
-  |
-  v
-Store calls getStore() -> Tauri plugin-store singleton
-  |
-  v
-store.set("key", value) + store.save()
-  |
-  v
-Persisted to flowforge-settings.json on disk
-  |
-  v
-On next app launch: initXxx() loads from store, sets Zustand state
-```
-
-### Cross-Store Communication Flow (Unchanged)
-
-```
-GitFlow "Finish Feature"
-  |
-  v
-gitflow.store.ts finishFeature()
-  |
-  v
-commands.finishFeature() (Tauri IPC)
-  |
-  v
-On success: gitflow.refresh()
-  |
-  v
-useBranchStore.getState().loadBranches()   <-- cross-store call
-useRepositoryStore.getState().refreshStatus()
-```
-
----
-
-## Patterns to Follow
-
-### Pattern 1: Blade Module Self-Registration
-
-**What:** Each blade module has a `registration.ts` that calls `registerBlade()` and is auto-discovered via `import.meta.glob`.
-
-**When:** Every blade module, always.
-
-**Example:**
-
-```typescript
-// src/blades/staging-changes/registration.ts
-import { registerBlade } from "../../shared/lib/bladeRegistry";
-import { StagingChangesBlade } from "./StagingChangesBlade";
-
-registerBlade({
-  type: "staging-changes",
-  defaultTitle: "Changes",
-  component: StagingChangesBlade,
-  wrapInPanel: false,
-  showBack: false,
-});
-```
-
-The auto-glob in a dedicated init file discovers registrations:
-
-```typescript
-// src/blades/registrations.ts (replaces components/blades/registrations/index.ts)
-const modules = import.meta.glob("./*/registration.{ts,tsx}", { eager: true });
-
-// Dev-mode exhaustiveness check (carry over from existing)
-if (import.meta.env.DEV && Object.keys(modules).length === 0) {
-  console.error("[BladeRegistry] No registration modules found");
+```json
+{
+  "id": "github-integration",
+  "name": "GitHub Integration",
+  "version": "1.0.0",
+  "engine": "flowforge >=1.5.0",
+  "main": "index.js",
+  "activationEvents": [
+    "onRepository",
+    "onCommand:github.authenticate"
+  ],
+  "contributes": {
+    "blades": [
+      {
+        "type": "github-pr-list",
+        "title": "Pull Requests",
+        "singleton": true
+      },
+      {
+        "type": "github-pr-detail",
+        "title": "PR Detail"
+      },
+      {
+        "type": "github-issues",
+        "title": "Issues",
+        "singleton": true
+      }
+    ],
+    "commands": [
+      {
+        "id": "github.authenticate",
+        "title": "GitHub: Sign In",
+        "category": "GitHub"
+      },
+      {
+        "id": "github.openPR",
+        "title": "GitHub: Open Pull Request",
+        "category": "GitHub",
+        "shortcut": "mod+shift+g"
+      }
+    ],
+    "toolbar": [
+      {
+        "commandId": "github.openPR",
+        "icon": "git-pull-request",
+        "group": "github",
+        "priority": 100,
+        "when": "github.isAuthenticated && repo.hasRemote"
+      }
+    ]
+  }
 }
 ```
 
-### Pattern 2: Feature Module Public API via index.ts
-
-**What:** Each feature/blade module exports only its public API through `index.ts`. Internal components are NOT exported.
-
-**When:** Every feature module.
-
-**Example:**
+### 1b. Extension Loading Architecture
 
 ```typescript
-// src/features/branches/index.ts
-export { BranchList } from "./BranchList";
-export { CreateBranchDialog } from "./CreateBranchDialog";
-export { MergeDialog } from "./MergeDialog";
-export { useBranchStore } from "./branches.store";
-export { useBranchMetadataStore } from "./branchMetadata.store";
+// src/extensions/ExtensionHost.ts
+
+interface ExtensionContext {
+  id: string;
+  api: ExtensionAPI;
+  disposables: Array<() => void>;
+}
+
+class ExtensionHost {
+  private extensions = new Map<string, ExtensionContext>();
+  private manifests = new Map<string, ExtensionManifest>();
+
+  /** Discover extensions from filesystem via Tauri command */
+  async discover(repoPath: string): Promise<ExtensionManifest[]> {
+    // Rust command reads .flowforge/extensions/*/manifest.json
+    const manifests = await commands.discoverExtensions(repoPath);
+    for (const m of manifests) {
+      this.manifests.set(m.id, m);
+    }
+    return manifests;
+  }
+
+  /** Load and activate an extension */
+  async activate(id: string): Promise<void> {
+    const manifest = this.manifests.get(id);
+    if (!manifest || this.extensions.has(id)) return;
+
+    const api = createExtensionAPI(id);
+    const disposables: Array<() => void> = [];
+
+    // Dynamic import from extension directory
+    // Rust command returns the file:// URL for the extension's main file
+    const mainUrl = await commands.getExtensionMainUrl(id);
+    const mod = await import(/* @vite-ignore */ mainUrl);
+
+    if (typeof mod.activate === "function") {
+      await mod.activate(api);
+    }
+
+    this.extensions.set(id, { id, api, disposables });
+  }
+
+  /** Unload extension, cleaning up all registrations */
+  async deactivate(id: string): Promise<void> {
+    const ext = this.extensions.get(id);
+    if (!ext) return;
+
+    // Call extension's deactivate if it exists
+    const mainUrl = await commands.getExtensionMainUrl(id);
+    try {
+      const mod = await import(/* @vite-ignore */ mainUrl);
+      if (typeof mod.deactivate === "function") {
+        await mod.deactivate();
+      }
+    } catch { /* extension may not export deactivate */ }
+
+    // Clean up all registrations made through this extension's API
+    ext.api.dispose();
+    this.extensions.delete(id);
+  }
+}
 ```
 
-Internal components like `BranchItem.tsx`, `BranchScopeSelector.tsx` are NOT exported -- they are implementation details.
+### 1c. ExtensionAPI (Sandboxed Facade)
 
-**Note on barrel files:** The bulletproof-react docs warn that barrel files can hurt Vite tree-shaking. In this case, since these are feature modules with a small public API (not libraries), the risk is minimal. The barrel file serves as a documentation of the module's public surface. If build performance becomes a concern, switch to direct imports.
-
-### Pattern 3: XState Event Dispatch from Non-React Code
-
-**What:** Use a global actor ref for command palette, keyboard shortcuts, and other non-React contexts.
-
-**When:** Any code outside the React component tree needs to trigger navigation.
-
-**Example:**
+The key insight: each extension gets its own API instance that **tracks registrations** for cleanup on unload.
 
 ```typescript
-// src/commands/navigation.ts
-import { getNavigationActorRef } from "../machines/navigationActor";
+// src/extensions/ExtensionAPI.ts
 
-export function openSettingsBlade() {
-  getNavigationActorRef().send({
-    type: "PUSH_BLADE",
-    bladeType: "settings",
-    title: "Settings",
-    props: {} as Record<string, never>,
+interface ExtensionAPI {
+  blades: {
+    register(config: ExtensionBladeRegistration): void;
+    openBlade(type: string, props: Record<string, unknown>, title?: string): void;
+  };
+  commands: {
+    register(cmd: ExtensionCommand): void;
+    execute(id: string): void;
+  };
+  toolbar: {
+    contribute(action: ToolbarAction): void;
+  };
+  stores: {
+    create<T>(name: string, creator: StateCreator<T>): StoreApi<T>;
+  };
+  events: {
+    on(event: string, handler: (...args: unknown[]) => void): void;
+    off(event: string, handler: (...args: unknown[]) => void): void;
+  };
+  context: {
+    /** Read-only access to navigation state */
+    getActiveProcess(): ProcessType;
+    getBladeStack(): TypedBlade[];
+    getRepoStatus(): RepositoryStatus | null;
+  };
+  dispose(): void;
+}
+
+function createExtensionAPI(extensionId: string): ExtensionAPI {
+  const registeredBlades: string[] = [];
+  const registeredCommands: string[] = [];
+  const registeredToolbarActions: string[] = [];
+  const registeredStores: StoreApi<unknown>[] = [];
+  const eventHandlers: Array<{ event: string; handler: Function }> = [];
+
+  return {
+    blades: {
+      register(config) {
+        const type = `ext:${extensionId}:${config.type}` as BladeType;
+        registerBlade({ ...config, type });
+        registeredBlades.push(type);
+      },
+      openBlade(type, props, title) {
+        const qualifiedType = `ext:${extensionId}:${type}`;
+        openBlade(qualifiedType as BladeType, props, title);
+      },
+    },
+    commands: {
+      register(cmd) {
+        const qualifiedId = `ext:${extensionId}:${cmd.id}`;
+        registerCommand({ ...cmd, id: qualifiedId });
+        registeredCommands.push(qualifiedId);
+      },
+      execute(id) {
+        executeCommand(`ext:${extensionId}:${id}`);
+      },
+    },
+    toolbar: {
+      contribute(action) {
+        const qualifiedId = `ext:${extensionId}:${action.commandId}`;
+        toolbarRegistry.add({ ...action, commandId: qualifiedId, extensionId });
+        registeredToolbarActions.push(qualifiedId);
+      },
+    },
+    stores: {
+      create(name, creator) {
+        const store = createBladeStore(`ext:${extensionId}:${name}`, creator);
+        registeredStores.push(store);
+        return store;
+      },
+    },
+    events: {
+      on(event, handler) {
+        // Subscribe to Tauri events or internal event bus
+        eventHandlers.push({ event, handler });
+      },
+      off(event, handler) {
+        // Unsubscribe
+      },
+    },
+    context: {
+      getActiveProcess: () => getNavigationActor().getSnapshot().context.activeProcess,
+      getBladeStack: () => getNavigationActor().getSnapshot().context.bladeStack,
+      getRepoStatus: () => useRepositoryStore.getState().repoStatus,
+    },
+    dispose() {
+      // Remove all registrations
+      for (const type of registeredBlades) unregisterBlade(type);
+      for (const id of registeredCommands) unregisterCommand(id);
+      for (const id of registeredToolbarActions) toolbarRegistry.remove(id);
+      // Stores: reset and unregister
+      for (const store of registeredStores) {
+        store.setState(store.getInitialState(), true);
+      }
+    },
+  };
+}
+```
+
+### 1d. Type System Changes
+
+The `BladeType` union and `BladePropsMap` must accommodate extension blade types without breaking type safety for core blades.
+
+```typescript
+// src/stores/bladeTypes.ts (modified)
+
+/** Core blade types -- type-safe props */
+export interface CoreBladePropsMap {
+  "staging-changes": Record<string, never>;
+  "topology-graph": Record<string, never>;
+  "commit-details": { oid: string };
+  "diff": { source: DiffSource };
+  // ... all existing types
+}
+
+/** Extension blade types use generic props */
+export type ExtensionBladeType = `ext:${string}:${string}`;
+
+/** Union of core + extension blade types */
+export type BladeType = keyof CoreBladePropsMap | ExtensionBladeType;
+
+/** Props map: core types are type-safe, extension types are Record<string, unknown> */
+export type BladePropsMap = CoreBladePropsMap & {
+  [K in ExtensionBladeType]: Record<string, unknown>;
+};
+
+/** Discriminated blade union supports both core and extension */
+export type TypedBlade = {
+  [K in keyof CoreBladePropsMap]: {
+    id: string;
+    type: K;
+    title: string;
+    props: CoreBladePropsMap[K];
+  };
+}[keyof CoreBladePropsMap] | {
+  id: string;
+  type: ExtensionBladeType;
+  title: string;
+  props: Record<string, unknown>;
+};
+```
+
+### 1e. Navigation FSM Changes
+
+The XState machine needs minimal changes because extension blades flow through the same PUSH_BLADE/POP_BLADE events. The singleton guard must check the manifest.
+
+```typescript
+// navigationMachine.ts changes
+
+/** Singleton check now consults both hardcoded list AND extension manifests */
+const CORE_SINGLETONS = new Set([
+  "settings", "changelog", "gitflow-cheatsheet",
+  "conventional-commit", "repo-browser",
+]);
+
+guards: {
+  isNotSingleton: ({ context, event }) => {
+    if (event.type !== "PUSH_BLADE") return true;
+    const type = event.bladeType;
+
+    // Core singletons
+    if (CORE_SINGLETONS.has(type)) {
+      return !context.bladeStack.some(b => b.type === type);
+    }
+
+    // Extension singletons: check manifest
+    if (type.startsWith("ext:")) {
+      const isSingleton = extensionHost.isBladeTypeSingleton(type);
+      if (isSingleton) {
+        return !context.bladeStack.some(b => b.type === type);
+      }
+    }
+
+    return true;
+  },
+}
+```
+
+### 1f. Sandboxing Approach
+
+**No iframe/WebWorker sandboxing for v1.** Rationale:
+
+- Extensions are per-repository files loaded from `.flowforge/extensions/`
+- Users explicitly install them (no marketplace yet)
+- Full isolation adds significant complexity (message passing, serialization of React components)
+- VS Code itself ran unsandboxed extensions for years before partial sandboxing
+
+**Security mitigations without full sandboxing:**
+1. Extension code runs through `import()` -- no `eval()` or `Function()` constructor
+2. Namespace-qualified IDs (`ext:github-integration:pr-list`) prevent collisions
+3. ExtensionAPI facade limits what extensions can access (no raw store access, no direct IPC)
+4. Manifest declares capabilities; undeclared access is denied
+5. Extension directory is under user control (`.flowforge/extensions/` in repo)
+
+**Future:** If a marketplace is added, consider running extension code in a Web Worker with a proxy-based API bridge (similar to VS Code's Extension Host process). This is a Phase 2+ concern.
+
+---
+
+## Integration Point 2: GitHub Integration (First Extension)
+
+### 2a. OAuth Device Flow
+
+The Device Flow is the correct choice for FlowForge because:
+- No localhost server needed (unlike Authorization Code flow)
+- No client secret needed in the distributed binary
+- User opens browser, enters code -- natural for desktop apps
+- `@octokit/auth-oauth-device` handles the polling loop
+
+```
+User clicks "GitHub: Sign In"
+    |
+    v
+Frontend: createOAuthDeviceAuth({ clientId, onVerification })
+    |
+    +--> GitHub POST /login/device/code
+    |       Returns: { device_code, user_code, verification_uri }
+    |
+    +--> UI shows: "Open github.com/login/device and enter ABCD-1234"
+    |       User opens browser (via Tauri shell.open)
+    |
+    +--> Background polling: POST /login/oauth/access_token
+    |       (octokit handles this automatically)
+    |
+    +--> On success: { access_token, token_type, scope }
+    |
+    v
+Store token in OS keychain via Tauri command
+    |
+    v
+GitHub extension activates authenticated features
+```
+
+### 2b. Token Storage Architecture
+
+**Use OS keychain via Rust `keyring` crate**, not `tauri-plugin-store` (which stores unencrypted JSON on disk) and not `tauri-plugin-stronghold` (deprecated, will be removed in Tauri v3).
+
+```rust
+// src-tauri/src/credentials.rs
+
+use keyring::Entry;
+
+const SERVICE_NAME: &str = "com.flowforge.github";
+
+#[tauri::command]
+#[specta::specta]
+pub fn store_github_token(token: String) -> Result<(), String> {
+    let entry = Entry::new(SERVICE_NAME, "oauth-token")
+        .map_err(|e| format!("Keyring error: {}", e))?;
+    entry.set_password(&token)
+        .map_err(|e| format!("Failed to store token: {}", e))?;
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn get_github_token() -> Result<Option<String>, String> {
+    let entry = Entry::new(SERVICE_NAME, "oauth-token")
+        .map_err(|e| format!("Keyring error: {}", e))?;
+    match entry.get_password() {
+        Ok(token) => Ok(Some(token)),
+        Err(keyring::Error::NoEntry) => Ok(None),
+        Err(e) => Err(format!("Failed to get token: {}", e)),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn delete_github_token() -> Result<(), String> {
+    let entry = Entry::new(SERVICE_NAME, "oauth-token")
+        .map_err(|e| format!("Keyring error: {}", e))?;
+    match entry.delete_credential() {
+        Ok(()) => Ok(()),
+        Err(keyring::Error::NoEntry) => Ok(()), // Already deleted
+        Err(e) => Err(format!("Failed to delete token: {}", e)),
+    }
+}
+```
+
+Cargo.toml addition:
+```toml
+keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
+```
+
+### 2c. GitHub API Client Architecture
+
+**Frontend Octokit client with token from keychain**, not Rust-side HTTP. Rationale: GitHub API data is consumed directly by React components; routing all 50+ GitHub REST endpoints through Rust Tauri commands would be unnecessarily heavy. The `reqwest` pattern works for simple APIs (gitignore templates) but GitHub's API surface is large and Octokit handles pagination, rate limiting, and types.
+
+```typescript
+// src/extensions/github-integration/lib/github-client.ts
+
+import { Octokit } from "@octokit/rest";
+import { commands } from "../../../bindings";
+
+let octokitInstance: Octokit | null = null;
+
+export async function getGitHubClient(): Promise<Octokit | null> {
+  if (octokitInstance) return octokitInstance;
+
+  const token = await commands.getGithubToken();
+  if (!token) return null;
+
+  octokitInstance = new Octokit({
+    auth: token,
+    userAgent: "FlowForge/1.5.0",
+  });
+
+  return octokitInstance;
+}
+
+export function clearGitHubClient(): void {
+  octokitInstance = null;
+}
+```
+
+### 2d. PR/Issue Data Flow to UI
+
+```
+GitHub Extension activate()
+    |
+    +--> Register blades: github-pr-list, github-pr-detail, github-issues
+    +--> Register commands: github.authenticate, github.openPR, github.viewIssues
+    +--> Contribute toolbar: PR count badge, issues button
+    |
+    v
+
+User opens "Pull Requests" blade (via toolbar or command palette)
+    |
+    v
+GitHubPRListBlade (React component)
+    |
+    +--> useGitHubPRs() hook
+    |       |
+    |       +--> React Query: queryKey ["github", "prs", owner, repo]
+    |       |       queryFn: getGitHubClient() -> octokit.pulls.list()
+    |       |       staleTime: 30_000 (30s -- PRs change frequently)
+    |       |       refetchOnWindowFocus: true
+    |       |
+    |       +--> Returns: { data: PullRequest[], isLoading, error }
+    |
+    +--> Renders PR list with status indicators
+    |
+    +--> Click PR -> openBlade("github-pr-detail", { number: 42 })
+            |
+            v
+        GitHubPRDetailBlade
+            +--> useGitHubPR(number) -> octokit.pulls.get()
+            +--> useGitHubPRComments(number) -> octokit.issues.listComments()
+            +--> useGitHubPRChecks(number) -> octokit.checks.listForRef()
+```
+
+### 2e. Remote Detection
+
+The extension needs to know the GitHub owner/repo from the current repository's remote URL.
+
+```typescript
+// Parse remote URL to extract owner/repo
+function parseGitHubRemote(remoteUrl: string): { owner: string; repo: string } | null {
+  // Handle HTTPS: https://github.com/owner/repo.git
+  // Handle SSH: git@github.com:owner/repo.git
+  const httpsMatch = remoteUrl.match(/github\.com\/([^/]+)\/([^/.]+)/);
+  const sshMatch = remoteUrl.match(/github\.com:([^/]+)\/([^/.]+)/);
+  const match = httpsMatch || sshMatch;
+  if (!match) return null;
+  return { owner: match[1], repo: match[2] };
+}
+```
+
+The existing `get_remotes` Rust command returns remote URLs; the extension uses this to detect GitHub connectivity.
+
+---
+
+## Integration Point 3: Extensible Toolbar
+
+### 3a. Current Header Problem
+
+The `Header.tsx` is a 415-line component with **16 hardcoded buttons**. Buttons are conditionally shown based on `status` (repo open), `undoInfo`, etc. There is no data-driven rendering or contribution mechanism.
+
+### 3b. Toolbar Registry Architecture
+
+```typescript
+// src/lib/toolbarRegistry.ts
+
+export interface ToolbarAction {
+  id: string;
+  commandId: string;          // Must match a registered command
+  icon: string;               // Lucide icon name
+  label?: string;             // Optional text label
+  group: string;              // Grouping for overflow: "repo", "sync", "github", ...
+  priority: number;           // Lower = more left. Core actions: 0-99, extensions: 100+
+  when?: string;              // Condition expression: "repo.isOpen", "github.isAuthenticated"
+  badge?: () => string | null; // Dynamic badge (e.g., PR count)
+  extensionId?: string;       // Set by ExtensionAPI, undefined for core actions
+}
+
+interface ToolbarGroup {
+  id: string;
+  label: string;
+  priority: number;           // Group ordering
+}
+
+class ToolbarRegistry {
+  private actions = new Map<string, ToolbarAction>();
+  private groups = new Map<string, ToolbarGroup>();
+  private listeners = new Set<() => void>();
+
+  registerGroup(group: ToolbarGroup): void {
+    this.groups.set(group.id, group);
+    this.notify();
+  }
+
+  add(action: ToolbarAction): void {
+    this.actions.set(action.id, action);
+    this.notify();
+  }
+
+  remove(id: string): void {
+    this.actions.delete(id);
+    this.notify();
+  }
+
+  /** Get visible actions, sorted by priority, grouped */
+  getVisibleActions(context: ToolbarContext): ToolbarAction[] {
+    return Array.from(this.actions.values())
+      .filter(a => evaluateWhen(a.when, context))
+      .sort((a, b) => a.priority - b.priority);
+  }
+
+  subscribe(listener: () => void): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  private notify(): void {
+    this.listeners.forEach(fn => fn());
+  }
+}
+
+export const toolbarRegistry = new ToolbarRegistry();
+```
+
+### 3c. Condition Expression Evaluator
+
+The `when` field uses simple dot-notation conditions, similar to VS Code's `when` clause.
+
+```typescript
+// src/lib/toolbarConditions.ts
+
+interface ToolbarContext {
+  repo: {
+    isOpen: boolean;
+    isDirty: boolean;
+    hasRemote: boolean;
+  };
+  github: {
+    isAuthenticated: boolean;
+    prCount: number;
+  };
+}
+
+function evaluateWhen(expr: string | undefined, ctx: ToolbarContext): boolean {
+  if (!expr) return true;
+
+  // Split on " && "
+  const conditions = expr.split("&&").map(c => c.trim());
+
+  return conditions.every(cond => {
+    // Handle negation: "!repo.isOpen"
+    const negated = cond.startsWith("!");
+    const path = negated ? cond.slice(1) : cond;
+
+    const value = getNestedValue(ctx, path);
+    const result = Boolean(value);
+    return negated ? !result : result;
   });
 }
 ```
 
-### Pattern 4: Selective Re-rendering with useSelector
+### 3d. Header Refactoring
 
-**What:** Use `NavigationMachineContext.useSelector` with specific selectors instead of subscribing to entire snapshots.
-
-**When:** Every component consuming navigation machine state.
-
-**Example:**
+The Header transforms from a static button list to a data-driven toolbar renderer.
 
 ```typescript
-// Only re-renders when activeProcess changes
-const activeProcess = NavigationMachineContext.useSelector(selectActiveProcess);
+// src/components/Header.tsx (conceptual refactoring)
 
-// Only re-renders when the active blade changes
-const activeBlade = NavigationMachineContext.useSelector(selectActiveBlade);
+function Header() {
+  const visibleActions = useToolbarActions(); // hook subscribing to toolbarRegistry
+  const [overflowOpen, setOverflowOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Split into visible and overflow based on available width
+  const { visible, overflow } = useToolbarOverflow(visibleActions, containerRef);
+
+  return (
+    <header className="...">
+      {/* Left: branding, repo/branch switcher, process tabs */}
+      <div className="flex items-center gap-2">
+        <h1>FlowForge</h1>
+        {status && <RepoSwitcher ... />}
+        {status && <BranchSwitcher ... />}
+        {status && <ProcessNavigation />}
+      </div>
+
+      {/* Right: data-driven toolbar actions */}
+      <div className="flex items-center gap-2" ref={containerRef}>
+        {visible.map(action => (
+          <ToolbarButton key={action.id} action={action} />
+        ))}
+        {overflow.length > 0 && (
+          <OverflowMenu actions={overflow} />
+        )}
+      </div>
+    </header>
+  );
+}
 ```
 
-This is equivalent to how Zustand selectors work: `useBladeStore((s) => s.activeProcess)`. The mental model is the same.
+### 3e. Overflow Menu Architecture
 
-### Pattern 5: Compatibility Shim for Gradual Migration
-
-**What:** Provide a Zustand-API-compatible wrapper around the XState machine during migration.
-
-**When:** During the transition period when some code still uses `useBladeStore`.
-
-**Example:**
+When the toolbar has more actions than horizontal space, lower-priority items collapse into an overflow "..." menu, grouped by their `group` field.
 
 ```typescript
-// src/shared/hooks/useBladeStore.ts (compatibility shim)
-import {
-  NavigationMachineContext,
-  selectBladeStack,
-  selectActiveProcess,
-} from "../../machines/useNavigationMachine";
+// src/hooks/useToolbarOverflow.ts
 
-/** @deprecated Migrate to NavigationMachineContext.useSelector/useActorRef */
-export function useBladeStore() {
-  const actorRef = NavigationMachineContext.useActorRef();
-  const bladeStack = NavigationMachineContext.useSelector(selectBladeStack);
-  const activeProcess = NavigationMachineContext.useSelector(selectActiveProcess);
+function useToolbarOverflow(
+  actions: ToolbarAction[],
+  containerRef: RefObject<HTMLDivElement>,
+) {
+  const [visibleCount, setVisibleCount] = useState(actions.length);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      const availableWidth = entry.contentRect.width;
+      const BUTTON_WIDTH = 36; // approximate per-button width
+      const OVERFLOW_WIDTH = 36;
+      const maxButtons = Math.floor((availableWidth - OVERFLOW_WIDTH) / BUTTON_WIDTH);
+      setVisibleCount(Math.max(1, maxButtons));
+    });
+
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [containerRef]);
 
   return {
-    bladeStack,
-    activeProcess,
-    pushBlade: <K extends BladeType>(blade: {
-      type: K;
-      title: string;
-      props: BladePropsMap[K];
-    }) =>
-      actorRef.send({
-        type: "PUSH_BLADE",
-        bladeType: blade.type,
-        title: blade.title,
-        props: blade.props,
-      }),
-    popBlade: () => actorRef.send({ type: "POP_BLADE" }),
-    popToIndex: (index: number) =>
-      actorRef.send({ type: "POP_TO_INDEX", index }),
-    replaceBlade: <K extends BladeType>(blade: {
-      type: K;
-      title: string;
-      props: BladePropsMap[K];
-    }) =>
-      actorRef.send({
-        type: "REPLACE_BLADE",
-        bladeType: blade.type,
-        title: blade.title,
-        props: blade.props,
-      }),
-    resetStack: () => actorRef.send({ type: "RESET_STACK" }),
-    setProcess: (process: ProcessType) =>
-      actorRef.send({ type: "SWITCH_PROCESS", process }),
+    visible: actions.slice(0, visibleCount),
+    overflow: actions.slice(visibleCount),
   };
 }
 ```
 
-This allows migrating consumers one at a time rather than all at once.
+### 3f. Core Toolbar Migration
+
+Existing hardcoded Header buttons become `toolbarRegistry.add()` calls at app startup, keeping the same behavior but enabling extension contributions.
+
+```typescript
+// src/toolbar/core-actions.ts (NEW -- migrated from Header.tsx)
+
+import { toolbarRegistry } from "../lib/toolbarRegistry";
+
+// Group registrations
+toolbarRegistry.registerGroup({ id: "settings", label: "Settings", priority: 10 });
+toolbarRegistry.registerGroup({ id: "repo", label: "Repository", priority: 20 });
+toolbarRegistry.registerGroup({ id: "sync", label: "Sync", priority: 30 });
+toolbarRegistry.registerGroup({ id: "tools", label: "Tools", priority: 40 });
+
+// Core actions (priority 0-99)
+toolbarRegistry.add({
+  id: "core:settings",
+  commandId: "open-settings",
+  icon: "settings",
+  group: "settings",
+  priority: 10,
+  when: undefined, // Always visible
+});
+
+toolbarRegistry.add({
+  id: "core:refresh",
+  commandId: "refresh-all",
+  icon: "refresh-cw",
+  group: "repo",
+  priority: 20,
+  when: "repo.isOpen",
+});
+
+toolbarRegistry.add({
+  id: "core:sync-push",
+  commandId: "git-push",
+  icon: "arrow-up",
+  group: "sync",
+  priority: 30,
+  when: "repo.isOpen",
+});
+
+// ... etc for all current Header buttons
+```
+
+---
+
+## Data Flow: Complete Extension Lifecycle
+
+### Extension Discovery and Loading
+
+```
+App starts / Repository opens
+    |
+    v
+App.tsx useEffect: extensionHost.discover(repoPath)
+    |
+    +--> Rust command: read_extension_manifests(repoPath)
+    |       Reads .flowforge/extensions/*/manifest.json
+    |       Validates manifest schema
+    |       Returns ExtensionManifest[]
+    |
+    v
+For each manifest with activationEvent matching current state:
+    |
+    +--> extensionHost.activate(id)
+    |       1. Create ExtensionAPI facade
+    |       2. Dynamic import(mainUrl) --> mod.activate(api)
+    |       3. Extension calls api.blades.register(), api.commands.register(), etc.
+    |
+    v
+Registries updated --> UI re-renders with new blades/commands/toolbar actions
+```
+
+### Extension Unloading (Repository Close)
+
+```
+User closes repository
+    |
+    v
+App.tsx: extensionHost.deactivateAll()
+    |
+    +--> For each active extension:
+    |       1. Call mod.deactivate() if exported
+    |       2. ExtensionAPI.dispose()
+    |           - Unregister all blades
+    |           - Unregister all commands
+    |           - Remove all toolbar actions
+    |           - Reset and unregister all stores
+    |           - Remove all event listeners
+    |
+    v
+Registries cleaned --> UI reflects removal
+```
+
+### GitHub Extension: Authentication Flow
+
+```
+User triggers "GitHub: Sign In" (command palette or toolbar)
+    |
+    v
+GitHubAuthCommand action():
+    |
+    +--> createOAuthDeviceAuth({
+    |       clientId: FLOWFORGE_GITHUB_CLIENT_ID,
+    |       clientType: "oauth-app",
+    |       scopes: ["repo", "read:org"],
+    |       onVerification(verification) {
+    |           // Show modal with code and URL
+    |           showDeviceFlowDialog(verification);
+    |           // Open browser
+    |           shell.open(verification.verification_uri);
+    |       }
+    |    })
+    |
+    +--> auth({ type: "oauth" }) -- polls GitHub in background
+    |
+    v
+On success: { token }
+    |
+    +--> commands.storeGithubToken(token)  -- Rust -> OS keychain
+    +--> clearGitHubClient()               -- reset cached Octokit
+    +--> toolbarContext.github.isAuthenticated = true
+    +--> Toolbar re-renders: GitHub actions become visible
+    |
+    v
+Extension auto-fetches PR count for badge
+```
+
+---
+
+## New Components vs Modified Components
+
+### New Components
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `ExtensionHost` | `src/extensions/ExtensionHost.ts` | Singleton lifecycle manager for all extensions |
+| `ExtensionAPI` | `src/extensions/ExtensionAPI.ts` | Per-extension sandboxed facade |
+| `ExtensionManifest` types | `src/extensions/types.ts` | Manifest schema types |
+| `toolbarRegistry` | `src/lib/toolbarRegistry.ts` | Data-driven toolbar action registry |
+| `toolbarConditions` | `src/lib/toolbarConditions.ts` | `when` clause evaluator |
+| `useToolbarActions` | `src/hooks/useToolbarActions.ts` | React hook subscribing to toolbar registry |
+| `useToolbarOverflow` | `src/hooks/useToolbarOverflow.ts` | Responsive overflow logic |
+| `ToolbarButton` | `src/components/toolbar/ToolbarButton.tsx` | Generic toolbar button from registry data |
+| `OverflowMenu` | `src/components/toolbar/OverflowMenu.tsx` | Grouped overflow dropdown |
+| `DeviceFlowDialog` | `src/components/auth/DeviceFlowDialog.tsx` | OAuth device flow UI (code + polling state) |
+| `core-actions.ts` | `src/toolbar/core-actions.ts` | Core toolbar actions migrated from Header |
+| `credentials.rs` | `src-tauri/src/credentials.rs` | Rust keychain commands |
+| `extensions.rs` | `src-tauri/src/extensions.rs` | Rust manifest reader + validator |
+| GitHub extension | `src/extensions/github-integration/` | PR list blade, PR detail blade, issues blade, auth |
+
+### Modified Components
+
+| Component | Modification | Reason |
+|-----------|-------------|--------|
+| `src/stores/bladeTypes.ts` | Add `ExtensionBladeType`, widen `BladeType` union | Extension blades need runtime-registered types |
+| `src/lib/bladeRegistry.ts` | Add `unregisterBlade()`, accept string types | Extension cleanup on unload |
+| `src/lib/commandRegistry.ts` | Add `unregisterCommand()`, make `CommandCategory` a `string` | Extension cleanup, extensible categories |
+| `src/blades/_shared/BladeRenderer.tsx` | Handle extension blade types gracefully | Extension blades may render before/after load |
+| `src/machines/navigation/navigationMachine.ts` | Singleton guard checks extension manifests | Extension blades marked singleton in manifest |
+| `src/components/Header.tsx` | Refactor right side to data-driven toolbar | Core + extension actions rendered uniformly |
+| `src/blades/_discovery.ts` | Remove hardcoded `EXPECTED_TYPES` or scope to core only | Extension types should not trigger dev warnings |
+| `src-tauri/Cargo.toml` | Add `keyring` crate | OS keychain access for token storage |
+| `src-tauri/src/lib.rs` | Register credential + extension discovery commands | New IPC endpoints |
 
 ---
 
 ## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: Dual State Ownership (XState + Zustand for Same Data)
+### Anti-Pattern 1: Extension Code in Rust
 
-**What:** Having both an XState machine AND a Zustand store managing the blade stack, with sync logic between them.
+**What:** Implementing extension logic (GitHub API calls, UI rendering) in Rust with IPC for every action.
 
-**Why bad:** Two sources of truth for the same state leads to sync bugs, race conditions, and confusion about which is authoritative. Defeats the purpose of using XState.
+**Why bad:** GitHub's API surface is huge (PRs, issues, checks, reviews, comments, reactions). Creating a Tauri command for each would be 50+ new Rust functions. Octokit already handles pagination, rate limiting, error handling, and has TypeScript types.
 
-**Instead:** XState owns the blade stack completely. Remove `useBladeStore` (the Zustand store). Provide the compatibility shim (Pattern 5) during migration, then remove it. The shim wraps XState, it does not duplicate state.
+**Instead:** Token storage and extension discovery in Rust (security-sensitive, filesystem access). API calls and UI rendering in JavaScript (where Octokit and React live).
 
-### Anti-Pattern 2: Zustand Store Slices for Independent State
+### Anti-Pattern 2: Global Event Bus Without Scoping
 
-**What:** Merging independent stores (e.g., branches + tags + stash) into a single combined store using Zustand's slices pattern.
+**What:** A single `EventEmitter` that extensions and core both publish/subscribe to freely.
 
-**Why bad:** Adds coupling between unrelated features, makes it harder to co-locate stores with their modules, and provides no real performance benefit for independent state. Persistence becomes awkward when different slices have different persistence strategies.
+**Why bad:** Name collisions, impossible to track which extension subscribed to what, no cleanup on unload.
 
-**Instead:** Keep separate Zustand stores. Co-locate them with their feature module. Use cross-store `getState()` calls when needed.
+**Instead:** ExtensionAPI.events provides scoped access. Internal event subscriptions tracked per-extension for guaranteed cleanup.
 
-### Anti-Pattern 3: Deep Module Cross-Imports
+### Anti-Pattern 3: Extension Code Bundled with Core
 
-**What:** A blade module importing components or stores from another blade module directly.
+**What:** Shipping the GitHub extension as part of the main FlowForge bundle (in `src/blades/github-*`).
 
-**Why bad:** Creates hidden coupling, circular dependency risks, and makes it impossible to move/refactor modules independently.
+**Why bad:** Violates the extension architecture. Cannot be disabled, updated independently, or serve as a template for third-party extensions.
 
-**Instead:** Extract shared code to `shared/`. If two blades need to communicate, route through the navigation machine (events) or shared stores.
+**Instead:** GitHub extension lives in `src/extensions/github-integration/` with its own manifest. Built separately (even if distributed in the same repo during development). This dogfoods the extension API.
 
-### Anti-Pattern 4: Barrel Re-exports of Internal Implementation
+### Anti-Pattern 4: Direct Store Mutation from Extensions
 
-**What:** Having `index.ts` files that re-export every internal file from a module.
+**What:** Extensions importing and calling `useRepositoryStore.setState()` directly.
 
-**Why bad:** Vite cannot tree-shake barrel re-exports efficiently, leading to larger bundles and slower HMR. Also makes it unclear what the module's public API actually is.
+**Why bad:** No cleanup tracking, no access control, extensions can corrupt core state.
 
-**Instead:** Export only the public API. Internal components import directly from their file path within the module.
+**Instead:** ExtensionAPI.stores.create() returns new isolated stores. ExtensionAPI.context provides read-only access to core state.
 
-### Anti-Pattern 5: Persisting Navigation on Every Blade Push
+### Anti-Pattern 5: Toolbar Actions Without Priority/Groups
 
-**What:** Writing to the Tauri store on every single navigation event (push, pop, switch process).
+**What:** Extensions add toolbar buttons that appear in arbitrary positions.
 
-**Why bad:** Disk I/O on every click. The Tauri plugin-store writes to a JSON file. High-frequency writes cause jank and wear.
+**Why bad:** UX chaos. 10 extensions = 30 random buttons. No overflow handling. Core actions pushed off-screen.
 
-**Instead:** Debounce persistence. Subscribe to the actor snapshot and debounce writes to ~1 second. Or only persist on app blur/close using the Tauri window event:
+**Instead:** Priority-based ordering (core 0-99, extensions 100+), group-based overflow menu, `when` conditions for contextual visibility.
 
-```typescript
-import { listen } from "@tauri-apps/api/event";
+### Anti-Pattern 6: Storing OAuth Tokens in tauri-plugin-store
 
-listen("tauri://blur", () => {
-  persistNavigationSnapshot(actorRef.getPersistedSnapshot());
-});
-```
+**What:** Using the existing `flowforge-settings.json` store for GitHub access tokens.
+
+**Why bad:** `tauri-plugin-store` writes unencrypted JSON to the app data directory. Anyone browsing `~/.config` or `AppData` can read the token. This is a credential leak.
+
+**Instead:** Use the OS keychain (`keyring` crate in Rust) which integrates with macOS Keychain, Windows Credential Manager, and Linux Secret Service.
 
 ---
 
 ## Scalability Considerations
 
-| Concern | Current (~30 files per layer) | At 20+ Blade Modules | At 50+ Modules |
-|---------|-------------------------------|----------------------|----------------|
-| File discovery | Flat dirs, easy to find | Blade-centric modules with predictable internal structure | Same pattern scales |
-| Registration | Auto-glob in registrations/ | Auto-glob in blades/*/registration.ts | Same pattern scales |
-| Bundle size | All blades eagerly loaded | Keep eager for now | Introduce `React.lazy()` per blade via `lazy: true` in registration |
-| State management | 21 stores, mostly independent | Co-located stores, same count minus blades store | Consider XState for complex multi-step flows (e.g., init repo wizard) |
-| Navigation depth | Stack rarely > 3 deep | Guard max depth in machine if needed | Same |
-| HMR speed | Fast with Vite | Module-scoped HMR (only changed blade reloads) | Same |
-| Import analysis | Flat makes all imports look similar | Module boundaries make cross-cuts visible | ESLint rules enforce boundaries |
+| Concern | 1-2 Extensions | 10 Extensions | 50+ Extensions |
+|---------|---------------|---------------|----------------|
+| **Blade registry** | Map lookup O(1), negligible | Same | Same -- Map scales |
+| **Toolbar overflow** | All visible | Overflow menu active, grouped | Need collapsible groups or extension toolbar panels |
+| **Startup time** | Eager load both | Lazy activation by event | Must implement lazy activation; eager load kills startup |
+| **Memory** | Negligible | ~5-10 stores, manageable | Need extension memory budgets or Web Worker isolation |
+| **Command palette** | 10-15 extra commands | 50+ commands, need better search | Category filtering becomes essential |
+| **Namespace collisions** | `ext:` prefix sufficient | Same | Consider extension manifest validation for unique IDs |
 
 ---
 
-## Integration Points Summary (New vs Modified)
+## Build Order (Dependency Graph)
 
-### New Files
+```
+Phase 1: Extension Infrastructure
+    +--> toolbarRegistry (no deps)
+    +--> bladeRegistry modifications (unregister, string types)
+    +--> commandRegistry modifications (unregister, string categories)
+    +--> ExtensionManifest types
+    +--> Rust: extensions.rs (read manifests from disk)
+    |
+    v
+Phase 2: Toolbar Refactoring
+    +--> Header refactoring (data-driven from toolbarRegistry)
+    +--> Core toolbar actions migrated to registry
+    +--> ToolbarButton + OverflowMenu components
+    +--> useToolbarActions + useToolbarOverflow hooks
+    |
+    v
+Phase 3: Extension Host + API
+    +--> ExtensionHost (discover, activate, deactivate)
+    +--> ExtensionAPI facade (blades, commands, toolbar, stores, events)
+    +--> App.tsx integration (discover on repo open, cleanup on close)
+    +--> Navigation FSM singleton guard update
+    |
+    v
+Phase 4: Credential Infrastructure
+    +--> Rust: credentials.rs (keyring crate)
+    +--> Tauri commands: store/get/delete token
+    +--> DeviceFlowDialog component
+    |
+    v
+Phase 5: GitHub Extension
+    +--> manifest.json
+    +--> OAuth device flow (activate -> onVerification UI)
+    +--> GitHub client (Octokit + token from keychain)
+    +--> PR list blade + PR detail blade
+    +--> Issues blade
+    +--> Toolbar contributions (PR badge, etc.)
+    |
+    v
+Phase 6: Polish
+    +--> Extension error boundaries
+    +--> Extension settings UI (enable/disable)
+    +--> GitHub extension: reviews, checks, reactions
+```
 
-| File | Purpose |
-|------|---------|
-| `src/machines/navigation.machine.ts` | XState navigation FSM definition |
-| `src/machines/navigation.types.ts` | TypeScript types for machine context/events |
-| `src/machines/navigation.actions.ts` | Named actions (optional, can inline in machine) |
-| `src/machines/navigation.guards.ts` | Guard conditions (optional, can inline in machine) |
-| `src/machines/useNavigationMachine.ts` | `createActorContext` + selectors |
-| `src/machines/navigationActor.ts` | Global actor ref for non-React code |
-| `src/machines/navigation.persistence.ts` | Tauri store persistence bridge |
-| `src/machines/index.ts` | Public API |
-| `src/app/providers.tsx` | `NavigationProvider` wrapper |
-| `src/blades/registrations.ts` | Auto-glob for blade-centric registrations |
-
-### Modified Files (Critical Path)
-
-| File | Change | Reason |
-|------|--------|--------|
-| `src/App.tsx` | Wrap with `NavigationProvider`, replace `status` guard with machine state | XState controls welcome/repo transition |
-| `src/components/blades/BladeContainer.tsx` | Read from `NavigationMachineContext.useSelector` instead of `useBladeStore` | XState owns blade stack |
-| `src/components/blades/ProcessNavigation.tsx` | Send `SWITCH_PROCESS` to machine instead of `useBladeStore.setProcess` | XState owns process mode |
-| `src/hooks/useBladeNavigation.ts` | Send events to machine instead of calling store methods | XState owns navigation |
-| `src/lib/bladeOpener.ts` | Use `getNavigationActorRef().send()` instead of `useBladeStore.getState()` | Non-React XState access |
-| `src/components/Header.tsx` | Use machine selectors for process state | Read from XState |
-
-### Removed After XState Migration
-
-| File | Replaced By |
-|------|-------------|
-| `src/stores/blades.ts` | `src/machines/navigation.machine.ts` |
-
-### Files Moved During Restructure (No Logic Change)
-
-Every file under `src/components/` and `src/stores/` moves to its blade/feature module. Logic stays the same; only import paths change. Re-export shims ensure no breakage during migration.
-
----
-
-## Recommended Build Order (Dependency-Aware)
-
-### Phase 1: XState Navigation Machine (No File Moves)
-
-1. Install `xstate@5` + `@xstate/react@6`
-2. Create `src/machines/` with navigation machine definition
-3. Create `NavigationProvider` with persistence
-4. Wire into `App.tsx` alongside existing `useBladeStore` (compatibility shim)
-5. Migrate `BladeContainer`, `ProcessNavigation`, `useBladeNavigation`, `bladeOpener` to XState
-6. Run all existing flows manually to verify behavior parity
-7. Remove `useBladeStore` (the Zustand store, not the compatibility shim)
-8. Remove compatibility shim once all consumers are migrated
-
-**Rationale:** XState is the riskiest change (new dependency, new paradigm). Do it first while the file structure is familiar. Easier to debug issues when you know exactly what moved.
-
-### Phase 2: Blade-Centric File Restructure
-
-1. Create `src/blades/`, `src/features/`, `src/shared/` directories
-2. Move shared infrastructure (`shared/ui/`, `shared/blade-system/`, `shared/lib/`, `shared/stores/`)
-3. Move blade modules one at a time (start with leaf blades like viewers that have few sub-components)
-4. Move feature modules
-5. Update auto-glob path for registrations
-6. Add re-export shims at old paths, then remove as consumers update
-
-**Rationale:** File moves are mechanical and low-risk. Doing this after XState means the blade store is already gone, reducing cross-cutting changes.
-
-### Phase 3: Store Co-location + Naming
-
-1. Rename all store files to `{feature}.store.ts`
-2. Move stores to their feature/blade modules
-3. Update all imports (search-and-replace with TypeScript path resolution)
-4. Add ESLint `import/no-restricted-paths` to enforce module boundaries
-
-**Rationale:** This is the final cleanup pass. By this point the module structure is established and stores naturally slot into their modules.
+**Build order rationale:**
+1. Registry modifications first -- they are the foundation everything plugs into
+2. Toolbar before extension host -- core actions should be data-driven before extensions contribute
+3. Extension host before GitHub -- the host must exist before the first extension can load
+4. Credentials before GitHub -- the extension needs token storage to authenticate
+5. GitHub extension last -- it consumes all prior infrastructure as first real consumer
 
 ---
 
 ## Sources
 
-- [XState v5 Persistence API](https://stately.ai/docs/persistence) -- HIGH confidence
-- [XState v5 setup() function](https://stately.ai/docs/setup) -- HIGH confidence
-- [@xstate/react hooks API](https://stately.ai/docs/xstate-react) -- HIGH confidence
-- [XState npm (v5.26.0)](https://www.npmjs.com/package/xstate) -- HIGH confidence
-- [@xstate/react npm (v6.0.0)](https://www.npmjs.com/package/@xstate/react) -- HIGH confidence
-- [Zustand Slices Pattern docs](https://zustand.docs.pmnd.rs/guides/slices-pattern) -- HIGH confidence
-- [Zustand Discussion #2496: When to use multiple stores vs slices](https://github.com/pmndrs/zustand/discussions/2496) -- HIGH confidence
-- [Bulletproof React Project Structure](https://github.com/alan2207/bulletproof-react/blob/master/docs/project-structure.md) -- HIGH confidence
-- [XState Global State with React](https://stately.ai/blog/2024-02-12-xstate-react-global-state) -- MEDIUM confidence
-- [zustand-middleware-xstate](https://github.com/biowaffeln/zustand-middleware-xstate) -- MEDIUM confidence (unmaintained, XState v4 only -- noted as anti-pattern)
-- [State Management Trends in React 2025](https://makersden.io/blog/react-state-management-in-2025) -- MEDIUM confidence
-- [React Folder Structure 2025](https://www.robinwieruch.de/react-folder-structure/) -- MEDIUM confidence
+### Official Documentation (HIGH confidence)
+- [GitHub OAuth Device Flow](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps) -- device flow specification
+- [Tauri Plugin Store](https://v2.tauri.app/plugin/store/) -- unencrypted key-value storage (not for tokens)
+- [Tauri Stronghold](https://v2.tauri.app/plugin/stronghold/) -- encrypted storage (deprecated for v3)
+- [@octokit/auth-oauth-device](https://github.com/octokit/auth-oauth-device.js) -- device flow implementation
+- [@octokit/rest](https://github.com/octokit/rest.js) -- GitHub REST API client
+- [keyring-rs](https://github.com/open-source-cooperative/keyring-rs) -- cross-platform OS keychain access
+
+### Community and Patterns (MEDIUM confidence)
+- [tauri-plugin-keyring](https://github.com/HuakunShen/tauri-plugin-keyring) -- Tauri wrapper for keyring crate
+- [GitHub Device Flow example](https://gist.github.com/HuakunShen/ad1884ca725def49d5c17b08a519af8b) -- implementation reference
+- [Implementing OAuth in Tauri](https://medium.com/@Joshua_50036/implementing-oauth-in-tauri-3c12c3375e04) -- patterns for desktop OAuth
+- [VS Code Extension Architecture](https://dev.to/karrade7/vs-code-extensions-basic-concepts-architecture-b17) -- extension host pattern reference
+- [GitHub auth for Tauri apps](https://codereader.dev/blog/github-auth-for-tauri-apps) -- practical Tauri+GitHub OAuth guide
+
+### Codebase Analysis (HIGH confidence)
+- `src/lib/bladeRegistry.ts` -- current blade registration API (Map<BladeType, BladeRegistration>)
+- `src/lib/commandRegistry.ts` -- current command registration API (Command[], registerCommand/getCommands)
+- `src/stores/registry.ts` -- current store reset registry (Set<() => void>)
+- `src/stores/bladeTypes.ts` -- BladePropsMap interface, BladeType union, TypedBlade discriminator
+- `src/machines/navigation/navigationMachine.ts` -- XState v5 FSM with SINGLETON_TYPES guard
+- `src/components/Header.tsx` -- 415-line static toolbar with 16 hardcoded buttons
+- `src/blades/_discovery.ts` -- compile-time blade auto-discovery via import.meta.glob
+- `src/blades/_shared/BladeRenderer.tsx` -- resolves BladeType to component via registry
+- `src-tauri/Cargo.toml` -- reqwest already present, keyring to be added
+- `src/lib/store.ts` -- tauri-plugin-store wrapper for settings (unencrypted)
