@@ -108,12 +108,15 @@ Plans:
   2. Developer can add a new blade type by creating files in one feature directory (no edits to shared files beyond the blade registry)
   3. Blade auto-discovery works with the new file structure (application loads all blade types, no regressions)
   4. Import boundaries are enforced: blades do not import from other blades, features do not import from other features (only from shared)
-**Plans**: TBD
+**Plans**: 6 plans
 
 Plans:
-- [ ] 29-01: TBD
-- [ ] 29-02: TBD
-- [ ] 29-03: TBD
+- [ ] 29-01-PLAN.md -- Scaffold _shared/ directory, dual-glob discovery, DiffSource extraction, tsconfig paths, Biome config
+- [ ] 29-02-PLAN.md -- Migrate 4 simple blades (viewer-image, viewer-3d, commit-details, repo-browser)
+- [ ] 29-03-PLAN.md -- Migrate 3 viewer blades + changelog blade with exclusive store
+- [ ] 29-04-PLAN.md -- Migrate settings (6 sub-components) and gitflow-cheatsheet blades
+- [ ] 29-05-PLAN.md -- Migrate staging-changes, diff, topology-graph, init-repo (complex cross-dependent blades)
+- [ ] 29-06-PLAN.md -- Migrate conventional-commit, delete old structure, finalize single-glob, CI boundary check
 
 ### Phase 30: Store Consolidation & Tech Debt
 **Goal**: Zustand stores are consolidated into domain groups, duplicate code is removed, and all nine accumulated tech debt items are resolved
