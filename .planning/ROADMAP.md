@@ -22,8 +22,8 @@ Six phases transform FlowForge's frontend architecture from implicit, store-driv
 - [ ] **Phase 26: XState Navigation FSM** - Replace imperative blade store with an explicit state machine governing push/pop/replace/reset with guards, constraints, and side effects
 - [ ] **Phase 27: Init Repo Blade** - Full-width blade for repository initialization with .gitignore template search, multi-template composition, and offline fallback
 - [x] **Phase 28: Conventional Commit Blade** - Full-width blade workspace for conventional commits with commit-and-push workflow and post-commit navigation
-- [ ] **Phase 29: Blade-Centric File Structure** - Migrate from layer-based to feature-module organization with co-located components, stores, hooks, and tests per blade
-- [ ] **Phase 30: Store Consolidation & Tech Debt** - Consolidate Zustand stores into domain groups and resolve all nine accumulated tech debt items
+- [x] **Phase 29: Blade-Centric File Structure** - Migrate from layer-based to feature-module organization with co-located components, stores, hooks, and tests per blade
+- [x] **Phase 30: Store Consolidation & Tech Debt** - Consolidate Zustand stores into domain groups and resolve all nine accumulated tech debt items
 
 ## Phase Details
 
@@ -131,10 +131,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 30-01-PLAN.md -- Remove orphaned v1.0 code, debug page, and deprecated blade store
-- [ ] 30-02-PLAN.md -- Fix stale blade stack, topology empty state, command palette entry, review toasts, defaultTab wiring
-- [ ] 30-03-PLAN.md -- Store registry, blade store factory, and GitOps domain store consolidation (9 slices)
-- [ ] 30-04-PLAN.md -- UI State + Preferences stores, blade store factory migration, closeRepository reset wiring, barrel export
+- [x] 30-01-PLAN.md -- Remove orphaned v1.0 code, debug page, and deprecated blade store
+- [x] 30-02-PLAN.md -- Fix stale blade stack, topology empty state, command palette entry, review toasts, defaultTab wiring
+- [x] 30-03-PLAN.md -- Store registry, blade store factory, and GitOps domain store consolidation (9 slices)
+- [x] 30-04-PLAN.md -- UI State + Preferences stores, blade store factory migration, closeRepository reset wiring, barrel export
 
 ## Progress
 
@@ -194,8 +194,8 @@ Plans:
 | 27. Init Repo Blade | 4/4 | ✓ Complete | 2026-02-08 |
 | 28. Conventional Commit Blade | 5/5 | ✓ Complete | 2026-02-09 |
 | 29. Blade-Centric File Structure | 6/6 | ✓ Complete | 2026-02-09 |
-| 30. Store Consolidation & Tech Debt | 0/4 | Not started | - |
+| 30. Store Consolidation & Tech Debt | 4/4 | ✓ Complete | 2026-02-09 |
 
 ---
 *Last updated: 2026-02-09*
-*Phase 28 complete — Conventional Commit Blade with syntax highlighting, commit+push, amend mode, templates, and scope chart*
+*Phase 30 complete — Store consolidation (21→5 domain stores), tech debt resolved, v1.4.0 milestone complete*

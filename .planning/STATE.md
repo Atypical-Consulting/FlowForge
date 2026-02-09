@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-08)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Phase 29 COMPLETE - Blade-Centric File Structure
+**Current focus:** Phase 30 COMPLETE - Store Consolidation & Tech Debt — MILESTONE v1.4.0 COMPLETE
 
 ## Current Position
 
-Phase: 29 of 30 (Blade-Centric File Structure)
-Plan: 6 of 6 in current phase
-Status: Phase 29 COMPLETE
-Last activity: 2026-02-09 - Completed Phase 29: all 15 blades migrated to blade-centric file structure
+Phase: 30 of 30 (Store Consolidation & Tech Debt)
+Plan: 4 of 4 in current phase
+Status: Phase 30 COMPLETE — v1.4.0 MILESTONE COMPLETE
+Last activity: 2026-02-09 - Completed Phase 30: stores consolidated (21→5), tech debt resolved, 9/9 must-haves verified
 
-Progress: [████████░░] 83%
+Progress: [██████████] 100%
 
 ## Milestone History
 
@@ -24,16 +24,16 @@ Progress: [████████░░] 83%
 | v1.1.0 Usability | Complete | 2026-02-06 |
 | v1.2.0 Bugfixing & Polish | Complete | 2026-02-07 |
 | v1.3.0 Blades Blades Blades | Complete | 2026-02-08 |
-| v1.4.0 Architecture & Navigation Overhaul | In progress | - |
+| v1.4.0 Architecture & Navigation Overhaul | Complete | 2026-02-09 |
 
 See `.planning/MILESTONES.md` for full history.
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 22 (v1.4.0)
+- Total plans completed: 26 (v1.4.0)
 - Average duration: ~5 min/plan
-- Total execution time: ~110 min
+- Total execution time: ~130 min
 
 **By Phase:**
 
@@ -44,28 +44,33 @@ See `.planning/MILESTONES.md` for full history.
 | 27 | 4/4 | ~20 min | ~5 min |
 | 28 | 5/5 | ~25 min | ~5 min |
 | 29 | 6/6 | ~30 min | ~5 min |
+| 30 | 4/4 | ~20 min | ~5 min |
 
 *Updated after each plan completion*
 
 ## Accumulated Context
 
-### Tech Debt (targeted in Phase 30)
+### Tech Debt (resolved in Phase 30)
 
-- closeRepository() does not call resetStack()
-- defaultTab setting not wired in blade store initialization
-- Topology lacks EmptyState for repos with zero commits
-- Orphaned v1.0 code: greet, getMergeStatus, CollapsibleSidebar, AnimatedList, FadeIn
-- Debug page (viewer3d-test.html) ships in production bundle
-- Gitflow cheatsheet not registered in command palette
-- Review store errors logged to console only (no user-facing toast)
-- Duplicate blade opener implementation
-- 21 Zustand stores need consolidation into ~5 domain stores
-- CC blade: Debounce aria-live preview by 500-800ms for screen readers (Phase 28 review)
-- CC blade: Apply peach/caution color to Commit button in amend mode (not just Commit & Push)
+All 9 core tech debt items resolved:
+- ✓ closeRepository() calls resetAllStores() + RESET_STACK atomically
+- ✓ defaultTab setting wired to navigation FSM on app startup
+- ✓ Topology shows illustrated empty state for zero-commit repos
+- ✓ Orphaned v1.0 code removed (greet, CollapsibleSidebar, AnimatedList, FadeIn)
+- ✓ Debug page (viewer3d-test.html) removed
+- ✓ Gitflow cheatsheet registered in command palette
+- ✓ Review store errors surface as user-facing toasts
+- ✓ 21 Zustand stores consolidated into ~5 domain stores
+- ✓ Deprecated blade store removed (replaced by XState FSM)
+
+### Remaining CC Blade Polish (future)
+
+- CC blade: Debounce aria-live preview by 500-800ms for screen readers
+- CC blade: Apply peach/caution color to Commit button in amend mode
 - CC blade: Add aria-label attributes for amend mode buttons
-- CC blade: Extract pushAfterCommit to preferences store (survives reset, user preference)
+- CC blade: Extract pushAfterCommit to preferences store
 - CC blade: Refactor useAmendPrefill to own the effect instead of callback pattern
-- CC blade: Consolidate scopeSuggestions (limit 20) and scopeFrequencies (limit 50) into single fetch
+- CC blade: Consolidate scopeSuggestions and scopeFrequencies into single fetch
 - CC blade: Monitor useConventionalCommit.ts size; split at ~100 lines of logic
 
 ### Key Decisions
@@ -132,12 +137,23 @@ None.
 | 029 | Fix XState navigation machine stopped actor preventing blade opens | 2026-02-09 | 0410d3d | [29-fix-xstate-navigation-machine-stopped-ac](./quick/29-fix-xstate-navigation-machine-stopped-ac/) |
 | 030 | Make repo-browser a singleton blade in XState navigation machine | 2026-02-09 | 415f2e7 | [30-make-repo-browser-a-singleton-blade-in-x](./quick/30-make-repo-browser-a-singleton-blade-in-x/) |
 
+### Phase 30 decisions:
+
+- Store reset registry: `resetAllStores()` + `registerStoreForReset()` for atomic repo-close reset
+- `createBladeStore` factory: auto-registers for reset + devtools — extensibility pattern for new blades
+- GitOps domain store: 9 slices composed via Zustand slices pattern with prefixed state keys
+- UI State store: staging + commandPalette (registered for reset)
+- Preferences store: settings + theme + navigation + branchMetadata + reviewChecklist (NOT registered — survives repo switches)
+- Toast remains standalone (infrastructure used by non-React code)
+- Re-export shims at original paths for zero-breaking-change migration
+- Barrel export at `src/stores/index.ts`
+
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Phase 29 complete, ready for Phase 30
+Stopped at: Phase 30 complete, v1.4.0 milestone complete
 Resume file: None
 
 ---
 *State updated: 2026-02-09*
-*v1.4.0 Architecture & Navigation Overhaul -- Phase 29 COMPLETE, ready for Phase 30*
+*v1.4.0 Architecture & Navigation Overhaul -- MILESTONE COMPLETE, all 6 phases (25-30) done*
