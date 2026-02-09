@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 Phase: Not started (defining requirements)
 Plan: —
 Status: Defining requirements
-Last activity: 2026-02-09 - Completed quick task 031: Merge all dependabot dependency update PRs (#6-#13)
+Last activity: 2026-02-09 - Completed quick task 032: Fix reqwest 0.13 rustls-tls feature rename breaking Rust build
 
 ## Milestone History
 
@@ -71,6 +71,7 @@ None.
 | 029 | Fix XState navigation machine stopped actor preventing blade opens | 2026-02-09 | 0410d3d | [29-fix-xstate-navigation-machine-stopped-ac](./quick/29-fix-xstate-navigation-machine-stopped-ac/) |
 | 030 | Make repo-browser a singleton blade in XState navigation machine | 2026-02-09 | 415f2e7 | [30-make-repo-browser-a-singleton-blade-in-x](./quick/30-make-repo-browser-a-singleton-blade-in-x/) |
 | 031 | Merge all dependabot dependency update PRs (#6-#13) | 2026-02-09 | f1b92ba | [31-merge-all-dependabot-dependency-update-p](./quick/31-merge-all-dependabot-dependency-update-p/) |
+| 032 | Fix reqwest 0.13 rustls-tls feature rename breaking Rust build | 2026-02-09 | 580c044 | [32-fix-reqwest-0-13-rustls-tls-feature-rena](./quick/32-fix-reqwest-0-13-rustls-tls-feature-rena/) |
 
 ## Session Continuity
 
