@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-08)
 Phase: 29 of 30 (Blade-Centric File Structure)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-02-09 - Completed quick task 29: Fix XState navigation machine stopped actor preventing blade opens
+Last activity: 2026-02-09 - Completed quick task 30: Make repo-browser a singleton blade in XState navigation machine
 
 Progress: [██████░░░░] 67%
 
@@ -119,6 +119,7 @@ None.
 | 027 | Improve doc website with GitFlow/Conventional Commits explanations and download button | 2026-02-08 | d0c8da3 | [27-improve-doc-website-with-gitflow-convent](./quick/27-improve-doc-website-with-gitflow-convent/) |
 | 028 | Fix BladeRegistry missing registration for viewer-3d | 2026-02-09 | 977b28e | [28-fix-bladeregistry-missing-registration-f](./quick/28-fix-bladeregistry-missing-registration-f/) |
 | 029 | Fix XState navigation machine stopped actor preventing blade opens | 2026-02-09 | 0410d3d | [29-fix-xstate-navigation-machine-stopped-ac](./quick/29-fix-xstate-navigation-machine-stopped-ac/) |
+| 030 | Make repo-browser a singleton blade in XState navigation machine | 2026-02-09 | 415f2e7 | [30-make-repo-browser-a-singleton-blade-in-x](./quick/30-make-repo-browser-a-singleton-blade-in-x/) |
 
 ## Session Continuity
 
