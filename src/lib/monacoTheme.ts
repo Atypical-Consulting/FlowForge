@@ -1,9 +1,14 @@
+import "./monacoWorkers";
+import * as monaco from "monaco-editor";
 import { loader } from "@monaco-editor/react";
+
+// Tell @monaco-editor/react to use locally bundled Monaco
+loader.config({ monaco });
 
 // Custom theme matching Catppuccin Mocha color scheme
 // Using CSS variable hex values for Monaco (Monaco doesn't support CSS variables directly)
-const FLOWFORGE_THEME = {
-  base: "vs-dark" as const,
+const FLOWFORGE_THEME: monaco.editor.IStandaloneThemeData = {
+  base: "vs-dark",
   inherit: true,
   rules: [
     { token: "comment", foreground: "6c7086", fontStyle: "italic" }, // ctp-overlay0
@@ -40,14 +45,5 @@ const FLOWFORGE_THEME = {
   },
 };
 
-// Configure Monaco loader to use CDN
-loader.config({
-  paths: {
-    vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs",
-  },
-});
-
-// Initialize Monaco with custom theme (runs once on import)
-loader.init().then((monaco) => {
-  monaco.editor.defineTheme("flowforge-dark", FLOWFORGE_THEME);
-});
+// Register theme synchronously (Monaco is available immediately)
+monaco.editor.defineTheme("flowforge-dark", FLOWFORGE_THEME);

@@ -20,11 +20,14 @@ export default defineConfig({
     sourcemap: !!process.env.TAURI_DEBUG,
   },
   optimizeDeps: {
-    include: ["dagre-d3-es"],
+    include: ["dagre-d3-es", "monaco-editor"],
   },
   resolve: {
     alias: {
       "@": "/src",
     },
+  },
+  worker: {
+    format: "es",
   },
 });
