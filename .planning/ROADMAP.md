@@ -128,13 +128,13 @@ Plans:
   3. Topology shows an empty state illustration for repositories with zero commits instead of a blank panel
   4. Orphaned v1.0 code (greet command, getMergeStatus, CollapsibleSidebar, AnimatedList, FadeIn) and the debug page (viewer3d-test.html) are removed from the production bundle
   5. Gitflow cheatsheet is accessible from the command palette, defaultTab setting is wired in blade initialization, and review store errors surface as user-facing toasts
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 30-01: TBD
-- [ ] 30-02: TBD
-- [ ] 30-03: TBD
-- [ ] 30-04: TBD
+- [ ] 30-01-PLAN.md -- Remove orphaned v1.0 code, debug page, and deprecated blade store
+- [ ] 30-02-PLAN.md -- Fix stale blade stack, topology empty state, command palette entry, review toasts, defaultTab wiring
+- [ ] 30-03-PLAN.md -- Store registry, blade store factory, and GitOps domain store consolidation (9 slices)
+- [ ] 30-04-PLAN.md -- UI State + Preferences stores, blade store factory migration, closeRepository reset wiring, barrel export
 
 ## Progress
 
@@ -193,8 +193,8 @@ Plans:
 | 26. XState Navigation FSM | 4/4 | ✓ Complete | 2026-02-08 |
 | 27. Init Repo Blade | 4/4 | ✓ Complete | 2026-02-08 |
 | 28. Conventional Commit Blade | 5/5 | ✓ Complete | 2026-02-09 |
-| 29. Blade-Centric File Structure | 0/TBD | Not started | - |
-| 30. Store Consolidation & Tech Debt | 0/TBD | Not started | - |
+| 29. Blade-Centric File Structure | 6/6 | ✓ Complete | 2026-02-09 |
+| 30. Store Consolidation & Tech Debt | 0/4 | Not started | - |
 
 ---
 *Last updated: 2026-02-09*
