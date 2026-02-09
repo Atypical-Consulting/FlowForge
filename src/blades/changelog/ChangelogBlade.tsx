@@ -1,8 +1,8 @@
 import { cn } from "../../lib/utils";
-import { useChangelogStore } from "../../stores/changelogStore";
+import { useChangelogStore } from "./store";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
-import { ChangelogPreview } from "../changelog/ChangelogPreview";
-import { Button } from "../ui/button";
+import { ChangelogPreview } from "./components/ChangelogPreview";
+import { Button } from "../../components/ui/button";
 
 export function ChangelogBlade() {
   const {

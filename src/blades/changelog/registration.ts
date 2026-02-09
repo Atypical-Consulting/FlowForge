@@ -1,5 +1,5 @@
-import { registerBlade } from "../../../lib/bladeRegistry";
-import { ChangelogBlade } from "../ChangelogBlade";
+import { registerBlade } from "../../lib/bladeRegistry";
+import { ChangelogBlade } from "./ChangelogBlade";
 
 registerBlade({
   type: "changelog",

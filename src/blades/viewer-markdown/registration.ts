@@ -1,9 +1,9 @@
 import { lazy } from "react";
-import { registerBlade } from "../../../lib/bladeRegistry";
-import { renderPathBreadcrumb } from "../../../lib/bladeUtils";
+import { registerBlade } from "../../lib/bladeRegistry";
+import { renderPathBreadcrumb } from "../../lib/bladeUtils";
 
 const ViewerMarkdownBlade = lazy(() =>
-  import("../ViewerMarkdownBlade").then((m) => ({
+  import("./ViewerMarkdownBlade").then((m) => ({
     default: m.ViewerMarkdownBlade,
   })),
 );

@@ -3,9 +3,9 @@ import { FileCode } from "lucide-react";
 import { useRepoFile } from "../../hooks/useRepoFile";
 import { MONACO_COMMON_OPTIONS, MONACO_THEME } from "../../lib/monacoConfig";
 import "../../lib/monacoTheme";
-import { BladeContentLoading } from "../../blades/_shared/BladeContentLoading";
-import { BladeContentError } from "../../blades/_shared/BladeContentError";
-import { BladeContentEmpty } from "../../blades/_shared/BladeContentEmpty";
+import { BladeContentLoading } from "../_shared/BladeContentLoading";
+import { BladeContentError } from "../_shared/BladeContentError";
+import { BladeContentEmpty } from "../_shared/BladeContentEmpty";
 
 interface ViewerCodeBladeProps {
   filePath: string;

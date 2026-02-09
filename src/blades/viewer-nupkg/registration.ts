@@ -1,6 +1,6 @@
-import { registerBlade } from "../../../lib/bladeRegistry";
-import { renderPathBreadcrumb } from "../../../lib/bladeUtils";
-import { ViewerNupkgBlade } from "../ViewerNupkgBlade";
+import { registerBlade } from "../../lib/bladeRegistry";
+import { renderPathBreadcrumb } from "../../lib/bladeUtils";
+import { ViewerNupkgBlade } from "./ViewerNupkgBlade";
 
 registerBlade<{ filePath: string }>({
   type: "viewer-nupkg",
