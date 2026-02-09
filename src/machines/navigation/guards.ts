@@ -6,7 +6,13 @@ type GuardArgs = {
 };
 
 /** Singleton blade types that can only appear once in the stack. */
-const SINGLETON_TYPES = new Set(["settings", "changelog", "gitflow-cheatsheet"]);
+const SINGLETON_TYPES = new Set([
+  "settings",
+  "changelog",
+  "gitflow-cheatsheet",
+  "conventional-commit",
+  "repo-browser",
+]);
 
 export const navigationGuards = {
   /** NAV-05: Prevent duplicate singleton blades in the stack */

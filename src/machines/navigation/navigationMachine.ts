@@ -1,16 +1,18 @@
 import { setup, assign, and, not } from "xstate";
 import { rootBladeForProcess } from "./actions";
 import { toast } from "../../stores/toast";
-import type {
-  NavigationContext,
-  NavigationEvent,
-  TypedBlade,
-} from "./types";
+import type { NavigationContext, NavigationEvent, TypedBlade } from "./types";
 
 const DEFAULT_MAX_STACK_DEPTH = 8;
 
 /** Singleton blade types that can only appear once in the stack. */
-const SINGLETON_TYPES = new Set(["settings", "changelog", "gitflow-cheatsheet", "conventional-commit"]);
+const SINGLETON_TYPES = new Set([
+  "settings",
+  "changelog",
+  "gitflow-cheatsheet",
+  "conventional-commit",
+  "repo-browser",
+]);
 
 export const navigationMachine = setup({
   types: {
@@ -120,7 +122,10 @@ export const navigationMachine = setup({
     markDirty: assign(({ context, event }) => {
       if (event.type !== "MARK_DIRTY") return {};
       return {
-        dirtyBladeIds: { ...context.dirtyBladeIds, [event.bladeId]: true as const },
+        dirtyBladeIds: {
+          ...context.dirtyBladeIds,
+          [event.bladeId]: true as const,
+        },
       };
     }),
     markClean: assign(({ context, event }) => {
