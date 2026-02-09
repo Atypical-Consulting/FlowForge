@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-08)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Phase 29 - Blade-Centric File Structure
+**Current focus:** Phase 29 COMPLETE - Blade-Centric File Structure
 
 ## Current Position
 
 Phase: 29 of 30 (Blade-Centric File Structure)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-09 - Completed quick task 30: Make repo-browser a singleton blade in XState navigation machine
+Plan: 6 of 6 in current phase
+Status: Phase 29 COMPLETE
+Last activity: 2026-02-09 - Completed Phase 29: all 15 blades migrated to blade-centric file structure
 
-Progress: [██████░░░░] 67%
+Progress: [████████░░] 83%
 
 ## Milestone History
 
@@ -31,9 +31,9 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16 (v1.4.0)
+- Total plans completed: 22 (v1.4.0)
 - Average duration: ~5 min/plan
-- Total execution time: ~80 min
+- Total execution time: ~110 min
 
 **By Phase:**
 
@@ -43,6 +43,7 @@ See `.planning/MILESTONES.md` for full history.
 | 26 | 4/4 | ~20 min | ~5 min |
 | 27 | 4/4 | ~20 min | ~5 min |
 | 28 | 5/5 | ~25 min | ~5 min |
+| 29 | 6/6 | ~30 min | ~5 min |
 
 *Updated after each plan completion*
 
@@ -70,6 +71,16 @@ See `.planning/MILESTONES.md` for full history.
 ### Key Decisions
 
 All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
+
+**Phase 29 decisions:**
+- Blade-centric file structure: `src/blades/{blade-name}/` with co-located component, registration, sub-components, hooks, store, tests
+- Shared infrastructure in `src/blades/_shared/` (14 files: BladeContainer, BladePanel, BladeStrip, etc.)
+- Single-glob auto-discovery: `import.meta.glob("./*/registration.{ts,tsx}")` with dev-mode exhaustiveness check
+- Exclusive stores (changelog, initRepo) moved into blade directories; shared stores stay in `src/stores/`
+- DiffSource type extracted to `src/blades/diff/types.ts` to break circular dependency
+- CI boundary enforcement via `scripts/check-blade-boundaries.sh` (no cross-blade imports)
+- Biome `noPrivateImports` skipped (v2 feature, current is 1.9.0); CI script serves as fallback
+- Wave-based parallel migration: 3 waves with dependency management for safe concurrent execution
 
 **Phase 25 decisions:**
 - Zustand auto-reset mock placed at project root `__mocks__/` (Vitest convention for third-party mocking)
@@ -124,9 +135,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Phase 28 complete, ready for Phase 29
+Stopped at: Phase 29 complete, ready for Phase 30
 Resume file: None
 
 ---
 *State updated: 2026-02-09*
-*v1.4.0 Architecture & Navigation Overhaul -- Phase 28 COMPLETE, ready for Phase 29*
+*v1.4.0 Architecture & Navigation Overhaul -- Phase 29 COMPLETE, ready for Phase 30*

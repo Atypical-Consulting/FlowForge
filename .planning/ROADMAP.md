@@ -111,12 +111,12 @@ Plans:
 **Plans**: 6 plans
 
 Plans:
-- [ ] 29-01-PLAN.md -- Scaffold _shared/ directory, dual-glob discovery, DiffSource extraction, tsconfig paths, Biome config
-- [ ] 29-02-PLAN.md -- Migrate 4 simple blades (viewer-image, viewer-3d, commit-details, repo-browser)
-- [ ] 29-03-PLAN.md -- Migrate 3 viewer blades + changelog blade with exclusive store
-- [ ] 29-04-PLAN.md -- Migrate settings (6 sub-components) and gitflow-cheatsheet blades
-- [ ] 29-05-PLAN.md -- Migrate staging-changes, diff, topology-graph, init-repo (complex cross-dependent blades)
-- [ ] 29-06-PLAN.md -- Migrate conventional-commit, delete old structure, finalize single-glob, CI boundary check
+- [x] 29-01-PLAN.md -- Scaffold _shared/ directory, dual-glob discovery, DiffSource extraction, tsconfig paths, Biome config
+- [x] 29-02-PLAN.md -- Migrate 4 simple blades (viewer-image, viewer-3d, commit-details, repo-browser)
+- [x] 29-03-PLAN.md -- Migrate 3 viewer blades + changelog blade with exclusive store
+- [x] 29-04-PLAN.md -- Migrate settings (6 sub-components) and gitflow-cheatsheet blades
+- [x] 29-05-PLAN.md -- Migrate staging-changes, diff, topology-graph, init-repo (complex cross-dependent blades)
+- [x] 29-06-PLAN.md -- Migrate conventional-commit, delete old structure, finalize single-glob, CI boundary check
 
 ### Phase 30: Store Consolidation & Tech Debt
 **Goal**: Zustand stores are consolidated into domain groups, duplicate code is removed, and all nine accumulated tech debt items are resolved
