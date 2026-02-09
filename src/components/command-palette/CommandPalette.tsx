@@ -19,7 +19,7 @@ const CATEGORY_ORDER: CommandCategory[] = [
 ];
 
 export function CommandPalette() {
-  const { isOpen, query, selectedIndex, close, setQuery, setSelectedIndex } =
+  const { paletteIsOpen: isOpen, paletteQuery: query, paletteSelectedIndex: selectedIndex, closePalette: close, setPaletteQuery: setQuery, setPaletteSelectedIndex: setSelectedIndex } =
     useCommandPaletteStore();
 
   const previousFocusRef = useRef<HTMLElement | null>(null);

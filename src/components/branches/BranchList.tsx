@@ -71,7 +71,7 @@ export function BranchList({
   const handleTogglePin = async (branchName: string) => {
     if (!repoPath) return;
     const store = useBranchMetadataStore.getState();
-    if (store.isPinned(repoPath, branchName)) {
+    if (store.isBranchPinned(repoPath, branchName)) {
       await store.unpinBranch(repoPath, branchName);
     } else {
       await store.pinBranch(repoPath, branchName);

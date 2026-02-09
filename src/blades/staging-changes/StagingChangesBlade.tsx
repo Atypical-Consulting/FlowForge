@@ -12,7 +12,7 @@ import { StagingPanel } from "./components/StagingPanel";
 export function StagingChangesBlade() {
   const { openStagingDiff } = useBladeNavigation();
   const queryClient = useQueryClient();
-  const { selectedFile, selectedSection, selectFile } = useStagingStore();
+  const { stagingSelectedFile: selectedFile, stagingSelectedSection: selectedSection, selectFile } = useStagingStore();
   const [fileListFocused, setFileListFocused] = useState(false);
   const fileListRef = useRef<HTMLDivElement>(null);
 

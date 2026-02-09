@@ -18,10 +18,10 @@ export function useStagingKeyboard({
   onExpand,
   onToggleStage,
 }: UseStagingKeyboardOptions): void {
-  const { selectedFile, selectFile } = useStagingStore();
+  const { stagingSelectedFile, selectFile } = useStagingStore();
 
   const currentIndex = allFiles.findIndex(
-    (item) => item.file.path === selectedFile?.path,
+    (item) => item.file.path === stagingSelectedFile?.path,
   );
 
   useHotkeys(
@@ -80,23 +80,23 @@ export function useStagingKeyboard({
     "enter",
     (e) => {
       e.preventDefault();
-      if (selectedFile) {
+      if (stagingSelectedFile) {
         onExpand?.();
       }
     },
     { enabled, enableOnFormTags: false },
-    [selectedFile, onExpand],
+    [stagingSelectedFile, onExpand],
   );
 
   useHotkeys(
     "space",
     (e) => {
       e.preventDefault();
-      if (selectedFile) {
+      if (stagingSelectedFile) {
         onToggleStage?.();
       }
     },
     { enabled, enableOnFormTags: false },
-    [selectedFile, onToggleStage],
+    [stagingSelectedFile, onToggleStage],
   );
 }

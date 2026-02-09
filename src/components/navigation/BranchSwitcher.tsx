@@ -37,10 +37,10 @@ export function BranchSwitcher({ onSelectBranch }: BranchSwitcherProps) {
   const status = useRepositoryStore((s) => s.repoStatus);
   const { branchAllList: allBranches, loadAllBranches } = useBranchStore();
   const {
-    branchDropdownOpen: isOpen,
-    toggleBranchDropdown,
-    closePanels,
-    getRecentBranches,
+    navBranchDropdownOpen: isOpen,
+    toggleNavBranchDropdown: toggleBranchDropdown,
+    closeNavPanels: closePanels,
+    getNavRecentBranches: getRecentBranches,
   } = useNavigationStore();
 
   const currentBranch = status?.branchName ?? "";

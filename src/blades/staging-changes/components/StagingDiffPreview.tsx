@@ -24,7 +24,7 @@ export function StagingDiffPreview({
   hasPrev,
   hasNext,
 }: StagingDiffPreviewProps) {
-  const { scrollPositions, saveScrollPosition } = useStagingStore();
+  const { stagingScrollPositions: scrollPositions, saveStagingScrollPosition: saveScrollPosition } = useStagingStore();
 
   if (!file) {
     return (

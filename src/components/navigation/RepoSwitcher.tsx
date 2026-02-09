@@ -31,13 +31,13 @@ export function RepoSwitcher({ onSelectRepo }: RepoSwitcherProps) {
 
   const status = useRepositoryStore((s) => s.repoStatus);
   const {
-    repoDropdownOpen: isOpen,
-    toggleRepoDropdown,
-    closePanels,
-    pinnedRepoPaths,
+    navRepoDropdownOpen: isOpen,
+    toggleNavRepoDropdown: toggleRepoDropdown,
+    closeNavPanels: closePanels,
+    navPinnedRepoPaths: pinnedRepoPaths,
     pinRepo,
     unpinRepo,
-    isPinned,
+    isRepoPinned: isPinned,
   } = useNavigationStore();
 
   const { recentRepos, refresh: refreshRecentRepos } = useRecentRepos();

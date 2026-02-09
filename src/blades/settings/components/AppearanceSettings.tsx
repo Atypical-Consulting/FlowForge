@@ -8,7 +8,7 @@ const themeOptions: { value: Theme; icon: React.ReactNode; label: string }[] = [
 ];
 
 export function AppearanceSettings() {
-  const { theme, setTheme } = useThemeStore();
+  const { themePreference: theme, setTheme } = useThemeStore();
 
   return (
     <div className="space-y-6">

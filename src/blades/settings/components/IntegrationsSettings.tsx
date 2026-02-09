@@ -100,7 +100,7 @@ function SettingsSelectWithCustom({
 }
 
 export function IntegrationsSettings() {
-  const { settings, updateSetting } = useSettingsStore();
+  const { settingsData: settings, updateSetting } = useSettingsStore();
   const editorOptions = useMemo(() => getEditorOptions(), []);
   const terminalOptions = useMemo(() => getTerminalOptions(), []);
 

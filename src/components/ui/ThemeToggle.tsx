@@ -3,7 +3,7 @@ import { type Theme, useThemeStore } from "../../stores/theme";
 import { Button } from "./button";
 
 export function ThemeToggle() {
-  const { theme, setTheme, isLoading } = useThemeStore();
+  const { themePreference: theme, setTheme, themeIsLoading: isLoading } = useThemeStore();
 
   if (isLoading) {
     return null;

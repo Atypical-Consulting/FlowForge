@@ -15,7 +15,7 @@ import { FileTreeView } from "./FileTreeView";
 
 export function StagingPanel() {
   const queryClient = useQueryClient();
-  const { viewMode, setViewMode, selectedFile, selectFile, fileListScrollTop, setFileListScrollTop } = useStagingStore();
+  const { stagingViewMode: viewMode, setStagingViewMode: setViewMode, stagingSelectedFile: selectedFile, selectFile, stagingFileListScrollTop: fileListScrollTop, setStagingFileListScrollTop: setFileListScrollTop } = useStagingStore();
   const [searchFilter, setSearchFilter] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 

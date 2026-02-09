@@ -36,7 +36,7 @@ function App() {
   useEffect(() => {
     initTheme();
     initSettings().then(() => {
-      const { settings } = useSettingsStore.getState();
+      const { settingsData: settings } = useSettingsStore.getState();
       const defaultTab = settings.general.defaultTab;
       if (defaultTab === "topology" || defaultTab === "history") {
         getNavigationActor().send({ type: "SWITCH_PROCESS", process: "topology" });

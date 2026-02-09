@@ -179,7 +179,7 @@ export function useKeyboardShortcuts() {
     "mod+shift+p",
     (e) => {
       e.preventDefault();
-      useCommandPaletteStore.getState().toggle();
+      useCommandPaletteStore.getState().togglePalette();
     },
     { preventDefault: true },
   );
@@ -189,7 +189,7 @@ export function useKeyboardShortcuts() {
     "escape",
     () => {
       // Don't pop blade if command palette is open (palette handles its own Escape)
-      if (useCommandPaletteStore.getState().isOpen) return;
+      if (useCommandPaletteStore.getState().paletteIsOpen) return;
       getNavigationActor().send({ type: "POP_BLADE" });
     },
     { enableOnFormTags: false },
@@ -199,7 +199,7 @@ export function useKeyboardShortcuts() {
   useHotkeys(
     "backspace",
     () => {
-      if (useCommandPaletteStore.getState().isOpen) return;
+      if (useCommandPaletteStore.getState().paletteIsOpen) return;
       getNavigationActor().send({ type: "POP_BLADE" });
     },
     { enableOnFormTags: false },

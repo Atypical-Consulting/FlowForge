@@ -16,7 +16,7 @@ const FLOW_TYPES: { type: FlowType; label: string }[] = [
 ];
 
 function FlowSection({ flowType, label }: { flowType: FlowType; label: string }) {
-  const { getItems, updateItems, resetToDefaults } =
+  const { getChecklistItems: getItems, updateChecklistItems: updateItems, resetChecklistToDefaults: resetToDefaults } =
     useReviewChecklistStore();
   const items = getItems(flowType);
   const [newLabel, setNewLabel] = useState("");

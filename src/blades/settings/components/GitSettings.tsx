@@ -11,7 +11,7 @@ const inputClassName =
   "w-full max-w-xs px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 rounded-md text-sm text-ctp-text placeholder-ctp-overlay0 focus:outline-none focus:ring-2 focus:ring-ctp-blue focus:border-transparent disabled:opacity-50";
 
 export function GitSettings() {
-  const { settings, updateSetting } = useSettingsStore();
+  const { settingsData: settings, updateSetting } = useSettingsStore();
   const autoFetchEnabled = settings.git.autoFetchInterval !== null;
 
   // Git global config state

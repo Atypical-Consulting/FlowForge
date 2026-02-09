@@ -7,7 +7,7 @@ const tabOptions = [
 ] as const;
 
 export function GeneralSettings() {
-  const { settings, updateSetting } = useSettingsStore();
+  const { settingsData: settings, updateSetting } = useSettingsStore();
 
   return (
     <div className="space-y-6">

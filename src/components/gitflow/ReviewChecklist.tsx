@@ -10,7 +10,7 @@ interface ReviewChecklistProps {
 }
 
 export function ReviewChecklist({ flowType }: ReviewChecklistProps) {
-  const getItems = useReviewChecklistStore((s) => s.getItems);
+  const getItems = useReviewChecklistStore((s) => s.getChecklistItems);
   const items = getItems(flowType);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [collapsed, setCollapsed] = useState(false);

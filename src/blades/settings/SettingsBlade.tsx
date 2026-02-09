@@ -54,7 +54,7 @@ const settingsTabs: SettingsTab[] = [
 ];
 
 export function SettingsBlade() {
-  const { activeCategory, setCategory } = useSettingsStore();
+  const { settingsActiveCategory: activeCategory, setSettingsCategory: setCategory } = useSettingsStore();
 
   const activeTab =
     settingsTabs.find((t) => t.id === activeCategory) ?? settingsTabs[0];

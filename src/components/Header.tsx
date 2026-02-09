@@ -96,7 +96,6 @@ export function Header() {
 
   const handleClose = async () => {
     await closeRepository();
-    getNavigationActor().send({ type: "RESET_STACK" });
   };
 
   const handleUndo = async () => {
@@ -122,7 +121,7 @@ export function Header() {
       try {
         // Save current branch as last active for current repo
         if (status) {
-          await navigationStore.setLastActiveBranch(
+          await navigationStore.setNavLastActiveBranch(
             status.repoPath,
             status.branchName,
           );
@@ -134,7 +133,7 @@ export function Header() {
         await addRecentRepo(path);
 
         // Check if there's a last active branch for this repo
-        const lastBranch = navigationStore.getLastActiveBranch(path);
+        const lastBranch = navigationStore.getNavLastActiveBranch(path);
         if (lastBranch) {
           try {
             await checkoutBranch(lastBranch);
@@ -188,7 +187,7 @@ export function Header() {
             ? branchName.replace(/^[^/]+\//, "")
             : branchName;
           if (status) {
-            await navigationStore.addRecentBranch(status.repoPath, localName);
+            await navigationStore.addNavRecentBranch(status.repoPath, localName);
           }
           await refreshStatus();
           toast.info(`Switched to ${localName}`);
@@ -264,7 +263,7 @@ export function Header() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => useCommandPaletteStore.getState().toggle()}
+              onClick={() => useCommandPaletteStore.getState().togglePalette()}
             >
               <Search className="w-4 h-4" />
             </Button>

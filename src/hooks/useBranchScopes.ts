@@ -5,7 +5,7 @@ import { getScope, getPrimaryScopes } from "../lib/branchScopes";
 
 export function useBranchScopes() {
   const { branches, repoPath, ...rest } = useBranches();
-  const { getScopePreference, setScopePreference } = useBranchMetadataStore();
+  const { getMetaScopePreference: getScopePreference, setMetaScopePreference: setScopePreference } = useBranchMetadataStore();
 
   const activeScopeId = getScopePreference(repoPath) || "local";
   const activeScope = getScope(activeScopeId);

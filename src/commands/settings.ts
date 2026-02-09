@@ -24,7 +24,7 @@ registerCommand({
   category: "Settings",
   icon: Sun,
   action: () => {
-    const current = useThemeStore.getState().theme;
+    const current = useThemeStore.getState().themePreference;
     const currentIndex = themeOrder.indexOf(current);
     const next = themeOrder[(currentIndex + 1) % themeOrder.length];
     useThemeStore.getState().setTheme(next);

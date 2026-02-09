@@ -12,8 +12,8 @@ export function useBranches() {
 
   const enriched = useMemo((): EnrichedBranch[] => {
     if (!repoPath) return [];
-    const pins = new Set(metadata.pinnedBranches[repoPath] ?? []);
-    const recents = metadata.recentBranches[repoPath] ?? [];
+    const pins = new Set(metadata.metaPinnedBranches[repoPath] ?? []);
+    const recents = metadata.metaRecentBranches[repoPath] ?? [];
     const recentMap = new Map(recents.map((r) => [r.name, r.lastVisited]));
 
     return allBranches.map((branch) => {
@@ -27,7 +27,7 @@ export function useBranches() {
         lastVisited: recentMap.get(bareName) ?? null,
       };
     });
-  }, [allBranches, metadata.pinnedBranches, metadata.recentBranches, repoPath]);
+  }, [allBranches, metadata.metaPinnedBranches, metadata.metaRecentBranches, repoPath]);
 
   return {
     branches: enriched,

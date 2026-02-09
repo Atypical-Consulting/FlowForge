@@ -34,8 +34,8 @@ export function FileItem({
   showFilenameOnly = false,
 }: FileItemProps) {
   const queryClient = useQueryClient();
-  const { selectedFile, selectFile } = useStagingStore();
-  const isSelected = selectedFile?.path === file.path;
+  const { stagingSelectedFile, selectFile } = useStagingStore();
+  const isSelected = stagingSelectedFile?.path === file.path;
   const itemRef = useRef<HTMLDivElement>(null);
 
   // Scroll into view when programmatically selected (keyboard navigation)

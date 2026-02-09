@@ -12,7 +12,7 @@ registerCommand({
   shortcut: "mod+shift+p",
   icon: Search,
   action: () => {
-    useCommandPaletteStore.getState().toggle();
+    useCommandPaletteStore.getState().togglePalette();
   },
 });
 
