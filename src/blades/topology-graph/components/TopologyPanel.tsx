@@ -5,6 +5,7 @@ import { classifyBranch } from "../../../lib/branchClassifier";
 import type { GitflowBranchType } from "../../../lib/branchClassifier";
 import { LaneHeader } from "./LaneHeader";
 import { CommitBadge } from "./CommitBadge";
+import { TopologyEmptyState } from "./TopologyEmptyState";
 import {
   BADGE_HEIGHT,
   BADGE_WIDTH,
@@ -90,11 +91,7 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
   }
 
   if (nodes.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-full bg-ctp-mantle text-ctp-overlay0">
-        <p>No commits to display</p>
-      </div>
-    );
+    return <TopologyEmptyState />;
   }
 
   return (

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { getStore } from "../lib/store";
+import { toast } from "./toast";
 
 export interface ChecklistItem {
   id: string;
@@ -63,6 +64,7 @@ export const useReviewChecklistStore = create<ReviewChecklistState>(
           });
         }
       } catch (e) {
+        toast.warning("Could not load review checklist. Using defaults.");
         console.error("Failed to initialize review checklist:", e);
       }
     },
@@ -82,6 +84,7 @@ export const useReviewChecklistStore = create<ReviewChecklistState>(
         await store.set("review-checklist-items", updated);
         await store.save();
       } catch (e) {
+        toast.error("Failed to save checklist changes");
         console.error("Failed to persist review checklist:", e);
       }
       set({ customItems: updated });
@@ -95,6 +98,7 @@ export const useReviewChecklistStore = create<ReviewChecklistState>(
         await store.set("review-checklist-items", updated);
         await store.save();
       } catch (e) {
+        toast.error("Failed to reset checklist to defaults");
         console.error("Failed to persist review checklist reset:", e);
       }
       set({ customItems: updated });
