@@ -1,0 +1,1 @@
+export { ConventionalCommitBlade } from "./ConventionalCommitBlade";

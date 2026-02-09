@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from "react";
 import { useSelector } from "@xstate/react";
-import { useNavigationActorRef } from "../machines/navigation/context";
+import { useNavigationActorRef } from "../../../machines/navigation/context";
 
 /**
  * Hook for blades to register dirty (unsaved) state with the navigation FSM.
