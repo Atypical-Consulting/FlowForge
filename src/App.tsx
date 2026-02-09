@@ -9,7 +9,7 @@ import { RepositoryView } from "./components/RepositoryView";
 import { WelcomeView } from "./components/WelcomeView";
 import { ToastContainer } from "./components/ui/ToastContainer";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
-import { NavigationProvider } from "./machines/navigation/context";
+import { getNavigationActor, NavigationProvider } from "./machines/navigation/context";
 import { useBranchMetadataStore } from "./stores/branchMetadata";
 import { useNavigationStore } from "./stores/navigation";
 import { useRepositoryStore } from "./stores/repository";
@@ -35,7 +35,13 @@ function App() {
   // Initialize theme, settings, navigation, and branch metadata on mount
   useEffect(() => {
     initTheme();
-    initSettings();
+    initSettings().then(() => {
+      const { settings } = useSettingsStore.getState();
+      const defaultTab = settings.general.defaultTab;
+      if (defaultTab === "topology" || defaultTab === "history") {
+        getNavigationActor().send({ type: "SWITCH_PROCESS", process: "topology" });
+      }
+    });
     initNavigation();
     initMetadata();
     initChecklist();

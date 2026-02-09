@@ -96,6 +96,7 @@ export function Header() {
 
   const handleClose = async () => {
     await closeRepository();
+    getNavigationActor().send({ type: "RESET_STACK" });
   };
 
   const handleUndo = async () => {
