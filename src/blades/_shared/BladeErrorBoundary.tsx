@@ -1,6 +1,6 @@
 import { AlertTriangle, ArrowLeft, RotateCcw } from "lucide-react";
 import { Component, type ErrorInfo, type ReactNode } from "react";
-import { Button } from "../ui/button";
+import { Button } from "../../components/ui/button";
 
 interface BladeErrorBoundaryProps {
   children: ReactNode;

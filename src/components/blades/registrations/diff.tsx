@@ -1,7 +1,7 @@
 import { lazy } from "react";
 import { registerBlade } from "../../../lib/bladeRegistry";
 import { renderPathBreadcrumb } from "../../../lib/bladeUtils";
-import type { DiffSource } from "../DiffBlade";
+import type { DiffSource } from "../../../blades/diff";
 
 const DiffBlade = lazy(() =>
   import("../DiffBlade").then((m) => ({ default: m.DiffBlade })),

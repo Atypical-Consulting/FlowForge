@@ -3,7 +3,7 @@ import { Clock, Copy, GitCommit, Loader2, User } from "lucide-react";
 import { useState } from "react";
 import { commands } from "../../bindings";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
-import { FileTreeBlade } from "./FileTreeBlade";
+import { FileTreeBlade } from "../../blades/_shared/FileTreeBlade";
 
 interface CommitDetailsBladeProps {
   oid: string;

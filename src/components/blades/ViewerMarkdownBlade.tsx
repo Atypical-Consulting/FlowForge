@@ -1,9 +1,9 @@
 import { FileText } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useRepoFile } from "../../hooks/useRepoFile";
-import { BladeContentLoading } from "./BladeContentLoading";
-import { BladeContentError } from "./BladeContentError";
-import { BladeContentEmpty } from "./BladeContentEmpty";
+import { BladeContentLoading } from "../../blades/_shared/BladeContentLoading";
+import { BladeContentError } from "../../blades/_shared/BladeContentError";
+import { BladeContentEmpty } from "../../blades/_shared/BladeContentEmpty";
 import { MarkdownRenderer } from "../markdown/MarkdownRenderer";
 
 interface ViewerMarkdownBladeProps {

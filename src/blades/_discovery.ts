@@ -1,0 +1,44 @@
+import { clearRegistry, getAllBladeTypes } from "../lib/bladeRegistry";
+
+// Dual-glob: scan new per-blade registrations AND old flat directory
+const modules = import.meta.glob(
+  [
+    "./*/registration.{ts,tsx}",                         // New location
+    "../components/blades/registrations/*.{ts,tsx}",     // Old location (migration period)
+    "!../components/blades/registrations/index.ts",      // Exclude old barrel
+    "!./_shared/**",                                     // Exclude infrastructure
+  ],
+  { eager: true }
+);
+
+// Guard against misconfigured paths
+if (import.meta.env.DEV && Object.keys(modules).length === 0) {
+  console.error("[BladeRegistry] No registration modules found -- check blade directories and registrations/");
+}
+
+// Dev-mode exhaustiveness check
+if (import.meta.env.DEV && !import.meta.hot?.data?.isUpdate) {
+  const registered = new Set(getAllBladeTypes());
+  const EXPECTED_TYPES: string[] = [
+    "staging-changes", "topology-graph", "commit-details", "diff",
+    "viewer-nupkg", "viewer-image", "viewer-markdown", "viewer-3d",
+    "viewer-code", "repo-browser", "settings", "changelog",
+    "gitflow-cheatsheet", "init-repo", "conventional-commit",
+  ];
+  const missing = EXPECTED_TYPES.filter(t => !registered.has(t as any));
+  if (missing.length > 0) {
+    console.warn(
+      `[BladeRegistry] Missing registrations: ${missing.join(", ")}. ` +
+      `Create a registration.ts in src/blades/{blade-name}/ for each.`
+    );
+  }
+}
+
+// HMR: clear registry before re-execution so re-registration is clean
+if (import.meta.hot) {
+  import.meta.hot.accept();
+  import.meta.hot.dispose((data) => {
+    data.isUpdate = true;
+    clearRegistry();
+  });
+}

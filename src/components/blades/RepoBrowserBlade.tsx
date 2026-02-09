@@ -6,9 +6,9 @@ import type { RepoFileEntry } from "../../bindings";
 import { bladeTypeForFile } from "../../lib/fileDispatch";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
 import { FileTypeIcon } from "../icons/FileTypeIcon";
-import { BladeContentLoading } from "./BladeContentLoading";
-import { BladeContentError } from "./BladeContentError";
-import { BladeContentEmpty } from "./BladeContentEmpty";
+import { BladeContentLoading } from "../../blades/_shared/BladeContentLoading";
+import { BladeContentError } from "../../blades/_shared/BladeContentError";
+import { BladeContentEmpty } from "../../blades/_shared/BladeContentEmpty";
 
 interface RepoBrowserBladeProps {
   path?: string;

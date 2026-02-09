@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 import type { FileChange } from "../bindings";
-import type { DiffSource } from "../components/blades/DiffBlade";
+import type { DiffSource } from "../blades/diff";
 
 export type PreviewMode = "inline-diff" | "placeholder" | "custom";
 

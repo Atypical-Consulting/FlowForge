@@ -5,9 +5,9 @@ import { Box, Info, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { commands } from "../../bindings";
 import { getErrorMessage } from "../../lib/errors";
-import { BladeContentLoading } from "./BladeContentLoading";
-import { BladeContentError } from "./BladeContentError";
-import { BladeContentEmpty } from "./BladeContentEmpty";
+import { BladeContentLoading } from "../../blades/_shared/BladeContentLoading";
+import { BladeContentError } from "../../blades/_shared/BladeContentError";
+import { BladeContentEmpty } from "../../blades/_shared/BladeContentEmpty";
 
 interface Viewer3dBladeProps {
   filePath: string;

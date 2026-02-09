@@ -17,7 +17,7 @@ import "../../lib/monacoTheme";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
 import { useStagingStore } from "../../stores/staging";
 import { Button } from "../ui/button";
-import { BladeLoadingFallback } from "./BladeLoadingFallback";
+import { BladeLoadingFallback } from "../../blades/_shared/BladeLoadingFallback";
 
 const MarkdownRenderer = lazy(() =>
   import("../markdown/MarkdownRenderer").then((m) => ({

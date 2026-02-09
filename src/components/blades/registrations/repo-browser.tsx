@@ -1,6 +1,6 @@
 import { lazy } from "react";
 import { registerBlade } from "../../../lib/bladeRegistry";
-import { BladeBreadcrumb } from "../BladeBreadcrumb";
+import { BladeBreadcrumb } from "../../../blades/_shared/BladeBreadcrumb";
 
 const RepoBrowserBlade = lazy(() =>
   import("../RepoBrowserBlade").then((m) => ({

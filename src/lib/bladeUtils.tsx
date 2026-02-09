@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { BladeBreadcrumb } from "../components/blades/BladeBreadcrumb";
+import { BladeBreadcrumb } from "../blades/_shared/BladeBreadcrumb";
 
 /**
  * Renders a file path as a split path/filename display for blade headers.
