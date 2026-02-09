@@ -5,14 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** v1.5 GitHub Extension
+**Current focus:** Phase 31 - Security Hardening
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-09 - Completed quick task 032: Fix reqwest 0.13 rustls-tls feature rename breaking Rust build
+Phase: 31 of 36 (Security Hardening)
+Plan: — (not yet planned)
+Status: Ready to plan
+Last activity: 2026-02-09 — v1.5 roadmap created (6 phases, 34 requirements)
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Milestone History
 
@@ -23,15 +25,16 @@ Last activity: 2026-02-09 - Completed quick task 032: Fix reqwest 0.13 rustls-tl
 | v1.2.0 Bugfixing & Polish | Complete | 2026-02-07 |
 | v1.3.0 Blades Blades Blades | Complete | 2026-02-08 |
 | v1.4.0 Architecture & Navigation Overhaul | Complete | 2026-02-09 |
+| v1.5.0 GitHub Extension | In progress | — |
 
 See `.planning/MILESTONES.md` for full history.
 
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 30 (across 5 milestones)
-- Total plans: ~185
-- Total requirements validated: 175
+- Total phases: 30 complete + 6 planned = 36
+- Total plans: ~185 complete
+- Total requirements validated: 175 (+ 34 v1.5 pending)
 - Codebase: ~36,946 LOC (28,155 TypeScript + 8,791 Rust)
 - Tests: 140 (Vitest + jsdom)
 
@@ -55,7 +58,8 @@ None.
 
 ### Blockers/Concerns
 
-None.
+- CSP is currently null — must be hardened before any extension or GitHub work (Phase 31 addresses this)
+- OAuth token storage must use OS keychain from day one, never plaintext (Phase 34 addresses this)
 
 ### Quick Tasks Completed
 
@@ -76,9 +80,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Defining v1.5 requirements
+Stopped at: v1.5 roadmap created — 6 phases (31-36), 34 requirements mapped
 Resume file: None
 
 ---
 *State updated: 2026-02-09*
-*v1.5.0 GitHub Extension -- DEFINING REQUIREMENTS*
+*v1.5.0 GitHub Extension -- READY TO PLAN PHASE 31*

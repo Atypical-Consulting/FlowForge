@@ -99,46 +99,46 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEC-01 | — | Pending |
-| SEC-02 | — | Pending |
-| SEC-03 | — | Pending |
-| EXT-01 | — | Pending |
-| EXT-02 | — | Pending |
-| EXT-03 | — | Pending |
-| EXT-04 | — | Pending |
-| EXT-05 | — | Pending |
-| EXT-06 | — | Pending |
-| EXT-07 | — | Pending |
-| EXT-08 | — | Pending |
-| EXT-09 | — | Pending |
-| EXT-10 | — | Pending |
-| EXT-11 | — | Pending |
-| EXT-12 | — | Pending |
-| EXT-13 | — | Pending |
-| GH-01 | — | Pending |
-| GH-02 | — | Pending |
-| GH-03 | — | Pending |
-| GH-04 | — | Pending |
-| GH-05 | — | Pending |
-| GH-06 | — | Pending |
-| GH-07 | — | Pending |
-| GH-08 | — | Pending |
-| GH-09 | — | Pending |
-| GH-10 | — | Pending |
-| GH-11 | — | Pending |
-| TB-01 | — | Pending |
-| TB-02 | — | Pending |
-| TB-03 | — | Pending |
-| TB-04 | — | Pending |
-| TB-05 | — | Pending |
-| TB-06 | — | Pending |
-| TB-07 | — | Pending |
+| SEC-01 | Phase 31 | Pending |
+| SEC-02 | Phase 31 | Pending |
+| SEC-03 | Phase 31 | Pending |
+| EXT-01 | Phase 33 | Pending |
+| EXT-02 | Phase 33 | Pending |
+| EXT-03 | Phase 33 | Pending |
+| EXT-04 | Phase 33 | Pending |
+| EXT-05 | Phase 33 | Pending |
+| EXT-06 | Phase 33 | Pending |
+| EXT-07 | Phase 33 | Pending |
+| EXT-08 | Phase 33 | Pending |
+| EXT-09 | Phase 36 | Pending |
+| EXT-10 | Phase 36 | Pending |
+| EXT-11 | Phase 36 | Pending |
+| EXT-12 | Phase 36 | Pending |
+| EXT-13 | Phase 36 | Pending |
+| GH-01 | Phase 34 | Pending |
+| GH-02 | Phase 34 | Pending |
+| GH-03 | Phase 34 | Pending |
+| GH-04 | Phase 34 | Pending |
+| GH-05 | Phase 35 | Pending |
+| GH-06 | Phase 35 | Pending |
+| GH-07 | Phase 35 | Pending |
+| GH-08 | Phase 35 | Pending |
+| GH-09 | Phase 36 | Pending |
+| GH-10 | Phase 36 | Pending |
+| GH-11 | Phase 34 | Pending |
+| TB-01 | Phase 32 | Pending |
+| TB-02 | Phase 32 | Pending |
+| TB-03 | Phase 32 | Pending |
+| TB-04 | Phase 32 | Pending |
+| TB-05 | Phase 32 | Pending |
+| TB-06 | Phase 32 | Pending |
+| TB-07 | Phase 35 | Pending |
 
 **Coverage:**
 - v1.5 requirements: 34 total
-- Mapped to phases: 0
-- Unmapped: 34
+- Mapped to phases: 34
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-09*
-*Last updated: 2026-02-09 after initial definition*
+*Last updated: 2026-02-09 after roadmap creation (all 34 requirements mapped)*
