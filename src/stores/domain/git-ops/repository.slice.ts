@@ -2,6 +2,9 @@ import type { StateCreator } from "zustand";
 import type { RepoStatus } from "../../../bindings";
 import { commands } from "../../../bindings";
 import { getErrorMessage } from "../../../lib/errors";
+import { getNavigationActor } from "../../../machines/navigation/context";
+import { toast } from "../../toast";
+import { resetAllStores } from "../../registry";
 import type { GitOpsMiddleware } from "./types";
 import type { GitOpsStore } from "./index";
 
@@ -65,8 +68,12 @@ export const createRepositorySlice: StateCreator<
       await commands.closeRepository();
     } catch (e) {
       console.error("Failed to close repository:", e);
+      toast.error("Failed to close repository");
     }
-    set({ repoStatus: null, repoError: null }, undefined, "gitOps:repo/close");
+    // Atomically reset all registered stores (gitOps, uiState, blade stores)
+    resetAllStores();
+    // Reset XState navigation FSM
+    getNavigationActor().send({ type: "RESET_STACK" });
   },
 
   clearRepoError: () => set({ repoError: null }, undefined, "gitOps:repo/clearError"),
