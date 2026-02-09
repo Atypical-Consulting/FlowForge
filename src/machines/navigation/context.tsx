@@ -2,7 +2,7 @@ import {
   createContext,
   useContext,
   useEffect,
-  useMemo,
+  useState,
   type ReactNode,
 } from "react";
 import { createActor, type ActorRefFrom } from "xstate";
@@ -14,9 +14,7 @@ type NavigationActorRef = ActorRefFrom<typeof navigationMachine>;
 let _navigationActor: NavigationActorRef | null = null;
 
 function createNavigationActor(): NavigationActorRef {
-  const actor = createActor(navigationMachine);
-  actor.start();
-  return actor;
+  return createActor(navigationMachine);
 }
 
 /** Get the module-level navigation actor for non-React access (bladeOpener, keyboard shortcuts). */
@@ -47,11 +45,21 @@ export function useNavigationActorRef(): NavigationActorRef {
   return actorRef;
 }
 
-/** Provider that creates and manages the navigation FSM actor. */
+/** Provider that creates and manages the navigation FSM actor.
+ *  Handles React StrictMode double-mount: if the actor was stopped during
+ *  cleanup, a fresh actor is created on remount. */
 export function NavigationProvider({ children }: { children: ReactNode }) {
-  const actorRef = useMemo(() => createNavigationActor(), []);
+  const [actorRef, setActorRef] = useState(() => createNavigationActor());
 
   useEffect(() => {
+    // If the actor was stopped (e.g. StrictMode cleanup), create a fresh one
+    if (actorRef.getSnapshot().status === "stopped") {
+      const fresh = createNavigationActor();
+      setActorRef(fresh);
+      return;
+    }
+
+    actorRef.start();
     setNavigationActor(actorRef);
     return () => {
       setNavigationActor(null);
