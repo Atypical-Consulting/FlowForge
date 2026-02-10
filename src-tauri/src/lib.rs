@@ -42,7 +42,8 @@ use git::{
 };
 use extensions::discovery::discover_extensions;
 use github::{
-    github_check_rate_limit, github_detect_remotes, github_get_auth_status, github_poll_auth,
+    github_check_rate_limit, github_detect_remotes, github_get_auth_status, github_get_issue,
+    github_get_pull_request, github_list_issues, github_list_pull_requests, github_poll_auth,
     github_sign_out, github_start_device_flow,
 };
 use gitflow::{
@@ -160,6 +161,11 @@ pub fn run() {
         github_sign_out,
         github_detect_remotes,
         github_check_rate_limit,
+        // GitHub read commands
+        github_list_pull_requests,
+        github_get_pull_request,
+        github_list_issues,
+        github_get_issue,
     ]);
 
     #[cfg(debug_assertions)]

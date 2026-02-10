@@ -1050,8 +1050,7 @@ async githubCheckRateLimit() : Promise<Result<RateLimitInfo, GitHubError>> {
 }
 },
 /**
- * List pull requests for a repository.
- * Supports pagination via page parameter and filtering by state.
+ * List pull requests for a repository with pagination.
  */
 async githubListPullRequests(owner: string, repo: string, state: string, page: number, perPage: number) : Promise<Result<PullRequestListResponse, GitHubError>> {
     try {
@@ -1062,7 +1061,7 @@ async githubListPullRequests(owner: string, repo: string, state: string, page: n
 }
 },
 /**
- * Get detailed pull request information including comments.
+ * Fetch full details for a single pull request including comments.
  */
 async githubGetPullRequest(owner: string, repo: string, number: number) : Promise<Result<PullRequestDetail, GitHubError>> {
     try {
@@ -1073,8 +1072,7 @@ async githubGetPullRequest(owner: string, repo: string, number: number) : Promis
 }
 },
 /**
- * List issues for a repository (excludes pull requests).
- * Supports pagination via page parameter and filtering by state.
+ * List issues for a repository with pagination (excludes pull requests).
  */
 async githubListIssues(owner: string, repo: string, state: string, page: number, perPage: number) : Promise<Result<IssueListResponse, GitHubError>> {
     try {
@@ -1085,7 +1083,7 @@ async githubListIssues(owner: string, repo: string, state: string, page: number,
 }
 },
 /**
- * Get detailed issue information including comments.
+ * Fetch full details for a single issue including comments.
  */
 async githubGetIssue(owner: string, repo: string, number: number) : Promise<Result<IssueDetail, GitHubError>> {
     try {
@@ -1107,46 +1105,6 @@ async githubGetIssue(owner: string, repo: string, number: number) : Promise<Resu
 
 /** user-defined types **/
 
-/**
- * Comment info for PR and issue comments.
- */
-export type CommentInfo = { id: number; authorLogin: string; authorAvatarUrl: string; body: string; createdAt: string; updatedAt: string; htmlUrl: string }
-/**
- * Issue detail with comments.
- */
-export type IssueDetail = { number: number; title: string; state: string; authorLogin: string; authorAvatarUrl: string; labels: LabelInfo[]; assignees: UserInfo[]; milestone: MilestoneInfo | null; body: string; createdAt: string; updatedAt: string; closedAt: string | null; htmlUrl: string; commentCount: number; comments: CommentInfo[] }
-/**
- * Paginated response for issue list.
- */
-export type IssueListResponse = { items: IssueSummary[]; hasNextPage: boolean; nextPage: number | null }
-/**
- * Issue summary for list display.
- */
-export type IssueSummary = { number: number; title: string; state: string; authorLogin: string; authorAvatarUrl: string; labels: LabelInfo[]; assigneeLogins: string[]; milestoneTitle: string | null; createdAt: string; updatedAt: string; htmlUrl: string; commentCount: number }
-/**
- * Label info (shared between PR and Issue).
- */
-export type LabelInfo = { name: string; color: string; description: string | null }
-/**
- * Milestone info.
- */
-export type MilestoneInfo = { number: number; title: string; state: string }
-/**
- * Pull request detail with comments.
- */
-export type PullRequestDetail = { number: number; title: string; state: string; draft: boolean; merged: boolean; authorLogin: string; authorAvatarUrl: string; headRef: string; headSha: string; baseRef: string; labels: LabelInfo[]; body: string; createdAt: string; updatedAt: string; htmlUrl: string; commentCount: number; reviewCommentCount: number; commits: number; additions: number; deletions: number; changedFiles: number; comments: CommentInfo[] }
-/**
- * Paginated response for pull request list.
- */
-export type PullRequestListResponse = { items: PullRequestSummary[]; hasNextPage: boolean; nextPage: number | null }
-/**
- * Pull request summary for list display.
- */
-export type PullRequestSummary = { number: number; title: string; state: string; draft: boolean; merged: boolean; authorLogin: string; authorAvatarUrl: string; headRef: string; baseRef: string; labels: LabelInfo[]; createdAt: string; updatedAt: string; htmlUrl: string; commentCount: number }
-/**
- * User info.
- */
-export type UserInfo = { login: string; avatarUrl: string }
 /**
  * Information about active Gitflow workflow.
  */
@@ -1592,11 +1550,51 @@ defaultBranch: string | null }
  * checks `err.type` to decide control flow (e.g., continue polling
  * on `AuthorizationPending`, increase interval on `SlowDown`).
  */
-export type GitHubError = { type: "OAuthFailed"; message: string } | { type: "AuthorizationPending" } | { type: "AccessDenied" } | { type: "ExpiredToken" } | { type: "SlowDown" } | { type: "KeychainError"; message: string } | { type: "NetworkError"; message: string } | { type: "NotAuthenticated" } | { type: "RateLimitExceeded"; message: string } | { type: "Internal"; message: string } | { type: "Cancelled" }
+export type GitHubError = { type: "OAuthFailed"; message: string } | { type: "AuthorizationPending" } | { type: "AccessDenied" } | { type: "ExpiredToken" } | { type: "SlowDown" } | { type: "KeychainError"; message: string } | { type: "NetworkError"; message: string } | { type: "NotAuthenticated" } | { type: "RateLimitExceeded"; message: string } | { type: "Internal"; message: string } | { type: "Cancelled" } | { type: "ApiError"; message: string } | { type: "NotFound"; message: string } | { type: "Forbidden"; message: string }
 /**
  * Information about a detected GitHub remote in the current repository.
  */
 export type GitHubRemoteInfo = { remoteName: string; owner: string; repo: string; url: string }
+/**
+ * Summary of a pull request for list views.
+ */
+export type PullRequestSummary = { number: number; title: string; state: string; draft: boolean; merged: boolean; authorLogin: string; authorAvatarUrl: string; headRef: string; baseRef: string; labels: LabelInfo[]; createdAt: string; updatedAt: string; htmlUrl: string; commentCount: number }
+/**
+ * Full pull request detail with body, stats, and comments.
+ */
+export type PullRequestDetail = { number: number; title: string; state: string; draft: boolean; merged: boolean; authorLogin: string; authorAvatarUrl: string; headRef: string; headSha: string; baseRef: string; labels: LabelInfo[]; body: string; createdAt: string; updatedAt: string; htmlUrl: string; commentCount: number; reviewCommentCount: number; commits: number; additions: number; deletions: number; changedFiles: number; comments: CommentInfo[] }
+/**
+ * Summary of an issue for list views.
+ */
+export type IssueSummary = { number: number; title: string; state: string; authorLogin: string; authorAvatarUrl: string; labels: LabelInfo[]; assigneeLogins: string[]; milestoneTitle: string | null; createdAt: string; updatedAt: string; htmlUrl: string; commentCount: number }
+/**
+ * Full issue detail with body, assignees, milestone, and comments.
+ */
+export type IssueDetail = { number: number; title: string; state: string; authorLogin: string; authorAvatarUrl: string; labels: LabelInfo[]; assignees: UserInfo[]; milestone: MilestoneInfo | null; body: string; createdAt: string; updatedAt: string; closedAt: string | null; htmlUrl: string; commentCount: number; comments: CommentInfo[] }
+/**
+ * Label info for frontend display.
+ */
+export type LabelInfo = { name: string; color: string; description: string | null }
+/**
+ * Minimal user info for frontend display.
+ */
+export type UserInfo = { login: string; avatarUrl: string }
+/**
+ * Milestone info for frontend display.
+ */
+export type MilestoneInfo = { number: number; title: string; state: string }
+/**
+ * Comment info for frontend display.
+ */
+export type CommentInfo = { id: number; authorLogin: string; authorAvatarUrl: string; body: string; createdAt: string; updatedAt: string; htmlUrl: string }
+/**
+ * Paginated list of pull request summaries.
+ */
+export type PullRequestListResponse = { items: PullRequestSummary[]; hasNextPage: boolean; nextPage: number | null }
+/**
+ * Paginated list of issue summaries.
+ */
+export type IssueListResponse = { items: IssueSummary[]; hasNextPage: boolean; nextPage: number | null }
 /**
  * Configuration for Gitflow initialization.
  */
