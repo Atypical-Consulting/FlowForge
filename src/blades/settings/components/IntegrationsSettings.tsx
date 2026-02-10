@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useSettingsStore } from "../../../stores/settings";
+import { usePreferencesStore as useSettingsStore } from "../../../stores/domain/preferences";
 import {
   type AppOption,
   getEditorOptions,

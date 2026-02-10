@@ -1,6 +1,6 @@
 import { Search } from "lucide-react";
 import { registerCommand } from "../lib/commandRegistry";
-import { useCommandPaletteStore } from "../stores/commandPalette";
+import { useUIStore as useCommandPaletteStore } from "../stores/domain/ui-state";
 
 registerCommand({
   id: "command-palette",

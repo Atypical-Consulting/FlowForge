@@ -1,10 +1,7 @@
 import { Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useCallback, useState } from "react";
-import {
-  DEFAULT_CHECKLIST,
-  type FlowType,
-  useReviewChecklistStore,
-} from "../../../stores/reviewChecklist";
+import { DEFAULT_CHECKLIST, type FlowType } from "../../../stores/domain/preferences/review-checklist.slice";
+import { usePreferencesStore as useReviewChecklistStore } from "../../../stores/domain/preferences";
 
 const inputClassName =
   "w-full max-w-xs px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 rounded-md text-sm text-ctp-text placeholder-ctp-overlay0 focus:outline-none focus:ring-2 focus:ring-ctp-blue focus:border-transparent";

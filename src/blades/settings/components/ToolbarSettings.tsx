@@ -3,7 +3,7 @@ import {
   TOOLBAR_GROUP_ORDER,
   useToolbarRegistry,
 } from "../../../lib/toolbarRegistry";
-import { useSettingsStore } from "../../../stores/settings";
+import { usePreferencesStore as useSettingsStore } from "../../../stores/domain/preferences";
 import { formatShortcut } from "../../../hooks/useKeyboardShortcuts";
 
 /**

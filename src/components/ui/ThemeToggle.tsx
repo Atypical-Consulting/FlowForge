@@ -1,5 +1,6 @@
 import { Monitor, Moon, Sun } from "lucide-react";
-import { type Theme, useThemeStore } from "../../stores/theme";
+import type { Theme } from "../../stores/domain/preferences/theme.slice";
+import { usePreferencesStore as useThemeStore } from "../../stores/domain/preferences";
 import { Button } from "./button";
 
 export function ThemeToggle() {

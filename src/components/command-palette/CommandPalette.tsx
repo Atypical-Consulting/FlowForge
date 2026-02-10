@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { getEnabledCommands, getOrderedCategories } from "../../lib/commandRegistry";
 import type { CommandCategory } from "../../lib/commandRegistry";
 import { searchCommands } from "../../lib/fuzzySearch";
-import { useCommandPaletteStore } from "../../stores/commandPalette";
+import { useUIStore as useCommandPaletteStore } from "../../stores/domain/ui-state";
 import { CommandPaletteItem } from "./CommandPaletteItem";
 
 export function CommandPalette() {

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useBranches } from "./useBranches";
-import { useBranchMetadataStore } from "../stores/branchMetadata";
+import { usePreferencesStore as useBranchMetadataStore } from "../stores/domain/preferences";
 import { getScope, getPrimaryScopes } from "../lib/branchScopes";
 
 export function useBranchScopes() {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { commands } from "../../../bindings";
-import { useSettingsStore } from "../../../stores/settings";
+import { usePreferencesStore as useSettingsStore } from "../../../stores/domain/preferences";
 import { SettingsField } from "./SettingsField";
 
 const GIT_CONFIG_DEBOUNCE_MS = 500;

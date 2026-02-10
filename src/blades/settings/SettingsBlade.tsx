@@ -7,7 +7,8 @@ import {
   Settings,
   Wrench,
 } from "lucide-react";
-import { type SettingsCategory, useSettingsStore } from "../../stores/settings";
+import type { SettingsCategory } from "../../stores/domain/preferences/settings.slice";
+import { usePreferencesStore as useSettingsStore } from "../../stores/domain/preferences";
 import { AppearanceSettings } from "./components/AppearanceSettings";
 import { GeneralSettings } from "./components/GeneralSettings";
 import { GitSettings } from "./components/GitSettings";
