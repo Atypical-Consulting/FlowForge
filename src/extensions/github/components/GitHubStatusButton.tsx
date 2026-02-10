@@ -1,6 +1,11 @@
 /**
  * GitHub toolbar status button with rate limit badge.
- * Full implementation in Task 2.
+ *
+ * Custom toolbar widget rendered via renderCustom.
+ * Shows GitHub icon with colored dot indicating rate limit status:
+ * - Green: >50% remaining
+ * - Yellow: 10-50% remaining
+ * - Red: <10% remaining
  */
 
 import { Github } from "lucide-react";
