@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 35 of 36 (GitHub Read Operations)
-Plan: 2 of 3 complete
-Status: In Progress
-Last activity: 2026-02-10 — Plan 35-01 complete (GitHub read backend commands)
+Plan: 3 of 3 complete
+Status: Checkpoint Pending (visual verification)
+Last activity: 2026-02-10 — Plan 35-03 engineering complete (PR/issue blades + extension wiring)
 
-Progress: [██████████████░░░░░░] 67%
+Progress: [████████████████████] 100%
 
 ## Milestone History
 
@@ -46,6 +46,7 @@ See `.planning/MILESTONES.md` for full history.
 **Plan 34-03:** 11min, 2 tasks (auto) + 1 checkpoint, 11 files modified
 **Plan 35-01:** 15min, 2 tasks, 8 files modified
 **Plan 35-02:** 6min, 2 tasks, 8 files modified
+**Plan 35-03:** 8min, 2 tasks (auto) + 1 checkpoint, 5 files modified
 
 ## Accumulated Context
 
@@ -124,6 +125,12 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 - Inline styles for LabelPill colors because Tailwind v4 cannot generate dynamic hex at build time
 - getSelectedRemote() as standalone function (not hook) for non-React access to selected remote
 
+**Phase 35-03 decisions:**
+- Virtuoso for infinite scroll list rendering in both PR and issue list blades
+- Separated inner list component from outer blade to avoid conditional hook calls (remote guard in outer, hooks in inner)
+- queryClient.removeQueries with ext:github key prefix for targeted cache cleanup on deactivation and repo switch
+- Toolbar actions in views group (not app group) with auth+remote when() conditions
+
 ### Pending Todos
 
 None.
@@ -152,9 +159,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed 35-01-PLAN.md (GitHub read backend commands)
+Stopped at: Completed 35-03-PLAN.md Tasks 1-2, checkpoint pending (visual verification)
 Resume file: None
 
 ---
 *State updated: 2026-02-10*
-*v1.5.0 GitHub Extension -- Phase 35 in progress (2 of 3 plans complete, 35-03 remaining)*
+*v1.5.0 GitHub Extension -- Phase 35 engineering complete (3 of 3 plans done, visual checkpoint pending)*
