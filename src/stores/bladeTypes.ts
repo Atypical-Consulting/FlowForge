@@ -27,6 +27,7 @@ export interface BladePropsMap {
   "gitflow-cheatsheet": Record<string, never>;
   "init-repo": { directoryPath: string };
   "conventional-commit": { amend?: boolean };
+  "extension-manager": Record<string, never>;
 }
 
 /** Core blade types derived from the map — single source of truth */
