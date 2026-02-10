@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import type { FileChange, FileStatus } from "../../../bindings";
 import { commands } from "../../../bindings";
 import { cn } from "../../../lib/utils";
-import { useStagingStore } from "../../../stores/staging";
+import { useUIStore as useStagingStore } from "../../../stores/domain/ui-state";
 import { FileTypeIcon } from "../../../components/icons/FileTypeIcon";
 
 interface FileItemProps {

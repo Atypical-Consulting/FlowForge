@@ -1,8 +1,8 @@
 import { open } from "@tauri-apps/plugin-dialog";
 import { Folder } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useBranchStore } from "../../stores/branches";
-import { useWorktreeStore } from "../../stores/worktrees";
+import { useGitOpsStore as useBranchStore } from "../../stores/domain/git-ops";
+import { useGitOpsStore as useWorktreeStore } from "../../stores/domain/git-ops";
 import { Button } from "../ui/button";
 import {
   Dialog,

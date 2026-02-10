@@ -5,7 +5,7 @@ import {
   useToolbarRegistry,
 } from "../../lib/toolbarRegistry";
 import { usePreferencesStore } from "../../stores/domain/preferences";
-import { useRepositoryStore } from "../../stores/repository";
+import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
 import { ToolbarButton } from "./ToolbarButton";
 import { ToolbarGroup } from "./ToolbarGroup";
 import { ToolbarOverflowMenu } from "./ToolbarOverflowMenu";

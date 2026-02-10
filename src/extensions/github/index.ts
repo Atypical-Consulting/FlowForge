@@ -11,7 +11,7 @@ import { Github, GitPullRequest, GitPullRequestCreate, CircleDot } from "lucide-
 import type { ExtensionAPI } from "../ExtensionAPI";
 import { openBlade } from "../../lib/bladeOpener";
 import { useGitHubStore, getSelectedRemote, cancelGitHubPolling } from "./githubStore";
-import { useRepositoryStore } from "../../stores/repository";
+import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
 import { useToolbarRegistry } from "../../lib/toolbarRegistry";
 import { queryClient } from "../../lib/queryClient";
 

@@ -1,6 +1,6 @@
 import { Plus, Tag } from "lucide-react";
 import { useEffect } from "react";
-import { useTagStore } from "../../stores/tags";
+import { useGitOpsStore as useTagStore } from "../../stores/domain/git-ops";
 import { EmptyState } from "../ui/EmptyState";
 import { CreateTagDialog } from "./CreateTagDialog";
 import { TagItem } from "./TagItem";

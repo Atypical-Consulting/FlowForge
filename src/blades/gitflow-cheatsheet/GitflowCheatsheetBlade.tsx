@@ -1,6 +1,6 @@
 import { GitMerge } from "lucide-react";
-import { useGitflowStore } from "../../stores/gitflow";
-import { useRepositoryStore } from "../../stores/repository";
+import { useGitOpsStore as useGitflowStore } from "../../stores/domain/git-ops";
+import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
 import { classifyBranch, BRANCH_TYPE_COLORS } from "../../lib/branchClassifier";
 import type { GitflowBranchType } from "../../lib/branchClassifier";
 import { GitflowDiagram } from "../../components/gitflow/GitflowDiagram";

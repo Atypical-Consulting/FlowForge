@@ -1,6 +1,6 @@
 import type { FileChange } from "../../../bindings";
 import { getPreviewForFile } from "../../../lib/previewRegistry";
-import { useStagingStore } from "../../../stores/staging";
+import { useUIStore as useStagingStore } from "../../../stores/domain/ui-state";
 import { DiffPreviewHeader } from "./DiffPreviewHeader";
 import { InlineDiffViewer } from "./InlineDiffViewer";
 import { NonTextPlaceholder } from "./NonTextPlaceholder";

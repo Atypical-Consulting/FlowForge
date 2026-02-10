@@ -9,8 +9,8 @@ import {
 } from "../../bindings";
 import { cn } from "../../lib/utils";
 import { useRecentRepos } from "../../hooks/useRecentRepos";
-import { useCloneStore } from "../../stores/clone";
-import { useRepositoryStore } from "../../stores/repository";
+import { useGitOpsStore as useCloneStore } from "../../stores/domain/git-ops";
+import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
 import { toast } from "../../stores/toast";
 import { Button } from "../ui/button";
 import { CloneProgress } from "./CloneProgress";

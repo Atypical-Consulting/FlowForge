@@ -4,7 +4,7 @@ import type { FileChange } from "../../bindings";
 import { commands } from "../../bindings";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
 import { useStagingKeyboard } from "./hooks/useStagingKeyboard";
-import { useStagingStore } from "../../stores/staging";
+import { useUIStore as useStagingStore } from "../../stores/domain/ui-state";
 import { SplitPaneLayout } from "../../components/layout";
 import { StagingDiffPreview } from "./components/StagingDiffPreview";
 import { StagingPanel } from "./components/StagingPanel";

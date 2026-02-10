@@ -3,8 +3,8 @@ import { ChevronDown, FolderGit } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRecentRepos } from "../../hooks/useRecentRepos";
 import { cn } from "../../lib/utils";
-import { useNavigationStore } from "../../stores/navigation";
-import { useRepositoryStore } from "../../stores/repository";
+import { usePreferencesStore as useNavigationStore } from "../../stores/domain/preferences";
+import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
 import { RepoSwitcherItem, type RepoItemData } from "./RepoSwitcherItem";
 
 const slideDown = {

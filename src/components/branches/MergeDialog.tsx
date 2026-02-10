@@ -1,6 +1,6 @@
 import { AlertTriangle, Check, GitMerge, X } from "lucide-react";
 import type { MergeResult } from "../../bindings";
-import { useBranchStore } from "../../stores/branches";
+import { useGitOpsStore as useBranchStore } from "../../stores/domain/git-ops";
 
 interface MergeDialogProps {
   sourceBranch: string;

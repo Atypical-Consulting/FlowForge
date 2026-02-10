@@ -8,7 +8,7 @@ import {
 import { Component, useEffect, useMemo, useState } from "react";
 import type { ErrorInfo, ReactNode } from "react";
 import { useSidebarPanelRegistry } from "../lib/sidebarPanelRegistry";
-import { useRepositoryStore } from "../stores/repository";
+import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { BladeContainer } from "../blades/_shared";
 import { BranchList } from "./branches/BranchList";
 import { CommitForm } from "./commit/CommitForm";

@@ -10,7 +10,7 @@ import { commands } from "../../../bindings";
 import { getErrorMessage } from "../../../lib/errors";
 import { composeGitignore } from "../../../lib/gitignoreComposer";
 import { useInitRepoStore } from "../store";
-import { useRepositoryStore } from "../../../stores/repository";
+import { useGitOpsStore as useRepositoryStore } from "../../../stores/domain/git-ops";
 import { useRecentRepos } from "../../../hooks/useRecentRepos";
 import { useBladeNavigation } from "../../../hooks/useBladeNavigation";
 import { Button } from "../../../components/ui/button";

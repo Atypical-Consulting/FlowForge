@@ -1,6 +1,6 @@
 import { useHotkeys } from "react-hotkeys-hook";
 import type { FileChange } from "../../../bindings";
-import { useStagingStore } from "../../../stores/staging";
+import { useUIStore as useStagingStore } from "../../../stores/domain/ui-state";
 
 interface UseStagingKeyboardOptions {
   allFiles: Array<{

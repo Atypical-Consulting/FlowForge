@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useWorktreeStore } from "../../stores/worktrees";
+import { useGitOpsStore as useWorktreeStore } from "../../stores/domain/git-ops";
 import { WorktreeItem } from "./WorktreeItem";
 
 interface WorktreePanelProps {

@@ -33,10 +33,10 @@ import { openBlade } from "../lib/bladeOpener";
 import { queryClient } from "../lib/queryClient";
 import type { ToolbarAction } from "../lib/toolbarRegistry";
 import { useToolbarRegistry } from "../lib/toolbarRegistry";
-import { useCommandPaletteStore } from "../stores/commandPalette";
-import { useRepositoryStore } from "../stores/repository";
+import { useUIStore as useCommandPaletteStore } from "../stores/domain/ui-state";
+import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { toast } from "../stores/toast";
-import { useUndoStore } from "../stores/undo";
+import { useGitOpsStore as useUndoStore } from "../stores/domain/git-ops";
 
 // --- Helpers ---
 

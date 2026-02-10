@@ -5,7 +5,7 @@ import type { FileChange } from "../../../bindings";
 import { commands } from "../../../bindings";
 import { formatShortcut } from "../../../hooks/useKeyboardShortcuts";
 import { cn } from "../../../lib/utils";
-import { useStagingStore } from "../../../stores/staging";
+import { useUIStore as useStagingStore } from "../../../stores/domain/ui-state";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { Skeleton } from "../../../components/ui/Skeleton";
 import { Button } from "../../../components/ui/button";

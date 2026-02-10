@@ -1,6 +1,6 @@
 import { Clock, Folder, X } from "lucide-react";
 import { type RecentRepo, useRecentRepos } from "../hooks/useRecentRepos";
-import { useRepositoryStore } from "../stores/repository";
+import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { Button } from "./ui/button";
 
 interface RecentReposProps {

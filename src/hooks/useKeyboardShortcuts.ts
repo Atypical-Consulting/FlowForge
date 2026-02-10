@@ -4,9 +4,9 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { type SyncProgress, commands } from "../bindings";
 import { openBlade } from "../lib/bladeOpener";
 import { getNavigationActor } from "../machines/navigation/context";
-import { useCommandPaletteStore } from "../stores/commandPalette";
-import { useRepositoryStore } from "../stores/repository";
-import { useTopologyStore } from "../stores/topology";
+import { useUIStore as useCommandPaletteStore } from "../stores/domain/ui-state";
+import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
+import { useGitOpsStore as useTopologyStore } from "../stores/domain/git-ops";
 import { toast } from "../stores/toast";
 
 /**

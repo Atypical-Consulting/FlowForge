@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useStashStore } from "../../stores/stash";
+import { useGitOpsStore as useStashStore } from "../../stores/domain/git-ops";
 import { Button } from "../ui/button";
 import {
   Dialog,

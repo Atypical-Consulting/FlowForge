@@ -7,7 +7,7 @@ import { commands } from "../bindings";
 import { useRecentRepos } from "../hooks/useRecentRepos";
 import { fadeInUp, staggerContainer, staggerItem } from "../lib/animations";
 import { modKeyLabel } from "../lib/platform";
-import { useRepositoryStore } from "../stores/repository";
+import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { InitRepoBlade } from "../blades/init-repo";
 import { CloneForm } from "./clone/CloneForm";
 import { RecentRepos } from "./RecentRepos";

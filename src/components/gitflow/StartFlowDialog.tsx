@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import { useState } from "react";
-import { useBranchStore } from "../../stores/branches";
-import { useGitflowStore } from "../../stores/gitflow";
+import { useGitOpsStore as useBranchStore } from "../../stores/domain/git-ops";
+import { useGitOpsStore as useGitflowStore } from "../../stores/domain/git-ops";
 
 interface StartFlowDialogProps {
   flowType: "feature" | "release" | "hotfix";

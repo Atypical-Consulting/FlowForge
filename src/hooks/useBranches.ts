@@ -1,7 +1,7 @@
 import { useMemo } from "react";
-import { useBranchStore } from "../stores/branches";
-import { useBranchMetadataStore } from "../stores/branchMetadata";
-import { useRepositoryStore } from "../stores/repository";
+import { useGitOpsStore as useBranchStore } from "../stores/domain/git-ops";
+import { usePreferencesStore as useBranchMetadataStore } from "../stores/domain/preferences";
+import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { classifyBranch, type EnrichedBranch } from "../lib/branchClassifier";
 
 export function useBranches() {

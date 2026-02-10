@@ -4,7 +4,7 @@ import { commands } from "../../../bindings";
 import { Button } from "../../../components/ui/button";
 import { ToggleSwitch } from "../components/ToggleSwitch";
 import { useCreatePullRequest } from "../hooks/useGitHubMutation";
-import { useRepositoryStore } from "../../../stores/repository";
+import { useGitOpsStore as useRepositoryStore } from "../../../stores/domain/git-ops";
 
 interface CreatePullRequestBladeProps {
   owner: string;

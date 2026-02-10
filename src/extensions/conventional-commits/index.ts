@@ -2,7 +2,7 @@ import { lazy } from "react";
 import { FileText } from "lucide-react";
 import type { ExtensionAPI } from "../ExtensionAPI";
 import { openBlade } from "../../lib/bladeOpener";
-import { useRepositoryStore } from "../../stores/repository";
+import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {
   // Lazy component imports -- loaded on first blade render, not during activation

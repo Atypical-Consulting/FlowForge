@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { useState } from "react";
-import { useBranchStore } from "../../stores/branches";
+import { useGitOpsStore as useBranchStore } from "../../stores/domain/git-ops";
 
 interface CreateBranchDialogProps {
   onClose: () => void;

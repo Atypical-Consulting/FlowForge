@@ -5,10 +5,10 @@ import {
   X,
 } from "lucide-react";
 import { registerCommand } from "../lib/commandRegistry";
-import { useBranchStore } from "../stores/branches";
-import { useRepositoryStore } from "../stores/repository";
-import { useStashStore } from "../stores/stash";
-import { useTagStore } from "../stores/tags";
+import { useGitOpsStore as useBranchStore } from "../stores/domain/git-ops";
+import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
+import { useGitOpsStore as useStashStore } from "../stores/domain/git-ops";
+import { useGitOpsStore as useTagStore } from "../stores/domain/git-ops";
 
 registerCommand({
   id: "open-repository",

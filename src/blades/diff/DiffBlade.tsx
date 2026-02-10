@@ -15,7 +15,7 @@ import { commands } from "../../bindings";
 import { MONACO_COMMON_OPTIONS, MONACO_THEME } from "../../lib/monacoConfig";
 import "../../lib/monacoTheme";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
-import { useStagingStore } from "../../stores/staging";
+import { useUIStore as useStagingStore } from "../../stores/domain/ui-state";
 import { Button } from "../../components/ui/button";
 import { BladeLoadingFallback } from "../_shared/BladeLoadingFallback";
 

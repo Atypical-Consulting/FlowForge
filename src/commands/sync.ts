@@ -9,7 +9,7 @@ import {
 import type { SyncProgress } from "../bindings";
 import { commands as tauriCommands } from "../bindings";
 import { registerCommand } from "../lib/commandRegistry";
-import { useRepositoryStore } from "../stores/repository";
+import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { toast } from "../stores/toast";
 
 registerCommand({

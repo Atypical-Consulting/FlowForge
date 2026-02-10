@@ -3,9 +3,9 @@ import { ChevronDown, Circle, GitBranch } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BranchInfo } from "../../bindings";
 import { cn } from "../../lib/utils";
-import { useBranchStore } from "../../stores/branches";
-import { useNavigationStore } from "../../stores/navigation";
-import { useRepositoryStore } from "../../stores/repository";
+import { useGitOpsStore as useBranchStore } from "../../stores/domain/git-ops";
+import { usePreferencesStore as useNavigationStore } from "../../stores/domain/preferences";
+import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
 import { BranchSwitcherItem } from "./BranchSwitcherItem";
 import { SwitcherSearch } from "./SwitcherSearch";
 
