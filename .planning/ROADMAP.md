@@ -34,12 +34,12 @@
   3. An extension can contribute a status bar widget that displays live state at the bottom of the window
   4. An extension receives git operation events (onDidCommit, onDidPush) when the user performs git actions
   5. An extension's onDispose callbacks fire during deactivation, cleaning up subscriptions and timers
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 37-01: New registries (ContextMenu, SidebarPanel, StatusBar, GitHookBus)
-- [ ] 37-02: UI surfaces (ContextMenu component, dynamic sidebar, StatusBar component)
-- [ ] 37-03: ExtensionAPI expansion and onDispose lifecycle
+- [ ] 37-01-PLAN.md — New registries (ContextMenu, SidebarPanel, StatusBar, GitHookBus) + tests
+- [ ] 37-02-PLAN.md — UI surfaces (ContextMenu component, dynamic sidebar, StatusBar component) + GitHookBus wiring
+- [ ] 37-03-PLAN.md — ExtensionAPI expansion and onDispose lifecycle + tests
 
 #### Phase 38: Content Viewer Extraction
 **Goal**: Markdown, code, and 3D viewers run as a single toggleable built-in extension, with graceful fallback when disabled
