@@ -136,7 +136,10 @@
   3. User can see which GitHub permission scopes are requested and control the scope selection before authorizing
   4. When opening a repository with a github.com remote, the app automatically associates it with the signed-in GitHub account
   5. GitHub API rate limit remaining count is visible in the UI, with a warning toast when approaching the limit
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 34-01-PLAN.md -- Rust GitHub module: keychain storage, OAuth Device Flow, remote detection, rate limit
+- [ ] 34-02-PLAN.md -- Extensibility refactoring: ToolbarAction.renderCustom, ExtensionHost.registerBuiltIn
+- [ ] 34-03-PLAN.md -- GitHub extension JS: store, auth blade, account blade, toolbar widget, commands
 
 ### Phase 35: GitHub Read Operations
 **Goal**: Users can browse pull requests and issues for the linked GitHub repository directly within FlowForge blades, and the GitHub extension contributes toolbar actions through the extension registry
