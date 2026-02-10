@@ -50,11 +50,11 @@ Plans:
   2. Opening a source file launches the Monaco code viewer blade provided by the content-viewers extension
   3. Opening a .gltf/.glb file launches the 3D model viewer blade provided by the content-viewers extension
   4. Disabling the content-viewers extension in Extension Manager causes file previews to fall back to plain text display
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 38-01: Extract viewer blades and file dispatch to content-viewers extension
-- [ ] 38-02: Graceful degradation and extension toggle verification
+- [ ] 38-01-PLAN.md — ExtensionAPI coreOverride + viewer-plaintext fallback blade
+- [ ] 38-02-PLAN.md — Content-viewers extension + graceful degradation
 
 #### Phase 39: Conventional Commits Extraction
 **Goal**: Conventional commit composer, validation, templates, and changelog run as a toggleable built-in extension, with plain commit form when disabled
