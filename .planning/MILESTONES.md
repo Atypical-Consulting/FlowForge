@@ -157,3 +157,39 @@
 
 ---
 
+
+## v1.5.0 GitHub Extension (Shipped: 2026-02-10)
+
+**Delivered:** Added an extension system to FlowForge and shipped GitHub integration (PRs, issues, OAuth Device Flow) as the first extension, alongside a data-driven toolbar overhaul with security hardening.
+
+**Phases completed:** 31-36 (6 phases, 16 plans, 34 requirements)
+
+**Key accomplishments:**
+
+- Security hardened the app with strict CSP, disabled asset protocol, and narrowed Tauri capabilities before introducing external network access
+- Built extension platform with manifest-driven lifecycle, namespaced registrations (ext:{id}:{name}), API versioning, and install from GitHub URL with permission review
+- Overhauled toolbar from hardcoded Header.tsx buttons to data-driven ToolbarRegistry with overflow menu, context-based visibility, and per-action show/hide settings
+- Shipped GitHub OAuth via Device Flow with secure OS keychain token storage, automatic remote detection, and rate limit tracking with toolbar badge
+- Delivered GitHub read/write operations — browse PRs/issues with Virtuoso infinite scroll, merge PRs with strategy selector, create PRs from current branch
+- Built Extension Manager blade with install dialog (6-step state machine), enable/disable toggles, permission badges, and persistent extension state
+
+**Stats:**
+
+- 149 files changed (+29,218/-644 lines)
+- ~45,227 lines of code (34,152 TypeScript + 11,075 Rust)
+- 6 phases, 16 plans, 34 requirements
+- 7 days (2026-02-03 → 2026-02-10)
+- 76 commits
+
+**Git range:** `docs(31-security-hardening)` → `docs(audit)`
+
+**Tech debt accepted:**
+- Missing formal VERIFICATION.md for phases 35-36 (mitigated by UAT and integration checker evidence)
+- Phase 34 human runtime testing pending (6 OAuth flow items)
+- 16 backward-compatibility re-export shims (@deprecated) from v1.4
+- Pre-existing TS2440 in auto-generated bindings.ts
+
+**What's next:** v2.0 — MCP server, tiered autonomy model, or further polish
+
+---
+

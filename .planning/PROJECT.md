@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A cross-platform desktop Git client built on Tauri (Rust backend + React frontend) that makes Gitflow, conventional commits, and worktrees the structural foundation of the interface — not afterthoughts buried in menus. The client enforces workflow conventions through its architecture, preventing invalid operations rather than just warning about them. Features a blade-based navigation system with 15 blade types managed by an XState finite state machine, co-located feature modules, and 3 consolidated domain stores.
+A cross-platform desktop Git client built on Tauri (Rust backend + React frontend) that makes Gitflow, conventional commits, and worktrees the structural foundation of the interface — not afterthoughts buried in menus. The client enforces workflow conventions through its architecture, preventing invalid operations rather than just warning about them. Features a blade-based navigation system with 22 blade types managed by an XState finite state machine, co-located feature modules, 3 consolidated domain stores, an extension platform with the GitHub integration as the first shipped extension, and a data-driven toolbar with overflow handling.
 
 ## Core Value
 
@@ -12,7 +12,7 @@ A cross-platform desktop Git client built on Tauri (Rust backend + React fronten
 
 The product is designed in concentric circles, each standing alone:
 
-1. **Inner circle (v1):** Best-in-class Git client with visual Gitflow, smart conventional commits, and first-class worktrees. No AI required — just excellent UX for powerful Git features.
+1. **Inner circle (v1):** Best-in-class Git client with visual Gitflow, smart conventional commits, first-class worktrees, and an extension platform with GitHub integration. No AI required — just excellent UX for powerful Git features.
 
 2. **Middle circle (v2+):** Local intelligence layer — rule-based heuristics in v1, embedded lightweight model in v2+. Smart commit suggestions, semantic diff analysis, conflict annotation. Works offline, no external dependencies.
 
@@ -149,16 +149,35 @@ Each layer adds value; each inner layer stands without the outer ones.
 - ✓ defaultTab setting wired in blade initialization — v1.4
 - ✓ Cmd+K keyboard shortcut for command palette — v1.4
 
+- ✓ Strict Content-Security-Policy enforced before extension loading — v1.5
+- ✓ Asset protocol disabled, Tauri capabilities narrowed to minimum scopes — v1.5
+- ✓ Data-driven toolbar with ToolbarRegistry replacing hardcoded buttons — v1.5
+- ✓ Toolbar groups by intent with visual dividers and overflow menu — v1.5
+- ✓ Context-based toolbar visibility (repo open/closed, auth state) — v1.5
+- ✓ Per-action show/hide settings persisted in preferences — v1.5
+- ✓ Extension manifest format with lifecycle, permissions, and API versioning — v1.5
+- ✓ ExtensionHost with filesystem discovery and activate/deactivate lifecycle — v1.5
+- ✓ ExtensionAPI facade with namespaced blade/command/toolbar registration — v1.5
+- ✓ Registry unregister support for blades and commands — v1.5
+- ✓ apiVersion compatibility checking with user-visible error on mismatch — v1.5
+- ✓ GitHub OAuth Device Flow with scope selection — v1.5
+- ✓ OAuth tokens stored in OS keychain (never plaintext) — v1.5
+- ✓ Automatic GitHub remote detection and account linking — v1.5
+- ✓ GitHub API rate limit tracking with toolbar badge and warning toast — v1.5
+- ✓ PR list/detail blades with status, CI checks, comments — v1.5
+- ✓ Issue list/detail blades with labels, assignee, comments — v1.5
+- ✓ Extension-contributed toolbar actions through shared registry — v1.5
+- ✓ PR merge with strategy selector (merge/squash/rebase) and confirmation — v1.5
+- ✓ PR creation from current branch with auto-filled title and body — v1.5
+- ✓ Extension install from GitHub URL with manifest validation — v1.5
+- ✓ Extension Manager blade with enable/disable toggles and uninstall — v1.5
+- ✓ Extension contribution display (blades, commands, toolbar actions) — v1.5
+- ✓ Extension permission display during install review — v1.5
+- ✓ Extension enable/disable state persisted across sessions — v1.5
+
 ### Active
 
-## Current Milestone: v1.5 GitHub Extension
-
-**Goal:** Add an extension system to FlowForge and ship GitHub integration (PRs, issues, OAuth) as the first extension, alongside a top bar UX overhaul.
-
-**Target features:**
-- Extension platform: manifest format, public API (blades, commands, stores), lifecycle hooks, install from GitHub URL, manager UI, permissions model, versioning/compatibility
-- GitHub extension: OAuth Device Flow auth, view/merge PRs, view/close issues, link account to repo
-- Top bar: regroup by intent, overflow menu, consistent iconography, show/hide toggle customization, contextual repo-aware actions
+(No active requirements — next milestone not yet defined)
 
 ### Deferred to v2+
 
@@ -176,19 +195,26 @@ Each layer adds value; each inner layer stands without the outer ones.
 - Branch health monitoring (staleness, drift indicators) — ambient UX enhancement, v3
 - Built-in code editor — scope creep, IDE competition
 - Mercurial/SVN support — Git-only focus
-- CI/CD integration — feature creep
+- CI/CD integration — feature creep (CI status indicators on PRs sufficient)
 - Built-in terminal — users have terminals
-- Code review features — GitHub/GitLab do this well (lightweight checklist added in v1.3)
+- Full PR review with inline code comments — GitHub/GitLab do this well (lightweight checklist in v1.3, read + basic actions in v1.5)
 - Real-time collaboration — high complexity
 - Mobile apps — desktop-first
+- Extension sandboxing (iframe/Worker) — only first-party GitHub extension in v1.5; sandboxing needed when third-party extensions arrive
+- Extension marketplace — URL-based install sufficient; marketplace requires hosting infrastructure
+- GitHub Actions log viewing — CI status indicators on PRs sufficient
+- GitLab/Bitbucket integration — GitHub-first; other providers can be extensions later
+- Extension auto-update — security risk without review; manual update safer
 
 ## Context
 
-**Current state:** Shipped v1.4.0 with ~36,946 LOC (8,791 Rust + 28,155 TypeScript).
-Tech stack: Tauri 2.x, React 19, XState v5, Zustand (3 domain stores), React Query, Monaco Editor, Three.js, framer-motion.
-All 175 requirements implemented across 30 phases (~185 plans) in five milestones.
-15 blade types in co-located feature modules with XState FSM navigation.
-140 tests (Vitest + jsdom) covering stores, components, and machine logic.
+**Current state:** Shipped v1.5.0 with ~45,227 LOC (34,152 TypeScript + 11,075 Rust).
+Tech stack: Tauri 2.x, React 19, XState v5, Zustand (3 domain stores), React Query, Monaco Editor, Three.js, framer-motion, reqwest, keyring.
+All 209 requirements implemented across 36 phases (~201 plans) in six milestones.
+22 blade types in co-located feature modules with XState FSM navigation.
+Extension platform with GitHub integration as first shipped extension (7 blades, 5 commands, 4 toolbar actions).
+Data-driven toolbar with 15+ core actions and extension contributions.
+137 tests (Vitest + jsdom) covering stores, components, and machine logic.
 Documentation website live on GitHub Pages.
 
 **Known tech debt:**
@@ -197,6 +223,8 @@ Documentation website live on GitHub Pages.
 - Init Repo blade UX refinements (focus behavior, listbox pattern, aria-describedby)
 - 3D viewer reliability on some hardware (diagnostic logging only)
 - Pre-existing TS2440 in auto-generated bindings.ts
+- Phase 34 human runtime testing pending (6 OAuth flow items)
+- Missing formal VERIFICATION.md for phases 35-36 (mitigated by UAT/integration evidence)
 
 **v2 vision:** MCP server exposing repository state (branches, worktrees, commit history, diffs, Gitflow context) as structured resources and tools. Tiered autonomy model:
 - **Tier 1 (full autonomy):** Reversible, local, convention-clear operations
@@ -210,6 +238,7 @@ Documentation website live on GitHub Pages.
 - **Binary size**: Target <50MB installed (achieved in v1.0)
 - **Memory**: Target <200MB baseline (achieved in v1.0)
 - **Offline-first**: Core functionality works without network; MCP and sync are additive
+- **Extension security**: First-party extensions only in v1.x; sandboxing required before third-party
 
 ## Key Decisions
 
@@ -247,6 +276,17 @@ Documentation website live on GitHub Pages.
 | Bundled templates via include_str! (v1.4) | Compile-time embedding for offline fallback; no runtime resource loading | ✓ Good — reliable offline |
 | Vitest + jsdom for testing (v1.4) | Fast, modern test runner with excellent Vite integration; jsdom for component tests | ✓ Good — 140 tests, <5s |
 | Direction-aware blade animations (v1.4) | Push slides right, pop slides left, replace crossfades; respects prefers-reduced-motion | ✓ Good — polished UX |
+| Strict CSP before extensions (v1.5) | Prevent XSS/data exfiltration before any extension code loads or external APIs are called | ✓ Good — defense in depth |
+| Data-driven toolbar over hardcoded buttons (v1.5) | Registry pattern enables extension contributions, overflow handling, user customization | ✓ Good — extensible, 15+ actions |
+| Union type for ToolbarGroup (v1.5) | Extensions can add custom group strings without modifying core enum | ✓ Good — open for extension |
+| Manifest-driven extension system (v1.5) | Declarative capabilities, API versioning, filesystem discovery — simple and predictable | ✓ Good — clean lifecycle |
+| Namespaced extension registrations (v1.5) | ext:{id}:{name} format prevents collisions between core and extension blade/command types | ✓ Good — zero collisions |
+| registerBuiltIn for bundled extensions (v1.5) | Same lifecycle as third-party but discoverable at startup without filesystem scan | ✓ Good — uniform API |
+| OAuth Device Flow over PKCE (v1.5) | No localhost redirect needed; works in all environments without port conflicts | ✓ Good — reliable auth |
+| keyring crate for token storage (v1.5) | OS-native keychain on all platforms; tokens never touch plaintext files | ✓ Good — secure by default |
+| Virtuoso for PR/issue lists (v1.5) | Efficient virtual scrolling for potentially long lists; familiar API | ✓ Good — smooth performance |
+| Extension Manager as core blade (v1.5) | Manages all extensions; shouldn't be an extension itself | ✓ Good — always available |
+| Disabled vs deactivated extension states (v1.5) | disabled = user-intentional (persisted), deactivated = runtime cleanup — clear semantics | ✓ Good — predictable behavior |
 
 ---
-*Last updated: 2026-02-09 after v1.5.0 milestone started*
+*Last updated: 2026-02-10 after v1.5.0 milestone*
