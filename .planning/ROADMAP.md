@@ -12,7 +12,7 @@
 
 ## Phases
 
-- [ ] **Phase 37: Extension Platform Foundation** - New registries, UI surfaces, GitHookBus, and ExtensionAPI expansion
+- [x] **Phase 37: Extension Platform Foundation** - New registries, UI surfaces, GitHookBus, and ExtensionAPI expansion
 - [ ] **Phase 38: Content Viewer Extraction** - Markdown, code, and 3D viewers extracted to built-in extension
 - [ ] **Phase 39: Conventional Commits Extraction** - CC composer, validation, and changelog extracted to built-in extension
 - [ ] **Phase 40: Gitflow Extraction** - Gitflow sidebar, cheatsheet, and branch coloring extracted to built-in extension
@@ -37,9 +37,9 @@
 **Plans**: 3 plans
 
 Plans:
-- [ ] 37-01-PLAN.md — New registries (ContextMenu, SidebarPanel, StatusBar, GitHookBus) + tests
-- [ ] 37-02-PLAN.md — UI surfaces (ContextMenu component, dynamic sidebar, StatusBar component) + GitHookBus wiring
-- [ ] 37-03-PLAN.md — ExtensionAPI expansion and onDispose lifecycle + tests
+- [x] 37-01-PLAN.md — New registries (ContextMenu, SidebarPanel, StatusBar, GitHookBus) + tests
+- [x] 37-02-PLAN.md — UI surfaces (ContextMenu component, dynamic sidebar, StatusBar component) + GitHookBus wiring
+- [x] 37-03-PLAN.md — ExtensionAPI expansion and onDispose lifecycle + tests
 
 #### Phase 38: Content Viewer Extraction
 **Goal**: Markdown, code, and 3D viewers run as a single toggleable built-in extension, with graceful fallback when disabled
@@ -184,11 +184,11 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 37. Extension Platform Foundation | 0/3 | Not started | - |
+| 37. Extension Platform Foundation | 3/3 | ✓ Complete | 2026-02-10 |
 | 38. Content Viewer Extraction | 0/2 | Not started | - |
 | 39. Conventional Commits Extraction | 0/3 | Not started | - |
 | 40. Gitflow Extraction | 0/4 | Not started | - |
 | 41. Sandbox & Polish | 0/3 | Not started | - |
 
 ---
-*Last updated: 2026-02-10 after v1.6.0 roadmap creation*
+*Last updated: 2026-02-10 after Phase 37 completion*
