@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 33 of 36 (Extension System Foundation)
-Plan: 1 of 3 complete
+Plan: 2 of 3 complete
 Status: In Progress
-Last activity: 2026-02-10 — Plan 33-01 Registry Extensibility Refactoring complete (3/3 tasks)
+Last activity: 2026-02-10 — Plan 33-02 Extension Manifest Discovery complete (2/2 tasks)
 
-Progress: [███-------] 33%
+Progress: [██████░---] 67%
 
 ## Milestone History
 
@@ -39,6 +39,7 @@ See `.planning/MILESTONES.md` for full history.
 - Tests: 137 (Vitest + jsdom)
 
 **Plan 33-01:** 12min, 3 tasks, 10 files modified
+**Plan 33-02:** 18min, 2 tasks, 5 files modified
 
 ## Accumulated Context
 
@@ -72,6 +73,11 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 - Replaced static SINGLETON_TYPES Set with dynamic isSingletonBlade() from bladeRegistry
 - (string & {}) trick to widen CommandCategory while preserving IDE autocompletion
 
+**Phase 33-02 decisions:**
+- serde rename_all camelCase on ExtensionManifest for direct JSON field mapping
+- base_path field uses serde(default) -- absent in JSON, populated by discovery after parsing
+- Invalid manifests are logged and skipped (eprintln), never crash the discovery process
+
 ### Pending Todos
 
 None.
@@ -100,9 +106,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed 33-01-PLAN.md — Registry Extensibility Refactoring complete
+Stopped at: Completed 33-02-PLAN.md — Extension Manifest Discovery complete
 Resume file: None
 
 ---
 *State updated: 2026-02-10*
-*v1.5.0 GitHub Extension -- Phase 33 in progress (1 of 3 plans complete)*
+*v1.5.0 GitHub Extension -- Phase 33 in progress (2 of 3 plans complete)*
