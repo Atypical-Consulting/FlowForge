@@ -6,6 +6,7 @@ import { cn } from "../../lib/utils";
 import { useCommitExecution } from "../../hooks/useCommitExecution";
 import { useAmendPrefill } from "../../hooks/useAmendPrefill";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
+import { useExtensionHost } from "../../extensions";
 import { ShortcutTooltip } from "../ui/ShortcutTooltip";
 import { Button } from "../ui/button";
 import { ConventionalCommitForm } from "./ConventionalCommitForm";
@@ -14,6 +15,9 @@ export function CommitForm() {
   const [useConventional, setUseConventional] = useState(false);
   const [message, setMessage] = useState("");
   const { bladeStack, openBlade } = useBladeNavigation();
+  const isCCActive = useExtensionHost(
+    (s) => s.extensions.get("conventional-commits")?.status === "active"
+  );
   const isCCBladeOpen = bladeStack.some(
     (b) => b.type === "conventional-commit",
   );
@@ -41,6 +45,13 @@ export function CommitForm() {
       document.removeEventListener("toggle-amend", handleToggleAmend);
     };
   }, [amendPrefill, message]);
+
+  // Auto-reset conventional commit mode when extension is disabled
+  useEffect(() => {
+    if (!isCCActive && useConventional) {
+      setUseConventional(false);
+    }
+  }, [isCCActive, useConventional]);
 
   const { data: result } = useQuery({
     queryKey: ["stagingStatus"],
@@ -75,29 +86,31 @@ export function CommitForm() {
       {/* Mode toggle */}
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm font-medium text-ctp-subtext1">Commit</span>
-        <div className="flex items-center gap-2">
-          <label className="flex items-center gap-2 text-xs text-ctp-overlay1 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={useConventional}
-              onChange={(e) => setUseConventional(e.target.checked)}
-              className="rounded border-ctp-surface2 bg-ctp-surface0 text-ctp-blue focus:ring-ctp-blue"
-            />
-            Conventional Commits
-          </label>
-          {useConventional && !isCCBladeOpen && (
-            <button
-              type="button"
-              onClick={() =>
-                openBlade("conventional-commit", {}, "Conventional Commit")
-              }
-              className="p-1 text-ctp-overlay1 hover:text-ctp-blue rounded"
-              title="Open in full-width blade"
-            >
-              <Maximize2 className="w-4 h-4" />
-            </button>
-          )}
-        </div>
+        {isCCActive && (
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2 text-xs text-ctp-overlay1 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={useConventional}
+                onChange={(e) => setUseConventional(e.target.checked)}
+                className="rounded border-ctp-surface2 bg-ctp-surface0 text-ctp-blue focus:ring-ctp-blue"
+              />
+              Conventional Commits
+            </label>
+            {useConventional && !isCCBladeOpen && (
+              <button
+                type="button"
+                onClick={() =>
+                  openBlade("conventional-commit", {}, "Conventional Commit")
+                }
+                className="p-1 text-ctp-overlay1 hover:text-ctp-blue rounded"
+                title="Open in full-width blade"
+              >
+                <Maximize2 className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Conventional commit mode */}
