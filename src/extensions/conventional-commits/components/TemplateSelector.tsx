@@ -8,9 +8,9 @@ import {
   RefreshCw,
   Workflow,
 } from "lucide-react";
-import type { CommitTemplate } from "../../stores/conventional";
-import { BUILTIN_TEMPLATES } from "../../lib/commit-templates";
-import { cn } from "../../lib/utils";
+import type { CommitTemplate } from "../../../stores/conventional";
+import { BUILTIN_TEMPLATES } from "../../../lib/commit-templates";
+import { cn } from "../../../lib/utils";
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Sparkles,

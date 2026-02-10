@@ -9,7 +9,7 @@ import { useBladeNavigation } from "../../hooks/useBladeNavigation";
 import { useExtensionHost } from "../../extensions";
 import { ShortcutTooltip } from "../ui/ShortcutTooltip";
 import { Button } from "../ui/button";
-import { ConventionalCommitForm } from "./ConventionalCommitForm";
+import { ConventionalCommitForm } from "../../extensions/conventional-commits/components/ConventionalCommitForm";
 
 export function CommitForm() {
   const [useConventional, setUseConventional] = useState(false);

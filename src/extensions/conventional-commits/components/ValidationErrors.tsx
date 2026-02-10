@@ -1,4 +1,4 @@
-import type { ValidationResult } from "../../bindings";
+import type { ValidationResult } from "../../../bindings";
 
 interface ValidationErrorsProps {
   validation: ValidationResult | null;

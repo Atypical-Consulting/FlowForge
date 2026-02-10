@@ -1,9 +1,9 @@
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
-import type { ConventionalCommitType } from "../../../lib/commit-type-theme";
-import { cn } from "../../../lib/utils";
+import type { ConventionalCommitType } from "../../../../../lib/commit-type-theme";
+import { cn } from "../../../../../lib/utils";
 import type { ChangelogOutput } from "../store";
-import { CommitTypeIcon } from "../../../components/icons/CommitTypeIcon";
+import { CommitTypeIcon } from "../../../../../components/icons/CommitTypeIcon";
 
 interface ChangelogPreviewProps {
   changelog: ChangelogOutput;

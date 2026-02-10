@@ -53,7 +53,7 @@ vi.mock("../../../bindings", () => ({
 }));
 
 // Mock ConventionalCommitForm since it has deep dependencies
-vi.mock("../ConventionalCommitForm", () => ({
+vi.mock("../../../extensions/conventional-commits/components/ConventionalCommitForm", () => ({
   ConventionalCommitForm: () => <div data-testid="cc-form">CC Form</div>,
 }));
 

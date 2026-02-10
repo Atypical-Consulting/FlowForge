@@ -7,12 +7,12 @@ import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-op
 export async function onActivate(api: ExtensionAPI): Promise<void> {
   // Lazy component imports -- loaded on first blade render, not during activation
   const ConventionalCommitBlade = lazy(() =>
-    import("../../blades/conventional-commit/ConventionalCommitBlade").then((m) => ({
+    import("./blades/conventional-commit/ConventionalCommitBlade").then((m) => ({
       default: m.ConventionalCommitBlade,
     }))
   );
   const ChangelogBlade = lazy(() =>
-    import("../../blades/changelog/ChangelogBlade").then((m) => ({
+    import("./blades/changelog/ChangelogBlade").then((m) => ({
       default: m.ChangelogBlade,
     }))
   );

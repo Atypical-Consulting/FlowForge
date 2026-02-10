@@ -1,10 +1,10 @@
-import { commands } from "../../bindings";
+import { commands } from "../../../../bindings";
 import type {
   ChangelogCommit,
   ChangelogOutput,
   CommitGroup,
-} from "../../bindings";
-import { createBladeStore } from "../../stores/createBladeStore";
+} from "../../../../bindings";
+import { createBladeStore } from "../../../../stores/createBladeStore";
 
 interface ChangelogState {
   // Options

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { useConventionalCommit } from "../../hooks/useConventionalCommit";
-import { cn } from "../../lib/utils";
+import { useConventionalCommit } from "../../../hooks/useConventionalCommit";
+import { cn } from "../../../lib/utils";
 import { BreakingChangeSection } from "./BreakingChangeSection";
 import { CharacterProgress } from "./CharacterProgress";
 import { CommitActionBar } from "./CommitActionBar";

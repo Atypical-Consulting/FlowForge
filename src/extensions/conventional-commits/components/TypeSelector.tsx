@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
-import type { TypeSuggestion } from "../../bindings";
-import { COMMIT_TYPE_THEME } from "../../lib/commit-type-theme";
-import { cn } from "../../lib/utils";
-import { COMMIT_TYPES, type CommitType } from "../../stores/conventional";
+import type { TypeSuggestion } from "../../../bindings";
+import { COMMIT_TYPE_THEME } from "../../../lib/commit-type-theme";
+import { cn } from "../../../lib/utils";
+import { COMMIT_TYPES, type CommitType } from "../../../stores/conventional";
 
 interface TypeSelectorProps {
   value: CommitType | "";
