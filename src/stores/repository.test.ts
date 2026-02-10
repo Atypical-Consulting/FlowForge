@@ -3,7 +3,7 @@ import {
   ok,
   err,
 } from "../test-utils/mocks/tauri-commands";
-import { useRepositoryStore } from "./repository";
+import { useGitOpsStore as useRepositoryStore } from "./domain/git-ops";
 
 const mockCommands = vi.hoisted(() => ({
   openRepository: vi.fn(),
