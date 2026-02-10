@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Phase 35 - GitHub Read Operations (in progress)
+**Current focus:** Phase 36 - GitHub Write Operations & Extension Manager (complete)
 
 ## Current Position
 
-Phase: 35 of 36 (GitHub Read Operations)
+Phase: 36 of 36 (GitHub Write Operations & Extension Manager)
 Plan: 3 of 3 complete
 Status: Checkpoint Pending (visual verification)
-Last activity: 2026-02-10 — Plan 35-03 engineering complete (PR/issue blades + extension wiring)
+Last activity: 2026-02-10 — All 3 plans complete (Rust backend + frontend components + integration wiring)
 
 Progress: [████████████████████] 100%
 
@@ -32,9 +32,9 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 33 complete + 2 planned = 36
-- Total plans: ~196 complete
-- Total requirements validated: 189 (+ 20 v1.5 pending)
+- Total phases: 36 complete
+- Total plans: ~205 complete
+- Total requirements validated: 209 (all v1.5 requirements covered)
 - Codebase: ~36,946 LOC (28,155 TypeScript + 8,791 Rust)
 - Tests: 137 (Vitest + jsdom)
 
@@ -47,6 +47,9 @@ See `.planning/MILESTONES.md` for full history.
 **Plan 35-01:** 15min, 2 tasks, 8 files modified
 **Plan 35-02:** 6min, 2 tasks, 8 files modified
 **Plan 35-03:** 8min, 2 tasks (auto) + 1 checkpoint, 5 files modified
+**Plan 36-01:** 8min, 7 tasks (Rust backend), 10 files modified
+**Plan 36-02:** 12min, 12 files created/modified (frontend components)
+**Plan 36-03:** 6min, 6 files modified (integration wiring)
 
 ## Accumulated Context
 
@@ -131,6 +134,24 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 - queryClient.removeQueries with ext:github key prefix for targeted cache cleanup on deactivation and repo switch
 - Toolbar actions in views group (not app group) with auth+remote when() conditions
 
+**Phase 36-01 decisions:**
+- 30s timeout for POST/PUT (vs 15s for GET) since write ops may take longer
+- Extension install uses rename first (same filesystem), falls back to recursive copy
+- Branch info uses spawn_blocking for git2 operations (matches existing pattern)
+- ExtensionFetchResult carries manifest JSON + temp path for two-step install flow
+
+**Phase 36-02 decisions:**
+- Extension Manager is a core blade (not extension blade) since it manages all extensions
+- InstallExtensionDialog uses 6-step state machine for clear progress feedback
+- MergeStrategySelector uses sr-only radio inputs for full keyboard accessibility
+- IIFE patterns in JSX to avoid unknown values leaking into ReactNode positions
+
+**Phase 36-03 decisions:**
+- Merge button placed inline in PR header for maximum visibility (not renderTrailing)
+- `disabled` status distinct from `deactivated` — `disabled` = user-intentional, persisted; `deactivated` = runtime cleanup
+- Persistence saves disabled IDs (not enabled) — simpler and forward-compatible
+- CreatePR toolbar action requires auth + remotes + branch name for visibility
+
 ### Pending Todos
 
 None.
@@ -159,9 +180,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed 35-03-PLAN.md Tasks 1-2, checkpoint pending (visual verification)
+Stopped at: Phase 36 complete (all 3 plans done). v1.5.0 milestone engineering complete. Visual checkpoint pending.
 Resume file: None
 
 ---
 *State updated: 2026-02-10*
-*v1.5.0 GitHub Extension -- Phase 35 engineering complete (3 of 3 plans done, visual checkpoint pending)*
+*v1.5.0 GitHub Extension -- Phase 36 engineering complete. All 6 phases (31-36) done. Milestone ready for visual checkpoint and archive.*

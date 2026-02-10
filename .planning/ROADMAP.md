@@ -80,8 +80,8 @@
 - [x] **Phase 32: Toolbar Overhaul** - Transform hardcoded Header.tsx buttons into a data-driven toolbar registry with overflow handling and contextual visibility (completed 2026-02-10)
 - [x] **Phase 33: Extension System Foundation** - Build the manifest-driven extension platform with lifecycle management, namespaced registrations, and API versioning (completed 2026-02-10)
 - [x] **Phase 34: GitHub Authentication** - Implement OAuth Device Flow with secure OS keychain token storage and automatic GitHub remote detection (completed 2026-02-10)
-- [ ] **Phase 35: GitHub Read Operations** - View pull requests and issues in dedicated blades with extension-contributed toolbar actions
-- [ ] **Phase 36: GitHub Write Operations & Extension Manager** - Add PR merge/create actions and build the extension manager UI for install, enable/disable, and uninstall
+- [x] **Phase 35: GitHub Read Operations** - View pull requests and issues in dedicated blades with extension-contributed toolbar actions (completed 2026-02-10)
+- [x] **Phase 36: GitHub Write Operations & Extension Manager** - Add PR merge/create actions and build the extension manager UI for install, enable/disable, and uninstall (completed 2026-02-10)
 
 ## Phase Details
 
@@ -151,9 +151,9 @@
   3. The GitHub extension contributes toolbar actions (e.g., "Open PRs" button) through the same toolbar registry used by core actions, appearing only when authenticated and a GitHub remote is detected
 **Plans**: 3 plans
 Plans:
-- [ ] 35-01-PLAN.md -- Rust backend: shared GitHub API client, PR/issue types, and 4 Tauri commands
-- [ ] 35-02-PLAN.md -- Frontend shared components (StatusBadge, LabelPill, etc.) and TanStack Query hooks
-- [ ] 35-03-PLAN.md -- PR/issue blade components, extension registration, toolbar actions, cache cleanup
+- [x] 35-01-PLAN.md -- Rust backend: shared GitHub API client, PR/issue types, and 4 Tauri commands
+- [x] 35-02-PLAN.md -- Frontend shared components (StatusBadge, LabelPill, etc.) and TanStack Query hooks
+- [x] 35-03-PLAN.md -- PR/issue blade components, extension registration, toolbar actions, cache cleanup
 
 ### Phase 36: GitHub Write Operations & Extension Manager
 **Goal**: Users can take action on PRs and issues (merge, create) and manage installed extensions through a dedicated UI
@@ -167,9 +167,9 @@ Plans:
   5. Extension permissions declared in the manifest (network, filesystem, git-operations) are displayed during the install review step
 **Plans**: 3 plans
 Plans:
-- [ ] 36-01-PLAN.md -- Rust backend: HTTP client write helpers, write commands (merge PR, create PR, branch info), extension install/uninstall commands
-- [ ] 36-02-PLAN.md -- Frontend: mutation hooks, UI components (MergeStrategySelector, MergeConfirmDialog, ToggleSwitch, PermissionBadge), CreatePR blade, ExtensionManagerBlade
-- [ ] 36-03-PLAN.md -- Integration: wire merge into PR detail, register CreatePR blade/commands, Extension Manager toolbar, extension state persistence
+- [x] 36-01-PLAN.md -- Rust backend: HTTP client write helpers, write commands (merge PR, create PR, branch info), extension install/uninstall commands
+- [x] 36-02-PLAN.md -- Frontend: mutation hooks, UI components (MergeStrategySelector, MergeConfirmDialog, ToggleSwitch, PermissionBadge), CreatePR blade, ExtensionManagerBlade
+- [x] 36-03-PLAN.md -- Integration: wire merge into PR detail, register CreatePR blade/commands, Extension Manager toolbar, extension state persistence
 
 ## Coverage
 
@@ -213,4 +213,4 @@ All 34 v1.5 requirements mapped:
 | EXT-13 | 36 | Extension System |
 
 ---
-*Last updated: 2026-02-10 after Phase 34 complete*
+*Last updated: 2026-02-10 after Phase 36 complete (v1.5.0 milestone engineering complete)*
