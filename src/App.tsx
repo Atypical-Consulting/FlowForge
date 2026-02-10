@@ -19,6 +19,7 @@ import { useSettingsStore } from "./stores/settings";
 import { useThemeStore } from "./stores/theme";
 import { useTopologyStore } from "./stores/topology";
 import { useUndoStore } from "./stores/undo";
+import { useExtensionHost } from "./extensions";
 
 function App() {
   const queryClient = useQueryClient();
@@ -29,6 +30,9 @@ function App() {
   const initMetadata = useBranchMetadataStore((s) => s.initMetadata);
   const initChecklist = useReviewChecklistStore((s) => s.initChecklist);
   const loadUndoInfo = useUndoStore((s) => s.loadUndoInfo);
+  const discoverExtensions = useExtensionHost((s) => s.discoverExtensions);
+  const activateAll = useExtensionHost((s) => s.activateAll);
+  const deactivateAll = useExtensionHost((s) => s.deactivateAll);
 
   // Register global keyboard shortcuts
   useKeyboardShortcuts();
@@ -47,6 +51,24 @@ function App() {
     initMetadata();
     initChecklist();
   }, [initTheme, initSettings, initNavigation, initMetadata, initChecklist]);
+
+  // Discover and activate extensions when a repository is opened
+  useEffect(() => {
+    if (status) {
+      // Repository opened -- discover and activate extensions
+      discoverExtensions(status.repoPath).then(() => {
+        activateAll();
+      });
+    } else {
+      // Repository closed -- deactivate all extensions
+      deactivateAll();
+    }
+
+    return () => {
+      // Cleanup on unmount or before re-running (handles repo switch)
+      deactivateAll();
+    };
+  }, [status, discoverExtensions, activateAll, deactivateAll]);
 
   // Listen for file watcher events
   useEffect(() => {
