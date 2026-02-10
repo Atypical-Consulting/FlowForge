@@ -57,10 +57,14 @@ export interface ToolbarAction {
 
 export interface ToolbarRegistryState {
   actions: Map<string, ToolbarAction>;
+  /** Monotonic counter that extensions increment to signal when() re-evaluation */
+  visibilityTick: number;
   register: (action: ToolbarAction) => void;
   registerMany: (actions: ToolbarAction[]) => void;
   unregister: (id: string) => void;
   unregisterBySource: (source: string) => void;
+  /** Increment to force toolbar re-evaluation of when() conditions */
+  refreshVisibility: () => void;
   getGrouped: () => Record<ToolbarGroup, ToolbarAction[]>;
 }
 
@@ -68,6 +72,7 @@ export const useToolbarRegistry = create<ToolbarRegistryState>()(
   devtools(
     (set, get) => ({
       actions: new Map<string, ToolbarAction>(),
+      visibilityTick: 0,
 
       register: (action) => {
         const next = new Map(get().actions);
@@ -87,6 +92,14 @@ export const useToolbarRegistry = create<ToolbarRegistryState>()(
         const next = new Map(get().actions);
         next.delete(id);
         set({ actions: next }, false, "toolbar-registry/unregister");
+      },
+
+      refreshVisibility: () => {
+        set(
+          { visibilityTick: get().visibilityTick + 1 },
+          false,
+          "toolbar-registry/refreshVisibility",
+        );
       },
 
       unregisterBySource: (source) => {

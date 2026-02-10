@@ -12,10 +12,12 @@ import type { ExtensionAPI } from "../ExtensionAPI";
 import { openBlade } from "../../lib/bladeOpener";
 import { useGitHubStore, getSelectedRemote, cancelGitHubPolling } from "./githubStore";
 import { useRepositoryStore } from "../../stores/repository";
+import { useToolbarRegistry } from "../../lib/toolbarRegistry";
 import { queryClient } from "../../lib/queryClient";
 
-// Module-level unsubscribe for repo change listener
+// Module-level unsubscribes for store listeners
 let unsubRepoWatch: (() => void) | null = null;
+let unsubGitHubWatch: (() => void) | null = null;
 
 // Lazy imports for blade components (avoid circular deps and code splitting)
 let GitHubAuthBlade: React.ComponentType<any> | null = null;
@@ -231,6 +233,18 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     }
   });
 
+  // Refresh toolbar visibility when auth or remotes change
+  unsubGitHubWatch = useGitHubStore.subscribe(
+    (state, prevState) => {
+      if (
+        state.isAuthenticated !== prevState.isAuthenticated ||
+        state.detectedRemotes !== prevState.detectedRemotes
+      ) {
+        useToolbarRegistry.getState().refreshVisibility();
+      }
+    },
+  );
+
   // Also detect remotes if a repo is already open
   if (useRepositoryStore.getState().repoStatus) {
     useGitHubStore.getState().detectRemotes();
@@ -244,10 +258,14 @@ export function onDeactivate(): void {
   // Clean up ALL cached GitHub API data
   queryClient.removeQueries({ queryKey: ["ext:github"] });
 
-  // Unsubscribe from repo changes
+  // Unsubscribe from store watchers
   if (unsubRepoWatch) {
     unsubRepoWatch();
     unsubRepoWatch = null;
+  }
+  if (unsubGitHubWatch) {
+    unsubGitHubWatch();
+    unsubGitHubWatch = null;
   }
 
   // Reset transient state but NOT auth state

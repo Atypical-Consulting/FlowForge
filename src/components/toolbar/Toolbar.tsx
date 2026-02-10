@@ -23,6 +23,7 @@ import { useToolbarOverflow } from "./useToolbarOverflow";
 export function Toolbar() {
   // Subscribe to registry changes for reactivity
   const actions = useToolbarRegistry((s) => s.actions);
+  const visibilityTick = useToolbarRegistry((s) => s.visibilityTick);
   const hiddenActions = usePreferencesStore(
     (s) => s.settingsData.toolbar?.hiddenActions ?? [],
   );
@@ -47,8 +48,8 @@ export function Toolbar() {
     }
 
     return { orderedActions: ordered, groupBoundaries: boundaries };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- repoStatus triggers when() re-eval
-  }, [actions, hiddenActions, repoStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- repoStatus + visibilityTick trigger when() re-eval
+  }, [actions, hiddenActions, repoStatus, visibilityTick]);
 
   // Split into inline and overflowed
   const inlineActions = orderedActions.slice(0, visibleCount);
