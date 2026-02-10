@@ -20,6 +20,7 @@ import { useThemeStore } from "./stores/theme";
 import { useTopologyStore } from "./stores/topology";
 import { useUndoStore } from "./stores/undo";
 import { useExtensionHost } from "./extensions";
+import { onActivate as githubActivate, onDeactivate as githubDeactivate } from "./extensions/github";
 
 function App() {
   const queryClient = useQueryClient();
@@ -33,6 +34,7 @@ function App() {
   const discoverExtensions = useExtensionHost((s) => s.discoverExtensions);
   const activateAll = useExtensionHost((s) => s.activateAll);
   const deactivateAll = useExtensionHost((s) => s.deactivateAll);
+  const registerBuiltIn = useExtensionHost((s) => s.registerBuiltIn);
 
   // Register global keyboard shortcuts
   useKeyboardShortcuts();
@@ -50,7 +52,16 @@ function App() {
     initNavigation();
     initMetadata();
     initChecklist();
-  }, [initTheme, initSettings, initNavigation, initMetadata, initChecklist]);
+
+    // Register built-in extensions
+    registerBuiltIn({
+      id: "github",
+      name: "GitHub Integration",
+      version: "1.0.0",
+      activate: githubActivate,
+      deactivate: githubDeactivate,
+    });
+  }, [initTheme, initSettings, initNavigation, initMetadata, initChecklist, registerBuiltIn]);
 
   // Discover and activate extensions when a repository is opened
   useEffect(() => {

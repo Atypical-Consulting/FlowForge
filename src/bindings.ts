@@ -959,6 +959,73 @@ async discoverExtensions(extensionsDir: string) : Promise<Result<ExtensionManife
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+/**
+ * Initiate the GitHub OAuth Device Flow.
+ * Returns device_code, user_code, and verification_uri.
+ */
+async githubStartDeviceFlow(scopes: string[]) : Promise<Result<DeviceFlowResponse, GitHubError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("github_start_device_flow", { scopes }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Poll GitHub for authorization status (single attempt).
+ */
+async githubPollAuth(deviceCode: string, interval: number) : Promise<Result<AuthResult, GitHubError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("github_poll_auth", { deviceCode, interval }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Check if the user is authenticated and return their info.
+ */
+async githubGetAuthStatus() : Promise<Result<AuthResult, GitHubError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("github_get_auth_status") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Sign out by deleting the token from the OS keychain.
+ */
+async githubSignOut() : Promise<Result<null, GitHubError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("github_sign_out") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Detect all GitHub remotes in the currently open repository.
+ */
+async githubDetectRemotes() : Promise<Result<GitHubRemoteInfo[], GitHubError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("github_detect_remotes") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Check the current GitHub API rate limit.
+ */
+async githubCheckRateLimit() : Promise<Result<RateLimitInfo, GitHubError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("github_check_rate_limit") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -971,6 +1038,28 @@ async discoverExtensions(extensionsDir: string) : Promise<Result<ExtensionManife
 
 
 /** user-defined types **/
+
+/**
+ * Response from GitHub's device code endpoint.
+ */
+export type DeviceFlowResponse = { deviceCode: string; userCode: string; verificationUri: string; expiresIn: number; interval: number }
+/**
+ * Result of an authentication check or successful auth flow.
+ * NEVER contains the actual token.
+ */
+export type AuthResult = { authenticated: boolean; username: string | null; avatarUrl: string | null; scopes: string[] }
+/**
+ * Rate limit information from the GitHub API.
+ */
+export type RateLimitInfo = { limit: number; remaining: number; reset: number; used: number }
+/**
+ * Information about a detected GitHub remote.
+ */
+export type GitHubRemoteInfo = { remoteName: string; owner: string; repo: string; url: string }
+/**
+ * GitHub operation errors.
+ */
+export type GitHubError = { type: "OAuthFailed"; message: string } | { type: "AuthorizationPending" } | { type: "AccessDenied" } | { type: "ExpiredToken" } | { type: "SlowDown" } | { type: "KeychainError"; message: string } | { type: "NetworkError"; message: string } | { type: "NotAuthenticated" } | { type: "RateLimitExceeded"; message: string } | { type: "Internal"; message: string } | { type: "Cancelled" }
 
 /**
  * Information about active Gitflow workflow.
