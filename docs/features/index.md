@@ -30,3 +30,9 @@ Write structured commit messages with a dedicated editor that breaks messages in
 
 ### Review Checklist
 Before finishing a Gitflow branch, an advisory checklist reminds you of common pre-merge steps. Items are customizable per flow type in Settings.
+
+### GitHub Integration
+Connect your local repository to GitHub without leaving FlowForge. Browse and create pull requests, view issues, and manage your GitHub account — all from dedicated blades. Sign in securely via GitHub's Device Flow. [Learn more &rarr;](/features/github-integration)
+
+### Extension System
+FlowForge v1.5.0 introduces a modular extension architecture that allows new integrations to be added as self-contained plugins. GitHub Integration ships as the first built-in extension, with the framework ready for community and first-party extensions in future releases.

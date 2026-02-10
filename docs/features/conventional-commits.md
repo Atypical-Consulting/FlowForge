@@ -1,9 +1,5 @@
 # Conventional Commits
 
-::: info Upcoming Feature
-The dedicated Conventional Commit blade is currently in development. This page describes the planned functionality. See [Conventional Commits concept](/concepts/conventional-commits) for the specification itself.
-:::
-
 FlowForge's Conventional Commit blade provides a structured editor that guides you through writing commit messages that follow the [Conventional Commits](https://www.conventionalcommits.org/) specification.
 
 ## Structured Message Editor

@@ -33,6 +33,10 @@ export default defineConfig({
               text: "Conventional Commits",
               link: "/features/conventional-commits",
             },
+            {
+              text: "GitHub Integration",
+              link: "/features/github-integration",
+            },
           ],
         },
       ],
