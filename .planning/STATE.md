@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Phase 38 - Content Viewer Extraction
+**Current focus:** Phase 39 - Conventional Commits Extraction
 
 ## Current Position
 
-Phase: 38 of 41 (Content Viewer Extraction)
-Plan: 0 of 2 in current phase
+Phase: 39 of 41 (Conventional Commits Extraction)
+Plan: 0 of 3 in current phase
 Status: Ready to plan
-Last activity: 2026-02-10 — Phase 37 complete (3/3 plans, verified)
+Last activity: 2026-02-10 — Phase 38 complete (2/2 plans, verified)
 
-Progress: [██░░░░░░░░] 20% (3/15 plans)
+Progress: [████░░░░░░] 33% (5/15 plans)
 
 ## Milestone History
 
@@ -33,11 +33,11 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 37 complete, 4 planned
-- Total plans: ~204 complete, 12 planned
-- Total requirements validated: 215
-- Codebase: ~45,227 LOC (34,152 TypeScript + 11,075 Rust) + Phase 37 additions
-- Tests: 176 (Vitest + jsdom)
+- Total phases: 38 complete, 3 planned
+- Total plans: ~206 complete, 10 planned
+- Total requirements validated: 219
+- Codebase: ~45,300 LOC (34,200 TypeScript + 11,075 Rust)
+- Tests: 187 (Vitest + jsdom)
 
 ## Accumulated Context
 
@@ -49,11 +49,13 @@ See `.planning/MILESTONES.md` for full history.
 - 3D viewer reliability on some hardware (diagnostic logging only)
 - Pre-existing TS2440 in auto-generated bindings.ts
 - Phase 34 human runtime testing pending (6 OAuth flow items)
+- BladeRenderer does not subscribe to blade registry changes — already-open blades won't auto-restore on extension re-enable (minor UX gap)
 
 ### Key Decisions
 
 All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 Pending: Gitflow as optional extension (v1.6) — rationale documented.
+Phase 38: coreOverride pattern adopted for built-in extension blade registration — avoids cascading namespace changes.
 
 ### Research Flags
 
@@ -74,9 +76,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Phase 37 complete, ready to plan Phase 38
+Stopped at: Phase 38 complete, ready to plan Phase 39
 Resume file: None
 
 ---
 *State updated: 2026-02-10*
-*Phase 37 Extension Platform Foundation complete — 3/3 plans, 5/5 success criteria verified, 39 new tests.*
+*Phase 38 Content Viewer Extraction complete — 2/2 plans, 4/4 success criteria verified, 11 new tests, 1 gap fix.*
