@@ -1,6 +1,7 @@
 import { Channel } from "@tauri-apps/api/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type SyncProgress, commands } from "../bindings";
+import { gitHookBus } from "../lib/gitHookBus";
 import { toast } from "../stores/toast";
 
 interface UseCommitExecutionOptions {
@@ -25,6 +26,7 @@ export function useCommitExecution(options?: UseCommitExecutionOptions) {
     onSuccess: () => {
       toast.success("Pushed to origin");
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
+      gitHookBus.emitDid("push");
       options?.onPushSuccess?.();
     },
     onError: (error) => {
@@ -43,6 +45,7 @@ export function useCommitExecution(options?: UseCommitExecutionOptions) {
       queryClient.invalidateQueries({ queryKey: ["stagingStatus"] });
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
       queryClient.invalidateQueries({ queryKey: ["repositoryStatus"] });
+      gitHookBus.emitDid("commit", { commitMessage });
 
       const shortMessage =
         commitMessage.length > 50

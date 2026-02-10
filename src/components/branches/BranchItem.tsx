@@ -1,6 +1,7 @@
 import { Check, GitBranch, GitMerge, Loader2, Pin, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { EnrichedBranch } from "../../lib/branchClassifier";
+import { useContextMenuRegistry } from "../../lib/contextMenuRegistry";
 import { cn } from "../../lib/utils";
 import { BranchTypeBadge } from "./BranchTypeBadge";
 
@@ -47,6 +48,14 @@ export function BranchItem({
           : "hover:bg-ctp-surface0",
         disabled && "opacity-50",
       )}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        useContextMenuRegistry.getState().showMenu(
+          { x: e.clientX, y: e.clientY },
+          "branch-list",
+          { location: "branch-list", branchName: branch.name },
+        );
+      }}
     >
       <div className="flex items-center gap-1.5 min-w-0 flex-1">
         {onTogglePin && (

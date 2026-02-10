@@ -6,7 +6,9 @@ import {
   Plus,
   Tag,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Component, useEffect, useMemo, useState } from "react";
+import type { ErrorInfo, ReactNode } from "react";
+import { useSidebarPanelRegistry } from "../lib/sidebarPanelRegistry";
 import { useRepositoryStore } from "../stores/repository";
 import { BladeContainer } from "../blades/_shared";
 import { BranchList } from "./branches/BranchList";
@@ -20,6 +22,66 @@ import {
   DeleteWorktreeDialog,
   WorktreePanel,
 } from "./worktree";
+
+// Minimal error boundary for extension panels (react-error-boundary not in deps)
+class ExtensionPanelErrorBoundary extends Component<
+  { children: ReactNode },
+  { error: Error | null }
+> {
+  state: { error: Error | null } = { error: null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("Extension panel error:", error, info);
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="p-3 text-xs text-ctp-red">
+          Panel error: {this.state.error.message}
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function DynamicSidebarPanels() {
+  const panels = useSidebarPanelRegistry((s) => s.panels);
+  const visibilityTick = useSidebarPanelRegistry((s) => s.visibilityTick);
+
+  const visiblePanels = useMemo(
+    () => useSidebarPanelRegistry.getState().getVisiblePanels(),
+    [panels, visibilityTick],
+  );
+
+  if (visiblePanels.length === 0) return null;
+
+  return (
+    <>
+      {visiblePanels.map((panel) => (
+        <details
+          key={panel.id}
+          open={panel.defaultOpen}
+          className="border-b border-ctp-surface0"
+        >
+          <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
+            <panel.icon className="w-4 h-4" />
+            <span className="font-semibold text-sm flex-1">{panel.title}</span>
+            {panel.renderAction?.()}
+          </summary>
+          <ExtensionPanelErrorBoundary>
+            <panel.component />
+          </ExtensionPanelErrorBoundary>
+        </details>
+      ))}
+    </>
+  );
+}
 
 export function RepositoryView() {
   const status = useRepositoryStore((s) => s.repoStatus);
@@ -148,6 +210,9 @@ export function RepositoryView() {
                   onOpenDeleteDialog={(name) => setWorktreeToDelete(name)}
                 />
               </details>
+
+              {/* Extension-contributed sidebar panels */}
+              <DynamicSidebarPanels />
             </div>
 
             {/* Commit form at bottom of left panel */}

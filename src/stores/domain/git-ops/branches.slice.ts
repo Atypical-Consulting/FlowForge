@@ -2,6 +2,7 @@ import type { StateCreator } from "zustand";
 import type { BranchInfo, MergeResult } from "../../../bindings";
 import { commands } from "../../../bindings";
 import { getErrorMessage } from "../../../lib/errors";
+import { gitHookBus } from "../../../lib/gitHookBus";
 import type { GitOpsMiddleware } from "./types";
 import type { GitOpsStore } from "./index";
 
@@ -63,6 +64,7 @@ export const createBranchSlice: StateCreator<
     const result = await commands.createBranch(name, checkout);
     if (result.status === "ok") {
       await get().loadBranches();
+      gitHookBus.emitDid("branch-create", { branchName: name });
       return result.data;
     }
     set({ branchError: getErrorMessage(result.error), branchIsLoading: false });
@@ -74,6 +76,7 @@ export const createBranchSlice: StateCreator<
     const result = await commands.checkoutBranch(name);
     if (result.status === "ok") {
       await get().loadBranches();
+      gitHookBus.emitDid("checkout", { branchName: name });
       return true;
     }
     set({ branchError: getErrorMessage(result.error), branchIsLoading: false });
@@ -96,6 +99,7 @@ export const createBranchSlice: StateCreator<
     const result = await commands.deleteBranch(name, force);
     if (result.status === "ok") {
       await get().loadBranches();
+      gitHookBus.emitDid("branch-delete", { branchName: name });
       return true;
     }
     set({ branchError: getErrorMessage(result.error), branchIsLoading: false });
@@ -112,6 +116,7 @@ export const createBranchSlice: StateCreator<
         branchIsLoading: false,
       }, undefined, "gitOps:branch/mergeOk");
       await get().loadBranches();
+      gitHookBus.emitDid("merge", { branchName: sourceBranch });
       return result.data;
     }
     set({

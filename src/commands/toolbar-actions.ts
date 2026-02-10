@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { type SyncProgress, commands as tauriCommands } from "../bindings";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
+import { gitHookBus } from "../lib/gitHookBus";
 import { openBlade } from "../lib/bladeOpener";
 import { queryClient } from "../lib/queryClient";
 import type { ToolbarAction } from "../lib/toolbarRegistry";
@@ -188,6 +189,7 @@ const coreActions: ToolbarAction[] = [
       try {
         const channel = new Channel<SyncProgress>();
         await tauriCommands.fetchFromRemote("origin", channel);
+        gitHookBus.emitDid("fetch");
         toast.success("Fetched from origin");
       } catch (error) {
         toast.error(`Fetch failed: ${String(error)}`);
@@ -212,6 +214,7 @@ const coreActions: ToolbarAction[] = [
       try {
         const channel = new Channel<SyncProgress>();
         await tauriCommands.pullFromRemote("origin", channel);
+        gitHookBus.emitDid("pull");
         toast.success("Pulled from origin");
       } catch (error) {
         toast.error(`Pull failed: ${String(error)}`);
@@ -236,6 +239,7 @@ const coreActions: ToolbarAction[] = [
       try {
         const channel = new Channel<SyncProgress>();
         await tauriCommands.pushToRemote("origin", channel);
+        gitHookBus.emitDid("push");
         toast.success("Pushed to origin");
       } catch (error) {
         toast.error(`Push failed: ${String(error)}`);
