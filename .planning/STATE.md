@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 Phase: 35 of 36 (GitHub Read Operations)
 Plan: 2 of 3 complete
 Status: In Progress
-Last activity: 2026-02-10 — Plan 35-02 complete (shared components + query hooks)
+Last activity: 2026-02-10 — Plan 35-01 complete (GitHub read backend commands)
 
 Progress: [██████████████░░░░░░] 67%
 
@@ -44,6 +44,7 @@ See `.planning/MILESTONES.md` for full history.
 **Plan 34-01:** 16min, 2 tasks, 10 files modified
 **Plan 34-02:** 7min, 2 tasks, 6 files modified
 **Plan 34-03:** 11min, 2 tasks (auto) + 1 checkpoint, 11 files modified
+**Plan 35-01:** 15min, 2 tasks, 8 files modified
 **Plan 35-02:** 6min, 2 tasks, 8 files modified
 
 ## Accumulated Context
@@ -110,6 +111,12 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 - Module-level pollTimeoutId outside Zustand store (non-serializable setTimeout reference)
 - Auth state persists across repo switches; only detectedRemotes is reset on repo change
 
+**Phase 35-01 decisions:**
+- Manual query string construction instead of reqwest .query() (avoids missing feature dependency in reqwest 0.13)
+- Concrete PullRequestListResponse/IssueListResponse instead of generic Paginated<T> (specta generics pitfall)
+- Internal deserialization types separate from IPC types for clean snake_case/camelCase boundary
+- client::github_get / github_get_with_params pattern as reusable authenticated helpers for all GitHub API modules
+
 **Phase 35-02 decisions:**
 - ext:github query key prefix for all GitHub TanStack Query hooks (cache isolation from core queries)
 - Manual bindings.ts additions for 4 GitHub read commands and 10 IPC types (pending specta regen)
@@ -145,9 +152,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed 35-02-PLAN.md (shared components + query hooks)
+Stopped at: Completed 35-01-PLAN.md (GitHub read backend commands)
 Resume file: None
 
 ---
 *State updated: 2026-02-10*
-*v1.5.0 GitHub Extension -- Phase 35 in progress (2 of 3 plans complete)*
+*v1.5.0 GitHub Extension -- Phase 35 in progress (2 of 3 plans complete, 35-03 remaining)*
