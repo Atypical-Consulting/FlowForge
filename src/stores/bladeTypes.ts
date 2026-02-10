@@ -29,15 +29,28 @@ export interface BladePropsMap {
   "conventional-commit": { amend?: boolean };
 }
 
-/** Derived from the map — single source of truth */
-export type BladeType = keyof BladePropsMap;
+/** Core blade types derived from the map — single source of truth */
+export type CoreBladeType = keyof BladePropsMap;
+
+/** Extension blade types follow the ext:{extensionId}:{bladeName} convention */
+export type ExtensionBladeType = `ext:${string}:${string}`;
+
+/** Widened union: core blades + dynamic extension blades */
+export type BladeType = CoreBladeType | ExtensionBladeType;
+
+/** Runtime type guard: returns true for core blade types (not extension types) */
+export function isCoreBladeType(type: BladeType): type is CoreBladeType {
+  return !type.startsWith("ext:");
+}
 
 /** A type-safe blade with discriminated props */
-export type TypedBlade = {
-  [K in BladeType]: {
-    id: string;
-    type: K;
-    title: string;
-    props: BladePropsMap[K];
-  };
-}[BladeType];
+export type TypedBlade =
+  | {
+      [K in CoreBladeType]: {
+        id: string;
+        type: K;
+        title: string;
+        props: BladePropsMap[K];
+      };
+    }[CoreBladeType]
+  | { id: string; type: ExtensionBladeType; title: string; props: Record<string, unknown> };

@@ -1,4 +1,4 @@
-import { clearRegistry, getAllBladeTypes } from "../lib/bladeRegistry";
+import { clearCoreRegistry, getAllBladeTypes } from "../lib/bladeRegistry";
 
 // Single-glob: scan per-blade registration files
 const modules = import.meta.glob(
@@ -34,6 +34,6 @@ if (import.meta.hot) {
   import.meta.hot.accept();
   import.meta.hot.dispose((data) => {
     data.isUpdate = true;
-    clearRegistry();
+    clearCoreRegistry();
   });
 }
