@@ -15,7 +15,7 @@
 - [x] **Phase 37: Extension Platform Foundation** - New registries, UI surfaces, GitHookBus, and ExtensionAPI expansion
 - [x] **Phase 38: Content Viewer Extraction** - Markdown, code, and 3D viewers extracted to built-in extension
 - [x] **Phase 39: Conventional Commits Extraction** - CC composer, validation, and changelog extracted to built-in extension
-- [ ] **Phase 40: Gitflow Extraction** - Gitflow sidebar, cheatsheet, and branch coloring extracted to built-in extension
+- [x] **Phase 40: Gitflow Extraction** - Gitflow sidebar, cheatsheet, and branch coloring extracted to built-in extension
 - [ ] **Phase 41: Sandbox & Polish** - Trust flags, Worker prototype, deprecation cleanup, tests, docs, version bump
 
 ## Phase Details
@@ -79,14 +79,14 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. The Gitflow sidebar panel (branch creation, merge flows) is contributed by the Gitflow extension via the SidebarPanelRegistry
   2. Gitflow cheatsheet blade and pre-merge review checklist are provided by the Gitflow extension
-  3. Branch classification and color-coding for Gitflow branches (feature/*, release/*, hotfix/*) are contributed by the Gitflow extension
-  4. Disabling the Gitflow extension removes all Gitflow UI -- sidebar sections, branch dialogs, merge flows, coloring -- and core Git operations remain fully functional
+  3. Branch classification and color-coding remains in core (ADR-2: 10+ core consumers including topology graph and branch list; classification is core Git UX, not Gitflow-specific)
+  4. Disabling the Gitflow extension removes all Gitflow UI -- sidebar sections, cheatsheet blade, toolbar button, command palette entry -- and core Git operations (including branch coloring) remain fully functional
   5. Extension Manager blade shows Gitflow, Conventional Commits, Content Viewers, and GitHub as four independently toggleable extensions
 **Plans**: 2 plans
 
 Plans:
-- [ ] 40-01-PLAN.md -- Create gitflow extension entry point, register in App.tsx, remove core registrations
-- [ ] 40-02-PLAN.md -- Extension lifecycle tests and graceful degradation verification
+- [x] 40-01-PLAN.md -- Create gitflow extension entry point, register in App.tsx, remove core registrations
+- [x] 40-02-PLAN.md -- Extension lifecycle tests and graceful degradation verification
 
 #### Phase 41: Sandbox & Polish
 **Goal**: Extension sandbox infrastructure is prepared for future third-party extensions, deprecated code is removed, and v1.6.0 ships with full test coverage and documentation
@@ -185,8 +185,8 @@ Plans:
 | 37. Extension Platform Foundation | 3/3 | ✓ Complete | 2026-02-10 |
 | 38. Content Viewer Extraction | 2/2 | ✓ Complete | 2026-02-10 |
 | 39. Conventional Commits Extraction | 3/3 | ✓ Complete | 2026-02-10 |
-| 40. Gitflow Extraction | 0/2 | Not started | - |
+| 40. Gitflow Extraction | 2/2 | ✓ Complete | 2026-02-10 |
 | 41. Sandbox & Polish | 0/3 | Not started | - |
 
 ---
-*Last updated: 2026-02-10 after Phase 39 completion*
+*Last updated: 2026-02-10 after Phase 40 completion*

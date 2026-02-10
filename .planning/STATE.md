@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Phase 40 - Gitflow Extraction
+**Current focus:** Phase 41 - Sandbox & Polish
 
 ## Current Position
 
-Phase: 40 of 41 (Gitflow Extraction)
-Plan: 0 of 4 in current phase
+Phase: 41 of 41 (Sandbox & Polish)
+Plan: 0 of 3 in current phase
 Status: Ready to plan
-Last activity: 2026-02-10 — Phase 39 complete (3/3 plans, verified)
+Last activity: 2026-02-10 — Phase 40 complete (2/2 plans, verified)
 
-Progress: [██████░░░░] 53% (8/15 plans)
+Progress: [████████░░] 77% (10/13 plans)
 
 ## Milestone History
 
@@ -33,11 +33,11 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 39 complete, 2 planned
-- Total plans: ~209 complete, 7 planned
-- Total requirements validated: 225
+- Total phases: 40 complete, 1 planned
+- Total plans: ~211 complete, 3 planned
+- Total requirements validated: 230
 - Codebase: ~45,400 LOC (34,300 TypeScript + 11,075 Rust)
-- Tests: 198 (Vitest + jsdom)
+- Tests: 207 (Vitest + jsdom)
 
 ## Accumulated Context
 
@@ -52,24 +52,22 @@ See `.planning/MILESTONES.md` for full history.
 - Phase 34 human runtime testing pending (6 OAuth flow items)
 - BladeRenderer does not subscribe to blade registry changes — already-open blades won't auto-restore on extension re-enable (minor UX gap)
 - CC Zustand store not explicitly reset on extension disable (ghost data persists but invisible)
+- Gitflow sidebar panel position shifted below Worktrees (renders via DynamicSidebarPanels at priority 65)
 
 ### Key Decisions
 
 All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
-Pending: Gitflow as optional extension (v1.6) — rationale documented.
 Phase 38: coreOverride pattern adopted for built-in extension blade registration — avoids cascading namespace changes.
 Phase 39: CC extraction follows content-viewers pattern for blades, GitHub extension pattern for toolbar/commands. Read-side CC utilities (commit-type-theme, conventional-utils) stay in core. emitWill("commit") infrastructure wired but no handler registered (CC validates via canCommit).
+Phase 40: Gitflow extraction follows CC pattern. branchClassifier.ts stays in core (ADR-2: 10+ core consumers, classification is core Git UX). gitflow.slice.ts stays in GitOpsStore (ADR-1: cross-slice deps on loadBranches/refreshRepoStatus).
 
 ### Research Flags
 
-- Phase 40 (Gitflow Extraction): Rust state machine coordination needs targeted research
 - Phase 41 (Sandbox): Worker MessageChannel bridge needs research during planning
 
 ### Blockers/Concerns
 
-- Gitflow state split-brain risk: extension must always re-fetch from Rust, never cache state
-- Circular import risk: GitHookBus must decouple Gitflow extension from GitOpsStore
-- RepositoryView sidebar hardcodes GitflowPanel: SidebarPanelRegistry now exists (Phase 37) — ready for extraction
+None active.
 
 ### Pending Todos
 
@@ -78,9 +76,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Phase 39 complete, ready to plan Phase 40
+Stopped at: Phase 40 complete, ready to plan Phase 41
 Resume file: None
 
 ---
 *State updated: 2026-02-10*
-*Phase 39 Conventional Commits Extraction complete — 3/3 plans, 7/7 must-haves verified, 11 new tests (7 lifecycle + 4 degradation), multi-agent team execution.*
+*Phase 40 Gitflow Extraction complete — 2/2 plans, 4/5 must-haves verified (GFEX-03 accepted as core per ADR-2), 9 new lifecycle tests, 3-agent team research + direct execution.*
