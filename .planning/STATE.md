@@ -5,7 +5,7 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Phase 32 - Toolbar Overhaul
+**Current focus:** Phase 33 - Extension System Foundation
 
 ## Current Position
 
@@ -32,9 +32,9 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 31 complete + 5 planned = 36
-- Total plans: ~187 complete
-- Total requirements validated: 178 (+ 31 v1.5 pending)
+- Total phases: 32 complete + 4 planned = 36
+- Total plans: ~189 complete
+- Total requirements validated: 184 (+ 25 v1.5 pending)
 - Codebase: ~36,946 LOC (28,155 TypeScript + 8,791 Rust)
 - Tests: 140 (Vitest + jsdom)
 

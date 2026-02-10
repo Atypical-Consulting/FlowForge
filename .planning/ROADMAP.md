@@ -77,7 +77,7 @@
 ## Phases
 
 - [x] **Phase 31: Security Hardening** - Lock down CSP, asset protocol scope, and Tauri capabilities before introducing external network access and extension code (completed 2026-02-10)
-- [ ] **Phase 32: Toolbar Overhaul** - Transform hardcoded Header.tsx buttons into a data-driven toolbar registry with overflow handling and contextual visibility
+- [x] **Phase 32: Toolbar Overhaul** - Transform hardcoded Header.tsx buttons into a data-driven toolbar registry with overflow handling and contextual visibility (completed 2026-02-10)
 - [ ] **Phase 33: Extension System Foundation** - Build the manifest-driven extension platform with lifecycle management, namespaced registrations, and API versioning
 - [ ] **Phase 34: GitHub Authentication** - Implement OAuth Device Flow with secure OS keychain token storage and automatic GitHub remote detection
 - [ ] **Phase 35: GitHub Read Operations** - View pull requests and issues in dedicated blades with extension-contributed toolbar actions
@@ -108,8 +108,8 @@
   4. Repository-specific toolbar actions disappear when no repository is open and reappear when one is opened
   5. User can toggle individual toolbar actions on/off in settings with the preference persisted across sessions
 **Plans**: 2 plans
-- [ ] 32-01-PLAN.md -- ToolbarRegistry store, core action registrations, settings slice extension
-- [ ] 32-02-PLAN.md -- Toolbar UI components, Header.tsx refactoring, ToolbarSettings panel
+- [x] 32-01-PLAN.md -- ToolbarRegistry store, core action registrations, settings slice extension
+- [x] 32-02-PLAN.md -- Toolbar UI components, Header.tsx refactoring, ToolbarSettings panel
 
 ### Phase 33: Extension System Foundation
 **Goal**: FlowForge has a working extension platform where extensions declare capabilities in a manifest, register blades and commands through a tracked API, and are activated/deactivated with full cleanup
@@ -199,4 +199,4 @@ All 34 v1.5 requirements mapped:
 | EXT-13 | 36 | Extension System |
 
 ---
-*Last updated: 2026-02-10 after Phase 31 completed*
+*Last updated: 2026-02-10 after Phase 32 completed*
