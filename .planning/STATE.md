@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Phase 33 - Extension System Foundation
+**Current focus:** Phase 34 - GitHub Authentication
 
 ## Current Position
 
-Phase: 33 of 36 (Extension System Foundation)
-Plan: 3 of 3 complete
-Status: Phase Complete
-Last activity: 2026-02-10 — Plan 33-03 Extension Host & API Runtime complete (4/4 tasks)
+Phase: 34 of 36 (GitHub Authentication)
+Plan: 2 of 3 complete
+Status: In Progress
+Last activity: 2026-02-10 — Plan 34-02 Toolbar Extensibility & Built-in Extensions complete (2/2 tasks)
 
-Progress: [██████████] 100%
+Progress: [██████░░░░] 67%
 
 ## Milestone History
 
@@ -41,6 +41,7 @@ See `.planning/MILESTONES.md` for full history.
 **Plan 33-01:** 12min, 3 tasks, 10 files modified
 **Plan 33-02:** 18min, 2 tasks, 5 files modified
 **Plan 33-03:** 6min, 4 tasks, 6 files modified
+**Plan 34-02:** 7min, 2 tasks, 6 files modified
 
 ## Accumulated Context
 
@@ -85,6 +86,12 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 - ExtensionAPI.registerBlade maps config.title to BladeRegistration.defaultTitle for simpler extension API
 - Sequential await in activateAll/deactivateAll to avoid registry mutation race conditions
 
+**Phase 34-02 decisions:**
+- renderCustom on ToolbarAction replaces hardcoded ID checks -- fully generic widget rendering
+- createElement(ThemeToggle) in .ts file avoids TSX requirement for toolbar-actions
+- registerBuiltIn creates synthetic ExtensionManifest with 'as ExtensionManifest' cast for tracking
+- Built-in extensions share full ExtensionAPI lifecycle -- same cleanup, deactivation, namespacing
+
 ### Pending Todos
 
 None.
@@ -113,9 +120,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed 33-03-PLAN.md — Extension Host & API Runtime complete (Phase 33 fully complete)
+Stopped at: Completed 34-02-PLAN.md — Toolbar Extensibility & Built-in Extension Registration complete (2/2 tasks)
 Resume file: None
 
 ---
 *State updated: 2026-02-10*
-*v1.5.0 GitHub Extension -- Phase 33 complete (3 of 3 plans complete)*
+*v1.5.0 GitHub Extension -- Phase 34 in progress (2 of 3 plans complete)*
