@@ -216,7 +216,7 @@ pub struct MilestoneInfo {
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct CommentInfo {
-    pub id: u64,
+    pub id: String,
     pub author_login: String,
     pub author_avatar_url: String,
     pub body: String,

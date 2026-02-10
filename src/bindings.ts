@@ -1051,6 +1051,10 @@ async githubCheckRateLimit() : Promise<Result<RateLimitInfo, GitHubError>> {
 },
 /**
  * List pull requests for a repository with pagination.
+ * 
+ * Returns a paginated list of pull request summaries sorted by
+ * most recently updated. The `state` parameter can be "open",
+ * "closed", or "all".
  */
 async githubListPullRequests(owner: string, repo: string, state: string, page: number, perPage: number) : Promise<Result<PullRequestListResponse, GitHubError>> {
     try {
@@ -1062,6 +1066,9 @@ async githubListPullRequests(owner: string, repo: string, state: string, page: n
 },
 /**
  * Fetch full details for a single pull request including comments.
+ * 
+ * Makes two API calls: one for the PR detail and one for
+ * the issue comments (which includes general discussion comments).
  */
 async githubGetPullRequest(owner: string, repo: string, number: number) : Promise<Result<PullRequestDetail, GitHubError>> {
     try {
@@ -1072,7 +1079,12 @@ async githubGetPullRequest(owner: string, repo: string, number: number) : Promis
 }
 },
 /**
- * List issues for a repository with pagination (excludes pull requests).
+ * List issues for a repository with pagination.
+ * 
+ * Returns a paginated list of issue summaries sorted by most recently
+ * updated. Pull requests are filtered out (GitHub's issues API returns
+ * both issues and PRs). The `state` parameter can be "open", "closed",
+ * or "all".
  */
 async githubListIssues(owner: string, repo: string, state: string, page: number, perPage: number) : Promise<Result<IssueListResponse, GitHubError>> {
     try {
@@ -1084,6 +1096,9 @@ async githubListIssues(owner: string, repo: string, state: string, page: number,
 },
 /**
  * Fetch full details for a single issue including comments.
+ * 
+ * Makes two API calls: one for the issue detail and one for
+ * all comments on the issue.
  */
 async githubGetIssue(owner: string, repo: string, number: number) : Promise<Result<IssueDetail, GitHubError>> {
     try {
@@ -1277,6 +1292,10 @@ export type CloneProgress =
  * Clone completed successfully
  */
 { event: "finished"; data: { path: string } }
+/**
+ * Comment info for frontend display.
+ */
+export type CommentInfo = { id: string; authorLogin: string; authorAvatarUrl: string; body: string; createdAt: string; updatedAt: string; htmlUrl: string }
 /**
  * Full details of a commit.
  */
@@ -1556,46 +1575,6 @@ export type GitHubError = { type: "OAuthFailed"; message: string } | { type: "Au
  */
 export type GitHubRemoteInfo = { remoteName: string; owner: string; repo: string; url: string }
 /**
- * Summary of a pull request for list views.
- */
-export type PullRequestSummary = { number: number; title: string; state: string; draft: boolean; merged: boolean; authorLogin: string; authorAvatarUrl: string; headRef: string; baseRef: string; labels: LabelInfo[]; createdAt: string; updatedAt: string; htmlUrl: string; commentCount: number }
-/**
- * Full pull request detail with body, stats, and comments.
- */
-export type PullRequestDetail = { number: number; title: string; state: string; draft: boolean; merged: boolean; authorLogin: string; authorAvatarUrl: string; headRef: string; headSha: string; baseRef: string; labels: LabelInfo[]; body: string; createdAt: string; updatedAt: string; htmlUrl: string; commentCount: number; reviewCommentCount: number; commits: number; additions: number; deletions: number; changedFiles: number; comments: CommentInfo[] }
-/**
- * Summary of an issue for list views.
- */
-export type IssueSummary = { number: number; title: string; state: string; authorLogin: string; authorAvatarUrl: string; labels: LabelInfo[]; assigneeLogins: string[]; milestoneTitle: string | null; createdAt: string; updatedAt: string; htmlUrl: string; commentCount: number }
-/**
- * Full issue detail with body, assignees, milestone, and comments.
- */
-export type IssueDetail = { number: number; title: string; state: string; authorLogin: string; authorAvatarUrl: string; labels: LabelInfo[]; assignees: UserInfo[]; milestone: MilestoneInfo | null; body: string; createdAt: string; updatedAt: string; closedAt: string | null; htmlUrl: string; commentCount: number; comments: CommentInfo[] }
-/**
- * Label info for frontend display.
- */
-export type LabelInfo = { name: string; color: string; description: string | null }
-/**
- * Minimal user info for frontend display.
- */
-export type UserInfo = { login: string; avatarUrl: string }
-/**
- * Milestone info for frontend display.
- */
-export type MilestoneInfo = { number: number; title: string; state: string }
-/**
- * Comment info for frontend display.
- */
-export type CommentInfo = { id: number; authorLogin: string; authorAvatarUrl: string; body: string; createdAt: string; updatedAt: string; htmlUrl: string }
-/**
- * Paginated list of pull request summaries.
- */
-export type PullRequestListResponse = { items: PullRequestSummary[]; hasNextPage: boolean; nextPage: number | null }
-/**
- * Paginated list of issue summaries.
- */
-export type IssueListResponse = { items: IssueSummary[]; hasNextPage: boolean; nextPage: number | null }
-/**
  * Configuration for Gitflow initialization.
  */
 export type GitflowConfig = { 
@@ -1820,6 +1799,22 @@ repoPath: string;
  */
 initialBranch: string }
 /**
+ * Full issue detail with body, assignees, milestone, and comments.
+ */
+export type IssueDetail = { number: number; title: string; state: string; authorLogin: string; authorAvatarUrl: string; labels: LabelInfo[]; assignees: UserInfo[]; milestone: MilestoneInfo | null; body: string; createdAt: string; updatedAt: string; closedAt: string | null; htmlUrl: string; commentCount: number; comments: CommentInfo[] }
+/**
+ * Paginated list of issue summaries.
+ */
+export type IssueListResponse = { items: IssueSummary[]; hasNextPage: boolean; nextPage: number | null }
+/**
+ * Summary of an issue for list views.
+ */
+export type IssueSummary = { number: number; title: string; state: string; authorLogin: string; authorAvatarUrl: string; labels: LabelInfo[]; assigneeLogins: string[]; milestoneTitle: string | null; createdAt: string; updatedAt: string; htmlUrl: string; commentCount: number }
+/**
+ * Label info for frontend display.
+ */
+export type LabelInfo = { name: string; color: string; description: string | null }
+/**
  * Last commit message with subject and body parsed separately.
  * 
  * Used for amend commit pre-fill functionality.
@@ -1897,8 +1892,24 @@ inProgress: boolean;
  * List of conflicted file paths
  */
 conflictedFiles: string[] }
+/**
+ * Milestone info for frontend display.
+ */
+export type MilestoneInfo = { number: number; title: string; state: string }
 export type NugetPackageInfo = { id: string; version: string; description: string; authors: string; totalDownloads: number; published: string; projectUrl: string | null; licenseUrl: string | null; tags: string[]; nugetUrl: string }
 export type ProjectDetection = { detectedTypes: DetectedProject[] }
+/**
+ * Full pull request detail with body, stats, and comments.
+ */
+export type PullRequestDetail = { number: number; title: string; state: string; draft: boolean; merged: boolean; authorLogin: string; authorAvatarUrl: string; headRef: string; headSha: string; baseRef: string; labels: LabelInfo[]; body: string; createdAt: string; updatedAt: string; htmlUrl: string; commentCount: number; reviewCommentCount: number; commits: number; additions: number; deletions: number; changedFiles: number; comments: CommentInfo[] }
+/**
+ * Paginated list of pull request summaries.
+ */
+export type PullRequestListResponse = { items: PullRequestSummary[]; hasNextPage: boolean; nextPage: number | null }
+/**
+ * Summary of a pull request for list views.
+ */
+export type PullRequestSummary = { number: number; title: string; state: string; draft: boolean; merged: boolean; authorLogin: string; authorAvatarUrl: string; headRef: string; baseRef: string; labels: LabelInfo[]; createdAt: string; updatedAt: string; htmlUrl: string; commentCount: number }
 /**
  * Rate limit information from the GitHub API.
  */
@@ -2059,6 +2070,10 @@ reflogMessage: string | null;
  * The commit OID to revert to
  */
 targetOid: string | null }
+/**
+ * Minimal user info for frontend display.
+ */
+export type UserInfo = { login: string; avatarUrl: string }
 /**
  * A validation error.
  */

@@ -126,7 +126,7 @@ pub async fn github_get_issue(
     let comments: Vec<CommentInfo> = raw_comments
         .into_iter()
         .map(|c| CommentInfo {
-            id: c.id,
+            id: c.id.to_string(),
             author_login: c.user.login,
             author_avatar_url: c.user.avatar_url,
             body: c.body,
