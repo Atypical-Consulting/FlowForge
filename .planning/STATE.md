@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-10)
 Phase: 41 of 41 (Sandbox & Polish)
 Plan: 0 of 3 in current phase
 Status: Ready to plan
-Last activity: 2026-02-10 — Phase 40 complete (2/2 plans, verified)
+Last activity: 2026-02-10 - Completed quick task 34: move files related to extensions closer
 
 Progress: [████████░░] 77% (10/13 plans)
 
@@ -68,6 +68,12 @@ Phase 40: Gitflow extraction follows CC pattern. branchClassifier.ts stays in co
 ### Blockers/Concerns
 
 None active.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 34 | move files related to extensions closer (like for the github extension) | 2026-02-10 | 74a0b78 | [34-move-files-related-to-extensions-closer-](./quick/34-move-files-related-to-extensions-closer-/) |
 
 ### Pending Todos
 
