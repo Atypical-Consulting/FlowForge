@@ -78,7 +78,7 @@
 
 - [x] **Phase 31: Security Hardening** - Lock down CSP, asset protocol scope, and Tauri capabilities before introducing external network access and extension code (completed 2026-02-10)
 - [x] **Phase 32: Toolbar Overhaul** - Transform hardcoded Header.tsx buttons into a data-driven toolbar registry with overflow handling and contextual visibility (completed 2026-02-10)
-- [ ] **Phase 33: Extension System Foundation** - Build the manifest-driven extension platform with lifecycle management, namespaced registrations, and API versioning
+- [x] **Phase 33: Extension System Foundation** - Build the manifest-driven extension platform with lifecycle management, namespaced registrations, and API versioning (completed 2026-02-10)
 - [ ] **Phase 34: GitHub Authentication** - Implement OAuth Device Flow with secure OS keychain token storage and automatic GitHub remote detection
 - [ ] **Phase 35: GitHub Read Operations** - View pull requests and issues in dedicated blades with extension-contributed toolbar actions
 - [ ] **Phase 36: GitHub Write Operations & Extension Manager** - Add PR merge/create actions and build the extension manager UI for install, enable/disable, and uninstall
@@ -122,9 +122,9 @@
   4. When an extension is deactivated, all its registered blades, commands, and toolbar contributions are completely removed with no orphaned registrations
   5. An extension declaring an incompatible apiVersion is rejected at load time with a user-visible error message
 **Plans**: 3 plans
-- [ ] 33-01-PLAN.md -- Registry refactoring: widen BladeType, add unregister/source to blade & command registries, dynamic command palette categories
-- [ ] 33-02-PLAN.md -- Rust extension manifest types and filesystem discovery command
-- [ ] 33-03-PLAN.md -- ExtensionHost store and ExtensionAPI facade with lifecycle management
+- [x] 33-01-PLAN.md -- Registry refactoring: widen BladeType, add unregister/source to blade & command registries, dynamic command palette categories
+- [x] 33-02-PLAN.md -- Rust extension manifest types and filesystem discovery command
+- [x] 33-03-PLAN.md -- ExtensionHost store and ExtensionAPI facade with lifecycle management
 
 ### Phase 34: GitHub Authentication
 **Goal**: Users can securely sign in with their GitHub account and the app automatically links authenticated accounts to repositories with GitHub remotes
@@ -202,4 +202,4 @@ All 34 v1.5 requirements mapped:
 | EXT-13 | 36 | Extension System |
 
 ---
-*Last updated: 2026-02-10 after Phase 33 planned*
+*Last updated: 2026-02-10 after Phase 33 complete*
