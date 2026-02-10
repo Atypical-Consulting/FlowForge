@@ -15,6 +15,7 @@ export interface ExtensionInfo {
   status: ExtensionStatus;
   error?: string;
   manifest: ExtensionManifest;
+  builtIn?: boolean;
 }
 
 /** Configuration for registering a built-in (bundled) extension. */

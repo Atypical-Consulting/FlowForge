@@ -22,7 +22,7 @@ struct RateLimitResources {
 struct RateLimitData {
     limit: u32,
     remaining: u32,
-    reset: u64,
+    reset: u32,
     used: u32,
 }
 

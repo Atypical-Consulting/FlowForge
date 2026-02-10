@@ -41,7 +41,7 @@ pub struct GitHubUser {
 pub struct RateLimitInfo {
     pub limit: u32,
     pub remaining: u32,
-    pub reset: u64,
+    pub reset: u32,
     pub used: u32,
 }
 

@@ -19,7 +19,18 @@ const GITHUB_ACCESS_TOKEN_URL: &str = "https://github.com/login/oauth/access_tok
 // TODO: Replace with your registered GitHub OAuth App client_id.
 // This is a public identifier (not a secret) and is safe to embed in source.
 // Register at: https://github.com/settings/developers -> OAuth Apps -> New OAuth App
-const GITHUB_CLIENT_ID: &str = "Ov23liXXXXXXXXXXXXXX";
+const GITHUB_CLIENT_ID: &str = "Ov23lih0tEvsx8CNhNgv";
+
+/// Internal deserialization struct for GitHub's device code response (snake_case).
+/// Separate from the IPC `DeviceFlowResponse` which uses camelCase for the frontend.
+#[derive(Debug, serde::Deserialize)]
+struct GitHubDeviceCodeResponse {
+    device_code: String,
+    user_code: String,
+    verification_uri: String,
+    expires_in: u32,
+    interval: u32,
+}
 
 /// Internal deserialization struct for the GitHub token endpoint response.
 #[derive(Debug, serde::Deserialize)]
@@ -62,12 +73,18 @@ pub async fn github_start_device_flow(
         )));
     }
 
-    let data: DeviceFlowResponse = resp
+    let raw: GitHubDeviceCodeResponse = resp
         .json()
         .await
         .map_err(|e| GitHubError::OAuthFailed(format!("Failed to parse response: {}", e)))?;
 
-    Ok(data)
+    Ok(DeviceFlowResponse {
+        device_code: raw.device_code,
+        user_code: raw.user_code,
+        verification_uri: raw.verification_uri,
+        expires_in: raw.expires_in,
+        interval: raw.interval,
+    })
 }
 
 /// Poll GitHub for authorization status (single attempt).

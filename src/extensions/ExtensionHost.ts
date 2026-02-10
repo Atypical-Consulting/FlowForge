@@ -100,7 +100,13 @@ export const useExtensionHost = create<ExtensionHostState>()(
           }
 
           const manifests: ExtensionManifest[] = result.data;
+          // Preserve built-in extensions when rebuilding the map
           const next = new Map<string, ExtensionInfo>();
+          for (const [existingId, existingExt] of get().extensions) {
+            if (existingExt.builtIn) {
+              next.set(existingId, existingExt);
+            }
+          }
 
           for (const manifest of manifests) {
             if (manifest.apiVersion !== CURRENT_API_VERSION) {
@@ -251,7 +257,7 @@ export const useExtensionHost = create<ExtensionHostState>()(
       deactivateAll: async () => {
         const extensions = get().extensions;
         for (const [id, ext] of extensions) {
-          if (ext.status === "active") {
+          if (ext.status === "active" && !ext.builtIn) {
             await get().deactivateExtension(id);
           }
         }
@@ -284,6 +290,7 @@ export const useExtensionHost = create<ExtensionHostState>()(
           version,
           status: "discovered",
           manifest,
+          builtIn: true,
         });
         set(
           { extensions: next },

@@ -962,7 +962,9 @@ async discoverExtensions(extensionsDir: string) : Promise<Result<ExtensionManife
 },
 /**
  * Initiate the GitHub OAuth Device Flow.
- * Returns device_code, user_code, and verification_uri.
+ * 
+ * Returns device_code, user_code, and verification_uri for the frontend
+ * to display to the user. The user visits the URI and enters the code.
  */
 async githubStartDeviceFlow(scopes: string[]) : Promise<Result<DeviceFlowResponse, GitHubError>> {
     try {
@@ -974,6 +976,17 @@ async githubStartDeviceFlow(scopes: string[]) : Promise<Result<DeviceFlowRespons
 },
 /**
  * Poll GitHub for authorization status (single attempt).
+ * 
+ * This is NOT a loop -- the frontend controls polling via setTimeout
+ * and calls this command once per interval. This avoids long-running
+ * Tauri commands and gives the frontend full control over the UX.
+ * 
+ * Returns `AuthResult` on success or specific error variants that
+ * the frontend uses for control flow:
+ * - `AuthorizationPending`: user hasn't authorized yet, keep polling
+ * - `SlowDown`: increase polling interval by 5 seconds
+ * - `ExpiredToken`: device code expired, need to restart flow
+ * - `AccessDenied`: user denied authorization
  */
 async githubPollAuth(deviceCode: string, interval: number) : Promise<Result<AuthResult, GitHubError>> {
     try {
@@ -985,6 +998,8 @@ async githubPollAuth(deviceCode: string, interval: number) : Promise<Result<Auth
 },
 /**
  * Check if the user is authenticated and return their info.
+ * Validates the stored token against the GitHub API.
+ * If the token is invalid, auto-deletes it from the keychain.
  */
 async githubGetAuthStatus() : Promise<Result<AuthResult, GitHubError>> {
     try {
@@ -1007,6 +1022,10 @@ async githubSignOut() : Promise<Result<null, GitHubError>> {
 },
 /**
  * Detect all GitHub remotes in the currently open repository.
+ * 
+ * Opens the git repository from RepositoryState (same pattern as
+ * existing git commands) and iterates all remotes, parsing each
+ * URL to find GitHub repositories.
  */
 async githubDetectRemotes() : Promise<Result<GitHubRemoteInfo[], GitHubError>> {
     try {
@@ -1017,7 +1036,10 @@ async githubDetectRemotes() : Promise<Result<GitHubRemoteInfo[], GitHubError>> {
 }
 },
 /**
- * Check the current GitHub API rate limit.
+ * Check the current GitHub API rate limit for the authenticated user.
+ * 
+ * Retrieves the token from the keychain and queries the GitHub
+ * rate limit endpoint to return current usage information.
  */
 async githubCheckRateLimit() : Promise<Result<RateLimitInfo, GitHubError>> {
     try {
@@ -1040,31 +1062,15 @@ async githubCheckRateLimit() : Promise<Result<RateLimitInfo, GitHubError>> {
 /** user-defined types **/
 
 /**
- * Response from GitHub's device code endpoint.
- */
-export type DeviceFlowResponse = { deviceCode: string; userCode: string; verificationUri: string; expiresIn: number; interval: number }
-/**
- * Result of an authentication check or successful auth flow.
- * NEVER contains the actual token.
- */
-export type AuthResult = { authenticated: boolean; username: string | null; avatarUrl: string | null; scopes: string[] }
-/**
- * Rate limit information from the GitHub API.
- */
-export type RateLimitInfo = { limit: number; remaining: number; reset: number; used: number }
-/**
- * Information about a detected GitHub remote.
- */
-export type GitHubRemoteInfo = { remoteName: string; owner: string; repo: string; url: string }
-/**
- * GitHub operation errors.
- */
-export type GitHubError = { type: "OAuthFailed"; message: string } | { type: "AuthorizationPending" } | { type: "AccessDenied" } | { type: "ExpiredToken" } | { type: "SlowDown" } | { type: "KeychainError"; message: string } | { type: "NetworkError"; message: string } | { type: "NotAuthenticated" } | { type: "RateLimitExceeded"; message: string } | { type: "Internal"; message: string } | { type: "Cancelled" }
-
-/**
  * Information about active Gitflow workflow.
  */
 export type ActiveFlow = { flowType: FlowType; name: string; sourceBranch: string }
+/**
+ * Result of an authentication check or successful auth flow.
+ * NEVER contains the actual token -- only metadata about the
+ * authenticated user. The token stays in Rust/keychain.
+ */
+export type AuthResult = { authenticated: boolean; username: string | null; avatarUrl: string | null; scopes: string[] }
 /**
  * Result of a batch branch deletion operation.
  */
@@ -1328,6 +1334,12 @@ branch: string | null;
 createBranch: boolean }
 export type DetectedProject = { projectType: string; markerFile: string; recommendedTemplates: string[] }
 /**
+ * Response from GitHub's device code endpoint.
+ * Returned to the frontend so it can display the user_code
+ * and verification_uri to the user.
+ */
+export type DeviceFlowResponse = { deviceCode: string; userCode: string; verificationUri: string; expiresIn: number; interval: number }
+/**
  * A single diff hunk with line range information.
  */
 export type DiffHunk = { oldStart: number; oldLines: number; newStart: number; newLines: number; header: string }
@@ -1486,6 +1498,19 @@ userEmail: string | null;
  * init.defaultBranch from global config, or None if unset.
  */
 defaultBranch: string | null }
+/**
+ * GitHub operation errors that serialize across the IPC boundary.
+ * 
+ * These errors are sent to the frontend as typed objects,
+ * allowing proper error handling in TypeScript. The frontend
+ * checks `err.type` to decide control flow (e.g., continue polling
+ * on `AuthorizationPending`, increase interval on `SlowDown`).
+ */
+export type GitHubError = { type: "OAuthFailed"; message: string } | { type: "AuthorizationPending" } | { type: "AccessDenied" } | { type: "ExpiredToken" } | { type: "SlowDown" } | { type: "KeychainError"; message: string } | { type: "NetworkError"; message: string } | { type: "NotAuthenticated" } | { type: "RateLimitExceeded"; message: string } | { type: "Internal"; message: string } | { type: "Cancelled" }
+/**
+ * Information about a detected GitHub remote in the current repository.
+ */
+export type GitHubRemoteInfo = { remoteName: string; owner: string; repo: string; url: string }
 /**
  * Configuration for Gitflow initialization.
  */
@@ -1790,6 +1815,10 @@ inProgress: boolean;
 conflictedFiles: string[] }
 export type NugetPackageInfo = { id: string; version: string; description: string; authors: string; totalDownloads: number; published: string; projectUrl: string | null; licenseUrl: string | null; tags: string[]; nugetUrl: string }
 export type ProjectDetection = { detectedTypes: DetectedProject[] }
+/**
+ * Rate limit information from the GitHub API.
+ */
+export type RateLimitInfo = { limit: number; remaining: number; reset: number; used: number }
 /**
  * A recently checked-out branch extracted from the reflog.
  */
