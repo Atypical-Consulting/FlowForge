@@ -3,6 +3,7 @@ import { devtools } from "zustand/middleware";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { commands } from "../bindings";
 import { toast } from "../stores/toast";
+import { getStore } from "../lib/store";
 import { ExtensionAPI } from "./ExtensionAPI";
 import type { BuiltInExtensionConfig, ExtensionInfo } from "./extensionTypes";
 import type { ExtensionManifest } from "./extensionManifest";
@@ -43,6 +44,31 @@ interface ExtensionHostState {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/** Persist disabled extension IDs to tauri-plugin-store */
+async function persistDisabledExtensions(extensions: Map<string, ExtensionInfo>): Promise<void> {
+  try {
+    const store = await getStore();
+    const disabledIds = Array.from(extensions.values())
+      .filter((ext) => ext.status === "deactivated" || ext.status === "disabled")
+      .map((ext) => ext.id);
+    await store.set("disabledExtensions", disabledIds);
+    await store.save();
+  } catch (e) {
+    console.error("Failed to persist extension state:", e);
+  }
+}
+
+/** Load disabled extension IDs from tauri-plugin-store */
+async function loadDisabledExtensions(): Promise<string[]> {
+  try {
+    const store = await getStore();
+    const disabledIds = await store.get<string[]>("disabledExtensions");
+    return disabledIds ?? [];
+  } catch {
+    return [];
+  }
+}
 
 /** Immutable Map update -- Zustand needs a new reference to trigger re-renders */
 function updateExtension(
@@ -154,7 +180,7 @@ export const useExtensionHost = create<ExtensionHostState>()(
 
       activateExtension: async (id: string) => {
         const ext = get().extensions.get(id);
-        if (!ext || ext.status !== "discovered") return;
+        if (!ext || (ext.status !== "discovered" && ext.status !== "disabled" && ext.status !== "deactivated")) return;
 
         updateExtension(get, set, id, { status: "activating" });
 
@@ -188,6 +214,9 @@ export const useExtensionHost = create<ExtensionHostState>()(
             status: "active",
             error: undefined,
           });
+
+          // Persist re-enabled state
+          await persistDisabledExtensions(get().extensions);
         } catch (e) {
           // Clean up any partial registrations made before the error
           api.cleanup();
@@ -238,7 +267,10 @@ export const useExtensionHost = create<ExtensionHostState>()(
         extensionApis.delete(id);
         extensionModules.delete(id);
 
-        updateExtension(get, set, id, { status: "deactivated" });
+        updateExtension(get, set, id, { status: "disabled" });
+
+        // Persist disabled state
+        await persistDisabledExtensions(get().extensions);
       },
 
       // -------------------------------------------------------------------
@@ -246,10 +278,18 @@ export const useExtensionHost = create<ExtensionHostState>()(
       // -------------------------------------------------------------------
 
       activateAll: async () => {
+        const disabledIds = await loadDisabledExtensions();
+        const disabledSet = new Set(disabledIds);
         const extensions = get().extensions;
+
         for (const [id, ext] of extensions) {
           if (ext.status === "discovered") {
-            await get().activateExtension(id);
+            if (disabledSet.has(id)) {
+              // Mark as disabled -- user intentionally disabled this extension
+              updateExtension(get, set, id, { status: "disabled" });
+            } else {
+              await get().activateExtension(id);
+            }
           }
         }
       },

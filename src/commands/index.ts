@@ -5,3 +5,4 @@ import "./sync";
 import "./branches";
 import "./navigation";
 import "./settings";
+import "./extensions";

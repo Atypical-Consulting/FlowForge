@@ -7,7 +7,7 @@
  */
 
 import { createElement } from "react";
-import { Github, GitPullRequest, CircleDot } from "lucide-react";
+import { Github, GitPullRequest, GitPullRequestCreate, CircleDot } from "lucide-react";
 import type { ExtensionAPI } from "../ExtensionAPI";
 import { openBlade } from "../../lib/bladeOpener";
 import { useGitHubStore, getSelectedRemote, cancelGitHubPolling } from "./githubStore";
@@ -27,6 +27,7 @@ let PullRequestListBlade: React.ComponentType<any> | null = null;
 let PullRequestDetailBlade: React.ComponentType<any> | null = null;
 let IssueListBlade: React.ComponentType<any> | null = null;
 let IssueDetailBlade: React.ComponentType<any> | null = null;
+let CreatePullRequestBlade: React.ComponentType<any> | null = null;
 
 async function ensureComponents(): Promise<void> {
   if (!GitHubAuthBlade) {
@@ -56,6 +57,10 @@ async function ensureComponents(): Promise<void> {
   if (!IssueDetailBlade) {
     const mod = await import("./blades/IssueDetailBlade");
     IssueDetailBlade = mod.IssueDetailBlade;
+  }
+  if (!CreatePullRequestBlade) {
+    const mod = await import("./blades/CreatePullRequestBlade");
+    CreatePullRequestBlade = mod.CreatePullRequestBlade;
   }
 }
 
@@ -118,6 +123,15 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     showBack: true,
   });
 
+  api.registerBlade({
+    type: "create-pr",
+    title: "Create Pull Request",
+    component: CreatePullRequestBlade!,
+    singleton: true,
+    wrapInPanel: true,
+    showBack: true,
+  });
+
   // Register commands
   api.registerCommand({
     id: "sign-in",
@@ -158,6 +172,21 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
       if (remote) openBlade("ext:github:issues", { owner: remote.owner, repo: remote.repo });
     },
     enabled: () => useGitHubStore.getState().isAuthenticated && useGitHubStore.getState().detectedRemotes.length > 0,
+  });
+
+  api.registerCommand({
+    id: "create-pull-request",
+    title: "Create Pull Request",
+    category: "GitHub",
+    icon: GitPullRequestCreate,
+    action: () => {
+      const remote = getSelectedRemote();
+      if (remote) openBlade("ext:github:create-pr", { owner: remote.owner, repo: remote.repo });
+    },
+    enabled: () => {
+      const gh = useGitHubStore.getState();
+      return gh.isAuthenticated && gh.detectedRemotes.length > 0;
+    },
   });
 
   // Contribute toolbar
@@ -209,6 +238,23 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     execute: () => {
       const remote = getSelectedRemote();
       if (remote) openBlade("ext:github:issues", { owner: remote.owner, repo: remote.repo });
+    },
+  });
+
+  api.contributeToolbar({
+    id: "create-pr",
+    label: "Create Pull Request",
+    icon: GitPullRequestCreate,
+    group: "views",
+    priority: 55,
+    when: () => {
+      const { isAuthenticated, detectedRemotes } = useGitHubStore.getState();
+      const repo = useRepositoryStore.getState();
+      return isAuthenticated && detectedRemotes.length > 0 && !!repo.repoStatus?.branchName;
+    },
+    execute: () => {
+      const remote = getSelectedRemote();
+      if (remote) openBlade("ext:github:create-pr", { owner: remote.owner, repo: remote.repo });
     },
   });
 

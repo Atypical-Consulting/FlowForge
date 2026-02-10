@@ -6,15 +6,19 @@
  * Includes a link to open the PR on GitHub in an external browser.
  */
 
-import { ExternalLink } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ExternalLink, GitMerge } from "lucide-react";
 import { usePullRequestDetail } from "../hooks/useGitHubQuery";
+import { useMergePullRequest } from "../hooks/useGitHubMutation";
 import { BladeContentError } from "../../../blades/_shared/BladeContentError";
 import { BladeContentLoading } from "../../../blades/_shared/BladeContentLoading";
 import { MarkdownRenderer } from "../../../components/markdown/MarkdownRenderer";
+import { Button } from "../../../components/ui/button";
 import { StatusBadge } from "../components/StatusBadge";
 import { LabelPill } from "../components/LabelPill";
 import { TimeAgo } from "../components/TimeAgo";
 import { CommentCard } from "../components/CommentCard";
+import { MergeConfirmDialog } from "../components/MergeConfirmDialog";
 
 interface PullRequestDetailBladeProps {
   owner: string;
@@ -24,6 +28,15 @@ interface PullRequestDetailBladeProps {
 
 export function PullRequestDetailBlade({ owner, repo, number }: PullRequestDetailBladeProps) {
   const { data, isLoading, error, refetch } = usePullRequestDetail(owner, repo, number);
+  const mergeMutation = useMergePullRequest(owner, repo);
+  const [showMergeDialog, setShowMergeDialog] = useState(false);
+
+  // Close dialog on merge success
+  useEffect(() => {
+    if (mergeMutation.isSuccess) {
+      setShowMergeDialog(false);
+    }
+  }, [mergeMutation.isSuccess]);
 
   if (isLoading) return <BladeContentLoading />;
 
@@ -78,6 +91,20 @@ export function PullRequestDetailBlade({ owner, repo, number }: PullRequestDetai
             ))}
           </div>
         )}
+
+        {/* Merge action -- only for open, non-draft PRs */}
+        {data.state === "open" && !data.draft && (
+          <div className="mt-3">
+            <Button
+              onClick={() => setShowMergeDialog(true)}
+              className="bg-ctp-green text-ctp-base hover:bg-ctp-green/90"
+              size="sm"
+            >
+              <GitMerge className="w-3.5 h-3.5 mr-1.5" />
+              Merge
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Description section */}
@@ -124,6 +151,26 @@ export function PullRequestDetailBlade({ owner, repo, number }: PullRequestDetai
           Open on GitHub
         </a>
       </div>
+
+      {/* Merge dialog */}
+      <MergeConfirmDialog
+        open={showMergeDialog}
+        onOpenChange={setShowMergeDialog}
+        prNumber={number}
+        prTitle={data.title}
+        headRef={data.headRef}
+        baseRef={data.baseRef}
+        isPending={mergeMutation.isPending}
+        onMerge={(method, commitTitle, commitMessage) => {
+          mergeMutation.mutate({
+            pullNumber: number,
+            mergeMethod: method,
+            commitTitle,
+            commitMessage,
+            sha: data.headSha,
+          });
+        }}
+      />
     </div>
   );
 }

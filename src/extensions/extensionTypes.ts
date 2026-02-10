@@ -6,7 +6,8 @@ export type ExtensionStatus =
   | "activating" // Entry point loading in progress
   | "active" // onActivate completed successfully
   | "error" // Failed to activate or incompatible apiVersion
-  | "deactivated"; // Was active, now cleanly deactivated
+  | "deactivated" // Was active, now cleanly deactivated
+  | "disabled"; // Intentionally disabled by user (persisted)
 
 export interface ExtensionInfo {
   id: string;
