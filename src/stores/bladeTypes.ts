@@ -21,6 +21,7 @@ export interface BladePropsMap {
   "viewer-markdown": { filePath: string };
   "viewer-3d": { filePath: string };
   "viewer-code": { filePath: string };
+  "viewer-plaintext": { filePath: string };
   "repo-browser": { path?: string };
   "settings": Record<string, never>;
   "changelog": Record<string, never>;

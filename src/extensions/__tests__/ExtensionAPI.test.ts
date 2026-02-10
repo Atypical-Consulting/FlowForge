@@ -5,6 +5,7 @@ import { useSidebarPanelRegistry } from "../../lib/sidebarPanelRegistry";
 import { useStatusBarRegistry } from "../../lib/statusBarRegistry";
 import { useToolbarRegistry } from "../../lib/toolbarRegistry";
 import { gitHookBus, GitHookBus } from "../../lib/gitHookBus";
+import { getBladeRegistration } from "../../lib/bladeRegistry";
 import type { ContextMenuContext } from "../../lib/contextMenuRegistry";
 import type { LucideIcon } from "lucide-react";
 
@@ -233,7 +234,35 @@ describe("ExtensionAPI", () => {
     errorSpy.mockRestore();
   });
 
-  // Test 10
+  // Test 10: coreOverride registers without namespace
+  it("registers blade with original type when coreOverride is true", () => {
+    const api2 = new ExtensionAPI("content-viewers");
+    api2.registerBlade({
+      type: "viewer-markdown",
+      title: "Markdown Preview",
+      component: () => null,
+      coreOverride: true,
+    });
+    expect(getBladeRegistration("viewer-markdown")).toBeDefined();
+    expect(getBladeRegistration("ext:content-viewers:viewer-markdown")).toBeUndefined();
+    api2.cleanup();
+  });
+
+  // Test 11: coreOverride cleanup
+  it("cleanup removes coreOverride blades correctly", () => {
+    const api2 = new ExtensionAPI("content-viewers");
+    api2.registerBlade({
+      type: "viewer-markdown",
+      title: "Markdown Preview",
+      component: () => null,
+      coreOverride: true,
+    });
+    expect(getBladeRegistration("viewer-markdown")).toBeDefined();
+    api2.cleanup();
+    expect(getBladeRegistration("viewer-markdown")).toBeUndefined();
+  });
+
+  // Test 12
   it("cleanup resets tracking arrays so second cleanup only removes second batch", () => {
     // First batch
     api.contributeContextMenu({

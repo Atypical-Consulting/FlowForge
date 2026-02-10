@@ -33,12 +33,17 @@ import {
 
 export interface ExtensionBladeConfig {
   type: string;
-  title: string;
+  title: string | ((props: any) => string);
   component: ComponentType<any>;
   singleton?: boolean;
   lazy?: boolean;
   wrapInPanel?: boolean;
   showBack?: boolean;
+  /**
+   * If true, blade type is registered without ext:{extensionId}: prefix.
+   * Use for built-in extensions that replace core blade types.
+   */
+  coreOverride?: boolean;
   renderTitleContent?: (props: any) => ReactNode;
   renderTrailing?: (props: any, ctx: BladeRenderContext) => ReactNode;
 }
@@ -134,10 +139,13 @@ export class ExtensionAPI {
 
   /**
    * Register a blade type with automatic namespacing.
-   * The blade type becomes `ext:{extensionId}:{config.type}`.
+   * The blade type becomes `ext:{extensionId}:{config.type}`,
+   * unless `coreOverride` is true (type used as-is for built-in extensions).
    */
   registerBlade(config: ExtensionBladeConfig): void {
-    const namespacedType = `ext:${this.extensionId}:${config.type}`;
+    const namespacedType = config.coreOverride
+      ? config.type
+      : `ext:${this.extensionId}:${config.type}`;
     registerBlade({
       ...config,
       type: namespacedType,

@@ -17,7 +17,7 @@ if (import.meta.env.DEV && !import.meta.hot?.data?.isUpdate) {
   const EXPECTED_TYPES: string[] = [
     "staging-changes", "topology-graph", "commit-details", "diff",
     "viewer-nupkg", "viewer-image", "viewer-markdown", "viewer-3d",
-    "viewer-code", "repo-browser", "settings", "changelog",
+    "viewer-code", "viewer-plaintext", "repo-browser", "settings", "changelog",
     "gitflow-cheatsheet", "init-repo", "conventional-commit", "extension-manager",
   ];
   const missing = EXPECTED_TYPES.filter(t => !registered.has(t as any));

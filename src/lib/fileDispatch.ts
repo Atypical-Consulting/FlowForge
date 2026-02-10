@@ -62,7 +62,7 @@ export function bladeTypeForFile(
 
   // Context-aware fallback
   if (context === "browse") {
-    return "viewer-code";
+    return "viewer-plaintext";
   }
 
   return "diff"; // Staging/commit context defaults to diff view
