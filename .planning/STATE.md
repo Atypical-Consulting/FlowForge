@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 32 of 36 (Toolbar Overhaul)
-Plan: — (not yet planned)
-Status: Ready to plan
-Last activity: 2026-02-10 — Phase 31 Security Hardening complete (2/2 plans, verified)
+Plan: 1 of 2 complete
+Status: Executing
+Last activity: 2026-02-10 — Plan 32-01 Toolbar Registry & Action Data Model complete (3/3 tasks)
 
 Progress: [█░░░░░░░░░] 17%
 
@@ -52,6 +52,12 @@ See `.planning/MILESTONES.md` for full history.
 
 All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 
+**Phase 32-01 decisions:**
+- Used union type for ToolbarGroup (not enum) so Phase 33 extensions can extend with custom group strings
+- Map<string, ToolbarAction> with immutable copy-on-write for O(1) ID lookups
+- Toolbar action ID convention: core="tb:{name}", extensions="ext:{extId}:{name}"
+- Extracted queryClient to shared lib module for non-React query invalidation access
+
 ### Pending Todos
 
 None.
@@ -80,9 +86,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Phase 31 complete — ready to plan Phase 32
+Stopped at: Completed 32-01-PLAN.md — ready for 32-02-PLAN.md
 Resume file: None
 
 ---
 *State updated: 2026-02-10*
-*v1.5.0 GitHub Extension -- READY TO PLAN PHASE 32*
+*v1.5.0 GitHub Extension -- Phase 32 Plan 01 complete, Plan 02 next*
