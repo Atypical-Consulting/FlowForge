@@ -7,11 +7,12 @@
  */
 
 import { createElement } from "react";
-import { Github } from "lucide-react";
+import { Github, GitPullRequest, CircleDot } from "lucide-react";
 import type { ExtensionAPI } from "../ExtensionAPI";
 import { openBlade } from "../../lib/bladeOpener";
-import { useGitHubStore, cancelGitHubPolling } from "./githubStore";
+import { useGitHubStore, getSelectedRemote, cancelGitHubPolling } from "./githubStore";
 import { useRepositoryStore } from "../../stores/repository";
+import { queryClient } from "../../lib/queryClient";
 
 // Module-level unsubscribe for repo change listener
 let unsubRepoWatch: (() => void) | null = null;
@@ -20,6 +21,10 @@ let unsubRepoWatch: (() => void) | null = null;
 let GitHubAuthBlade: React.ComponentType<any> | null = null;
 let GitHubAccountBlade: React.ComponentType<any> | null = null;
 let GitHubStatusButton: React.ComponentType<any> | null = null;
+let PullRequestListBlade: React.ComponentType<any> | null = null;
+let PullRequestDetailBlade: React.ComponentType<any> | null = null;
+let IssueListBlade: React.ComponentType<any> | null = null;
+let IssueDetailBlade: React.ComponentType<any> | null = null;
 
 async function ensureComponents(): Promise<void> {
   if (!GitHubAuthBlade) {
@@ -33,6 +38,22 @@ async function ensureComponents(): Promise<void> {
   if (!GitHubStatusButton) {
     const statusMod = await import("./components/GitHubStatusButton");
     GitHubStatusButton = statusMod.GitHubStatusButton;
+  }
+  if (!PullRequestListBlade) {
+    const mod = await import("./blades/PullRequestListBlade");
+    PullRequestListBlade = mod.PullRequestListBlade;
+  }
+  if (!PullRequestDetailBlade) {
+    const mod = await import("./blades/PullRequestDetailBlade");
+    PullRequestDetailBlade = mod.PullRequestDetailBlade;
+  }
+  if (!IssueListBlade) {
+    const mod = await import("./blades/IssueListBlade");
+    IssueListBlade = mod.IssueListBlade;
+  }
+  if (!IssueDetailBlade) {
+    const mod = await import("./blades/IssueDetailBlade");
+    IssueDetailBlade = mod.IssueDetailBlade;
   }
 }
 
@@ -59,6 +80,42 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     showBack: true,
   });
 
+  api.registerBlade({
+    type: "pull-requests",
+    title: "Pull Requests",
+    component: PullRequestListBlade!,
+    singleton: true,
+    wrapInPanel: true,
+    showBack: true,
+  });
+
+  api.registerBlade({
+    type: "pull-request",
+    title: "Pull Request",
+    component: PullRequestDetailBlade!,
+    singleton: false,
+    wrapInPanel: true,
+    showBack: true,
+  });
+
+  api.registerBlade({
+    type: "issues",
+    title: "Issues",
+    component: IssueListBlade!,
+    singleton: true,
+    wrapInPanel: true,
+    showBack: true,
+  });
+
+  api.registerBlade({
+    type: "issue",
+    title: "Issue",
+    component: IssueDetailBlade!,
+    singleton: false,
+    wrapInPanel: true,
+    showBack: true,
+  });
+
   // Register commands
   api.registerCommand({
     id: "sign-in",
@@ -75,6 +132,30 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     category: "GitHub",
     action: () => useGitHubStore.getState().signOut(),
     enabled: () => useGitHubStore.getState().isAuthenticated,
+  });
+
+  api.registerCommand({
+    id: "open-pull-requests",
+    title: "View Pull Requests",
+    category: "GitHub",
+    icon: GitPullRequest,
+    action: () => {
+      const remote = getSelectedRemote();
+      if (remote) openBlade("ext:github:pull-requests", { owner: remote.owner, repo: remote.repo });
+    },
+    enabled: () => useGitHubStore.getState().isAuthenticated && useGitHubStore.getState().detectedRemotes.length > 0,
+  });
+
+  api.registerCommand({
+    id: "open-issues",
+    title: "View Issues",
+    category: "GitHub",
+    icon: CircleDot,
+    action: () => {
+      const remote = getSelectedRemote();
+      if (remote) openBlade("ext:github:issues", { owner: remote.owner, repo: remote.repo });
+    },
+    enabled: () => useGitHubStore.getState().isAuthenticated && useGitHubStore.getState().detectedRemotes.length > 0,
   });
 
   // Contribute toolbar
@@ -97,6 +178,38 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
       createElement(GitHubStatusButton!, { tabIndex }),
   });
 
+  api.contributeToolbar({
+    id: "open-pull-requests",
+    label: "Pull Requests",
+    icon: GitPullRequest,
+    group: "views",
+    priority: 50,
+    when: () => {
+      const { isAuthenticated, detectedRemotes } = useGitHubStore.getState();
+      return isAuthenticated && detectedRemotes.length > 0;
+    },
+    execute: () => {
+      const remote = getSelectedRemote();
+      if (remote) openBlade("ext:github:pull-requests", { owner: remote.owner, repo: remote.repo });
+    },
+  });
+
+  api.contributeToolbar({
+    id: "open-issues",
+    label: "Issues",
+    icon: CircleDot,
+    group: "views",
+    priority: 45,
+    when: () => {
+      const { isAuthenticated, detectedRemotes } = useGitHubStore.getState();
+      return isAuthenticated && detectedRemotes.length > 0;
+    },
+    execute: () => {
+      const remote = getSelectedRemote();
+      if (remote) openBlade("ext:github:issues", { owner: remote.owner, repo: remote.repo });
+    },
+  });
+
   // Restore session from keychain on startup
   useGitHubStore.getState().checkAuth();
 
@@ -106,6 +219,8 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     const currentPath = state.repoStatus?.repoPath ?? null;
     if (currentPath !== prevRepoPath) {
       prevRepoPath = currentPath;
+      // Clear cached GitHub data from previous repo
+      queryClient.removeQueries({ queryKey: ["ext:github"] });
       if (currentPath) {
         // Repo opened -- detect remotes
         useGitHubStore.getState().detectRemotes();
@@ -125,6 +240,9 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
 export function onDeactivate(): void {
   // Cancel any active polling
   cancelGitHubPolling();
+
+  // Clean up ALL cached GitHub API data
+  queryClient.removeQueries({ queryKey: ["ext:github"] });
 
   // Unsubscribe from repo changes
   if (unsubRepoWatch) {
