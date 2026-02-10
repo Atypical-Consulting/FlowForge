@@ -39,6 +39,7 @@ use git::{
     undo::{get_undo_info, undo_last_operation},
     worktree::{create_worktree, delete_worktree, list_worktrees},
 };
+use extensions::discovery::discover_extensions;
 use gitflow::{
     abort_gitflow, finish_feature, finish_hotfix, finish_release, get_gitflow_status, init_gitflow,
     start_feature, start_hotfix, start_release,
@@ -145,6 +146,8 @@ pub fn run() {
         // Config commands
         get_git_global_config,
         set_git_global_config,
+        // Extension discovery commands
+        discover_extensions,
     ]);
 
     #[cfg(debug_assertions)]

@@ -943,6 +943,22 @@ async setGitGlobalConfig(key: string, value: string) : Promise<Result<null, GitE
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+/**
+ * Discover extensions by scanning subdirectories for `flowforge.extension.json` manifests.
+ * 
+ * - If the `extensions_dir` does not exist, returns an empty array (extensions are optional).
+ * - Invalid manifests (bad JSON, missing required fields) are skipped with a warning log.
+ * - Only truly unrecoverable I/O errors (e.g. permission denied on an existing directory)
+ * return `Err`.
+ */
+async discoverExtensions(extensionsDir: string) : Promise<Result<ExtensionManifest[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("discover_extensions", { extensionsDir }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -1226,6 +1242,118 @@ export type DetectedProject = { projectType: string; markerFile: string; recomme
  * A single diff hunk with line range information.
  */
 export type DiffHunk = { oldStart: number; oldLines: number; newStart: number; newLines: number; header: string }
+/**
+ * A blade type contributed by an extension.
+ */
+export type ExtensionBladeContribution = { 
+/**
+ * The blade type identifier (used as the `type` field in navigation).
+ */
+type: string; 
+/**
+ * Display title for the blade.
+ */
+title: string; 
+/**
+ * Whether only one instance of this blade can be open at a time.
+ */
+singleton: boolean | null }
+/**
+ * A command contributed by an extension.
+ */
+export type ExtensionCommandContribution = { 
+/**
+ * Unique command identifier.
+ */
+id: string; 
+/**
+ * Display title for the command (shown in command palette).
+ */
+title: string; 
+/**
+ * Optional category for grouping in the command palette.
+ */
+category: string | null }
+/**
+ * Contribution points an extension can register.
+ */
+export type ExtensionContributes = { 
+/**
+ * Blade types contributed by this extension.
+ */
+blades: ExtensionBladeContribution[] | null; 
+/**
+ * Commands contributed by this extension.
+ */
+commands: ExtensionCommandContribution[] | null; 
+/**
+ * Toolbar actions contributed by this extension.
+ */
+toolbar: ExtensionToolbarContribution[] | null }
+/**
+ * Extension manifest parsed from `flowforge.extension.json`.
+ * 
+ * Matches the JSON schema that extensions ship alongside their entry point.
+ * All field names use camelCase in JSON via the `rename_all` attribute.
+ */
+export type ExtensionManifest = { 
+/**
+ * Unique identifier for the extension (e.g. "github").
+ */
+id: string; 
+/**
+ * Human-readable display name.
+ */
+name: string; 
+/**
+ * Semantic version of the extension (e.g. "1.0.0").
+ */
+version: string; 
+/**
+ * Optional longer description of what the extension does.
+ */
+description: string | null; 
+/**
+ * API version the extension targets (e.g. "1").
+ */
+apiVersion: string; 
+/**
+ * Relative path to the JavaScript entry point (e.g. "index.js").
+ */
+main: string; 
+/**
+ * Contributions the extension registers (blades, commands, toolbar items).
+ */
+contributes: ExtensionContributes | null; 
+/**
+ * Permissions the extension requests (e.g. ["fs:read", "network"]).
+ */
+permissions: string[] | null; 
+/**
+ * Absolute path to the extension directory on disk.
+ * Populated by discovery after parsing — not present in the JSON file.
+ */
+basePath?: string | null }
+/**
+ * A toolbar action contributed by an extension.
+ */
+export type ExtensionToolbarContribution = { 
+/**
+ * Unique toolbar action identifier.
+ */
+id: string; 
+/**
+ * Display label for the toolbar action.
+ */
+label: string; 
+/**
+ * Toolbar group to place the action in (e.g. "vcs", "tools").
+ */
+group: string | null; 
+/**
+ * Sort priority within the group (lower values appear first).
+ */
+priority: number | null }
 /**
  * A single file change with its status and optional diff stats.
  */
