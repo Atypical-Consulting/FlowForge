@@ -79,7 +79,7 @@
 - [x] **Phase 31: Security Hardening** - Lock down CSP, asset protocol scope, and Tauri capabilities before introducing external network access and extension code (completed 2026-02-10)
 - [x] **Phase 32: Toolbar Overhaul** - Transform hardcoded Header.tsx buttons into a data-driven toolbar registry with overflow handling and contextual visibility (completed 2026-02-10)
 - [x] **Phase 33: Extension System Foundation** - Build the manifest-driven extension platform with lifecycle management, namespaced registrations, and API versioning (completed 2026-02-10)
-- [ ] **Phase 34: GitHub Authentication** - Implement OAuth Device Flow with secure OS keychain token storage and automatic GitHub remote detection
+- [x] **Phase 34: GitHub Authentication** - Implement OAuth Device Flow with secure OS keychain token storage and automatic GitHub remote detection (completed 2026-02-10)
 - [ ] **Phase 35: GitHub Read Operations** - View pull requests and issues in dedicated blades with extension-contributed toolbar actions
 - [ ] **Phase 36: GitHub Write Operations & Extension Manager** - Add PR merge/create actions and build the extension manager UI for install, enable/disable, and uninstall
 
@@ -137,9 +137,9 @@
   4. When opening a repository with a github.com remote, the app automatically associates it with the signed-in GitHub account
   5. GitHub API rate limit remaining count is visible in the UI, with a warning toast when approaching the limit
 **Plans**: 3 plans
-- [ ] 34-01-PLAN.md -- Rust GitHub module: keychain storage, OAuth Device Flow, remote detection, rate limit
-- [ ] 34-02-PLAN.md -- Extensibility refactoring: ToolbarAction.renderCustom, ExtensionHost.registerBuiltIn
-- [ ] 34-03-PLAN.md -- GitHub extension JS: store, auth blade, account blade, toolbar widget, commands
+- [x] 34-01-PLAN.md -- Rust GitHub module: keychain storage, OAuth Device Flow, remote detection, rate limit
+- [x] 34-02-PLAN.md -- Extensibility refactoring: ToolbarAction.renderCustom, ExtensionHost.registerBuiltIn
+- [x] 34-03-PLAN.md -- GitHub extension JS: store, auth blade, account blade, toolbar widget, commands
 
 ### Phase 35: GitHub Read Operations
 **Goal**: Users can browse pull requests and issues for the linked GitHub repository directly within FlowForge blades, and the GitHub extension contributes toolbar actions through the extension registry
@@ -205,4 +205,4 @@ All 34 v1.5 requirements mapped:
 | EXT-13 | 36 | Extension System |
 
 ---
-*Last updated: 2026-02-10 after Phase 33 complete*
+*Last updated: 2026-02-10 after Phase 34 complete*
