@@ -2,7 +2,6 @@ import {
   Archive,
   FolderGit2,
   GitBranch,
-  GitMerge,
   Plus,
   Tag,
 } from "lucide-react";
@@ -13,7 +12,6 @@ import { useRepositoryStore } from "../stores/repository";
 import { BladeContainer } from "../blades/_shared";
 import { BranchList } from "./branches/BranchList";
 import { CommitForm } from "./commit/CommitForm";
-import { GitflowPanel } from "./gitflow";
 import { ResizablePanelLayout, ResizablePanel, ResizeHandle } from "./layout";
 import { StashList } from "./stash/StashList";
 import { TagList } from "./tags/TagList";
@@ -176,15 +174,6 @@ export function RepositoryView() {
                   onCloseCreateDialog={() => setShowTagDialog(false)}
                   onOpenCreateDialog={() => setShowTagDialog(true)}
                 />
-              </details>
-
-              {/* Gitflow section */}
-              <details className="border-b border-ctp-surface0">
-                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
-                  <GitMerge className="w-4 h-4" />
-                  <span className="font-semibold text-sm flex-1">Gitflow</span>
-                </summary>
-                <GitflowPanel />
               </details>
 
               {/* Worktrees section */}

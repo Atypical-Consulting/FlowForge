@@ -18,7 +18,6 @@ import {
   CloudDownload,
   FolderOpen,
   FolderTree,
-  GitBranch,
   GitFork,
   Palette,
   RefreshCw,
@@ -251,19 +250,6 @@ const coreActions: ToolbarAction[] = [
   // ──────────────────────────────────────────────
   // Views group (all require open repo)
   // ──────────────────────────────────────────────
-
-  {
-    id: "tb:gitflow-guide",
-    label: "Gitflow Guide",
-    icon: GitBranch,
-    group: "views",
-    priority: 50,
-    source: "core",
-    when: whenRepoOpen,
-    execute: () => {
-      openBlade("gitflow-cheatsheet", {} as Record<string, never>);
-    },
-  },
 
   {
     id: "tb:repo-browser",

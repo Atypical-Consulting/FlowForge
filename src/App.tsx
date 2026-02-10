@@ -24,6 +24,7 @@ import { useUndoStore } from "./stores/undo";
 import { useExtensionHost } from "./extensions";
 import { onActivate as contentViewersActivate, onDeactivate as contentViewersDeactivate } from "./extensions/content-viewers";
 import { onActivate as ccActivate, onDeactivate as ccDeactivate } from "./extensions/conventional-commits";
+import { onActivate as gitflowActivate, onDeactivate as gitflowDeactivate } from "./extensions/gitflow";
 import { onActivate as githubActivate, onDeactivate as githubDeactivate } from "./extensions/github";
 
 function App() {
@@ -72,6 +73,14 @@ function App() {
       version: "1.0.0",
       activate: ccActivate,
       deactivate: ccDeactivate,
+    });
+
+    registerBuiltIn({
+      id: "gitflow",
+      name: "Gitflow",
+      version: "1.0.0",
+      activate: gitflowActivate,
+      deactivate: gitflowDeactivate,
     });
 
     registerBuiltIn({
