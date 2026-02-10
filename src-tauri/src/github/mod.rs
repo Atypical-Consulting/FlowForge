@@ -1,4 +1,5 @@
 pub mod auth;
+pub mod client;
 pub mod error;
 pub mod rate_limit;
 pub mod remote;

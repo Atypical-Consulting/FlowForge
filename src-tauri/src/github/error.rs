@@ -43,4 +43,13 @@ pub enum GitHubError {
 
     #[error("Operation cancelled")]
     Cancelled,
+
+    #[error("API error: {0}")]
+    ApiError(String),
+
+    #[error("Not found: {0}")]
+    NotFound(String),
+
+    #[error("Forbidden: {0}")]
+    Forbidden(String),
 }
