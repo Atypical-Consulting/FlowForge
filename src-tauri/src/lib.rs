@@ -1,5 +1,6 @@
 mod extensions;
 mod git;
+mod github;
 mod gitflow;
 
 use std::sync::Mutex;
