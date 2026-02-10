@@ -149,7 +149,11 @@
   1. User can view a list of pull requests showing title, author, status, and CI check indicators, and open any PR into a detail blade with description, comments, and status checks
   2. User can view a list of issues showing title, labels, and assignee, with filter capabilities, and open any issue into a detail blade with description and comments
   3. The GitHub extension contributes toolbar actions (e.g., "Open PRs" button) through the same toolbar registry used by core actions, appearing only when authenticated and a GitHub remote is detected
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 35-01-PLAN.md -- Rust backend: shared GitHub API client, PR/issue types, and 4 Tauri commands
+- [ ] 35-02-PLAN.md -- Frontend shared components (StatusBadge, LabelPill, etc.) and TanStack Query hooks
+- [ ] 35-03-PLAN.md -- PR/issue blade components, extension registration, toolbar actions, cache cleanup
 
 ### Phase 36: GitHub Write Operations & Extension Manager
 **Goal**: Users can take action on PRs and issues (merge, create) and manage installed extensions through a dedicated UI
