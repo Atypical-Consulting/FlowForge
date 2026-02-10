@@ -25,6 +25,9 @@ const extensionApis = new Map<string, ExtensionAPI>();
 /** Loaded extension modules (for calling onDeactivate) */
 const extensionModules = new Map<string, any>();
 
+/** Built-in extension configs (survive deactivation for re-activation) */
+const builtInConfigs = new Map<string, BuiltInExtensionConfig>();
+
 // ---------------------------------------------------------------------------
 // Store interface
 // ---------------------------------------------------------------------------
@@ -182,6 +185,27 @@ export const useExtensionHost = create<ExtensionHostState>()(
         const ext = get().extensions.get(id);
         if (!ext || (ext.status !== "discovered" && ext.status !== "disabled" && ext.status !== "deactivated")) return;
 
+        // Built-in extensions use their stored config instead of filesystem import
+        const builtInConfig = builtInConfigs.get(id);
+        if (ext.builtIn && builtInConfig) {
+          updateExtension(get, set, id, { status: "activating" });
+          const api = new ExtensionAPI(id);
+          try {
+            await builtInConfig.activate(api);
+            extensionApis.set(id, api);
+            extensionModules.set(id, { onDeactivate: builtInConfig.deactivate });
+            updateExtension(get, set, id, { status: "active", error: undefined });
+            await persistDisabledExtensions(get().extensions);
+          } catch (e) {
+            api.cleanup();
+            const errorMessage = e instanceof Error ? e.message : String(e);
+            console.error(`Failed to activate built-in extension "${id}":`, e);
+            updateExtension(get, set, id, { status: "error", error: errorMessage });
+            toast.error(`Extension "${ext.name}" failed to activate: ${errorMessage}`);
+          }
+          return;
+        }
+
         updateExtension(get, set, id, { status: "activating" });
 
         const api = new ExtensionAPI(id);
@@ -309,6 +333,9 @@ export const useExtensionHost = create<ExtensionHostState>()(
 
       registerBuiltIn: async (config) => {
         const { id, name, version, activate, deactivate } = config;
+
+        // Store config so built-in extensions can be re-activated after deactivation
+        builtInConfigs.set(id, config);
 
         // Create a synthetic manifest for tracking
         const manifest = {
