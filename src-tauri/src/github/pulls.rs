@@ -7,7 +7,8 @@
 use super::client;
 use super::error::GitHubError;
 use super::types::{
-    CommentInfo, GitHubComment, GitHubPullRequest, LabelInfo, PullRequestDetail,
+    CommentInfo, CreatePullRequestResult, GitHubComment, GitHubCreatePrBody, GitHubMergePrBody,
+    GitHubMergeResponse, GitHubPullRequest, LabelInfo, MergePullRequestResult, PullRequestDetail,
     PullRequestListResponse, PullRequestSummary,
 };
 
@@ -164,5 +165,83 @@ pub async fn github_get_pull_request(
         deletions: pr.deletions.unwrap_or(0),
         changed_files: pr.changed_files.unwrap_or(0),
         comments,
+    })
+}
+
+/// Merge a pull request with a specified merge strategy.
+///
+/// Calls the GitHub REST API PUT endpoint for merging.
+/// Supports merge commit, squash, and rebase strategies.
+#[tauri::command]
+#[specta::specta]
+pub async fn github_merge_pull_request(
+    owner: String,
+    repo: String,
+    pull_number: u32,
+    merge_method: String,
+    commit_title: Option<String>,
+    commit_message: Option<String>,
+    sha: Option<String>,
+) -> Result<MergePullRequestResult, GitHubError> {
+    let path = format!("/repos/{}/{}/pulls/{}/merge", owner, repo, pull_number);
+
+    let body = GitHubMergePrBody {
+        commit_title,
+        commit_message,
+        sha,
+        merge_method: Some(merge_method),
+    };
+
+    let resp = client::github_put(&path, &body).await?;
+
+    let merge_resp: GitHubMergeResponse = resp
+        .json()
+        .await
+        .map_err(|e| GitHubError::ApiError(format!("Failed to parse merge response: {}", e)))?;
+
+    Ok(MergePullRequestResult {
+        merged: merge_resp.merged,
+        sha: merge_resp.sha,
+        message: merge_resp.message,
+    })
+}
+
+/// Create a new pull request.
+///
+/// Creates a PR from the specified head branch to the base branch.
+/// Optionally creates it as a draft.
+#[tauri::command]
+#[specta::specta]
+pub async fn github_create_pull_request(
+    owner: String,
+    repo: String,
+    title: String,
+    head: String,
+    base: String,
+    body: Option<String>,
+    draft: Option<bool>,
+) -> Result<CreatePullRequestResult, GitHubError> {
+    let path = format!("/repos/{}/{}/pulls", owner, repo);
+
+    let req_body = GitHubCreatePrBody {
+        title,
+        head,
+        base,
+        body,
+        draft,
+    };
+
+    let resp = client::github_post(&path, &req_body).await?;
+
+    let pr: GitHubPullRequest = resp
+        .json()
+        .await
+        .map_err(|e| GitHubError::ApiError(format!("Failed to parse create PR response: {}", e)))?;
+
+    Ok(CreatePullRequestResult {
+        number: pr.number,
+        html_url: pr.html_url,
+        title: pr.title,
+        state: pr.state,
     })
 }

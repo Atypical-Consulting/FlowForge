@@ -41,10 +41,14 @@ use git::{
     worktree::{create_worktree, delete_worktree, list_worktrees},
 };
 use extensions::discovery::discover_extensions;
+use extensions::install::{
+    extension_cancel_install, extension_fetch_manifest, extension_install, extension_uninstall,
+};
 use github::{
-    github_check_rate_limit, github_detect_remotes, github_get_auth_status, github_get_issue,
-    github_get_pull_request, github_list_issues, github_list_pull_requests, github_poll_auth,
-    github_sign_out, github_start_device_flow,
+    github_check_rate_limit, github_create_pull_request, github_detect_remotes,
+    github_get_auth_status, github_get_branch_info_for_pr, github_get_issue,
+    github_get_pull_request, github_list_issues, github_list_pull_requests,
+    github_merge_pull_request, github_poll_auth, github_sign_out, github_start_device_flow,
 };
 use gitflow::{
     abort_gitflow, finish_feature, finish_hotfix, finish_release, get_gitflow_status, init_gitflow,
@@ -152,8 +156,12 @@ pub fn run() {
         // Config commands
         get_git_global_config,
         set_git_global_config,
-        // Extension discovery commands
+        // Extension commands
         discover_extensions,
+        extension_fetch_manifest,
+        extension_install,
+        extension_uninstall,
+        extension_cancel_install,
         // GitHub commands
         github_start_device_flow,
         github_poll_auth,
@@ -166,6 +174,10 @@ pub fn run() {
         github_get_pull_request,
         github_list_issues,
         github_get_issue,
+        // GitHub write commands
+        github_merge_pull_request,
+        github_create_pull_request,
+        github_get_branch_info_for_pr,
     ]);
 
     #[cfg(debug_assertions)]

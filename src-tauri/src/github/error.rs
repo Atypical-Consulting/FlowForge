@@ -52,4 +52,13 @@ pub enum GitHubError {
 
     #[error("Forbidden: {0}")]
     Forbidden(String),
+
+    #[error("Merge not allowed: {0}")]
+    MergeNotAllowed(String),
+
+    #[error("Head has changed: {0}")]
+    HeadChanged(String),
+
+    #[error("Validation failed: {0}")]
+    ValidationFailed(String),
 }

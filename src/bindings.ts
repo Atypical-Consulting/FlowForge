@@ -961,6 +961,56 @@ async discoverExtensions(extensionsDir: string) : Promise<Result<ExtensionManife
 }
 },
 /**
+ * Fetch an extension manifest from a Git repository URL.
+ * 
+ * Clones the repo to a temp directory, reads the manifest file,
+ * and returns both the manifest JSON and the temp path for subsequent install.
+ */
+async extensionFetchManifest(gitUrl: string) : Promise<Result<ExtensionFetchResult, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("extension_fetch_manifest", { gitUrl }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Install an extension from a previously fetched temp path.
+ * 
+ * Moves the cloned repository to the extensions directory under
+ * the extension's ID extracted from the manifest.
+ */
+async extensionInstall(tempPath: string, extensionsDir: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("extension_install", { tempPath, extensionsDir }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Uninstall an extension by removing its directory.
+ */
+async extensionUninstall(extensionId: string, extensionsDir: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("extension_uninstall", { extensionId, extensionsDir }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Cancel an in-progress extension install by cleaning up the temp directory.
+ */
+async extensionCancelInstall(tempPath: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("extension_cancel_install", { tempPath }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * Initiate the GitHub OAuth Device Flow.
  * 
  * Returns device_code, user_code, and verification_uri for the frontend
@@ -1107,6 +1157,49 @@ async githubGetIssue(owner: string, repo: string, number: number) : Promise<Resu
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+/**
+ * Merge a pull request with a specified merge strategy.
+ * 
+ * Calls the GitHub REST API PUT endpoint for merging.
+ * Supports merge commit, squash, and rebase strategies.
+ */
+async githubMergePullRequest(owner: string, repo: string, pullNumber: number, mergeMethod: string, commitTitle: string | null, commitMessage: string | null, sha: string | null) : Promise<Result<MergePullRequestResult, GitHubError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("github_merge_pull_request", { owner, repo, pullNumber, mergeMethod, commitTitle, commitMessage, sha }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Create a new pull request.
+ * 
+ * Creates a PR from the specified head branch to the base branch.
+ * Optionally creates it as a draft.
+ */
+async githubCreatePullRequest(owner: string, repo: string, title: string, head: string, base: string, body: string | null, draft: boolean | null) : Promise<Result<CreatePullRequestResult, GitHubError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("github_create_pull_request", { owner, repo, title, head, base, body, draft }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Get branch information for pre-filling the Create PR form.
+ * 
+ * Reads the current branch, detects the default base (main/master),
+ * generates a title from the branch name, and collects commit
+ * messages ahead of the base branch.
+ */
+async githubGetBranchInfoForPr() : Promise<Result<BranchInfoForPr, GitHubError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("github_get_branch_info_for_pr") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -1194,6 +1287,10 @@ isRemote: boolean;
  * Remote name (e.g., "origin") for remote branches, None for local
  */
 remoteName: string | null }
+/**
+ * Branch information for pre-filling the Create PR form.
+ */
+export type BranchInfoForPr = { currentBranch: string; defaultBase: string; suggestedTitle: string; commitMessages: string[] }
 /**
  * Branch type classification for Gitflow-based coloring.
  */
@@ -1376,6 +1473,10 @@ export type CommitType = "feat" | "fix" | "docs" | "style" | "refactor" | "perf"
  */
 export type Confidence = "high" | "medium" | "low"
 /**
+ * Result of creating a pull request.
+ */
+export type CreatePullRequestResult = { number: number; htmlUrl: string; title: string; state: string }
+/**
  * Options for creating a new worktree.
  */
 export type CreateWorktreeOptions = { 
@@ -1454,6 +1555,10 @@ commands: ExtensionCommandContribution[] | null;
  * Toolbar actions contributed by this extension.
  */
 toolbar: ExtensionToolbarContribution[] | null }
+/**
+ * Result of fetching an extension manifest from a Git URL.
+ */
+export type ExtensionFetchResult = { manifestJson: string; tempPath: string }
 /**
  * Extension manifest parsed from `flowforge.extension.json`.
  * 
@@ -1569,7 +1674,7 @@ defaultBranch: string | null }
  * checks `err.type` to decide control flow (e.g., continue polling
  * on `AuthorizationPending`, increase interval on `SlowDown`).
  */
-export type GitHubError = { type: "OAuthFailed"; message: string } | { type: "AuthorizationPending" } | { type: "AccessDenied" } | { type: "ExpiredToken" } | { type: "SlowDown" } | { type: "KeychainError"; message: string } | { type: "NetworkError"; message: string } | { type: "NotAuthenticated" } | { type: "RateLimitExceeded"; message: string } | { type: "Internal"; message: string } | { type: "Cancelled" } | { type: "ApiError"; message: string } | { type: "NotFound"; message: string } | { type: "Forbidden"; message: string }
+export type GitHubError = { type: "OAuthFailed"; message: string } | { type: "AuthorizationPending" } | { type: "AccessDenied" } | { type: "ExpiredToken" } | { type: "SlowDown" } | { type: "KeychainError"; message: string } | { type: "NetworkError"; message: string } | { type: "NotAuthenticated" } | { type: "RateLimitExceeded"; message: string } | { type: "Internal"; message: string } | { type: "Cancelled" } | { type: "ApiError"; message: string } | { type: "NotFound"; message: string } | { type: "Forbidden"; message: string } | { type: "MergeNotAllowed"; message: string } | { type: "HeadChanged"; message: string } | { type: "ValidationFailed"; message: string }
 /**
  * Information about a detected GitHub remote in the current repository.
  */
@@ -1852,6 +1957,10 @@ export type MergeAnalysisResult =
  * HEAD doesn't exist yet
  */
 "unborn"
+/**
+ * Result of merging a pull request.
+ */
+export type MergePullRequestResult = { merged: boolean; sha: string | null; message: string }
 /**
  * Result of a merge operation.
  */

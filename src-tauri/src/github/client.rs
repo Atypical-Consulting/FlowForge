@@ -7,6 +7,8 @@
 
 use std::time::Duration;
 
+use serde::Serialize;
+
 use super::error::GitHubError;
 use super::token;
 
@@ -70,6 +72,53 @@ pub async fn github_get_with_params(
     check_response_status(resp).await
 }
 
+/// Make an authenticated POST request to the GitHub REST API.
+///
+/// Uses a 30-second timeout (longer than GET) since write operations
+/// may take more time to complete on GitHub's side.
+pub async fn github_post<T: Serialize>(path: &str, body: &T) -> Result<reqwest::Response, GitHubError> {
+    let access_token = token::get_token().await?;
+    let client = reqwest::Client::new();
+
+    let url = format!("https://api.github.com{}", path);
+    let resp = client
+        .post(&url)
+        .header("Authorization", format!("Bearer {}", access_token))
+        .header("User-Agent", "FlowForge-Desktop")
+        .header("Accept", "application/vnd.github+json")
+        .header("X-GitHub-Api-Version", "2022-11-28")
+        .json(body)
+        .timeout(Duration::from_secs(30))
+        .send()
+        .await
+        .map_err(|e| GitHubError::NetworkError(e.to_string()))?;
+
+    check_response_status(resp).await
+}
+
+/// Make an authenticated PUT request to the GitHub REST API.
+///
+/// Used for operations like merging pull requests.
+pub async fn github_put<T: Serialize>(path: &str, body: &T) -> Result<reqwest::Response, GitHubError> {
+    let access_token = token::get_token().await?;
+    let client = reqwest::Client::new();
+
+    let url = format!("https://api.github.com{}", path);
+    let resp = client
+        .put(&url)
+        .header("Authorization", format!("Bearer {}", access_token))
+        .header("User-Agent", "FlowForge-Desktop")
+        .header("Accept", "application/vnd.github+json")
+        .header("X-GitHub-Api-Version", "2022-11-28")
+        .json(body)
+        .timeout(Duration::from_secs(30))
+        .send()
+        .await
+        .map_err(|e| GitHubError::NetworkError(e.to_string()))?;
+
+    check_response_status(resp).await
+}
+
 /// Check the HTTP response status and map errors to GitHubError variants.
 async fn check_response_status(resp: reqwest::Response) -> Result<reqwest::Response, GitHubError> {
     let status = resp.status();
@@ -100,6 +149,18 @@ async fn check_response_status(resp: reqwest::Response) -> Result<reqwest::Respo
         404 => {
             let body = resp.text().await.unwrap_or_default();
             Err(GitHubError::NotFound(body))
+        }
+        405 => {
+            let body = resp.text().await.unwrap_or_default();
+            Err(GitHubError::MergeNotAllowed(body))
+        }
+        409 => {
+            let body = resp.text().await.unwrap_or_default();
+            Err(GitHubError::HeadChanged(body))
+        }
+        422 => {
+            let body = resp.text().await.unwrap_or_default();
+            Err(GitHubError::ValidationFailed(body))
         }
         _ => {
             let body = resp.text().await.unwrap_or_default();

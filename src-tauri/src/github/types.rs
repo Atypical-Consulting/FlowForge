@@ -243,6 +243,77 @@ pub struct IssueListResponse {
     pub next_page: Option<u32>,
 }
 
+// ---------------------------------------------------------------------------
+// Internal types for write request bodies
+// Not exposed via IPC -- no Type derive.
+// ---------------------------------------------------------------------------
+
+/// Request body for merging a pull request.
+#[derive(Debug, Serialize)]
+pub struct GitHubMergePrBody {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub commit_title: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub commit_message: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sha: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub merge_method: Option<String>,
+}
+
+/// Response from GitHub's merge endpoint.
+#[derive(Debug, Deserialize)]
+pub struct GitHubMergeResponse {
+    pub sha: Option<String>,
+    pub merged: bool,
+    pub message: String,
+}
+
+/// Request body for creating a pull request.
+#[derive(Debug, Serialize)]
+pub struct GitHubCreatePrBody {
+    pub title: String,
+    pub head: String,
+    pub base: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub body: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub draft: Option<bool>,
+}
+
+// ---------------------------------------------------------------------------
+// IPC types for write operations
+// ---------------------------------------------------------------------------
+
+/// Result of merging a pull request.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct MergePullRequestResult {
+    pub merged: bool,
+    pub sha: Option<String>,
+    pub message: String,
+}
+
+/// Result of creating a pull request.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct CreatePullRequestResult {
+    pub number: u32,
+    pub html_url: String,
+    pub title: String,
+    pub state: String,
+}
+
+/// Branch information for pre-filling the Create PR form.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct BranchInfoForPr {
+    pub current_branch: String,
+    pub default_base: String,
+    pub suggested_title: String,
+    pub commit_messages: Vec<String>,
+}
+
 /// Response from GitHub's device code endpoint.
 /// Returned to the frontend so it can display the user_code
 /// and verification_uri to the user.
