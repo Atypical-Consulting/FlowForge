@@ -82,13 +82,11 @@ Plans:
   3. Branch classification and color-coding for Gitflow branches (feature/*, release/*, hotfix/*) are contributed by the Gitflow extension
   4. Disabling the Gitflow extension removes all Gitflow UI -- sidebar sections, branch dialogs, merge flows, coloring -- and core Git operations remain fully functional
   5. Extension Manager blade shows Gitflow, Conventional Commits, Content Viewers, and GitHub as four independently toggleable extensions
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 40-01: Decouple Gitflow slice from GitOpsStore via GitHookBus events
-- [ ] 40-02: Extract Gitflow components, blade, and commands to gitflow extension
-- [ ] 40-03: Contribute sidebar panel, status bar widget, context menus, and branch coloring via ExtensionAPI
-- [ ] 40-04: Graceful degradation verification and Extension Manager integration
+- [ ] 40-01-PLAN.md -- Create gitflow extension entry point, register in App.tsx, remove core registrations
+- [ ] 40-02-PLAN.md -- Extension lifecycle tests and graceful degradation verification
 
 #### Phase 41: Sandbox & Polish
 **Goal**: Extension sandbox infrastructure is prepared for future third-party extensions, deprecated code is removed, and v1.6.0 ships with full test coverage and documentation
@@ -187,7 +185,7 @@ Plans:
 | 37. Extension Platform Foundation | 3/3 | ✓ Complete | 2026-02-10 |
 | 38. Content Viewer Extraction | 2/2 | ✓ Complete | 2026-02-10 |
 | 39. Conventional Commits Extraction | 3/3 | ✓ Complete | 2026-02-10 |
-| 40. Gitflow Extraction | 0/4 | Not started | - |
+| 40. Gitflow Extraction | 0/2 | Not started | - |
 | 41. Sandbox & Polish | 0/3 | Not started | - |
 
 ---
