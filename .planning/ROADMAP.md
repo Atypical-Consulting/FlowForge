@@ -165,7 +165,11 @@ Plans:
   3. User can install an extension from a GitHub repository URL with manifest validation shown before activation proceeds
   4. Extension manager blade lists all installed extensions with enable/disable toggles and uninstall buttons, showing which blades, commands, and toolbar actions each extension contributes
   5. Extension permissions declared in the manifest (network, filesystem, git-operations) are displayed during the install review step
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 36-01-PLAN.md -- Rust backend: HTTP client write helpers, write commands (merge PR, create PR, branch info), extension install/uninstall commands
+- [ ] 36-02-PLAN.md -- Frontend: mutation hooks, UI components (MergeStrategySelector, MergeConfirmDialog, ToggleSwitch, PermissionBadge), CreatePR blade, ExtensionManagerBlade
+- [ ] 36-03-PLAN.md -- Integration: wire merge into PR detail, register CreatePR blade/commands, Extension Manager toolbar, extension state persistence
 
 ## Coverage
 
