@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Phase 34 - GitHub Authentication (complete)
+**Current focus:** Phase 35 - GitHub Read Operations (in progress)
 
 ## Current Position
 
-Phase: 34 of 36 (GitHub Authentication)
-Plan: 3 of 3 complete
-Status: Phase Complete
-Last activity: 2026-02-10 — Phase 34 verified and approved
+Phase: 35 of 36 (GitHub Read Operations)
+Plan: 2 of 3 complete
+Status: In Progress
+Last activity: 2026-02-10 — Plan 35-02 complete (shared components + query hooks)
 
-Progress: [██████████] 100%
+Progress: [██████████████░░░░░░] 67%
 
 ## Milestone History
 
@@ -44,6 +44,7 @@ See `.planning/MILESTONES.md` for full history.
 **Plan 34-01:** 16min, 2 tasks, 10 files modified
 **Plan 34-02:** 7min, 2 tasks, 6 files modified
 **Plan 34-03:** 11min, 2 tasks (auto) + 1 checkpoint, 11 files modified
+**Plan 35-02:** 6min, 2 tasks, 8 files modified
 
 ## Accumulated Context
 
@@ -109,6 +110,13 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 - Module-level pollTimeoutId outside Zustand store (non-serializable setTimeout reference)
 - Auth state persists across repo switches; only detectedRemotes is reset on repo change
 
+**Phase 35-02 decisions:**
+- ext:github query key prefix for all GitHub TanStack Query hooks (cache isolation from core queries)
+- Manual bindings.ts additions for 4 GitHub read commands and 10 IPC types (pending specta regen)
+- No setInterval in TimeAgo -- re-rendered on parent rerender from query refetch
+- Inline styles for LabelPill colors because Tailwind v4 cannot generate dynamic hex at build time
+- getSelectedRemote() as standalone function (not hook) for non-React access to selected remote
+
 ### Pending Todos
 
 None.
@@ -137,9 +145,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed Phase 34 — GitHub Authentication verified and approved
+Stopped at: Completed 35-02-PLAN.md (shared components + query hooks)
 Resume file: None
 
 ---
 *State updated: 2026-02-10*
-*v1.5.0 GitHub Extension -- Phase 34 complete (3 of 3 plans complete)*
+*v1.5.0 GitHub Extension -- Phase 35 in progress (2 of 3 plans complete)*
