@@ -1,22 +1,11 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
-import { getEnabledCommands } from "../../lib/commandRegistry";
+import { getEnabledCommands, getOrderedCategories } from "../../lib/commandRegistry";
 import type { CommandCategory } from "../../lib/commandRegistry";
 import { searchCommands } from "../../lib/fuzzySearch";
 import { useCommandPaletteStore } from "../../stores/commandPalette";
 import { CommandPaletteItem } from "./CommandPaletteItem";
-
-const CATEGORY_ORDER: CommandCategory[] = [
-  "Navigation",
-  "Repository",
-  "Sync",
-  "Branches",
-  "Stash",
-  "Tags",
-  "Worktrees",
-  "Settings",
-];
 
 export function CommandPalette() {
   const {
@@ -47,8 +36,8 @@ export function CommandPalette() {
       if (!groups.has(cat)) groups.set(cat, []);
       groups.get(cat)!.push(item);
     }
-    // Sort groups by category order
-    return CATEGORY_ORDER.filter((cat) => groups.has(cat)).map((cat) => ({
+    // Sort groups by category order (core first, then extension alphabetically)
+    return getOrderedCategories().filter((cat) => groups.has(cat as CommandCategory)).map((cat) => ({
       category: cat,
       items: groups.get(cat)!,
     }));
