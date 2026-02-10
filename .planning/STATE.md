@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 34 of 36 (GitHub Authentication)
-Plan: 2 of 3 complete
-Status: In Progress
-Last activity: 2026-02-10 — Plan 34-01 GitHub Rust Backend complete (2/2 tasks)
+Plan: 3 of 3 complete (Task 3 pending human-verify checkpoint)
+Status: Checkpoint
+Last activity: 2026-02-10 — Plan 34-03 GitHub Extension Frontend (2/3 tasks auto, 1 pending verify)
 
-Progress: [██████░░░░] 67%
+Progress: [█████████░] 95%
 
 ## Milestone History
 
@@ -43,6 +43,7 @@ See `.planning/MILESTONES.md` for full history.
 **Plan 33-03:** 6min, 4 tasks, 6 files modified
 **Plan 34-01:** 16min, 2 tasks, 10 files modified
 **Plan 34-02:** 7min, 2 tasks, 6 files modified
+**Plan 34-03:** 11min, 2 tasks (auto) + 1 checkpoint, 11 files modified
 
 ## Accumulated Context
 
@@ -100,6 +101,14 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 - registerBuiltIn creates synthetic ExtensionManifest with 'as ExtensionManifest' cast for tracking
 - Built-in extensions share full ExtensionAPI lifecycle -- same cleanup, deactivation, namespacing
 
+**Phase 34-03 decisions:**
+- Added GitHub command bindings manually to bindings.ts (pending specta regeneration on next tauri dev)
+- navigator.clipboard.writeText instead of Tauri clipboard plugin (avoids dependency, works cross-env)
+- Dynamic import for blade components in extension entry point (code splitting, avoids circular deps)
+- Repo change detection via plain subscribe + prevPath comparison (no subscribeWithSelector needed)
+- Module-level pollTimeoutId outside Zustand store (non-serializable setTimeout reference)
+- Auth state persists across repo switches; only detectedRemotes is reset on repo change
+
 ### Pending Todos
 
 None.
@@ -128,9 +137,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed 34-01-PLAN.md — GitHub Rust Backend complete (2/2 tasks)
+Stopped at: Plan 34-03 checkpoint:human-verify -- awaiting end-to-end sign-in flow verification
 Resume file: None
 
 ---
 *State updated: 2026-02-10*
-*v1.5.0 GitHub Extension -- Phase 34 in progress (2 of 3 plans complete)*
+*v1.5.0 GitHub Extension -- Phase 34 plan 03 at checkpoint (2/3 tasks auto complete, 1 human-verify pending)*
