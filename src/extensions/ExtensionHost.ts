@@ -4,7 +4,7 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { commands } from "../bindings";
 import { toast } from "../stores/toast";
 import { ExtensionAPI } from "./ExtensionAPI";
-import type { ExtensionInfo } from "./extensionTypes";
+import type { BuiltInExtensionConfig, ExtensionInfo } from "./extensionTypes";
 import type { ExtensionManifest } from "./extensionManifest";
 
 // ---------------------------------------------------------------------------
@@ -37,6 +37,7 @@ interface ExtensionHostState {
   deactivateExtension: (id: string) => Promise<void>;
   activateAll: () => Promise<void>;
   deactivateAll: () => Promise<void>;
+  registerBuiltIn: (config: BuiltInExtensionConfig) => Promise<void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -253,6 +254,73 @@ export const useExtensionHost = create<ExtensionHostState>()(
           if (ext.status === "active") {
             await get().deactivateExtension(id);
           }
+        }
+      },
+
+      // -------------------------------------------------------------------
+      // Built-in extension registration
+      // -------------------------------------------------------------------
+
+      registerBuiltIn: async (config) => {
+        const { id, name, version, activate, deactivate } = config;
+
+        // Create a synthetic manifest for tracking
+        const manifest = {
+          id,
+          name,
+          version,
+          apiVersion: CURRENT_API_VERSION,
+          main: "(built-in)",
+          description: `Built-in extension: ${name}`,
+          contributes: null,
+          permissions: null,
+        } as ExtensionManifest;
+
+        // Register as discovered first
+        const next = new Map(get().extensions);
+        next.set(id, {
+          id,
+          name,
+          version,
+          status: "discovered",
+          manifest,
+        });
+        set(
+          { extensions: next },
+          false,
+          `extension-host/register-builtin:${id}`,
+        );
+
+        // Now activate through the standard API facade
+        const api = new ExtensionAPI(id);
+
+        try {
+          await activate(api);
+
+          // Store references for deactivation
+          extensionApis.set(id, api);
+          // Store a synthetic module object with onDeactivate
+          extensionModules.set(id, { onDeactivate: deactivate });
+
+          updateExtension(get, set, id, {
+            status: "active",
+            error: undefined,
+          });
+        } catch (e) {
+          api.cleanup();
+          const errorMessage =
+            e instanceof Error ? e.message : String(e);
+          console.error(
+            `Failed to activate built-in extension "${id}":`,
+            e,
+          );
+          updateExtension(get, set, id, {
+            status: "error",
+            error: errorMessage,
+          });
+          toast.error(
+            `Built-in extension "${name}" failed to activate: ${errorMessage}`,
+          );
         }
       },
     }),

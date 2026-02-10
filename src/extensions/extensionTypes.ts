@@ -1,3 +1,4 @@
+import type { ExtensionAPI } from "./ExtensionAPI";
 import type { ExtensionManifest } from "./extensionManifest";
 
 export type ExtensionStatus =
@@ -14,4 +15,13 @@ export interface ExtensionInfo {
   status: ExtensionStatus;
   error?: string;
   manifest: ExtensionManifest;
+}
+
+/** Configuration for registering a built-in (bundled) extension. */
+export interface BuiltInExtensionConfig {
+  id: string;
+  name: string;
+  version: string;
+  activate: (api: ExtensionAPI) => Promise<void>;
+  deactivate?: () => Promise<void> | void;
 }
