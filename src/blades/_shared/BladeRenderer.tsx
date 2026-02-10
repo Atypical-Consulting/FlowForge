@@ -1,5 +1,7 @@
 import { Suspense } from "react";
+import { Puzzle } from "lucide-react";
 import { getBladeRegistration } from "../../lib/bladeRegistry";
+import { openBlade } from "../../lib/bladeOpener";
 import { BladePanel } from "./BladePanel";
 import { BladeLoadingFallback } from "./BladeLoadingFallback";
 import { BladeErrorBoundary } from "./BladeErrorBoundary";
@@ -14,7 +16,19 @@ export function BladeRenderer({ blade, goBack }: BladeRendererProps) {
   const reg = getBladeRegistration(blade.type);
   if (!reg)
     return (
-      <div className="p-4 text-ctp-red">Unknown blade: {blade.type}</div>
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8">
+        <Puzzle className="w-10 h-10 text-ctp-overlay0 opacity-50" />
+        <p className="text-sm text-ctp-subtext0 text-center">
+          This content requires an extension that is currently disabled.
+        </p>
+        <button
+          type="button"
+          onClick={() => openBlade("extension-manager", {})}
+          className="text-xs text-ctp-blue hover:underline cursor-pointer"
+        >
+          Open Extension Manager
+        </button>
+      </div>
     );
 
   const Component = reg.component;

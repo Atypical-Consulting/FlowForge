@@ -22,6 +22,7 @@ import { useThemeStore } from "./stores/theme";
 import { useTopologyStore } from "./stores/topology";
 import { useUndoStore } from "./stores/undo";
 import { useExtensionHost } from "./extensions";
+import { onActivate as contentViewersActivate, onDeactivate as contentViewersDeactivate } from "./extensions/content-viewers";
 import { onActivate as githubActivate, onDeactivate as githubDeactivate } from "./extensions/github";
 
 function App() {
@@ -56,6 +57,14 @@ function App() {
     initChecklist();
 
     // Register built-in extensions
+    registerBuiltIn({
+      id: "content-viewers",
+      name: "Content Viewers",
+      version: "1.0.0",
+      activate: contentViewersActivate,
+      deactivate: contentViewersDeactivate,
+    });
+
     registerBuiltIn({
       id: "github",
       name: "GitHub Integration",
