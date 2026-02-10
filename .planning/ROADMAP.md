@@ -107,7 +107,9 @@
   3. All toolbar buttons use consistent icon-only rendering with accessible ShortcutTooltip labels (WCAG 2.1 AA)
   4. Repository-specific toolbar actions disappear when no repository is open and reappear when one is opened
   5. User can toggle individual toolbar actions on/off in settings with the preference persisted across sessions
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 32-01-PLAN.md -- ToolbarRegistry store, core action registrations, settings slice extension
+- [ ] 32-02-PLAN.md -- Toolbar UI components, Header.tsx refactoring, ToolbarSettings panel
 
 ### Phase 33: Extension System Foundation
 **Goal**: FlowForge has a working extension platform where extensions declare capabilities in a manifest, register blades and commands through a tracked API, and are activated/deactivated with full cleanup
