@@ -54,6 +54,7 @@ interface GitHubState {
 
   // Detected remotes
   detectedRemotes: GitHubRemote[];
+  selectedRemoteIndex: number;
 
   // Actions
   startDeviceFlow: (selectedScopes: string[]) => Promise<void>;
@@ -65,6 +66,7 @@ interface GitHubState {
   checkRateLimitWarning: () => void;
   detectRemotes: () => Promise<void>;
   resetRemotes: () => void;
+  setSelectedRemote: (index: number) => void;
 }
 
 export const useGitHubStore = create<GitHubState>()(
@@ -92,6 +94,7 @@ export const useGitHubStore = create<GitHubState>()(
 
       // Detected remotes
       detectedRemotes: [],
+      selectedRemoteIndex: 0,
 
       // -------------------------------------------------------------------
       // Actions
@@ -400,12 +403,27 @@ export const useGitHubStore = create<GitHubState>()(
       },
 
       resetRemotes: () => {
-        set({ detectedRemotes: [] }, false, "github/reset-remotes");
+        set({ detectedRemotes: [], selectedRemoteIndex: 0 }, false, "github/reset-remotes");
+      },
+
+      setSelectedRemote: (index: number) => {
+        set({ selectedRemoteIndex: index }, false, "github/set-selected-remote");
       },
     }),
     { name: "github-auth", enabled: import.meta.env.DEV },
   ),
 );
+
+/**
+ * Get the currently selected GitHub remote.
+ *
+ * Returns the remote at selectedRemoteIndex, or null if no remotes
+ * are detected. Safe to call outside React components (uses getState).
+ */
+export function getSelectedRemote(): GitHubRemote | null {
+  const state = useGitHubStore.getState();
+  return state.detectedRemotes[state.selectedRemoteIndex] ?? null;
+}
 
 /**
  * Cancel any active polling. Called from extension onDeactivate
