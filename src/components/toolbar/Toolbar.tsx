@@ -6,7 +6,6 @@ import {
 } from "../../lib/toolbarRegistry";
 import { usePreferencesStore } from "../../stores/domain/preferences";
 import { useRepositoryStore } from "../../stores/repository";
-import { ThemeToggle } from "../ui/ThemeToggle";
 import { ToolbarButton } from "./ToolbarButton";
 import { ToolbarGroup } from "./ToolbarGroup";
 import { ToolbarOverflowMenu } from "./ToolbarOverflowMenu";
@@ -100,11 +99,11 @@ export function Toolbar() {
             {groupInline.map((action, i) => {
               const itemIndex = startGlobal + i;
 
-              // Special case: render ThemeToggle widget for tb:theme-toggle
-              if (action.id === "tb:theme-toggle") {
+              // Custom widget rendering (used by ThemeToggle, extension badges, etc.)
+              if (action.renderCustom) {
                 return (
-                  <div key={action.id} data-toolbar-item tabIndex={getTabIndex(itemIndex)}>
-                    <ThemeToggle />
+                  <div key={action.id} data-toolbar-item>
+                    {action.renderCustom(action, getTabIndex(itemIndex))}
                   </div>
                 );
               }

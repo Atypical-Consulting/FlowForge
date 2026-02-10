@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
@@ -47,6 +48,9 @@ export interface ToolbarAction {
   isLoading?: () => boolean;
   /** "core" for built-in, "ext:{extId}" for extensions */
   source?: string;
+  /** Optional custom render function. When provided, replaces the default ToolbarButton rendering.
+   *  Receives the action and the computed tabIndex for roving tabindex integration. */
+  renderCustom?: (action: ToolbarAction, tabIndex: number) => ReactNode;
 }
 
 // --- Store ---

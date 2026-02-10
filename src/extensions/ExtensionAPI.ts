@@ -48,6 +48,8 @@ export interface ExtensionToolbarConfig {
   when?: () => boolean;
   execute: () => void | Promise<void>;
   isLoading?: () => boolean;
+  /** Optional custom render function for toolbar widget (e.g., badge, toggle). */
+  renderCustom?: (action: any, tabIndex: number) => ReactNode;
 }
 
 /**

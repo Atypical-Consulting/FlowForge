@@ -10,6 +10,7 @@
  * Import this file at app startup (e.g., from App.tsx or commands/index.ts).
  */
 
+import { createElement } from "react";
 import { Channel } from "@tauri-apps/api/core";
 import {
   ArrowDown,
@@ -28,6 +29,7 @@ import {
   X,
 } from "lucide-react";
 import { type SyncProgress, commands as tauriCommands } from "../bindings";
+import { ThemeToggle } from "../components/ui/ThemeToggle";
 import { openBlade } from "../lib/bladeOpener";
 import { queryClient } from "../lib/queryClient";
 import type { ToolbarAction } from "../lib/toolbarRegistry";
@@ -106,9 +108,8 @@ const coreActions: ToolbarAction[] = [
     group: "app",
     priority: 70,
     source: "core",
-    // No-op — the Toolbar renderer (Plan 02) will check for this ID
-    // and render the <ThemeToggle /> widget instead of a standard button.
     execute: () => {},
+    renderCustom: () => createElement(ThemeToggle),
   },
 
   // ──────────────────────────────────────────────
