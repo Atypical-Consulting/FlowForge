@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 Phase: 34 of 36 (GitHub Authentication)
 Plan: 2 of 3 complete
 Status: In Progress
-Last activity: 2026-02-10 — Plan 34-02 Toolbar Extensibility & Built-in Extensions complete (2/2 tasks)
+Last activity: 2026-02-10 — Plan 34-01 GitHub Rust Backend complete (2/2 tasks)
 
 Progress: [██████░░░░] 67%
 
@@ -41,6 +41,7 @@ See `.planning/MILESTONES.md` for full history.
 **Plan 33-01:** 12min, 3 tasks, 10 files modified
 **Plan 33-02:** 18min, 2 tasks, 5 files modified
 **Plan 33-03:** 6min, 4 tasks, 6 files modified
+**Plan 34-01:** 16min, 2 tasks, 10 files modified
 **Plan 34-02:** 7min, 2 tasks, 6 files modified
 
 ## Accumulated Context
@@ -86,6 +87,13 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 - ExtensionAPI.registerBlade maps config.title to BladeRegistration.defaultTitle for simpler extension API
 - Sequential await in activateAll/deactivateAll to avoid registry mutation race conditions
 
+**Phase 34-01 decisions:**
+- Single-poll command pattern: frontend controls device flow polling loop via setTimeout, each poll is one Tauri command
+- Token never returned to frontend: AuthResult carries authenticated/username/avatar_url/scopes only
+- keyring v3 with explicit platform features for macOS Keychain, Windows Credential Manager, Linux Secret Service
+- Added reqwest form feature for OAuth form-encoded POST bodies
+- GitHub module as peer of git/ and gitflow/ (core commands, not Tauri plugin)
+
 **Phase 34-02 decisions:**
 - renderCustom on ToolbarAction replaces hardcoded ID checks -- fully generic widget rendering
 - createElement(ThemeToggle) in .ts file avoids TSX requirement for toolbar-actions
@@ -99,7 +107,7 @@ None.
 ### Blockers/Concerns
 
 - ~~CSP is currently null~~ — RESOLVED: Strict CSP applied in Phase 31
-- OAuth token storage must use OS keychain from day one, never plaintext (Phase 34 addresses this)
+- ~~OAuth token storage must use OS keychain from day one, never plaintext~~ -- RESOLVED: keyring crate integrated in Phase 34-01
 
 ### Quick Tasks Completed
 
@@ -120,7 +128,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed 34-02-PLAN.md — Toolbar Extensibility & Built-in Extension Registration complete (2/2 tasks)
+Stopped at: Completed 34-01-PLAN.md — GitHub Rust Backend complete (2/2 tasks)
 Resume file: None
 
 ---
