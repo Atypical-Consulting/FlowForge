@@ -62,10 +62,21 @@ export function useCommitExecution(options?: UseCommitExecutionOptions) {
     },
   });
 
-  const commit = (message: string, amend = false) =>
-    commitMutation.mutateAsync({ message, amend });
+  const commit = async (message: string, amend = false) => {
+    const willResult = await gitHookBus.emitWill("commit", { commitMessage: message });
+    if (willResult.cancel) {
+      toast.warning(willResult.reason ?? "Commit cancelled by extension");
+      return;
+    }
+    await commitMutation.mutateAsync({ message, amend });
+  };
 
   const commitAndPush = async (message: string, amend = false) => {
+    const willResult = await gitHookBus.emitWill("commit", { commitMessage: message });
+    if (willResult.cancel) {
+      toast.warning(willResult.reason ?? "Commit cancelled by extension");
+      return;
+    }
     await commitMutation.mutateAsync({ message, amend });
     await pushMutation.mutateAsync();
   };
