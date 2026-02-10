@@ -36,6 +36,17 @@ pub struct ExtensionManifest {
     /// Populated by discovery after parsing — not present in the JSON file.
     #[serde(default)]
     pub base_path: Option<String>,
+
+    /// Trust level for the extension.
+    /// "built-in" for bundled extensions, "user-trusted" for user-installed,
+    /// "sandboxed" for untrusted third-party (future).
+    /// Defaults to "sandboxed" when not specified in the manifest JSON.
+    #[serde(default = "default_trust_level")]
+    pub trust_level: String,
+}
+
+fn default_trust_level() -> String {
+    "sandboxed".to_string()
 }
 
 /// Contribution points an extension can register.

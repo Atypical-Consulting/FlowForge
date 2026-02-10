@@ -1,6 +1,8 @@
 import type { ExtensionAPI } from "./ExtensionAPI";
 import type { ExtensionManifest } from "./extensionManifest";
 
+export type TrustLevel = "built-in" | "user-trusted" | "sandboxed";
+
 export type ExtensionStatus =
   | "discovered" // Manifest found and parsed, not yet activated
   | "activating" // Entry point loading in progress
@@ -17,6 +19,7 @@ export interface ExtensionInfo {
   error?: string;
   manifest: ExtensionManifest;
   builtIn?: boolean;
+  trustLevel: TrustLevel;
 }
 
 /** Configuration for registering a built-in (bundled) extension. */

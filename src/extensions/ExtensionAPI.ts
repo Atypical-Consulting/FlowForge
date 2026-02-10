@@ -141,6 +141,7 @@ export class ExtensionAPI {
    * Register a blade type with automatic namespacing.
    * The blade type becomes `ext:{extensionId}:{config.type}`,
    * unless `coreOverride` is true (type used as-is for built-in extensions).
+   * @sandboxSafety requires-trust - Accepts React ComponentType which cannot be serialized across Worker boundary.
    */
   registerBlade(config: ExtensionBladeConfig): void {
     const namespacedType = config.coreOverride
@@ -158,6 +159,7 @@ export class ExtensionAPI {
   /**
    * Register a command with automatic namespacing.
    * The command ID becomes `ext:{extensionId}:{config.id}`.
+   * @sandboxSafety requires-trust - Accepts action callback with closure access to host scope.
    */
   registerCommand(config: ExtensionCommandConfig): void {
     const namespacedId = `ext:${this.extensionId}:${config.id}`;
@@ -173,6 +175,7 @@ export class ExtensionAPI {
   /**
    * Contribute a toolbar action with automatic namespacing.
    * The action ID becomes `ext:{extensionId}:{config.id}`.
+   * @sandboxSafety requires-trust - Accepts React render functions and LucideIcon components.
    */
   contributeToolbar(config: ExtensionToolbarConfig): void {
     const namespacedId = `ext:${this.extensionId}:${config.id}`;
@@ -187,6 +190,7 @@ export class ExtensionAPI {
   /**
    * Contribute a context menu item with automatic namespacing.
    * The item ID becomes `ext:{extensionId}:{config.id}`.
+   * @sandboxSafety requires-trust - Accepts callback functions with closure access.
    */
   contributeContextMenu(config: ExtensionContextMenuConfig): void {
     const namespacedId = `ext:${this.extensionId}:${config.id}`;
@@ -202,6 +206,7 @@ export class ExtensionAPI {
    * Contribute a sidebar panel with automatic namespacing.
    * The panel ID becomes `ext:{extensionId}:{config.id}`.
    * Priority is clamped to 1-69 (70-100 reserved for core).
+   * @sandboxSafety requires-trust - Accepts React ComponentType for panel rendering.
    */
   contributeSidebarPanel(config: ExtensionSidebarPanelConfig): void {
     const namespacedId = `ext:${this.extensionId}:${config.id}`;
@@ -219,6 +224,7 @@ export class ExtensionAPI {
    * Contribute a status bar item with automatic namespacing.
    * The item ID becomes `ext:{extensionId}:{config.id}`.
    * Priority is clamped to 1-89 (90-100 reserved for core).
+   * @sandboxSafety requires-trust - Accepts React render function for status bar widget.
    */
   contributeStatusBar(config: ExtensionStatusBarConfig): void {
     const namespacedId = `ext:${this.extensionId}:${config.id}`;
@@ -235,6 +241,7 @@ export class ExtensionAPI {
   /**
    * Register a handler for post-operation git events.
    * The handler fires after the git operation completes.
+   * @sandboxSafety sandbox-safe - Handler receives serializable GitHookContext. No DOM access needed.
    */
   onDidGit(operation: GitOperation, handler: DidHandler): void {
     const unsub = gitHookBus.onDid(
@@ -248,6 +255,7 @@ export class ExtensionAPI {
   /**
    * Register a handler for pre-operation git events.
    * The handler fires before the git operation and can cancel it.
+   * @sandboxSafety sandbox-safe - Handler receives/returns serializable data. Can validate git operations.
    */
   onWillGit(operation: GitOperation, handler: WillHandler): void {
     const unsub = gitHookBus.onWill(
@@ -262,6 +270,7 @@ export class ExtensionAPI {
    * Register a disposable that will be called during cleanup.
    * Disposables execute in reverse registration order (LIFO).
    * Supports both function and { dispose } object patterns.
+   * @sandboxSafety sandbox-safe - Cleanup callback, no DOM or React access needed.
    */
   onDispose(disposable: Disposable): void {
     this.disposables.push(disposable);

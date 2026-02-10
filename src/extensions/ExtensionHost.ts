@@ -147,6 +147,7 @@ export const useExtensionHost = create<ExtensionHostState>()(
                 status: "error",
                 error: `Incompatible API version: expected ${CURRENT_API_VERSION}, got ${manifest.apiVersion}`,
                 manifest,
+                trustLevel: (manifest as any).trustLevel ?? "sandboxed",
               });
               toast.error(
                 `Extension "${manifest.name}" requires API version ${manifest.apiVersion} (current: ${CURRENT_API_VERSION})`,
@@ -158,6 +159,7 @@ export const useExtensionHost = create<ExtensionHostState>()(
                 version: manifest.version,
                 status: "discovered",
                 manifest,
+                trustLevel: (manifest as any).trustLevel ?? "sandboxed",
               });
             }
           }
@@ -358,6 +360,7 @@ export const useExtensionHost = create<ExtensionHostState>()(
           status: "discovered",
           manifest,
           builtIn: true,
+          trustLevel: "built-in" as const,
         });
         set(
           { extensions: next },
