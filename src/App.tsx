@@ -8,6 +8,8 @@ import { CommandPalette } from "./components/command-palette";
 import { Header } from "./components/Header";
 import { RepositoryView } from "./components/RepositoryView";
 import { WelcomeView } from "./components/WelcomeView";
+import { ContextMenuPortal } from "./components/ui/ContextMenu";
+import { StatusBar } from "./components/ui/StatusBar";
 import { ToastContainer } from "./components/ui/ToastContainer";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { getNavigationActor, NavigationProvider } from "./machines/navigation/context";
@@ -118,8 +120,10 @@ function App() {
         <main className="flex-1 min-h-0 overflow-hidden">
           {status ? <RepositoryView /> : <WelcomeView />}
         </main>
+        {status && <StatusBar />}
         <ToastContainer />
         <CommandPalette />
+        <ContextMenuPortal />
       </div>
     </NavigationProvider>
   );
