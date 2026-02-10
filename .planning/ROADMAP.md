@@ -14,7 +14,7 @@
 
 - [x] **Phase 37: Extension Platform Foundation** - New registries, UI surfaces, GitHookBus, and ExtensionAPI expansion
 - [x] **Phase 38: Content Viewer Extraction** - Markdown, code, and 3D viewers extracted to built-in extension
-- [ ] **Phase 39: Conventional Commits Extraction** - CC composer, validation, and changelog extracted to built-in extension
+- [x] **Phase 39: Conventional Commits Extraction** - CC composer, validation, and changelog extracted to built-in extension
 - [ ] **Phase 40: Gitflow Extraction** - Gitflow sidebar, cheatsheet, and branch coloring extracted to built-in extension
 - [ ] **Phase 41: Sandbox & Polish** - Trust flags, Worker prototype, deprecation cleanup, tests, docs, version bump
 
@@ -68,9 +68,9 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 39-01: Extract CC blade, store, and components to conventional-commits extension
-- [ ] 39-02: Wire onWillCommit validation hook and changelog contribution
-- [ ] 39-03: Graceful degradation and plain commit form fallback
+- [x] 39-01-PLAN.md — CC extension entry point, blade registration, CommitForm gating
+- [x] 39-02-PLAN.md — emitWill pre-commit hook, toolbar and command contributions
+- [x] 39-03-PLAN.md — Extension lifecycle tests and CommitForm degradation tests
 
 #### Phase 40: Gitflow Extraction
 **Goal**: Gitflow sidebar, cheatsheet, branch coloring, and merge flows run as a toggleable built-in extension, enabling plain Git client mode when disabled
@@ -186,9 +186,9 @@ Plans:
 |-------|----------------|--------|-----------|
 | 37. Extension Platform Foundation | 3/3 | ✓ Complete | 2026-02-10 |
 | 38. Content Viewer Extraction | 2/2 | ✓ Complete | 2026-02-10 |
-| 39. Conventional Commits Extraction | 0/3 | Not started | - |
+| 39. Conventional Commits Extraction | 3/3 | ✓ Complete | 2026-02-10 |
 | 40. Gitflow Extraction | 0/4 | Not started | - |
 | 41. Sandbox & Polish | 0/3 | Not started | - |
 
 ---
-*Last updated: 2026-02-10 after Phase 37 completion*
+*Last updated: 2026-02-10 after Phase 39 completion*
