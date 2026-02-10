@@ -16,7 +16,6 @@ import {
   ArrowDown,
   ArrowUp,
   CloudDownload,
-  FileText,
   FolderOpen,
   FolderTree,
   GitBranch,
@@ -276,19 +275,6 @@ const coreActions: ToolbarAction[] = [
     when: whenRepoOpen,
     execute: () => {
       openBlade("repo-browser", {} as Record<string, never>);
-    },
-  },
-
-  {
-    id: "tb:changelog",
-    label: "Changelog",
-    icon: FileText,
-    group: "views",
-    priority: 30,
-    source: "core",
-    when: whenRepoOpen,
-    execute: () => {
-      openBlade("changelog", {} as Record<string, never>);
     },
   },
 

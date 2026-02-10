@@ -1,12 +1,10 @@
 import {
-  FileText,
   FolderOpen,
   GitFork,
   RefreshCw,
   X,
 } from "lucide-react";
 import { registerCommand } from "../lib/commandRegistry";
-import { openBlade } from "../lib/bladeOpener";
 import { useBranchStore } from "../stores/branches";
 import { useRepositoryStore } from "../stores/repository";
 import { useStashStore } from "../stores/stash";
@@ -45,18 +43,6 @@ registerCommand({
   action: () => {
     document.dispatchEvent(new CustomEvent("clone-repository-dialog"));
   },
-});
-
-registerCommand({
-  id: "generate-changelog",
-  title: "Generate Changelog",
-  description: "Generate a changelog from commits",
-  category: "Repository",
-  icon: FileText,
-  action: () => {
-    openBlade("changelog", {} as Record<string, never>);
-  },
-  enabled: () => !!useRepositoryStore.getState().repoStatus,
 });
 
 registerCommand({

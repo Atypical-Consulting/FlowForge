@@ -1,5 +1,8 @@
 import { lazy } from "react";
+import { FileText } from "lucide-react";
 import type { ExtensionAPI } from "../ExtensionAPI";
+import { openBlade } from "../../lib/bladeOpener";
+import { useRepositoryStore } from "../../stores/repository";
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {
   // Lazy component imports -- loaded on first blade render, not during activation
@@ -31,6 +34,42 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     lazy: true,
     singleton: true,
     coreOverride: true,
+  });
+
+  // Contribute toolbar action for changelog
+  api.contributeToolbar({
+    id: "changelog",
+    label: "Changelog",
+    icon: FileText,
+    group: "views",
+    priority: 30,
+    when: () => !!useRepositoryStore.getState().repoStatus,
+    execute: () => {
+      openBlade("changelog", {} as Record<string, never>);
+    },
+  });
+
+  // Register command palette entries
+  api.registerCommand({
+    id: "generate-changelog",
+    title: "Generate Changelog",
+    description: "Generate a changelog from conventional commits",
+    category: "Repository",
+    icon: FileText,
+    action: () => {
+      openBlade("changelog", {} as Record<string, never>);
+    },
+    enabled: () => !!useRepositoryStore.getState().repoStatus,
+  });
+
+  api.registerCommand({
+    id: "open-conventional-commit",
+    title: "Open Conventional Commit Composer",
+    category: "Repository",
+    action: () => {
+      openBlade("conventional-commit", {} as Record<string, never>);
+    },
+    enabled: () => !!useRepositoryStore.getState().repoStatus,
   });
 }
 
