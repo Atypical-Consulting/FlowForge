@@ -1602,7 +1602,14 @@ permissions: string[] | null;
  * Absolute path to the extension directory on disk.
  * Populated by discovery after parsing — not present in the JSON file.
  */
-basePath?: string | null }
+basePath?: string | null; 
+/**
+ * Trust level for the extension.
+ * "built-in" for bundled extensions, "user-trusted" for user-installed,
+ * "sandboxed" for untrusted third-party (future).
+ * Defaults to "sandboxed" when not specified in the manifest JSON.
+ */
+trustLevel?: string }
 /**
  * A toolbar action contributed by an extension.
  */
