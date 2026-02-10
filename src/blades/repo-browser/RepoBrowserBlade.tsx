@@ -4,6 +4,7 @@ import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { commands } from "../../bindings";
 import type { RepoFileEntry } from "../../bindings";
 import { bladeTypeForFile } from "../../lib/fileDispatch";
+import { getBladeRegistration } from "../../lib/bladeRegistry";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
 import { FileTypeIcon } from "../../components/icons/FileTypeIcon";
 import { BladeContentLoading } from "../_shared/BladeContentLoading";
@@ -64,21 +65,12 @@ export function RepoBrowserBlade({ path = "" }: RepoBrowserBladeProps) {
         return;
       }
 
-      const bladeType = bladeTypeForFile(entry.path, "browse");
+      const dispatched = bladeTypeForFile(entry.path, "browse");
       const title = entry.name;
-
-      if (bladeType === "viewer-image") {
-        pushBlade({ type: "viewer-image", title, props: { filePath: entry.path } });
-      } else if (bladeType === "viewer-markdown") {
-        pushBlade({ type: "viewer-markdown", title, props: { filePath: entry.path } });
-      } else if (bladeType === "viewer-3d") {
-        pushBlade({ type: "viewer-3d", title, props: { filePath: entry.path } });
-      } else if (bladeType === "viewer-nupkg") {
-        pushBlade({ type: "viewer-nupkg", title, props: { filePath: entry.path } });
-      } else {
-        // viewer-code is the default for browse context
-        pushBlade({ type: "viewer-code", title, props: { filePath: entry.path } });
-      }
+      // Fall back to viewer-plaintext if the dispatched blade type is not registered
+      // (e.g., content-viewers extension is disabled)
+      const bladeType = getBladeRegistration(dispatched) ? dispatched : "viewer-plaintext";
+      pushBlade({ type: bladeType, title, props: { filePath: entry.path } });
     },
     [pushBlade, navigateToDirectory],
   );
