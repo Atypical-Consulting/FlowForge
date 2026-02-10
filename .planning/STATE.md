@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 33 of 36 (Extension System Foundation)
-Plan: 2 of 3 complete
-Status: In Progress
-Last activity: 2026-02-10 — Plan 33-02 Extension Manifest Discovery complete (2/2 tasks)
+Plan: 3 of 3 complete
+Status: Phase Complete
+Last activity: 2026-02-10 — Plan 33-03 Extension Host & API Runtime complete (4/4 tasks)
 
-Progress: [██████░---] 67%
+Progress: [██████████] 100%
 
 ## Milestone History
 
@@ -40,6 +40,7 @@ See `.planning/MILESTONES.md` for full history.
 
 **Plan 33-01:** 12min, 3 tasks, 10 files modified
 **Plan 33-02:** 18min, 2 tasks, 5 files modified
+**Plan 33-03:** 6min, 4 tasks, 6 files modified
 
 ## Accumulated Context
 
@@ -78,6 +79,12 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 - base_path field uses serde(default) -- absent in JSON, populated by discovery after parsing
 - Invalid manifests are logged and skipped (eprintln), never crash the discovery process
 
+**Phase 33-03 decisions:**
+- convertFileSrc from @tauri-apps/api/core for dynamic import URLs (Tauri asset protocol)
+- Module-level Maps for extensionApis/extensionModules outside Zustand (non-serializable JS refs)
+- ExtensionAPI.registerBlade maps config.title to BladeRegistration.defaultTitle for simpler extension API
+- Sequential await in activateAll/deactivateAll to avoid registry mutation race conditions
+
 ### Pending Todos
 
 None.
@@ -106,9 +113,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed 33-02-PLAN.md — Extension Manifest Discovery complete
+Stopped at: Completed 33-03-PLAN.md — Extension Host & API Runtime complete (Phase 33 fully complete)
 Resume file: None
 
 ---
 *State updated: 2026-02-10*
-*v1.5.0 GitHub Extension -- Phase 33 in progress (2 of 3 plans complete)*
+*v1.5.0 GitHub Extension -- Phase 33 complete (3 of 3 plans complete)*
