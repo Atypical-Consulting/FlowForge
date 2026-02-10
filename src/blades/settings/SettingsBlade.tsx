@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import {
   ClipboardCheck,
   GitBranch,
+  PanelTop,
   Palette,
   Settings,
   Wrench,
@@ -12,6 +13,7 @@ import { GeneralSettings } from "./components/GeneralSettings";
 import { GitSettings } from "./components/GitSettings";
 import { IntegrationsSettings } from "./components/IntegrationsSettings";
 import { ReviewSettings } from "./components/ReviewSettings";
+import { ToolbarSettings } from "./components/ToolbarSettings";
 
 interface SettingsTab {
   id: SettingsCategory;
@@ -50,6 +52,12 @@ const settingsTabs: SettingsTab[] = [
     label: "Appearance",
     icon: <Palette className="w-4 h-4" />,
     panel: <AppearanceSettings />,
+  },
+  {
+    id: "toolbar",
+    label: "Toolbar",
+    icon: <PanelTop className="w-4 h-4" />,
+    panel: <ToolbarSettings />,
   },
 ];
 
