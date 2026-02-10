@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-10)
 Phase: 36 of 36 (all v1.5 phases complete)
 Plan: N/A (milestone archived)
 Status: Milestone v1.5.0 shipped
-Last activity: 2026-02-10 — v1.5.0 GitHub Extension milestone archived
+Last activity: 2026-02-10 - Completed quick task 033: Improve doc website for v1.5.0
 
 Progress: [████████████████████] 100%
 
@@ -76,6 +76,7 @@ None.
 | 030 | Make repo-browser a singleton blade in XState navigation machine | 2026-02-09 | 415f2e7 | [30-make-repo-browser-a-singleton-blade-in-x](./quick/30-make-repo-browser-a-singleton-blade-in-x/) |
 | 031 | Merge all dependabot dependency update PRs (#6-#13) | 2026-02-09 | f1b92ba | [31-merge-all-dependabot-dependency-update-p](./quick/31-merge-all-dependabot-dependency-update-p/) |
 | 032 | Fix reqwest 0.13 rustls-tls feature rename breaking Rust build | 2026-02-09 | 580c044 | [32-fix-reqwest-0-13-rustls-tls-feature-rena](./quick/32-fix-reqwest-0-13-rustls-tls-feature-rena/) |
+| 033 | Improve doc website - update feature descriptions, landing page, and outdated content for v1.5.0 | 2026-02-10 | c535621 | [33-improve-doc-website-update-feature-descr](./quick/33-improve-doc-website-update-feature-descr/) |
 
 ## Session Continuity
 
