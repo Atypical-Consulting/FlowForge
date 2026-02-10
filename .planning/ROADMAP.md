@@ -121,7 +121,10 @@
   3. Extension-registered commands appear in the command palette under the extension's category and are searchable
   4. When an extension is deactivated, all its registered blades, commands, and toolbar contributions are completely removed with no orphaned registrations
   5. An extension declaring an incompatible apiVersion is rejected at load time with a user-visible error message
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 33-01-PLAN.md -- Registry refactoring: widen BladeType, add unregister/source to blade & command registries, dynamic command palette categories
+- [ ] 33-02-PLAN.md -- Rust extension manifest types and filesystem discovery command
+- [ ] 33-03-PLAN.md -- ExtensionHost store and ExtensionAPI facade with lifecycle management
 
 ### Phase 34: GitHub Authentication
 **Goal**: Users can securely sign in with their GitHub account and the app automatically links authenticated accounts to repositories with GitHub remotes
@@ -199,4 +202,4 @@ All 34 v1.5 requirements mapped:
 | EXT-13 | 36 | Extension System |
 
 ---
-*Last updated: 2026-02-10 after Phase 32 completed*
+*Last updated: 2026-02-10 after Phase 33 planned*
