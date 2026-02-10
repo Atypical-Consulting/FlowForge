@@ -41,6 +41,10 @@ use git::{
     worktree::{create_worktree, delete_worktree, list_worktrees},
 };
 use extensions::discovery::discover_extensions;
+use github::{
+    github_check_rate_limit, github_detect_remotes, github_get_auth_status, github_poll_auth,
+    github_sign_out, github_start_device_flow,
+};
 use gitflow::{
     abort_gitflow, finish_feature, finish_hotfix, finish_release, get_gitflow_status, init_gitflow,
     start_feature, start_hotfix, start_release,
@@ -149,6 +153,13 @@ pub fn run() {
         set_git_global_config,
         // Extension discovery commands
         discover_extensions,
+        // GitHub commands
+        github_start_device_flow,
+        github_poll_auth,
+        github_get_auth_status,
+        github_sign_out,
+        github_detect_remotes,
+        github_check_rate_limit,
     ]);
 
     #[cfg(debug_assertions)]

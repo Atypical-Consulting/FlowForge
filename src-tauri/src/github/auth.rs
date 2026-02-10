@@ -88,6 +88,9 @@ pub async fn github_poll_auth(
     device_code: String,
     interval: u32,
 ) -> Result<AuthResult, GitHubError> {
+    // The interval parameter is received from the frontend but not used here
+    // since this is a single-poll command. The frontend controls the timing.
+    let _ = interval;
     let client = reqwest::Client::new();
 
     let resp = client
