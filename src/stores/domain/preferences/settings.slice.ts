@@ -8,7 +8,8 @@ export type SettingsCategory =
   | "git"
   | "appearance"
   | "integrations"
-  | "review";
+  | "review"
+  | "toolbar";
 
 export interface GeneralSettings {
   defaultTab: "changes" | "history" | "topology";
@@ -24,10 +25,16 @@ export interface IntegrationsSettings {
   terminal: string;
 }
 
+export interface ToolbarSettings {
+  /** Action IDs the user has explicitly hidden from the toolbar */
+  hiddenActions: string[];
+}
+
 export interface Settings {
   general: GeneralSettings;
   git: GitSettings;
   integrations: IntegrationsSettings;
+  toolbar: ToolbarSettings;
 }
 
 const defaultSettings: Settings = {
@@ -42,6 +49,9 @@ const defaultSettings: Settings = {
     editor: "",
     terminal: "",
   },
+  toolbar: {
+    hiddenActions: [],
+  },
 };
 
 function mergeSettings(saved: Partial<Settings>): Settings {
@@ -49,6 +59,7 @@ function mergeSettings(saved: Partial<Settings>): Settings {
     general: { ...defaultSettings.general, ...saved.general },
     git: { ...defaultSettings.git, ...saved.git },
     integrations: { ...defaultSettings.integrations, ...saved.integrations },
+    toolbar: { ...defaultSettings.toolbar, ...saved.toolbar },
   };
 }
 
