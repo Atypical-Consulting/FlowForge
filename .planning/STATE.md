@@ -5,16 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Planning next milestone
+**Current focus:** v1.6.0 Refactor to Extensions
 
 ## Current Position
 
-Phase: 36 of 36 (all v1.5 phases complete)
-Plan: N/A (milestone archived)
-Status: Milestone v1.5.0 shipped
-Last activity: 2026-02-10 - Completed quick task 033: Improve doc website for v1.5.0
-
-Progress: [████████████████████] 100%
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-10 — Milestone v1.6.0 started
 
 ## Milestone History
 
@@ -81,9 +79,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: v1.5.0 milestone archived. Ready for next milestone.
+Stopped at: Starting v1.6.0 milestone — defining requirements
 Resume file: None
 
 ---
 *State updated: 2026-02-10*
-*v1.5.0 GitHub Extension -- SHIPPED. All 6 milestones complete (v1.0-v1.5). Next: /gsd:new-milestone*
+*v1.6.0 Refactor to Extensions — started. Defining requirements.*

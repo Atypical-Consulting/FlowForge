@@ -177,7 +177,17 @@ Each layer adds value; each inner layer stands without the outer ones.
 
 ### Active
 
-(No active requirements — next milestone not yet defined)
+## Current Milestone: v1.6.0 Refactor to Extensions
+
+**Goal:** Transform FlowForge from a monolithic app into a truly extensible platform where core features (Gitflow, Conventional Commits, content viewers) are optional extensions, with expanded extension hooks and sandbox infrastructure.
+
+**Target features:**
+- Extension platform enhancements (context menus, status bar, git operation hooks, richer APIs)
+- Extension sandboxing infrastructure (iframe/Worker isolation, prep for third-party)
+- Gitflow extracted to fully optional extension (disable for plain Git mode)
+- Conventional Commits extracted to toggleable extension
+- Content viewers (markdown, code, 3D) extracted to extension(s)
+- Graceful degradation when extensions are disabled
 
 ### Deferred to v2+
 
@@ -200,7 +210,7 @@ Each layer adds value; each inner layer stands without the outer ones.
 - Full PR review with inline code comments — GitHub/GitLab do this well (lightweight checklist in v1.3, read + basic actions in v1.5)
 - Real-time collaboration — high complexity
 - Mobile apps — desktop-first
-- Extension sandboxing (iframe/Worker) — only first-party GitHub extension in v1.5; sandboxing needed when third-party extensions arrive
+- Extension sandboxing (iframe/Worker) — infrastructure being built in v1.6; full third-party support deferred to v2
 - Extension marketplace — URL-based install sufficient; marketplace requires hosting infrastructure
 - GitHub Actions log viewing — CI status indicators on PRs sufficient
 - GitLab/Bitbucket integration — GitHub-first; other providers can be extensions later
@@ -216,6 +226,8 @@ Extension platform with GitHub integration as first shipped extension (7 blades,
 Data-driven toolbar with 15+ core actions and extension contributions.
 137 tests (Vitest + jsdom) covering stores, components, and machine logic.
 Documentation website live on GitHub Pages.
+
+**v1.6 direction:** Major architectural refactor — extract Gitflow, Conventional Commits, and content viewers from monolithic core into the extension system. Expand extension API surface with context menus, status bar contributions, and git operation hooks. Build sandbox infrastructure for future third-party extension safety.
 
 **Known tech debt:**
 - 16 backward-compatibility re-export shims (@deprecated) for gradual consumer migration
@@ -238,7 +250,7 @@ Documentation website live on GitHub Pages.
 - **Binary size**: Target <50MB installed (achieved in v1.0)
 - **Memory**: Target <200MB baseline (achieved in v1.0)
 - **Offline-first**: Core functionality works without network; MCP and sync are additive
-- **Extension security**: First-party extensions only in v1.x; sandboxing required before third-party
+- **Extension security**: Sandbox infrastructure in v1.6; full third-party marketplace in v2+
 
 ## Key Decisions
 
@@ -288,5 +300,7 @@ Documentation website live on GitHub Pages.
 | Extension Manager as core blade (v1.5) | Manages all extensions; shouldn't be an extension itself | ✓ Good — always available |
 | Disabled vs deactivated extension states (v1.5) | disabled = user-intentional (persisted), deactivated = runtime cleanup — clear semantics | ✓ Good — predictable behavior |
 
+| Gitflow as optional extension (v1.6) | Users should choose workflow; extensible platform > opinionated monolith | — Pending |
+
 ---
-*Last updated: 2026-02-10 after v1.5.0 milestone*
+*Last updated: 2026-02-10 after v1.6.0 milestone start*
