@@ -98,12 +98,14 @@ Plans:
   3. ExtensionAPI methods are classified as sandbox-safe vs requires-trust, documented in code
   4. The 16 deprecated re-export shims from v1.4 are removed and all consumers use direct imports
   5. Extension lifecycle tests cover activate, deactivate, and registry cleanup for all new registries
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 41-01: Sandbox infrastructure (trust flags, Worker prototype, API classification)
-- [ ] 41-02: Deprecation cleanup and extension lifecycle tests
-- [ ] 41-03: Documentation website update and version bump to v1.6.0
+- [ ] 41-01-PLAN.md -- Trust level flag in manifest + API method sandbox classification
+- [ ] 41-02-PLAN.md -- Remove 16 deprecated store re-export shims, update all consumers
+- [ ] 41-03-PLAN.md -- Worker-based sandbox prototype with postMessage bridge
+- [ ] 41-04-PLAN.md -- Extension lifecycle tests (GitHub extension + ExtensionHost)
+- [ ] 41-05-PLAN.md -- Extension developer documentation + version bump to v1.6.0
 
 ## Progress
 
@@ -186,7 +188,7 @@ Plans:
 | 38. Content Viewer Extraction | 2/2 | ✓ Complete | 2026-02-10 |
 | 39. Conventional Commits Extraction | 3/3 | ✓ Complete | 2026-02-10 |
 | 40. Gitflow Extraction | 2/2 | ✓ Complete | 2026-02-10 |
-| 41. Sandbox & Polish | 0/3 | Not started | - |
+| 41. Sandbox & Polish | 0/5 | Not started | - |
 
 ---
 *Last updated: 2026-02-10 after Phase 40 completion*
