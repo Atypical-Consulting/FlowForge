@@ -16,8 +16,8 @@ if (import.meta.env.DEV && !import.meta.hot?.data?.isUpdate) {
   const registered = new Set(getAllBladeTypes());
   const EXPECTED_TYPES: string[] = [
     "staging-changes", "topology-graph", "commit-details", "diff",
-    "viewer-nupkg", "viewer-image", "viewer-plaintext", "repo-browser", "settings", "changelog",
-    "gitflow-cheatsheet", "init-repo", "conventional-commit", "extension-manager",
+    "viewer-nupkg", "viewer-image", "viewer-plaintext", "repo-browser", "settings",
+    "gitflow-cheatsheet", "init-repo", "extension-manager",
   ];
   const missing = EXPECTED_TYPES.filter(t => !registered.has(t as any));
   if (missing.length > 0) {
