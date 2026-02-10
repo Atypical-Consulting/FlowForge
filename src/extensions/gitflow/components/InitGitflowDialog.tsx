@@ -1,11 +1,11 @@
 import { AlertTriangle, X } from "lucide-react";
 import { useState } from "react";
-import type { GitflowConfig } from "../../bindings";
-import { cn } from "../../lib/utils";
-import { useGitOpsStore as useBranchStore } from "../../stores/domain/git-ops";
-import { useGitOpsStore as useGitflowStore } from "../../stores/domain/git-ops";
-import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
-import { toast } from "../../stores/toast";
+import type { GitflowConfig } from "../../../bindings";
+import { cn } from "../../../lib/utils";
+import { useGitOpsStore as useBranchStore } from "../../../stores/domain/git-ops";
+import { useGitOpsStore as useGitflowStore } from "../../../stores/domain/git-ops";
+import { useGitOpsStore as useRepositoryStore } from "../../../stores/domain/git-ops";
+import { toast } from "../../../stores/toast";
 
 interface InitGitflowDialogProps {
   open: boolean;

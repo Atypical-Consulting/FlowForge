@@ -1,7 +1,7 @@
 import { ClipboardCheck } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { FlowType } from "../../stores/domain/preferences/review-checklist.slice";
-import { usePreferencesStore as useReviewChecklistStore } from "../../stores/domain/preferences";
+import type { FlowType } from "../../../stores/domain/preferences/review-checklist.slice";
+import { usePreferencesStore as useReviewChecklistStore } from "../../../stores/domain/preferences";
 
 interface ReviewChecklistProps {
   flowType: FlowType;

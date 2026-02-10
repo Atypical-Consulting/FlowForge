@@ -1,4 +1,4 @@
-import { render } from "../../test-utils/render";
+import { render } from "../../../test-utils/render";
 
 const mockCommands = vi.hoisted(() => ({
   readRepoFile: vi.fn().mockResolvedValue({
@@ -7,7 +7,7 @@ const mockCommands = vi.hoisted(() => ({
   }),
 }));
 
-vi.mock("../../bindings", () => ({
+vi.mock("../../../bindings", () => ({
   commands: mockCommands,
 }));
 

@@ -1,11 +1,11 @@
 import { GitMerge } from "lucide-react";
-import { useGitOpsStore as useGitflowStore } from "../../stores/domain/git-ops";
-import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
-import { classifyBranch, BRANCH_TYPE_COLORS } from "../../lib/branchClassifier";
-import type { GitflowBranchType } from "../../lib/branchClassifier";
-import { GitflowDiagram } from "../../components/gitflow/GitflowDiagram";
-import { GitflowActionCards } from "../../components/gitflow/GitflowActionCards";
-import { GitflowBranchReference } from "../../components/gitflow/GitflowBranchReference";
+import { useGitOpsStore as useGitflowStore } from "../../../stores/domain/git-ops";
+import { useGitOpsStore as useRepositoryStore } from "../../../stores/domain/git-ops";
+import { classifyBranch, BRANCH_TYPE_COLORS } from "../../../lib/branchClassifier";
+import type { GitflowBranchType } from "../../../lib/branchClassifier";
+import { GitflowDiagram } from "../components/GitflowDiagram";
+import { GitflowActionCards } from "../components/GitflowActionCards";
+import { GitflowBranchReference } from "../components/GitflowBranchReference";
 
 export function GitflowCheatsheetBlade() {
   const gitflowStatus = useGitflowStore((s) => s.gitflowStatus);

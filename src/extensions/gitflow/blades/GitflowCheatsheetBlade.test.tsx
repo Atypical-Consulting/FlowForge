@@ -1,4 +1,4 @@
-import { render } from "../../test-utils/render";
+import { render } from "../../../test-utils/render";
 
 const mockCommands = vi.hoisted(() => ({
   getGitflowStatus: vi.fn().mockResolvedValue({
@@ -30,7 +30,7 @@ const mockCommands = vi.hoisted(() => ({
   listBranches: vi.fn().mockResolvedValue({ status: "ok", data: [] }),
 }));
 
-vi.mock("../../bindings", () => ({
+vi.mock("../../../bindings", () => ({
   commands: mockCommands,
 }));
 

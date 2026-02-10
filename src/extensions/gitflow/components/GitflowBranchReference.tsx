@@ -1,5 +1,5 @@
-import type { GitflowBranchType } from "../../lib/branchClassifier";
-import { BRANCH_TYPE_COLORS } from "../../lib/branchClassifier";
+import type { GitflowBranchType } from "../../../lib/branchClassifier";
+import { BRANCH_TYPE_COLORS } from "../../../lib/branchClassifier";
 
 interface BranchTypeInfo {
   type: GitflowBranchType;

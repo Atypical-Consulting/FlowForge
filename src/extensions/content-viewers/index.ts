@@ -5,17 +5,17 @@ import { renderPathBreadcrumb } from "../../lib/bladeUtils";
 export async function onActivate(api: ExtensionAPI): Promise<void> {
   // Lazy component imports — loaded on first blade render, not during activation
   const ViewerMarkdownBlade = lazy(() =>
-    import("../../blades/viewer-markdown/ViewerMarkdownBlade").then((m) => ({
+    import("./blades/ViewerMarkdownBlade").then((m) => ({
       default: m.ViewerMarkdownBlade,
     })),
   );
   const ViewerCodeBlade = lazy(() =>
-    import("../../blades/viewer-code/ViewerCodeBlade").then((m) => ({
+    import("./blades/ViewerCodeBlade").then((m) => ({
       default: m.ViewerCodeBlade,
     })),
   );
   const Viewer3dBlade = lazy(() =>
-    import("../../blades/viewer-3d/Viewer3dBlade").then((m) => ({
+    import("./blades/Viewer3dBlade").then((m) => ({
       default: m.Viewer3dBlade,
     })),
   );

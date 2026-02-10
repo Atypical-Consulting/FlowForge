@@ -3,12 +3,12 @@ import { GitBranch, GitMerge } from "lucide-react";
 import type { ExtensionAPI } from "../ExtensionAPI";
 import { openBlade } from "../../lib/bladeOpener";
 import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
-import { GitflowPanel } from "../../components/gitflow";
+import { GitflowPanel } from "./components";
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {
   // Lazy component import -- loaded on first blade render, not during activation
   const GitflowCheatsheetBlade = lazy(() =>
-    import("../../blades/gitflow-cheatsheet/GitflowCheatsheetBlade").then((m) => ({
+    import("./blades/GitflowCheatsheetBlade").then((m) => ({
       default: m.GitflowCheatsheetBlade,
     }))
   );
