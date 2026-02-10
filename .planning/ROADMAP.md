@@ -8,6 +8,104 @@
 - **v1.3.0 Blades Blades Blades** - Phases 20-24 (shipped 2026-02-08) -> [archive](milestones/v1.3.0-ROADMAP.md)
 - **v1.4.0 Architecture & Navigation Overhaul** - Phases 25-30 (shipped 2026-02-09) -> [archive](milestones/v1.4.0-ROADMAP.md)
 - **v1.5.0 GitHub Extension** - Phases 31-36 (shipped 2026-02-10) -> [archive](milestones/v1.5.0-ROADMAP.md)
+- **v1.6.0 Refactor to Extensions** - Phases 37-41 (in progress)
+
+## Phases
+
+- [ ] **Phase 37: Extension Platform Foundation** - New registries, UI surfaces, GitHookBus, and ExtensionAPI expansion
+- [ ] **Phase 38: Content Viewer Extraction** - Markdown, code, and 3D viewers extracted to built-in extension
+- [ ] **Phase 39: Conventional Commits Extraction** - CC composer, validation, and changelog extracted to built-in extension
+- [ ] **Phase 40: Gitflow Extraction** - Gitflow sidebar, cheatsheet, and branch coloring extracted to built-in extension
+- [ ] **Phase 41: Sandbox & Polish** - Trust flags, Worker prototype, deprecation cleanup, tests, docs, version bump
+
+## Phase Details
+
+### v1.6.0 Refactor to Extensions
+
+**Milestone Goal:** Transform FlowForge from a monolithic app into a truly extensible platform where core features (Gitflow, Conventional Commits, content viewers) are optional extensions, with expanded extension hooks and sandbox infrastructure.
+
+#### Phase 37: Extension Platform Foundation
+**Goal**: Extensions can contribute context menus, sidebar panels, status bar widgets, and git operation hooks through the expanded ExtensionAPI
+**Depends on**: Phase 36 (v1.5.0 extension system)
+**Requirements**: PLAT-01, PLAT-02, PLAT-03, PLAT-04, PLAT-05, PLAT-06
+**Success Criteria** (what must be TRUE):
+  1. Right-clicking on a file, branch, or commit shows extension-contributed context menu items
+  2. An extension can register a sidebar panel section that renders in the repository view alongside core sections
+  3. An extension can contribute a status bar widget that displays live state at the bottom of the window
+  4. An extension receives git operation events (onDidCommit, onDidPush) when the user performs git actions
+  5. An extension's onDispose callbacks fire during deactivation, cleaning up subscriptions and timers
+**Plans**: TBD
+
+Plans:
+- [ ] 37-01: New registries (ContextMenu, SidebarPanel, StatusBar, GitHookBus)
+- [ ] 37-02: UI surfaces (ContextMenu component, dynamic sidebar, StatusBar component)
+- [ ] 37-03: ExtensionAPI expansion and onDispose lifecycle
+
+#### Phase 38: Content Viewer Extraction
+**Goal**: Markdown, code, and 3D viewers run as a single toggleable built-in extension, with graceful fallback when disabled
+**Depends on**: Phase 37
+**Requirements**: VIEW-01, VIEW-02, VIEW-03, VIEW-04, DEGR-04
+**Success Criteria** (what must be TRUE):
+  1. Opening a .md file in the file browser launches the markdown preview blade provided by the content-viewers extension
+  2. Opening a source file launches the Monaco code viewer blade provided by the content-viewers extension
+  3. Opening a .gltf/.glb file launches the 3D model viewer blade provided by the content-viewers extension
+  4. Disabling the content-viewers extension in Extension Manager causes file previews to fall back to plain text display
+**Plans**: TBD
+
+Plans:
+- [ ] 38-01: Extract viewer blades and file dispatch to content-viewers extension
+- [ ] 38-02: Graceful degradation and extension toggle verification
+
+#### Phase 39: Conventional Commits Extraction
+**Goal**: Conventional commit composer, validation, templates, and changelog run as a toggleable built-in extension, with plain commit form when disabled
+**Depends on**: Phase 37 (git hooks for onWillCommit)
+**Requirements**: CCEX-01, CCEX-02, CCEX-03, CCEX-04, CCEX-05, DEGR-03
+**Success Criteria** (what must be TRUE):
+  1. The conventional commit composer blade and sidebar form are provided by the CC extension, not core
+  2. Commit messages are validated against conventional commit format via the onWillCommit hook registered by the CC extension
+  3. Type inference, scope autocomplete, commit templates, and changelog generation are all provided by the CC extension
+  4. Disabling the CC extension removes commit validation and the CC form -- the commit textarea becomes a plain text input
+**Plans**: TBD
+
+Plans:
+- [ ] 39-01: Extract CC blade, store, and components to conventional-commits extension
+- [ ] 39-02: Wire onWillCommit validation hook and changelog contribution
+- [ ] 39-03: Graceful degradation and plain commit form fallback
+
+#### Phase 40: Gitflow Extraction
+**Goal**: Gitflow sidebar, cheatsheet, branch coloring, and merge flows run as a toggleable built-in extension, enabling plain Git client mode when disabled
+**Depends on**: Phase 37 (sidebar panels, git hooks, status bar), Phase 38-39 (proven extraction patterns)
+**Requirements**: GFEX-01, GFEX-02, GFEX-03, GFEX-04, GFEX-05, GFEX-06, DEGR-01, DEGR-02
+**Success Criteria** (what must be TRUE):
+  1. The Gitflow sidebar panel (branch creation, merge flows) is contributed by the Gitflow extension via the SidebarPanelRegistry
+  2. Gitflow cheatsheet blade and pre-merge review checklist are provided by the Gitflow extension
+  3. Branch classification and color-coding for Gitflow branches (feature/*, release/*, hotfix/*) are contributed by the Gitflow extension
+  4. Disabling the Gitflow extension removes all Gitflow UI -- sidebar sections, branch dialogs, merge flows, coloring -- and core Git operations remain fully functional
+  5. Extension Manager blade shows Gitflow, Conventional Commits, Content Viewers, and GitHub as four independently toggleable extensions
+**Plans**: TBD
+
+Plans:
+- [ ] 40-01: Decouple Gitflow slice from GitOpsStore via GitHookBus events
+- [ ] 40-02: Extract Gitflow components, blade, and commands to gitflow extension
+- [ ] 40-03: Contribute sidebar panel, status bar widget, context menus, and branch coloring via ExtensionAPI
+- [ ] 40-04: Graceful degradation verification and Extension Manager integration
+
+#### Phase 41: Sandbox & Polish
+**Goal**: Extension sandbox infrastructure is prepared for future third-party extensions, deprecated code is removed, and v1.6.0 ships with full test coverage and documentation
+**Depends on**: Phase 40
+**Requirements**: SAND-01, SAND-02, SAND-03, MAINT-01, MAINT-02, MAINT-03, MAINT-04
+**Success Criteria** (what must be TRUE):
+  1. Extension manifest distinguishes built-in (trusted) from external extensions via a trust level flag
+  2. A Worker-based sandbox prototype demonstrates postMessage communication between host and isolated extension code
+  3. ExtensionAPI methods are classified as sandbox-safe vs requires-trust, documented in code
+  4. The 16 deprecated re-export shims from v1.4 are removed and all consumers use direct imports
+  5. Extension lifecycle tests cover activate, deactivate, and registry cleanup for all new registries
+**Plans**: TBD
+
+Plans:
+- [ ] 41-01: Sandbox infrastructure (trust flags, Worker prototype, API classification)
+- [ ] 41-02: Deprecation cleanup and extension lifecycle tests
+- [ ] 41-03: Documentation website update and version bump to v1.6.0
 
 ## Progress
 
@@ -82,5 +180,15 @@
 
 </details>
 
+### v1.6.0 Refactor to Extensions (In Progress)
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 37. Extension Platform Foundation | 0/3 | Not started | - |
+| 38. Content Viewer Extraction | 0/2 | Not started | - |
+| 39. Conventional Commits Extraction | 0/3 | Not started | - |
+| 40. Gitflow Extraction | 0/4 | Not started | - |
+| 41. Sandbox & Polish | 0/3 | Not started | - |
+
 ---
-*Last updated: 2026-02-10 after v1.5.0 milestone shipped*
+*Last updated: 2026-02-10 after v1.6.0 roadmap creation*

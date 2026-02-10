@@ -93,44 +93,44 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PLAT-01 | — | Pending |
-| PLAT-02 | — | Pending |
-| PLAT-03 | — | Pending |
-| PLAT-04 | — | Pending |
-| PLAT-05 | — | Pending |
-| PLAT-06 | — | Pending |
-| VIEW-01 | — | Pending |
-| VIEW-02 | — | Pending |
-| VIEW-03 | — | Pending |
-| VIEW-04 | — | Pending |
-| CCEX-01 | — | Pending |
-| CCEX-02 | — | Pending |
-| CCEX-03 | — | Pending |
-| CCEX-04 | — | Pending |
-| CCEX-05 | — | Pending |
-| GFEX-01 | — | Pending |
-| GFEX-02 | — | Pending |
-| GFEX-03 | — | Pending |
-| GFEX-04 | — | Pending |
-| GFEX-05 | — | Pending |
-| GFEX-06 | — | Pending |
-| SAND-01 | — | Pending |
-| SAND-02 | — | Pending |
-| SAND-03 | — | Pending |
-| DEGR-01 | — | Pending |
-| DEGR-02 | — | Pending |
-| DEGR-03 | — | Pending |
-| DEGR-04 | — | Pending |
-| MAINT-01 | — | Pending |
-| MAINT-02 | — | Pending |
-| MAINT-03 | — | Pending |
-| MAINT-04 | — | Pending |
+| PLAT-01 | Phase 37 | Pending |
+| PLAT-02 | Phase 37 | Pending |
+| PLAT-03 | Phase 37 | Pending |
+| PLAT-04 | Phase 37 | Pending |
+| PLAT-05 | Phase 37 | Pending |
+| PLAT-06 | Phase 37 | Pending |
+| VIEW-01 | Phase 38 | Pending |
+| VIEW-02 | Phase 38 | Pending |
+| VIEW-03 | Phase 38 | Pending |
+| VIEW-04 | Phase 38 | Pending |
+| CCEX-01 | Phase 39 | Pending |
+| CCEX-02 | Phase 39 | Pending |
+| CCEX-03 | Phase 39 | Pending |
+| CCEX-04 | Phase 39 | Pending |
+| CCEX-05 | Phase 39 | Pending |
+| GFEX-01 | Phase 40 | Pending |
+| GFEX-02 | Phase 40 | Pending |
+| GFEX-03 | Phase 40 | Pending |
+| GFEX-04 | Phase 40 | Pending |
+| GFEX-05 | Phase 40 | Pending |
+| GFEX-06 | Phase 40 | Pending |
+| SAND-01 | Phase 41 | Pending |
+| SAND-02 | Phase 41 | Pending |
+| SAND-03 | Phase 41 | Pending |
+| DEGR-01 | Phase 40 | Pending |
+| DEGR-02 | Phase 40 | Pending |
+| DEGR-03 | Phase 39 | Pending |
+| DEGR-04 | Phase 38 | Pending |
+| MAINT-01 | Phase 41 | Pending |
+| MAINT-02 | Phase 41 | Pending |
+| MAINT-03 | Phase 41 | Pending |
+| MAINT-04 | Phase 41 | Pending |
 
 **Coverage:**
 - v1.6 requirements: 32 total
-- Mapped to phases: 0
-- Unmapped: 32 ⚠️
+- Mapped to phases: 32
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-10*
-*Last updated: 2026-02-10 after initial definition*
+*Last updated: 2026-02-10 after roadmap creation (traceability complete)*

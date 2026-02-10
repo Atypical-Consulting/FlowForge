@@ -5,14 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** v1.6.0 Refactor to Extensions
+**Current focus:** Phase 37 - Extension Platform Foundation
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-10 — Milestone v1.6.0 started
+Phase: 37 of 41 (Extension Platform Foundation)
+Plan: 0 of 3 in current phase
+Status: Ready to plan
+Last activity: 2026-02-10 — v1.6.0 roadmap created
+
+Progress: [░░░░░░░░░░] 0% (0/15 plans)
 
 ## Milestone History
 
@@ -24,14 +26,15 @@ Last activity: 2026-02-10 — Milestone v1.6.0 started
 | v1.3.0 Blades Blades Blades | Complete | 2026-02-08 |
 | v1.4.0 Architecture & Navigation Overhaul | Complete | 2026-02-09 |
 | v1.5.0 GitHub Extension | Complete | 2026-02-10 |
+| v1.6.0 Refactor to Extensions | In progress | - |
 
 See `.planning/MILESTONES.md` for full history.
 
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 36 complete
-- Total plans: ~201 complete
+- Total phases: 36 complete, 5 planned
+- Total plans: ~201 complete, 15 planned
 - Total requirements validated: 209
 - Codebase: ~45,227 LOC (34,152 TypeScript + 11,075 Rust)
 - Tests: 137 (Vitest + jsdom)
@@ -40,7 +43,7 @@ See `.planning/MILESTONES.md` for full history.
 
 ### Known Tech Debt
 
-- 16 backward-compatibility re-export shims (@deprecated) — gradual migration needed
+- 16 backward-compatibility re-export shims (@deprecated) — targeted for removal in Phase 41
 - CC blade accessibility polish (aria-live debounce, amend mode styling, aria-labels)
 - Init Repo blade UX refinements (focus behavior, listbox pattern, aria-describedby)
 - 3D viewer reliability on some hardware (diagnostic logging only)
@@ -50,38 +53,30 @@ See `.planning/MILESTONES.md` for full history.
 ### Key Decisions
 
 All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
+Pending: Gitflow as optional extension (v1.6) — rationale documented.
+
+### Research Flags
+
+- Phase 39 (CC Extraction): onWillCommit middleware pattern needs validation during planning
+- Phase 40 (Gitflow Extraction): Rust state machine coordination needs targeted research
+- Phase 41 (Sandbox): Worker MessageChannel bridge needs research during planning
+
+### Blockers/Concerns
+
+- Gitflow state split-brain risk: extension must always re-fetch from Rust, never cache state
+- Circular import risk: GitHookBus must decouple Gitflow extension from GitOpsStore
+- RepositoryView sidebar hardcodes GitflowPanel: SidebarPanelRegistry must exist before extraction
 
 ### Pending Todos
 
 None.
 
-### Blockers/Concerns
-
-None.
-
-### Quick Tasks Completed
-
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 022 | Fix vertical separator stuck on left - resizable panels | 2026-02-05 | e22f4ea | [022-fix-vertical-separator-stuck-left](./quick/022-fix-vertical-separator-stuck-left/) |
-| 023 | Fix app icon not filling circle on welcome page | 2026-02-05 | 65485a5 | [023-fix-app-icon-not-filling-circle-on-welco](./quick/023-fix-app-icon-not-filling-circle-on-welco/) |
-| 024 | Bump version to v1.1.0 | 2026-02-06 | dfc6d4e | [024-prepare-v110-version-bump](./quick/024-prepare-v110-version-bump/) |
-| 025 | Fix TAURI_CHANNEL CI pipeline failure | 2026-02-06 | c6bafb2 | [025-fix-tauri-channel-ci-pipeline](./quick/025-fix-tauri-channel-ci-pipeline/) |
-| 026 | Fix DMG damaged on macOS (revert broken signing vars) | 2026-02-06 | 27011ba | [026-fix-dmg-damaged-macos-signing](./quick/026-fix-dmg-damaged-macos-signing/) |
-| 027 | Improve doc website with GitFlow/Conventional Commits explanations and download button | 2026-02-08 | d0c8da3 | [27-improve-doc-website-with-gitflow-convent](./quick/27-improve-doc-website-with-gitflow-convent/) |
-| 028 | Fix BladeRegistry missing registration for viewer-3d | 2026-02-09 | 977b28e | [28-fix-bladeregistry-missing-registration-f](./quick/28-fix-bladeregistry-missing-registration-f/) |
-| 029 | Fix XState navigation machine stopped actor preventing blade opens | 2026-02-09 | 0410d3d | [29-fix-xstate-navigation-machine-stopped-ac](./quick/29-fix-xstate-navigation-machine-stopped-ac/) |
-| 030 | Make repo-browser a singleton blade in XState navigation machine | 2026-02-09 | 415f2e7 | [30-make-repo-browser-a-singleton-blade-in-x](./quick/30-make-repo-browser-a-singleton-blade-in-x/) |
-| 031 | Merge all dependabot dependency update PRs (#6-#13) | 2026-02-09 | f1b92ba | [31-merge-all-dependabot-dependency-update-p](./quick/31-merge-all-dependabot-dependency-update-p/) |
-| 032 | Fix reqwest 0.13 rustls-tls feature rename breaking Rust build | 2026-02-09 | 580c044 | [32-fix-reqwest-0-13-rustls-tls-feature-rena](./quick/32-fix-reqwest-0-13-rustls-tls-feature-rena/) |
-| 033 | Improve doc website - update feature descriptions, landing page, and outdated content for v1.5.0 | 2026-02-10 | c535621 | [33-improve-doc-website-update-feature-descr](./quick/33-improve-doc-website-update-feature-descr/) |
-
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Starting v1.6.0 milestone — defining requirements
+Stopped at: v1.6.0 roadmap created, ready to plan Phase 37
 Resume file: None
 
 ---
 *State updated: 2026-02-10*
-*v1.6.0 Refactor to Extensions — started. Defining requirements.*
+*v1.6.0 Refactor to Extensions — roadmap created, ready to plan Phase 37.*
