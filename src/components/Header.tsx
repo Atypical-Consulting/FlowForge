@@ -1,24 +1,9 @@
-import { open } from "@tauri-apps/plugin-dialog";
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  FileText,
-  FolderOpen,
-  FolderTree,
-  GitBranch,
-  GitFork,
-  RefreshCw,
-  Search,
-  Settings,
-  Undo2,
-} from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useRecentRepos } from "../hooks/useRecentRepos";
 import { useBranchStore } from "../stores/branches";
 import { getNavigationActor } from "../machines/navigation/context";
 import { useNavigationStore } from "../stores/navigation";
-import { useCommandPaletteStore } from "../stores/commandPalette";
 import { useRepositoryStore } from "../stores/repository";
-import { useBladeNavigation } from "../hooks/useBladeNavigation";
 import { useStashStore } from "../stores/stash";
 import { useTagStore } from "../stores/tags";
 import { toast } from "../stores/toast";
@@ -26,10 +11,8 @@ import { useUndoStore } from "../stores/undo";
 import { ProcessNavigation } from "../blades/_shared";
 import { BranchSwitcher } from "./navigation/BranchSwitcher";
 import { RepoSwitcher } from "./navigation/RepoSwitcher";
-import { SyncButtons } from "./sync/SyncButtons";
-import { ShortcutTooltip } from "./ui/ShortcutTooltip";
+import { Toolbar } from "./toolbar/Toolbar";
 import { Button } from "./ui/button";
-import { ThemeToggle } from "./ui/ThemeToggle";
 
 interface StashConfirmTarget {
   branchName: string;
@@ -37,89 +20,21 @@ interface StashConfirmTarget {
 }
 
 export function Header() {
-  const queryClient = useQueryClient();
-  const { repoStatus: status, repoIsLoading: isLoading, openRepository, closeRepository, refreshRepoStatus: refreshStatus } =
+  const { repoStatus: status, openRepository, refreshRepoStatus: refreshStatus } =
     useRepositoryStore();
-  const {
-    loadBranches,
-    checkoutBranch,
-    checkoutRemoteBranch,
-    branchIsLoading: branchesLoading,
-  } = useBranchStore();
-  const { loadStashes, saveStash, stashIsLoading: stashesLoading } = useStashStore();
-  const { loadTags, tagIsLoading: tagsLoading } = useTagStore();
-  const { undoInfo, undoIsUndoing: isUndoing, loadUndoInfo, performUndo } = useUndoStore();
-  const { openBlade } = useBladeNavigation();
+  const { loadBranches, checkoutBranch, checkoutRemoteBranch } = useBranchStore();
+  const { loadStashes, saveStash } = useStashStore();
+  const { loadTags } = useTagStore();
+  const { loadUndoInfo } = useUndoStore();
   const { addRecentRepo } = useRecentRepos();
   const navigationStore = useNavigationStore();
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [stashConfirmTarget, setStashConfirmTarget] =
     useState<StashConfirmTarget | null>(null);
-
-  // Load undo info when repo opens
-  useEffect(() => {
-    if (status) {
-      loadUndoInfo();
-    }
-  }, [status, loadUndoInfo]);
-
-  const handleRefreshAll = async () => {
-    setIsRefreshing(true);
-    await Promise.all([
-      loadBranches(),
-      loadStashes(),
-      loadTags(),
-      loadUndoInfo(),
-    ]);
-    setIsRefreshing(false);
-  };
-
-  const isAnyLoading =
-    isRefreshing || branchesLoading || stashesLoading || tagsLoading;
-
-  const handleOpenRepo = async () => {
-    try {
-      const selected = await open({
-        directory: true,
-        multiple: false,
-        title: "Open Git Repository",
-      });
-
-      if (selected && typeof selected === "string") {
-        await openRepository(selected);
-        await addRecentRepo(selected);
-      }
-    } catch (e) {
-      console.error("Failed to open repository:", e);
-    }
-  };
-
-  const handleClose = async () => {
-    await closeRepository();
-  };
-
-  const handleUndo = async () => {
-    if (!undoInfo?.canUndo) return;
-
-    const confirmed = window.confirm(
-      `Are you sure you want to undo?\n\n${undoInfo.description}`,
-    );
-
-    if (confirmed) {
-      const success = await performUndo();
-      if (success) {
-        queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
-        queryClient.invalidateQueries({ queryKey: ["stagingStatus"] });
-        queryClient.invalidateQueries({ queryKey: ["repositoryStatus"] });
-      }
-    }
-  };
 
   // Repo switching: open new repo atomically, restore last branch, show toast
   const handleRepoSwitch = useCallback(
     async (path: string) => {
       try {
-        // Save current branch as last active for current repo
         if (status) {
           await navigationStore.setNavLastActiveBranch(
             status.repoPath,
@@ -127,22 +42,19 @@ export function Header() {
           );
         }
 
-        // Open new repository atomically (do NOT close first!)
         await openRepository(path);
         getNavigationActor().send({ type: "RESET_STACK" });
         await addRecentRepo(path);
 
-        // Check if there's a last active branch for this repo
         const lastBranch = navigationStore.getNavLastActiveBranch(path);
         if (lastBranch) {
           try {
             await checkoutBranch(lastBranch);
           } catch {
-            // Branch may have been deleted — stay on current
+            // Branch may have been deleted -- stay on current
           }
         }
 
-        // Refresh all data for new repo
         await Promise.all([
           loadBranches(),
           loadStashes(),
@@ -158,34 +70,19 @@ export function Header() {
         );
       }
     },
-    [
-      status,
-      navigationStore,
-      openRepository,
-      addRecentRepo,
-      checkoutBranch,
-      loadBranches,
-      loadStashes,
-      loadTags,
-      loadUndoInfo,
-    ],
+    [status, navigationStore, openRepository, addRecentRepo, checkoutBranch, loadBranches, loadStashes, loadTags, loadUndoInfo],
   );
 
   // Perform the actual branch switch (local or remote)
   const performBranchSwitch = useCallback(
     async (branchName: string, isRemote: boolean) => {
       try {
-        let success: boolean;
-        if (isRemote) {
-          success = await checkoutRemoteBranch(branchName);
-        } else {
-          success = await checkoutBranch(branchName);
-        }
+        const success = isRemote
+          ? await checkoutRemoteBranch(branchName)
+          : await checkoutBranch(branchName);
 
         if (success) {
-          const localName = isRemote
-            ? branchName.replace(/^[^/]+\//, "")
-            : branchName;
+          const localName = isRemote ? branchName.replace(/^[^/]+\//, "") : branchName;
           if (status) {
             await navigationStore.addNavRecentBranch(status.repoPath, localName);
           }
@@ -198,13 +95,7 @@ export function Header() {
         );
       }
     },
-    [
-      checkoutBranch,
-      checkoutRemoteBranch,
-      status,
-      navigationStore,
-      refreshStatus,
-    ],
+    [checkoutBranch, checkoutRemoteBranch, status, navigationStore, refreshStatus],
   );
 
   // Branch switching: check dirty state first
@@ -225,11 +116,7 @@ export function Header() {
     const { branchName, isRemote } = stashConfirmTarget;
     setStashConfirmTarget(null);
 
-    const stashed = await saveStash(
-      `Auto-stash before switching to ${branchName}`,
-      true,
-    );
-
+    const stashed = await saveStash(`Auto-stash before switching to ${branchName}`, true);
     if (stashed) {
       await performBranchSwitch(branchName, isRemote);
     } else {
@@ -252,137 +139,7 @@ export function Header() {
           {status && <ProcessNavigation className="ml-4" />}
         </div>
 
-        <div className="flex items-center gap-2">
-          <ShortcutTooltip shortcut="mod+," label="Settings">
-            <Button variant="ghost" size="sm" onClick={() => openBlade("settings", {} as Record<string, never>)}>
-              <Settings className="w-4 h-4" />
-            </Button>
-          </ShortcutTooltip>
-          <ThemeToggle />
-          <ShortcutTooltip shortcut="mod+shift+P" label="Command Palette">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => useCommandPaletteStore.getState().togglePalette()}
-            >
-              <Search className="w-4 h-4" />
-            </Button>
-          </ShortcutTooltip>
-          {status && undoInfo?.canUndo && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleUndo}
-              disabled={isUndoing}
-              title={undoInfo.description || "Undo last operation"}
-            >
-              <Undo2 className={`w-4 h-4 ${isUndoing ? "animate-spin" : ""}`} />
-            </Button>
-          )}
-          {status && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRefreshAll}
-              disabled={isAnyLoading}
-              title="Refresh branches, stashes, and tags"
-            >
-              <RefreshCw
-                className={`w-4 h-4 ${isAnyLoading ? "animate-spin" : ""}`}
-              />
-            </Button>
-          )}
-          {status && <SyncButtons />}
-          {status && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => openBlade("gitflow-cheatsheet", {} as Record<string, never>)}
-              title="Gitflow Guide"
-              aria-label="Open Gitflow guide"
-            >
-              <GitBranch className="w-4 h-4" />
-            </Button>
-          )}
-          {status && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => openBlade("repo-browser", {})}
-              title="Browse repository files"
-              aria-label="Browse repository files"
-            >
-              <FolderTree className="w-4 h-4" />
-            </Button>
-          )}
-          {status && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => openBlade("changelog", {} as Record<string, never>)}
-              title="Generate Changelog"
-            >
-              <FileText className="w-4 h-4" />
-            </Button>
-          )}
-          {status && (
-            <Button variant="ghost" size="sm" onClick={handleClose}>
-              Close
-            </Button>
-          )}
-          {status ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={async () => {
-                try {
-                  const { revealItemInDir } = await import(
-                    "@tauri-apps/plugin-opener"
-                  );
-                  await revealItemInDir(status.repoPath);
-                } catch (e) {
-                  toast.error(
-                    `Failed to reveal: ${e instanceof Error ? e.message : String(e)}`,
-                  );
-                }
-              }}
-              className="text-ctp-subtext1 hover:text-ctp-text"
-              title="Reveal in Finder"
-              aria-label="Reveal repository in file manager"
-            >
-              <FolderOpen className="w-4 h-4 mr-2" />
-              Reveal
-            </Button>
-          ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                document.dispatchEvent(
-                  new CustomEvent("clone-repository-dialog"),
-                );
-              }}
-              disabled={isLoading}
-              className="text-ctp-subtext1 hover:text-ctp-text"
-              title="Clone Repository"
-            >
-              <GitFork className="w-4 h-4 mr-2" />
-              Clone
-            </Button>
-          )}
-          <ShortcutTooltip shortcut="mod+o" label="Open Repository">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleOpenRepo}
-              disabled={isLoading}
-              className="text-ctp-subtext1 hover:text-ctp-text"
-            >
-              <FolderOpen className="w-4 h-4 mr-2" />
-              Open
-            </Button>
-          </ShortcutTooltip>
-        </div>
+        <Toolbar />
       </header>
 
       {/* Stash-and-switch confirmation dialog */}

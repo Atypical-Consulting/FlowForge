@@ -2,6 +2,7 @@ import { listen } from "@tauri-apps/api/event";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import "./commands";
+import "./commands/toolbar-actions";
 import "./blades/_discovery";
 import { CommandPalette } from "./components/command-palette";
 import { Header } from "./components/Header";
