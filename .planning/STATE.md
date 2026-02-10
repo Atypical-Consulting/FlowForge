@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 32 of 36 (Toolbar Overhaul)
-Plan: 2 of 2 complete
-Status: Phase Complete
-Last activity: 2026-02-10 — Plan 32-02 Toolbar UI Components & Header Refactor complete (3/3 tasks)
+Phase: 33 of 36 (Extension System Foundation)
+Plan: 1 of 3 complete
+Status: In Progress
+Last activity: 2026-02-10 — Plan 33-01 Registry Extensibility Refactoring complete (3/3 tasks)
 
-Progress: [██████████] 100%
+Progress: [███-------] 33%
 
 ## Milestone History
 
@@ -32,11 +32,13 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 32 complete + 4 planned = 36
-- Total plans: ~189 complete
+- Total phases: 32 complete + 4 in progress/planned = 36
+- Total plans: ~190 complete
 - Total requirements validated: 184 (+ 25 v1.5 pending)
 - Codebase: ~36,946 LOC (28,155 TypeScript + 8,791 Rust)
-- Tests: 140 (Vitest + jsdom)
+- Tests: 137 (Vitest + jsdom)
+
+**Plan 33-01:** 12min, 3 tasks, 10 files modified
 
 ## Accumulated Context
 
@@ -63,6 +65,12 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 - ResizeObserver uses prevWidth ref + requestAnimationFrame to avoid infinite-loop pitfall
 - ToolbarSettings shows ALL actions (not filtered by when()) for full configurability
 - data-toolbar-item attribute pattern for both overflow measurement and roving tabindex
+
+**Phase 33-01 decisions:**
+- Record<string, unknown> for navigation event props (machine does not inspect props)
+- Function overloads for core type-safety + extension string flexibility in blade openers
+- Replaced static SINGLETON_TYPES Set with dynamic isSingletonBlade() from bladeRegistry
+- (string & {}) trick to widen CommandCategory while preserving IDE autocompletion
 
 ### Pending Todos
 
@@ -92,9 +100,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed 32-02-PLAN.md — Phase 32 Toolbar Overhaul complete
+Stopped at: Completed 33-01-PLAN.md — Registry Extensibility Refactoring complete
 Resume file: None
 
 ---
 *State updated: 2026-02-10*
-*v1.5.0 GitHub Extension -- Phase 32 complete (all 2 plans), ready for Phase 33*
+*v1.5.0 GitHub Extension -- Phase 33 in progress (1 of 3 plans complete)*
