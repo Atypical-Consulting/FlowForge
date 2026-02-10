@@ -1,6 +1,7 @@
 import { createActor } from "xstate";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { navigationMachine } from "./navigationMachine";
+import { registerBlade, unregisterBlade } from "../../lib/bladeRegistry";
 
 function createTestActor() {
   const actor = createActor(navigationMachine);
@@ -9,6 +10,24 @@ function createTestActor() {
 }
 
 describe("navigationMachine", () => {
+  // Register singleton blade types so isSingletonBlade() works in tests
+  beforeEach(() => {
+    const singletonTypes = ["settings", "changelog", "gitflow-cheatsheet", "conventional-commit", "repo-browser"];
+    for (const type of singletonTypes) {
+      registerBlade({
+        type,
+        defaultTitle: type,
+        component: () => null,
+        singleton: true,
+      } as any);
+    }
+    return () => {
+      for (const type of singletonTypes) {
+        unregisterBlade(type);
+      }
+    };
+  });
+
   // --- Basic State ---
 
   it("1. starts in navigating with staging root blade", () => {

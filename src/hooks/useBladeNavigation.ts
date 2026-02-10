@@ -11,7 +11,7 @@ import {
   selectLastAction,
   selectDirtyBladeIds,
 } from "../machines/navigation/selectors";
-import type { BladeType, BladePropsMap, ProcessType, TypedBlade } from "../machines/navigation/types";
+import type { BladeType, BladePropsMap, CoreBladeType, ProcessType, TypedBlade } from "../machines/navigation/types";
 
 export function useBladeNavigation() {
   const actorRef = useNavigationActorRef();
@@ -20,10 +20,21 @@ export function useBladeNavigation() {
   const lastAction = useSelector(actorRef, selectLastAction);
   const dirtyBladeIds = useSelector(actorRef, selectDirtyBladeIds);
 
-  /** Type-safe blade opener — compiler enforces correct props per type */
-  function openBlade<K extends BladeType>(
+  /** Type-safe blade opener for core blades */
+  function openBlade<K extends CoreBladeType>(
     type: K,
     props: BladePropsMap[K],
+    title?: string,
+  ): void;
+  /** Blade opener for extension blade types */
+  function openBlade(
+    type: string,
+    props: Record<string, unknown>,
+    title?: string,
+  ): void;
+  function openBlade(
+    type: string,
+    props: Record<string, unknown>,
     title?: string,
   ) {
     const reg = getBladeRegistration(type);
@@ -33,7 +44,7 @@ export function useBladeNavigation() {
         ? reg.defaultTitle(props as any)
         : reg?.defaultTitle ?? type);
 
-    actorRef.send({ type: "PUSH_BLADE", bladeType: type, title: resolvedTitle, props });
+    actorRef.send({ type: "PUSH_BLADE", bladeType: type as BladeType, title: resolvedTitle, props });
   }
 
   /** Push a diff/viewer blade for a historical commit file */
@@ -50,7 +61,7 @@ export function useBladeNavigation() {
         type: "PUSH_BLADE",
         bladeType: type,
         title,
-        props: { filePath } as BladePropsMap[BladeType],
+        props: { filePath } as Record<string, unknown>,
       });
     }
   }
@@ -76,32 +87,56 @@ export function useBladeNavigation() {
         type: "PUSH_BLADE",
         bladeType: type,
         title,
-        props: { filePath: file.path } as BladePropsMap[BladeType],
+        props: { filePath: file.path } as Record<string, unknown>,
       });
     }
   }
 
-  function pushBlade<K extends BladeType>(blade: {
+  /** Type-safe pushBlade for core blade types */
+  function pushBlade<K extends CoreBladeType>(blade: {
     type: K;
     title: string;
     props: BladePropsMap[K];
+  }): void;
+  /** pushBlade for extension blade types */
+  function pushBlade(blade: {
+    type: string;
+    title: string;
+    props: Record<string, unknown>;
+  }): void;
+  function pushBlade(blade: {
+    type: string;
+    title: string;
+    props: Record<string, unknown>;
   }) {
     actorRef.send({
       type: "PUSH_BLADE",
-      bladeType: blade.type,
+      bladeType: blade.type as BladeType,
       title: blade.title,
       props: blade.props,
     });
   }
 
-  function replaceBlade<K extends BladeType>(blade: {
+  /** Type-safe replaceBlade for core blade types */
+  function replaceBlade<K extends CoreBladeType>(blade: {
     type: K;
     title: string;
     props: BladePropsMap[K];
+  }): void;
+  /** replaceBlade for extension blade types */
+  function replaceBlade(blade: {
+    type: string;
+    title: string;
+    props: Record<string, unknown>;
+  }): void;
+  function replaceBlade(blade: {
+    type: string;
+    title: string;
+    props: Record<string, unknown>;
   }) {
     actorRef.send({
       type: "REPLACE_BLADE",
-      bladeType: blade.type,
+      bladeType: blade.type as BladeType,
       title: blade.title,
       props: blade.props,
     });

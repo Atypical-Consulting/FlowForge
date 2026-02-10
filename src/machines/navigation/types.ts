@@ -1,6 +1,6 @@
-import type { BladeType, BladePropsMap, TypedBlade } from "../../stores/bladeTypes";
+import type { BladeType, BladePropsMap, TypedBlade, CoreBladeType, ExtensionBladeType } from "../../stores/bladeTypes";
 
-export type { TypedBlade, BladeType, BladePropsMap };
+export type { TypedBlade, BladeType, BladePropsMap, CoreBladeType, ExtensionBladeType };
 
 export type ProcessType = "staging" | "topology";
 
@@ -20,7 +20,7 @@ export type NavigationEvent =
       type: "PUSH_BLADE";
       bladeType: BladeType;
       title: string;
-      props: BladePropsMap[BladeType];
+      props: Record<string, unknown>;
     }
   | { type: "POP_BLADE" }
   | { type: "POP_TO_INDEX"; index: number }
@@ -28,7 +28,7 @@ export type NavigationEvent =
       type: "REPLACE_BLADE";
       bladeType: BladeType;
       title: string;
-      props: BladePropsMap[BladeType];
+      props: Record<string, unknown>;
     }
   | { type: "RESET_STACK" }
   | { type: "SWITCH_PROCESS"; process: ProcessType }

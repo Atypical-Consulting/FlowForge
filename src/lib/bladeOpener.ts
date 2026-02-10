@@ -1,11 +1,22 @@
-import type { BladeType, BladePropsMap } from "../stores/bladeTypes";
+import type { CoreBladeType, BladePropsMap } from "../stores/bladeTypes";
 import { getBladeRegistration } from "./bladeRegistry";
 import { getNavigationActor } from "../machines/navigation/context";
 
-/** Open a blade from non-React contexts (command palette, keyboard shortcuts, etc.) */
-export function openBlade<K extends BladeType>(
+/** Open a core blade with type-safe props */
+export function openBlade<K extends CoreBladeType>(
   type: K,
   props: BladePropsMap[K],
+  title?: string,
+): void;
+/** Open an extension blade with arbitrary props */
+export function openBlade(
+  type: string,
+  props: Record<string, unknown>,
+  title?: string,
+): void;
+export function openBlade(
+  type: string,
+  props: Record<string, unknown>,
   title?: string,
 ): void {
   const reg = getBladeRegistration(type);
@@ -15,5 +26,5 @@ export function openBlade<K extends BladeType>(
       ? reg.defaultTitle(props as any)
       : reg?.defaultTitle ?? type);
 
-  getNavigationActor().send({ type: "PUSH_BLADE", bladeType: type, title: resolvedTitle, props });
+  getNavigationActor().send({ type: "PUSH_BLADE", bladeType: type as any, title: resolvedTitle, props });
 }

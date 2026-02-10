@@ -1,18 +1,10 @@
 import { setup, assign, and, not } from "xstate";
 import { rootBladeForProcess } from "./actions";
 import { toast } from "../../stores/toast";
+import { isSingletonBlade } from "../../lib/bladeRegistry";
 import type { NavigationContext, NavigationEvent, TypedBlade } from "./types";
 
 const DEFAULT_MAX_STACK_DEPTH = 8;
-
-/** Singleton blade types that can only appear once in the stack. */
-const SINGLETON_TYPES = new Set([
-  "settings",
-  "changelog",
-  "gitflow-cheatsheet",
-  "conventional-commit",
-  "repo-browser",
-]);
 
 export const navigationMachine = setup({
   types: {
@@ -22,7 +14,7 @@ export const navigationMachine = setup({
   guards: {
     isNotSingleton: ({ context, event }) => {
       if (event.type !== "PUSH_BLADE") return true;
-      if (!SINGLETON_TYPES.has(event.bladeType)) return true;
+      if (!isSingletonBlade(event.bladeType)) return true;
       return !context.bladeStack.some((b) => b.type === event.bladeType);
     },
     isUnderMaxDepth: ({ context }) =>
