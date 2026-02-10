@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 32 of 36 (Toolbar Overhaul)
-Plan: 1 of 2 complete
-Status: Executing
-Last activity: 2026-02-10 — Plan 32-01 Toolbar Registry & Action Data Model complete (3/3 tasks)
+Plan: 2 of 2 complete
+Status: Phase Complete
+Last activity: 2026-02-10 — Plan 32-02 Toolbar UI Components & Header Refactor complete (3/3 tasks)
 
-Progress: [█░░░░░░░░░] 17%
+Progress: [██████████] 100%
 
 ## Milestone History
 
@@ -58,6 +58,12 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 - Toolbar action ID convention: core="tb:{name}", extensions="ext:{extId}:{name}"
 - Extracted queryClient to shared lib module for non-React query invalidation access
 
+**Phase 32-02 decisions:**
+- ThemeToggle rendered as compound widget via ID check (tb:theme-toggle) with data-toolbar-item wrapper
+- ResizeObserver uses prevWidth ref + requestAnimationFrame to avoid infinite-loop pitfall
+- ToolbarSettings shows ALL actions (not filtered by when()) for full configurability
+- data-toolbar-item attribute pattern for both overflow measurement and roving tabindex
+
 ### Pending Todos
 
 None.
@@ -86,9 +92,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed 32-01-PLAN.md — ready for 32-02-PLAN.md
+Stopped at: Completed 32-02-PLAN.md — Phase 32 Toolbar Overhaul complete
 Resume file: None
 
 ---
 *State updated: 2026-02-10*
-*v1.5.0 GitHub Extension -- Phase 32 Plan 01 complete, Plan 02 next*
+*v1.5.0 GitHub Extension -- Phase 32 complete (all 2 plans), ready for Phase 33*
