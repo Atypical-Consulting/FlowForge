@@ -23,7 +23,6 @@ import { useGitOpsStore as useRepositoryStore } from "./core/stores/domain/git-o
 import { usePreferencesStore as useReviewChecklistStore } from "./core/stores/domain/preferences";
 import { usePreferencesStore as useSettingsStore } from "./core/stores/domain/preferences";
 import { usePreferencesStore as useThemeStore } from "./core/stores/domain/preferences";
-import { useGitOpsStore as useTopologyStore } from "./core/stores/domain/git-ops";
 import { useGitOpsStore as useUndoStore } from "./core/stores/domain/git-ops";
 import { useBladeRegistry } from "./core/lib/bladeRegistry";
 import { modKeyLabel } from "./core/lib/platform";
@@ -40,6 +39,7 @@ import { onActivate as viewerImageActivate, onDeactivate as viewerImageDeactivat
 import { onActivate as viewerNupkgActivate, onDeactivate as viewerNupkgDeactivate } from "./extensions/viewer-nupkg";
 import { onActivate as viewerPlaintextActivate, onDeactivate as viewerPlaintextDeactivate } from "./extensions/viewer-plaintext";
 import { onActivate as welcomeActivate, onDeactivate as welcomeDeactivate } from "./extensions/welcome-screen";
+import { onActivate as topologyActivate, onDeactivate as topologyDeactivate } from "./extensions/topology";
 
 function WelcomeFallback() {
   const { openRepository } = useGitOpsStore();
@@ -134,7 +134,10 @@ function App() {
     initSettings().then(() => {
       const { settingsData: settings } = useSettingsStore.getState();
       const defaultTab = settings.general.defaultTab;
-      if (defaultTab === "topology" || defaultTab === "history") {
+      if (
+        (defaultTab === "topology" || defaultTab === "history") &&
+        useBladeRegistry.getState().blades.has("topology-graph")
+      ) {
         getNavigationActor().send({ type: "SWITCH_PROCESS", process: "topology" });
       }
     });
@@ -197,6 +200,14 @@ function App() {
       version: "1.0.0",
       activate: initRepoActivate,
       deactivate: initRepoDeactivate,
+    });
+
+    registerBuiltIn({
+      id: "topology",
+      name: "Topology Graph",
+      version: "1.0.0",
+      activate: topologyActivate,
+      deactivate: topologyDeactivate,
     });
 
     registerBuiltIn({
@@ -274,12 +285,6 @@ function App() {
 
         // Also refresh undo info
         loadUndoInfo();
-
-        // Auto-refresh topology if it has been loaded
-        const topologyState = useTopologyStore.getState();
-        if (topologyState.nodes.length > 0) {
-          topologyState.loadGraph();
-        }
       },
     );
 

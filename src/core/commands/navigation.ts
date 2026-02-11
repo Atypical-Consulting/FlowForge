@@ -1,5 +1,6 @@
 import { FileText, GitBranch, History, Search } from "lucide-react";
 import { registerCommand } from "../lib/commandRegistry";
+import { useBladeRegistry } from "../lib/bladeRegistry";
 import { getNavigationActor } from "../machines/navigation/context";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { usePreferencesStore } from "../stores/domain/preferences";
@@ -38,7 +39,10 @@ registerCommand({
   shortcut: "mod+2",
   icon: History,
   action: () => {
-    getNavigationActor().send({ type: "SWITCH_PROCESS", process: "topology" });
+    const hasTopology = useBladeRegistry.getState().blades.has("topology-graph");
+    if (hasTopology) {
+      getNavigationActor().send({ type: "SWITCH_PROCESS", process: "topology" });
+    }
   },
   enabled: () => !!useRepositoryStore.getState().repoStatus,
 });

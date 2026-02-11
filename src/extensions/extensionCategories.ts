@@ -31,6 +31,7 @@ const EXTENSION_CATEGORIES: Record<string, ExtensionCategory> = {
   "viewer-markdown": "viewers",
   "viewer-nupkg": "viewers",
   "viewer-plaintext": "viewers",
+  topology: "source-control",
   "welcome-screen": "setup",
   worktrees: "source-control",
 };

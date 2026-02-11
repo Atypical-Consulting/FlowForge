@@ -15,7 +15,7 @@ if (import.meta.env.DEV && Object.keys(modules).length === 0) {
 if (import.meta.env.DEV && !import.meta.hot?.data?.isUpdate) {
   const registered = new Set(getAllBladeTypes());
   const EXPECTED_TYPES: string[] = [
-    "staging-changes", "topology-graph", "commit-list-fallback", "commit-details", "diff",
+    "staging-changes", "commit-list-fallback", "commit-details", "diff",
     "branch-manager", "repo-browser", "settings",
     "extension-manager", "extension-detail",
   ];

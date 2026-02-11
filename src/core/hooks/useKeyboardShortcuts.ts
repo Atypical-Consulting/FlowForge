@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useHotkeys } from "react-hotkeys-hook";
 import { type SyncProgress, commands } from "../../bindings";
 import { openBlade } from "../lib/bladeOpener";
+import { useBladeRegistry } from "../lib/bladeRegistry";
 import { executeCommand } from "../lib/commandRegistry";
 import { getNavigationActor } from "../machines/navigation/context";
 import { useUIStore as useCommandPaletteStore } from "../stores/domain/ui-state";
@@ -249,12 +250,12 @@ export function useKeyboardShortcuts() {
     { preventDefault: true, enabled: !!status },
   );
 
-  // Show History (topology) shortcut
+  // Show History (topology) shortcut -- only when topology extension is active
   useHotkeys(
     "mod+2",
     (e) => {
       e.preventDefault();
-      if (status) {
+      if (status && useBladeRegistry.getState().blades.has("topology-graph")) {
         getNavigationActor().send({ type: "SWITCH_PROCESS", process: "topology" });
       }
     },
@@ -285,10 +286,11 @@ export function useKeyboardShortcuts() {
     { preventDefault: true, enabled: !!status },
   );
 
-  // Enter - open details for selected commit in topology
+  // Enter - open details for selected commit in topology (only when extension active)
   useHotkeys(
     "enter",
     () => {
+      if (!useBladeRegistry.getState().blades.has("topology-graph")) return;
       const ctx = getNavigationActor().getSnapshot().context;
       const topologyStore = useTopologyStore.getState();
       if (
