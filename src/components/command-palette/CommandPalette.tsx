@@ -1,7 +1,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
-import { getEnabledCommands, getOrderedCategories } from "../../lib/commandRegistry";
+import { useCommandRegistry, getOrderedCategories } from "../../lib/commandRegistry";
 import type { CommandCategory } from "../../lib/commandRegistry";
 import { searchCommands } from "../../lib/fuzzySearch";
 import { useUIStore as useCommandPaletteStore } from "../../stores/domain/ui-state";
@@ -21,7 +21,13 @@ export function CommandPalette() {
   const inputRef = useRef<HTMLInputElement>(null);
   const shouldReduceMotion = useReducedMotion();
 
-  const enabledCommands = useMemo(() => getEnabledCommands(), [isOpen]);
+  // Subscribe to commands Map -- re-renders on any register/unregister
+  const commandsMap = useCommandRegistry((s) => s.commands);
+
+  const enabledCommands = useMemo(
+    () => Array.from(commandsMap.values()).filter((cmd) => (cmd.enabled ? cmd.enabled() : true)),
+    [commandsMap],
+  );
   const results = useMemo(
     () => searchCommands(query, enabledCommands),
     [query, enabledCommands],
@@ -41,7 +47,14 @@ export function CommandPalette() {
       category: cat,
       items: groups.get(cat)!,
     }));
-  }, [results, query]);
+  }, [results, query, commandsMap]);
+
+  // Clamp selectedIndex when results list shrinks (e.g., extension disabled while palette open)
+  useEffect(() => {
+    if (results.length > 0 && selectedIndex >= results.length) {
+      setSelectedIndex(Math.max(0, results.length - 1));
+    }
+  }, [results.length, selectedIndex, setSelectedIndex]);
 
   // Focus management
   useEffect(() => {
