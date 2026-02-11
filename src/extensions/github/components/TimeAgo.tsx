@@ -7,7 +7,7 @@
  * (e.g., from a TanStack Query refetch), avoiding unnecessary timers.
  */
 
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../core/lib/utils";
 
 interface TimeAgoProps {
   /** ISO 8601 date string from the GitHub API */

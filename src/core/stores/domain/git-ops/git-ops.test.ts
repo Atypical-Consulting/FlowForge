@@ -44,7 +44,7 @@ const mockCommands = vi.hoisted(() => ({
   cloneRepository: vi.fn(),
 }));
 
-vi.mock("../../../bindings", () => ({ commands: mockCommands }));
+vi.mock("../../../../bindings", () => ({ commands: mockCommands }));
 
 vi.mock("../../../machines/navigation/context", () => ({
   getNavigationActor: () => ({ send: vi.fn() }),

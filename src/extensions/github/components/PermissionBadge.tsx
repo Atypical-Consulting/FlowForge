@@ -1,4 +1,4 @@
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../core/lib/utils";
 
 const PERMISSION_STYLES: Record<string, { bg: string; text: string }> = {
   network: { bg: "bg-ctp-blue/15", text: "text-ctp-blue" },

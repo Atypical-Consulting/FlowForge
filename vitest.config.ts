@@ -7,7 +7,7 @@ export default mergeConfig(
     test: {
       globals: true,
       environment: "jsdom",
-      setupFiles: ["./src/test-utils/setup.ts"],
+      setupFiles: ["./src/core/test-utils/setup.ts"],
       include: ["src/**/*.test.{ts,tsx}"],
       exclude: ["node_modules", "dist", "src-tauri"],
       css: false,
@@ -16,7 +16,7 @@ export default mergeConfig(
         include: ["src/**/*.{ts,tsx}"],
         exclude: [
           "src/bindings.ts",
-          "src/test-utils/**",
+          "src/core/test-utils/**",
           "src/__mocks__/**",
           "src/vite-env.d.ts",
           "src/**/*.test.{ts,tsx}",

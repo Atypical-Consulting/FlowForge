@@ -1,5 +1,5 @@
 import { AlertCircle, Check, Loader2 } from "lucide-react";
-import type { SyncProgress as SyncProgressType } from "../../bindings";
+import type { SyncProgress as SyncProgressType } from "../../../bindings";
 
 interface SyncProgressProps {
   progress: SyncProgressType | null;

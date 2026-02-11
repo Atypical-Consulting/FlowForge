@@ -1,6 +1,6 @@
 import { fromPromise } from "xstate";
 import { commands } from "../../../bindings";
-import { getErrorMessage } from "../../../lib/errors";
+import { getErrorMessage } from "../../../core/lib/errors";
 import type { GitflowOp, GitflowPhase } from "./types";
 
 export interface ExecuteGitflowInput {

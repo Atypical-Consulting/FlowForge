@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, X } from "lucide-react";
 import { useEffect, useRef } from "react";
-import type { FileChange, FileStatus } from "../../../bindings";
-import { commands } from "../../../bindings";
+import type { FileChange, FileStatus } from "../../../../bindings";
+import { commands } from "../../../../bindings";
 import { cn } from "../../../lib/utils";
 import { useUIStore as useStagingStore } from "../../../stores/domain/ui-state";
 import { FileTypeIcon } from "../../../components/icons/FileTypeIcon";

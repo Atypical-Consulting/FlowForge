@@ -23,7 +23,7 @@ const mockCommands = vi.hoisted(() => ({
   }),
 }));
 
-vi.mock("../../bindings", () => ({
+vi.mock("../../../bindings", () => ({
   commands: mockCommands,
 }));
 

@@ -2,7 +2,7 @@ import { DiffEditor, type DiffOnMount } from "@monaco-editor/react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { commands } from "../../../bindings";
+import { commands } from "../../../../bindings";
 import "../../../lib/monacoTheme";
 
 interface InlineDiffViewerProps {

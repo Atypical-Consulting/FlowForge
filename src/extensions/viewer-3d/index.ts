@@ -1,6 +1,6 @@
 import { lazy } from "react";
 import type { ExtensionAPI } from "../ExtensionAPI";
-import { renderPathBreadcrumb } from "../../lib/bladeUtils";
+import { renderPathBreadcrumb } from "../../core/lib/bladeUtils";
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {
   const Viewer3dBlade = lazy(() =>

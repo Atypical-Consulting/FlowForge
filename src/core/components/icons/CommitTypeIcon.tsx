@@ -3,7 +3,7 @@ import { memo } from "react";
 import {
   COMMIT_TYPE_THEME,
   type ConventionalCommitType,
-} from "../../extensions/conventional-commits/lib/commit-type-theme";
+} from "../../../extensions/conventional-commits/lib/commit-type-theme";
 import { cn } from "../../lib/utils";
 import { parseConventionalType } from "../../blades/topology-graph/components/layoutUtils";
 

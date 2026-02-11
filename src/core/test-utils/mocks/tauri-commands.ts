@@ -34,7 +34,7 @@ import type {
   GitError,
   GitflowError,
   FileChanged,
-} from "../../bindings";
+} from "../../../bindings";
 
 // Result helpers
 export function ok<T>(data: T): Result<T, GitError> {

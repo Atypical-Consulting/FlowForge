@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ScopeSuggestion } from "../../../bindings";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../core/lib/utils";
 
 interface ScopeAutocompleteProps {
   value: string;

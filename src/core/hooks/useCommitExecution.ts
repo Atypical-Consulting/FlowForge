@@ -1,6 +1,6 @@
 import { Channel } from "@tauri-apps/api/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { type SyncProgress, commands } from "../bindings";
+import { type SyncProgress, commands } from "../../bindings";
 import { gitHookBus } from "../lib/gitHookBus";
 import { toast } from "../stores/toast";
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { commands } from "../../bindings";
+import { commands } from "../../../bindings";
 import { resolveRelativePath } from "../../lib/resolveRelativePath";
 
 interface MarkdownImageProps {

@@ -7,7 +7,7 @@ const mockExtensionStatus = vi.hoisted(() => ({
   status: "inactive" as "active" | "inactive",
 }));
 
-vi.mock("../../../extensions", () => ({
+vi.mock("../../../../extensions", () => ({
   useExtensionHost: (selector: (s: any) => any) =>
     selector({
       extensions: new Map([
@@ -43,7 +43,7 @@ vi.mock("../../../hooks/useAmendPrefill", () => ({
 }));
 
 // Mock Tauri commands for staging status
-vi.mock("../../../bindings", () => ({
+vi.mock("../../../../bindings", () => ({
   commands: {
     getStagingStatus: vi.fn().mockResolvedValue({
       status: "ok",
@@ -53,7 +53,7 @@ vi.mock("../../../bindings", () => ({
 }));
 
 // Mock ConventionalCommitForm since it has deep dependencies
-vi.mock("../../../extensions/conventional-commits/components/ConventionalCommitForm", () => ({
+vi.mock("../../../../extensions/conventional-commits/components/ConventionalCommitForm", () => ({
   ConventionalCommitForm: () => <div data-testid="cc-form">CC Form</div>,
 }));
 

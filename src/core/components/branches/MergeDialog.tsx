@@ -1,5 +1,5 @@
 import { AlertTriangle, Check, GitMerge, X } from "lucide-react";
-import type { MergeResult } from "../../bindings";
+import type { MergeResult } from "../../../bindings";
 import { useMergeWorkflow } from "../../hooks/useMergeWorkflow";
 
 interface MergeDialogProps {

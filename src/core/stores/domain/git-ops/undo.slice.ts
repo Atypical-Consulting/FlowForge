@@ -1,6 +1,6 @@
 import type { StateCreator } from "zustand";
-import type { UndoInfo } from "../../../bindings";
-import { commands } from "../../../bindings";
+import type { UndoInfo } from "../../../../bindings";
+import { commands } from "../../../../bindings";
 import type { GitOpsMiddleware } from "./types";
 import type { GitOpsStore } from "./index";
 

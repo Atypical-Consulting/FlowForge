@@ -1,7 +1,7 @@
 import { Check, GitBranch, GitMerge, Loader2, Pin, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { AheadBehind } from "../../bindings";
-import { commands } from "../../bindings";
+import type { AheadBehind } from "../../../bindings";
+import { commands } from "../../../bindings";
 import type { EnrichedBranch } from "../../lib/branchClassifier";
 import { useContextMenuRegistry } from "../../lib/contextMenuRegistry";
 import { cn } from "../../lib/utils";

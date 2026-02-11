@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { ExtensionAPI } from "../ExtensionAPI";
-import { getBladeRegistration } from "../../lib/bladeRegistry";
-import { useSidebarPanelRegistry } from "../../lib/sidebarPanelRegistry";
-import { useToolbarRegistry } from "../../lib/toolbarRegistry";
+import { getBladeRegistration } from "../../core/lib/bladeRegistry";
+import { useSidebarPanelRegistry } from "../../core/lib/sidebarPanelRegistry";
+import { useToolbarRegistry } from "../../core/lib/toolbarRegistry";
 import { onActivate, onDeactivate } from "../gitflow";
 
 describe("gitflow extension", () => {

@@ -1,5 +1,5 @@
-import type { GitflowBranchType } from "../../../lib/branchClassifier";
-import { BRANCH_TYPE_COLORS } from "../../../lib/branchClassifier";
+import type { GitflowBranchType } from "../../../core/lib/branchClassifier";
+import { BRANCH_TYPE_COLORS } from "../../../core/lib/branchClassifier";
 
 interface GitflowDiagramProps {
   /** Which lane to highlight. undefined = no highlight. */

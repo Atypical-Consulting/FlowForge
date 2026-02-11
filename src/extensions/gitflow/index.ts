@@ -1,8 +1,8 @@
 import { lazy } from "react";
 import { GitBranch, GitMerge } from "lucide-react";
 import type { ExtensionAPI } from "../ExtensionAPI";
-import { openBlade } from "../../lib/bladeOpener";
-import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
+import { openBlade } from "../../core/lib/bladeOpener";
+import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
 import { GitflowPanel } from "./components";
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {

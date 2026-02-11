@@ -1,8 +1,8 @@
 import { lazy } from "react";
 import { FileText } from "lucide-react";
 import type { ExtensionAPI } from "../ExtensionAPI";
-import { openBlade } from "../../lib/bladeOpener";
-import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
+import { openBlade } from "../../core/lib/bladeOpener";
+import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
 import { useConventionalStore } from "./store";
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {

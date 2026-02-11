@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { ExtensionAPI } from "../ExtensionAPI";
-import { getBladeRegistration } from "../../lib/bladeRegistry";
+import { getBladeRegistration } from "../../core/lib/bladeRegistry";
 import { onActivate, onDeactivate } from "../conventional-commits";
 
 describe("conventional-commits extension", () => {

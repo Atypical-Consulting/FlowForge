@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Check, Clock, Copy, GitCommit, Loader2, User } from "lucide-react";
 import { useState } from "react";
-import { commands } from "../../bindings";
+import { commands } from "../../../bindings";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
 import { toast } from "../../stores/toast";
 import { FileTreeBlade } from "../_shared/FileTreeBlade";

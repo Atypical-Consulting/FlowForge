@@ -1,15 +1,15 @@
 import { Loader2, Maximize2, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { commands } from "../../bindings";
+import { commands } from "../../../bindings";
 import { cn } from "../../lib/utils";
 import { useCommitExecution } from "../../hooks/useCommitExecution";
-import { useAmendPrefill } from "../../extensions/conventional-commits/hooks/useAmendPrefill";
+import { useAmendPrefill } from "../../../extensions/conventional-commits/hooks/useAmendPrefill";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
-import { useExtensionHost } from "../../extensions";
+import { useExtensionHost } from "../../../extensions";
 import { ShortcutTooltip } from "../ui/ShortcutTooltip";
 import { Button } from "../ui/button";
-import { ConventionalCommitForm } from "../../extensions/conventional-commits/components/ConventionalCommitForm";
+import { ConventionalCommitForm } from "../../../extensions/conventional-commits/components/ConventionalCommitForm";
 
 export function CommitForm() {
   const [useConventional, setUseConventional] = useState(false);

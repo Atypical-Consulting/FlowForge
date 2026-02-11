@@ -1,10 +1,10 @@
 import { GitCommit } from "lucide-react";
 import { memo } from "react";
-import type { GraphNode } from "../../../bindings";
+import type { GraphNode } from "../../../../bindings";
 import {
   COMMIT_TYPE_THEME,
   type ConventionalCommitType,
-} from "../../../extensions/conventional-commits/lib/commit-type-theme";
+} from "../../../../extensions/conventional-commits/lib/commit-type-theme";
 import { useContextMenuRegistry } from "../../../lib/contextMenuRegistry";
 import { cn } from "../../../lib/utils";
 import {

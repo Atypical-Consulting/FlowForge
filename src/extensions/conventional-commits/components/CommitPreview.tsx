@@ -5,7 +5,7 @@ import {
   COMMIT_TYPE_THEME,
   type ConventionalCommitType,
 } from "../lib/commit-type-theme";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../core/lib/utils";
 
 interface CommitPreviewProps {
   message: string;

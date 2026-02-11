@@ -1,4 +1,4 @@
-import { getStore } from "../lib/store";
+import { getStore } from "../core/lib/store";
 
 /**
  * Key prefix used for all extension settings in the store.

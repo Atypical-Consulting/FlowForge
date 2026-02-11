@@ -1,6 +1,6 @@
 import { ImageIcon, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { commands } from "../../bindings";
+import { commands } from "../../../bindings";
 import { getErrorMessage } from "../../lib/errors";
 
 interface ViewerImageBladeProps {

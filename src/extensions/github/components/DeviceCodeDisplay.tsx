@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from "react";
 import { Check, Copy, ExternalLink, Loader2 } from "lucide-react";
-import { Button } from "../../../components/ui/button";
+import { Button } from "../../../core/components/ui/button";
 
 interface DeviceCodeDisplayProps {
   userCode: string;

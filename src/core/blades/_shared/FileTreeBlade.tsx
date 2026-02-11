@@ -1,6 +1,6 @@
 import { FolderOpen, List, Search, TreePine } from "lucide-react";
 import { useMemo, useState } from "react";
-import type { FileChanged } from "../../bindings";
+import type { FileChanged } from "../../../bindings";
 import { cn } from "../../lib/utils";
 
 interface FileTreeBladeProps {

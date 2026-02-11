@@ -1,6 +1,6 @@
 import { Users } from "lucide-react";
 import { useMemo } from "react";
-import type { CommitSummary } from "../../bindings";
+import type { CommitSummary } from "../../../bindings";
 import { cn } from "../../lib/utils";
 
 interface AuthorFilterProps {

@@ -1,5 +1,5 @@
 import { Loader2, RotateCcw } from "lucide-react";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../core/lib/utils";
 
 interface CommitActionBarProps {
   canCommit: boolean;

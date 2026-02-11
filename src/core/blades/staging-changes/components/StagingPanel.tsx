@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileCheck, FolderTree, List } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import type { FileChange } from "../../../bindings";
-import { commands } from "../../../bindings";
+import type { FileChange } from "../../../../bindings";
+import { commands } from "../../../../bindings";
 import { formatShortcut } from "../../../hooks/useKeyboardShortcuts";
 import { cn } from "../../../lib/utils";
 import { useUIStore as useStagingStore } from "../../../stores/domain/ui-state";

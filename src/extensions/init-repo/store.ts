@@ -1,4 +1,4 @@
-import { createBladeStore } from "../../stores/createBladeStore";
+import { createBladeStore } from "../../core/stores/createBladeStore";
 
 interface InitRepoState {
   // Core config

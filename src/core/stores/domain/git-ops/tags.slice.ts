@@ -1,6 +1,6 @@
 import type { StateCreator } from "zustand";
-import type { TagInfo } from "../../../bindings";
-import { commands } from "../../../bindings";
+import type { TagInfo } from "../../../../bindings";
+import { commands } from "../../../../bindings";
 import { getErrorMessage } from "../../../lib/errors";
 import type { GitOpsMiddleware } from "./types";
 import type { GitOpsStore } from "./index";

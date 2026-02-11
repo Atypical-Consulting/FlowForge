@@ -1,5 +1,5 @@
 import { useHotkeys } from "react-hotkeys-hook";
-import type { FileChange } from "../../../bindings";
+import type { FileChange } from "../../../../bindings";
 import { useUIStore as useStagingStore } from "../../../stores/domain/ui-state";
 
 interface UseStagingKeyboardOptions {

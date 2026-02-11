@@ -1,4 +1,4 @@
-import type { BranchType } from "../../../bindings";
+import type { BranchType } from "../../../../bindings";
 import { BRANCH_HEX_COLORS } from "./layoutUtils";
 
 interface LaneBgInfo {

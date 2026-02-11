@@ -1,4 +1,4 @@
-import type { BranchType } from "../../../bindings";
+import type { BranchType } from "../../../../bindings";
 import { BRANCH_BADGE_STYLES } from "./layoutUtils";
 import { cn } from "../../../lib/utils";
 

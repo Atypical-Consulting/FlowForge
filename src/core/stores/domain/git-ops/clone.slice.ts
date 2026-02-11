@@ -1,5 +1,5 @@
 import type { StateCreator } from "zustand";
-import type { CloneProgress } from "../../../bindings";
+import type { CloneProgress } from "../../../../bindings";
 import type { GitOpsMiddleware } from "./types";
 import type { GitOpsStore } from "./index";
 

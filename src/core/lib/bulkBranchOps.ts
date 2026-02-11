@@ -1,5 +1,5 @@
-import type { GitflowStatus, BatchDeleteResult } from "../bindings";
-import { commands } from "../bindings";
+import type { GitflowStatus, BatchDeleteResult } from "../../bindings";
+import { commands } from "../../bindings";
 
 export interface BulkDeleteOptions {
   branchNames: string[];

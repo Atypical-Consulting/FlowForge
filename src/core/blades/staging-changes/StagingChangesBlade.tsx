@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FocusEvent, useCallback, useMemo, useRef, useState } from "react";
-import type { FileChange } from "../../bindings";
-import { commands } from "../../bindings";
+import type { FileChange } from "../../../bindings";
+import { commands } from "../../../bindings";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
 import { useStagingKeyboard } from "./hooks/useStagingKeyboard";
 import { useUIStore as useStagingStore } from "../../stores/domain/ui-state";

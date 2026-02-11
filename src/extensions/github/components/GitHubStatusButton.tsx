@@ -9,9 +9,9 @@
  */
 
 import { Github } from "lucide-react";
-import { Button } from "../../../components/ui/button";
-import { ShortcutTooltip } from "../../../components/ui/ShortcutTooltip";
-import { openBlade } from "../../../lib/bladeOpener";
+import { Button } from "../../../core/components/ui/button";
+import { ShortcutTooltip } from "../../../core/components/ui/ShortcutTooltip";
+import { openBlade } from "../../../core/lib/bladeOpener";
 import { useGitHubStore } from "../githubStore";
 
 interface GitHubStatusButtonProps {

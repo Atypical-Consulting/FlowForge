@@ -1,6 +1,6 @@
 import { Check, ChevronDown, ChevronRight, X } from "lucide-react";
 import { useMemo, useState } from "react";
-import type { FileChange } from "../../../bindings";
+import type { FileChange } from "../../../../bindings";
 import { cn } from "../../../lib/utils";
 import { FileTypeIcon } from "../../../components/icons/FileTypeIcon";
 import { FileItem } from "./FileItem";

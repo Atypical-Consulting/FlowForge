@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import type { FileChange } from "../../bindings";
+import type { FileChange } from "../../../bindings";
 
 export interface ViewerProps {
   file: FileChange;

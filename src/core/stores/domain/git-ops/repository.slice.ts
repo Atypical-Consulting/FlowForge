@@ -1,6 +1,6 @@
 import type { StateCreator } from "zustand";
-import type { RepoStatus } from "../../../bindings";
-import { commands } from "../../../bindings";
+import type { RepoStatus } from "../../../../bindings";
+import { commands } from "../../../../bindings";
 import { getErrorMessage } from "../../../lib/errors";
 import { getNavigationActor } from "../../../machines/navigation/context";
 import { toast } from "../../toast";

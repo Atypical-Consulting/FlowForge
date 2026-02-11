@@ -1,4 +1,4 @@
-import { GITIGNORE_CATEGORIES } from "../../../lib/gitignoreCategories";
+import { GITIGNORE_CATEGORIES } from "../../../core/lib/gitignoreCategories";
 import { useInitRepoStore } from "../store";
 
 interface CategoryFilterProps {

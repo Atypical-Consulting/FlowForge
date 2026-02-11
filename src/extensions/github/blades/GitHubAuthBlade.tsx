@@ -11,14 +11,14 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Check, AlertTriangle, Github } from "lucide-react";
-import { Button } from "../../../components/ui/button";
-import { useBladeNavigation } from "../../../hooks/useBladeNavigation";
+import { Button } from "../../../core/components/ui/button";
+import { useBladeNavigation } from "../../../core/hooks/useBladeNavigation";
 import { useGitHubStore } from "../githubStore";
 import { SCOPE_PROFILES } from "../types";
 import type { AuthStep } from "../types";
 import { ScopeSelector } from "../components/ScopeSelector";
 import { DeviceCodeDisplay } from "../components/DeviceCodeDisplay";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../core/lib/utils";
 
 const STEP_LABELS = ["Permissions", "Authorize", "Done"];
 

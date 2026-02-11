@@ -1,15 +1,15 @@
 import { AlertTriangle } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useGitOpsStore as useBranchStore } from "../../../stores/domain/git-ops";
-import { useGitOpsStore as useWorktreeStore } from "../../../stores/domain/git-ops";
-import { Button } from "../../../components/ui/button";
+import { useGitOpsStore as useBranchStore } from "../../../core/stores/domain/git-ops";
+import { useGitOpsStore as useWorktreeStore } from "../../../core/stores/domain/git-ops";
+import { Button } from "../../../core/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../../components/ui/dialog";
+} from "../../../core/components/ui/dialog";
 
 interface DeleteWorktreeDialogProps {
   worktreeName: string | null;

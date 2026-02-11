@@ -1,6 +1,6 @@
 import { Archive, Download, Loader2, Play, Trash2 } from "lucide-react";
 import { useState } from "react";
-import type { StashEntry } from "../../bindings";
+import type { StashEntry } from "../../../bindings";
 import { parseStashMessage } from "../../lib/stash-utils";
 
 interface StashItemProps {

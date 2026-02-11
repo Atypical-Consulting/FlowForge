@@ -4,7 +4,7 @@ const mockCommands = vi.hoisted(() => ({
   listRepoFiles: vi.fn().mockResolvedValue({ status: "ok", data: [] }),
 }));
 
-vi.mock("../../bindings", () => ({
+vi.mock("../../../bindings", () => ({
   commands: mockCommands,
 }));
 

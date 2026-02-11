@@ -7,13 +7,13 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { commands } from "../../../bindings";
-import { getErrorMessage } from "../../../lib/errors";
+import { getErrorMessage } from "../../../core/lib/errors";
 import { composeGitignore } from "../lib/gitignoreComposer";
 import { useInitRepoStore } from "../store";
-import { useGitOpsStore as useRepositoryStore } from "../../../stores/domain/git-ops";
-import { useRecentRepos } from "../../../hooks/useRecentRepos";
-import { useBladeNavigation } from "../../../hooks/useBladeNavigation";
-import { Button } from "../../../components/ui/button";
+import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";
+import { useRecentRepos } from "../../../core/hooks/useRecentRepos";
+import { useBladeNavigation } from "../../../core/hooks/useBladeNavigation";
+import { Button } from "../../../core/components/ui/button";
 import { ProjectDetectionBanner } from "./ProjectDetectionBanner";
 import { TemplateChips } from "./TemplateChips";
 import { TemplatePicker } from "./TemplatePicker";

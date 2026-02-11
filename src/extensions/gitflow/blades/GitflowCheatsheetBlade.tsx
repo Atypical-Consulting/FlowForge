@@ -1,8 +1,8 @@
 import { GitMerge } from "lucide-react";
-import { useGitOpsStore as useGitflowStore } from "../../../stores/domain/git-ops";
-import { useGitOpsStore as useRepositoryStore } from "../../../stores/domain/git-ops";
-import { classifyBranch, BRANCH_TYPE_COLORS } from "../../../lib/branchClassifier";
-import type { GitflowBranchType } from "../../../lib/branchClassifier";
+import { useGitOpsStore as useGitflowStore } from "../../../core/stores/domain/git-ops";
+import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";
+import { classifyBranch, BRANCH_TYPE_COLORS } from "../../../core/lib/branchClassifier";
+import type { GitflowBranchType } from "../../../core/lib/branchClassifier";
 import { GitflowDiagram } from "../components/GitflowDiagram";
 import { GitflowActionCards } from "../components/GitflowActionCards";
 import { GitflowBranchReference } from "../components/GitflowBranchReference";

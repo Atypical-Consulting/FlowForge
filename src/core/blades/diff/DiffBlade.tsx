@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { commands } from "../../bindings";
+import { commands } from "../../../bindings";
 import { MONACO_COMMON_OPTIONS, MONACO_THEME } from "../../lib/monacoConfig";
 import "../../lib/monacoTheme";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";

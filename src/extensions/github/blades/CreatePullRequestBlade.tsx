@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { GitPullRequestCreate } from "lucide-react";
 import { commands } from "../../../bindings";
-import { Button } from "../../../components/ui/button";
+import { Button } from "../../../core/components/ui/button";
 import { ToggleSwitch } from "../components/ToggleSwitch";
 import { useCreatePullRequest } from "../hooks/useGitHubMutation";
-import { useGitOpsStore as useRepositoryStore } from "../../../stores/domain/git-ops";
+import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";
 
 interface CreatePullRequestBladeProps {
   owner: string;

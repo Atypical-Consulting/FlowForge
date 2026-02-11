@@ -5,7 +5,7 @@
  * and markdown body using the shared MarkdownRenderer component.
  */
 
-import { MarkdownRenderer } from "../../../components/markdown/MarkdownRenderer";
+import { MarkdownRenderer } from "../../../core/components/markdown/MarkdownRenderer";
 import { UserAvatar } from "./UserAvatar";
 import { TimeAgo } from "./TimeAgo";
 

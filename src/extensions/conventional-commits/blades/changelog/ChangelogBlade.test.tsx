@@ -1,4 +1,4 @@
-import { render } from "../../../../test-utils/render";
+import { render } from "../../../../core/test-utils/render";
 
 const mockCommands = vi.hoisted(() => ({
   generateChangelogCmd: vi.fn().mockResolvedValue({

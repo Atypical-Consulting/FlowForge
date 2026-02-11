@@ -17,7 +17,7 @@ const mockCommands = vi.hoisted(() => ({
   unstageFile: vi.fn().mockResolvedValue({ status: "ok", data: null }),
 }));
 
-vi.mock("../../bindings", () => ({
+vi.mock("../../../bindings", () => ({
   commands: mockCommands,
 }));
 

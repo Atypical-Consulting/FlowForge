@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { FolderOpen } from "lucide-react";
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
-import { commands } from "../../bindings";
-import type { RepoFileEntry } from "../../bindings";
+import { commands } from "../../../bindings";
+import type { RepoFileEntry } from "../../../bindings";
 import { bladeTypeForFile } from "../../lib/fileDispatch";
 import { getBladeRegistration } from "../../lib/bladeRegistry";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";

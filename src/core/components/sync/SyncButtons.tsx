@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";
 import { ArrowDown, ArrowUp, CloudDownload, Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
-import { type SyncProgress, commands } from "../../bindings";
+import { type SyncProgress, commands } from "../../../bindings";
 import { formatShortcut } from "../../hooks/useKeyboardShortcuts";
 import { toast } from "../../stores/toast";
 import { ShortcutTooltip } from "../ui/ShortcutTooltip";

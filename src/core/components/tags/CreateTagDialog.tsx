@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { useState } from "react";
-import { commands } from "../../bindings";
+import { commands } from "../../../bindings";
 import { getErrorMessage } from "../../lib/errors";
 
 interface CreateTagDialogProps {

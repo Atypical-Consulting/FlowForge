@@ -4,7 +4,7 @@ import type {
   ChangelogOutput,
   CommitGroup,
 } from "../../../../bindings";
-import { createBladeStore } from "../../../../stores/createBladeStore";
+import { createBladeStore } from "../../../../core/stores/createBladeStore";
 
 interface ChangelogState {
   // Options

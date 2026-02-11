@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import type { CommitTemplate } from "../store";
 import { BUILTIN_TEMPLATES } from "../lib/commit-templates";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../core/lib/utils";
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Sparkles,

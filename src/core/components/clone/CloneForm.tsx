@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import {
   type CloneProgress as CloneProgressType,
   commands,
-} from "../../bindings";
+} from "../../../bindings";
 import { cn } from "../../lib/utils";
 import { useRecentRepos } from "../../hooks/useRecentRepos";
 import { useGitOpsStore as useCloneStore } from "../../stores/domain/git-ops";

@@ -6,8 +6,8 @@ import {
   FileCheck,
   RotateCcw,
 } from "lucide-react";
-import type { SyncProgress } from "../bindings";
-import { commands as tauriCommands } from "../bindings";
+import type { SyncProgress } from "../../bindings";
+import { commands as tauriCommands } from "../../bindings";
 import { registerCommand } from "../lib/commandRegistry";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { toast } from "../stores/toast";

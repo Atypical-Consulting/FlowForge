@@ -8,7 +8,7 @@ import {
   Package,
   User,
 } from "lucide-react";
-import { commands } from "../../bindings";
+import { commands } from "../../../bindings";
 import type { ViewerProps } from "./ViewerRegistry";
 
 // Extract package ID and version from filename: PackageName.1.2.3.nupkg

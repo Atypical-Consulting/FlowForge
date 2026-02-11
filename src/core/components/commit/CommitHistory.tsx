@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { EmptyState } from "../ui/EmptyState";
 import { Skeleton } from "../ui/Skeleton";
 import { Virtuoso } from "react-virtuoso";
-import { type CommitSummary, commands } from "../../bindings";
+import { type CommitSummary, commands } from "../../../bindings";
 import { useContextMenuRegistry } from "../../lib/contextMenuRegistry";
 import { cn } from "../../lib/utils";
 import { CommitTypeIcon } from "../icons/CommitTypeIcon";

@@ -4,7 +4,7 @@
  * Green (>50%), yellow (10-50%), red (<10%).
  */
 
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../core/lib/utils";
 
 interface RateLimitBarProps {
   label: string;

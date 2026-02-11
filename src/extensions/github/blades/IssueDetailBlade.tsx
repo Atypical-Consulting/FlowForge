@@ -8,9 +8,9 @@
 
 import { ExternalLink } from "lucide-react";
 import { useIssueDetail } from "../hooks/useGitHubQuery";
-import { BladeContentError } from "../../../blades/_shared/BladeContentError";
-import { BladeContentLoading } from "../../../blades/_shared/BladeContentLoading";
-import { MarkdownRenderer } from "../../../components/markdown/MarkdownRenderer";
+import { BladeContentError } from "../../../core/blades/_shared/BladeContentError";
+import { BladeContentLoading } from "../../../core/blades/_shared/BladeContentLoading";
+import { MarkdownRenderer } from "../../../core/components/markdown/MarkdownRenderer";
 import { StatusBadge } from "../components/StatusBadge";
 import { LabelPill } from "../components/LabelPill";
 import { UserAvatar } from "../components/UserAvatar";

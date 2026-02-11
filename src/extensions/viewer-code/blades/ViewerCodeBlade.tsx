@@ -1,11 +1,11 @@
 import { Editor } from "@monaco-editor/react";
 import { FileCode } from "lucide-react";
-import { useRepoFile } from "../../../hooks/useRepoFile";
-import { MONACO_COMMON_OPTIONS, MONACO_THEME } from "../../../lib/monacoConfig";
-import "../../../lib/monacoTheme";
-import { BladeContentLoading } from "../../../blades/_shared/BladeContentLoading";
-import { BladeContentError } from "../../../blades/_shared/BladeContentError";
-import { BladeContentEmpty } from "../../../blades/_shared/BladeContentEmpty";
+import { useRepoFile } from "../../../core/hooks/useRepoFile";
+import { MONACO_COMMON_OPTIONS, MONACO_THEME } from "../../../core/lib/monacoConfig";
+import "../../../core/lib/monacoTheme";
+import { BladeContentLoading } from "../../../core/blades/_shared/BladeContentLoading";
+import { BladeContentError } from "../../../core/blades/_shared/BladeContentError";
+import { BladeContentEmpty } from "../../../core/blades/_shared/BladeContentEmpty";
 
 interface ViewerCodeBladeProps {
   filePath: string;

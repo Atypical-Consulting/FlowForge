@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useCallback, useState } from "react";
-import type { FileChange } from "../../../bindings";
+import type { FileChange } from "../../../../bindings";
 import { FileItem } from "./FileItem";
 
 interface FileListProps {

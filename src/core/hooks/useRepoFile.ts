@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { commands } from "../bindings";
+import { commands } from "../../bindings";
 
 /**
  * Hook to load a file's content from the repository at HEAD.

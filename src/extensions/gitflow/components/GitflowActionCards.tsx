@@ -1,6 +1,6 @@
 import { ArrowRight, GitBranch, GitMerge, Rocket, Tag } from "lucide-react";
-import type { GitflowBranchType } from "../../../lib/branchClassifier";
-import { BRANCH_TYPE_COLORS } from "../../../lib/branchClassifier";
+import type { GitflowBranchType } from "../../../core/lib/branchClassifier";
+import { BRANCH_TYPE_COLORS } from "../../../core/lib/branchClassifier";
 import type { LucideIcon } from "lucide-react";
 
 interface ActionCard {

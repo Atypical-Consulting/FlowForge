@@ -1,4 +1,4 @@
-import type { GitError, GitflowError } from "../bindings";
+import type { GitError, GitflowError } from "../../bindings";
 
 /**
  * Extract a human-readable error message from a GitError or GitflowError.

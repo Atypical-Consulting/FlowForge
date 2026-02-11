@@ -1,8 +1,8 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import { ExtensionAPI } from "../ExtensionAPI";
-import { getBladeRegistration } from "../../lib/bladeRegistry";
-import { getCommandById } from "../../lib/commandRegistry";
-import { useToolbarRegistry } from "../../lib/toolbarRegistry";
+import { getBladeRegistration } from "../../core/lib/bladeRegistry";
+import { getCommandById } from "../../core/lib/commandRegistry";
+import { useToolbarRegistry } from "../../core/lib/toolbarRegistry";
 
 // Mock blade components used by the GitHub extension
 vi.mock("../github/blades/GitHubAuthBlade", () => ({
@@ -50,7 +50,7 @@ vi.mock("../github/githubStore", () => ({
 }));
 
 // Mock the git-ops store (post shim-removal path)
-vi.mock("../../stores/domain/git-ops", () => ({
+vi.mock("../../core/stores/domain/git-ops", () => ({
   useGitOpsStore: {
     getState: () => ({
       repoStatus: null,
@@ -60,10 +60,10 @@ vi.mock("../../stores/domain/git-ops", () => ({
 }));
 
 // Mock other dependencies
-vi.mock("../../lib/bladeOpener", () => ({
+vi.mock("../../core/lib/bladeOpener", () => ({
   openBlade: vi.fn(),
 }));
-vi.mock("../../lib/queryClient", () => ({
+vi.mock("../../core/lib/queryClient", () => ({
   queryClient: { removeQueries: vi.fn() },
 }));
 
@@ -87,7 +87,7 @@ describe("github extension", () => {
     const ghStore = await import("../github/githubStore");
     cancelGitHubPolling = ghStore.cancelGitHubPolling as ReturnType<typeof vi.fn>;
 
-    const qc = await import("../../lib/queryClient");
+    const qc = await import("../../core/lib/queryClient");
     queryClient = qc.queryClient as { removeQueries: ReturnType<typeof vi.fn> };
   });
 

@@ -11,7 +11,7 @@ const mockCommands = vi.hoisted(() => ({
   listTags: vi.fn().mockResolvedValue({ status: "ok", data: [] }),
 }));
 
-vi.mock("../../bindings", () => ({
+vi.mock("../../../bindings", () => ({
   commands: mockCommands,
 }));
 

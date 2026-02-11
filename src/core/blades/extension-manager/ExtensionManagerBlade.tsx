@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
 import { Plus, Search, Puzzle } from "lucide-react";
-import { useExtensionHost } from "../../extensions/ExtensionHost";
+import { useExtensionHost } from "../../../extensions/ExtensionHost";
 import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
-import { commands } from "../../bindings";
+import { commands } from "../../../bindings";
 import { toast } from "../../stores/toast";
 import { Button } from "../../components/ui/button";
 import { ExtensionCard } from "./components/ExtensionCard";

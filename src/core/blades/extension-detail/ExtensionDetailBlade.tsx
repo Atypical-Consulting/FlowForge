@@ -14,7 +14,7 @@ import {
   Trash2,
   Wrench,
 } from "lucide-react";
-import { useExtensionHost } from "../../extensions/ExtensionHost";
+import { useExtensionHost } from "../../../extensions/ExtensionHost";
 import { useToolbarRegistry } from "../../lib/toolbarRegistry";
 import { useContextMenuRegistry } from "../../lib/contextMenuRegistry";
 import { useSidebarPanelRegistry } from "../../lib/sidebarPanelRegistry";
@@ -22,10 +22,10 @@ import { useStatusBarRegistry } from "../../lib/statusBarRegistry";
 import { getAllBladeTypes } from "../../lib/bladeRegistry";
 import { getCommands } from "../../lib/commandRegistry";
 import { Button } from "../../components/ui/button";
-import { ToggleSwitch } from "../../extensions/github/components/ToggleSwitch";
+import { ToggleSwitch } from "../../../extensions/github/components/ToggleSwitch";
 import { toast } from "../../stores/toast";
 import { cn } from "../../lib/utils";
-import type { TrustLevel } from "../../extensions/extensionTypes";
+import type { TrustLevel } from "../../../extensions/extensionTypes";
 
 interface ExtensionDetailBladeProps {
   extensionId: string;

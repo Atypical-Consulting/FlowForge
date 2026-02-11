@@ -11,7 +11,7 @@ const mockCommands = vi.hoisted(() => ({
   closeRepository: vi.fn(),
 }));
 
-vi.mock("../bindings", () => ({
+vi.mock("../../bindings", () => ({
   commands: mockCommands,
 }));
 

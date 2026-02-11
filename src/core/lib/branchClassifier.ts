@@ -1,4 +1,4 @@
-import type { BranchInfo } from "../bindings";
+import type { BranchInfo } from "../../bindings";
 
 /**
  * Branch type classification for Gitflow workflows.

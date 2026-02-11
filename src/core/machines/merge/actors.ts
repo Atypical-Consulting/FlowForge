@@ -1,6 +1,6 @@
 import { fromPromise } from "xstate";
-import type { MergeResult } from "../../bindings";
-import { commands } from "../../bindings";
+import type { MergeResult } from "../../../bindings";
+import { commands } from "../../../bindings";
 import { getErrorMessage } from "../../lib/errors";
 
 export const executeMerge = fromPromise<

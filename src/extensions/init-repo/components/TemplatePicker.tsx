@@ -1,7 +1,7 @@
 import { Check, Search, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGitignoreTemplateList } from "../hooks/useGitignoreTemplates";
-import { getCategoryForTemplate } from "../../../lib/gitignoreCategories";
+import { getCategoryForTemplate } from "../../../core/lib/gitignoreCategories";
 import { useInitRepoStore } from "../store";
 import { CategoryFilter } from "./CategoryFilter";
 

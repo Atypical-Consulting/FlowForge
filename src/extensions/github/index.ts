@@ -9,11 +9,11 @@
 import { createElement } from "react";
 import { Github, GitPullRequest, GitPullRequestCreate, CircleDot } from "lucide-react";
 import type { ExtensionAPI } from "../ExtensionAPI";
-import { openBlade } from "../../lib/bladeOpener";
+import { openBlade } from "../../core/lib/bladeOpener";
 import { useGitHubStore, getSelectedRemote, cancelGitHubPolling } from "./githubStore";
-import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
-import { useToolbarRegistry } from "../../lib/toolbarRegistry";
-import { queryClient } from "../../lib/queryClient";
+import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
+import { useToolbarRegistry } from "../../core/lib/toolbarRegistry";
+import { queryClient } from "../../core/lib/queryClient";
 
 // Module-level unsubscribes for store listeners
 let unsubRepoWatch: (() => void) | null = null;

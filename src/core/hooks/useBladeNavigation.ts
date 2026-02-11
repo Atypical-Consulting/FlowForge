@@ -1,5 +1,5 @@
 import { useSelector } from "@xstate/react";
-import type { FileChange } from "../bindings";
+import type { FileChange } from "../../bindings";
 import { getBladeRegistration } from "../lib/bladeRegistry";
 import { bladeTypeForFile } from "../lib/fileTypeUtils";
 import {

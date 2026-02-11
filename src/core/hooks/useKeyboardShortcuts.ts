@@ -1,7 +1,7 @@
 import { Channel } from "@tauri-apps/api/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useHotkeys } from "react-hotkeys-hook";
-import { type SyncProgress, commands } from "../bindings";
+import { type SyncProgress, commands } from "../../bindings";
 import { openBlade } from "../lib/bladeOpener";
 import { executeCommand } from "../lib/commandRegistry";
 import { getNavigationActor } from "../machines/navigation/context";

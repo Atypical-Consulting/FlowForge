@@ -1,5 +1,5 @@
 import type { StateCreator } from "zustand";
-import type { FileChange } from "../../../bindings";
+import type { FileChange } from "../../../../bindings";
 import type { UIStore } from "./index";
 import type { UIStateMiddleware } from "./types";
 

@@ -1,4 +1,4 @@
-import type { FileChange } from "../../../bindings";
+import type { FileChange } from "../../../../bindings";
 import { getPreviewForFile } from "../../../lib/previewRegistry";
 import { useUIStore as useStagingStore } from "../../../stores/domain/ui-state";
 import { DiffPreviewHeader } from "./DiffPreviewHeader";

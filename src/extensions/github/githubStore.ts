@@ -10,8 +10,8 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { commands } from "../../bindings";
-import { toast } from "../../stores/toast";
-import { openBlade } from "../../lib/bladeOpener";
+import { toast } from "../../core/stores/toast";
+import { openBlade } from "../../core/lib/bladeOpener";
 import type { AuthStep } from "./types";
 
 // Deduplication guard: prevents duplicate "Linked to" toast

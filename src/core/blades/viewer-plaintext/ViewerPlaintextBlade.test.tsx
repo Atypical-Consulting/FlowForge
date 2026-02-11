@@ -4,7 +4,7 @@ const mockCommands = vi.hoisted(() => ({
   readRepoFile: vi.fn(),
 }));
 
-vi.mock("../../bindings", () => ({
+vi.mock("../../../bindings", () => ({
   commands: mockCommands,
 }));
 

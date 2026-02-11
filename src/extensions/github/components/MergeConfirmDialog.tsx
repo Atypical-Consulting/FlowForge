@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AlertTriangle, GitMerge } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../../components/ui/dialog";
-import { Button } from "../../../components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../../core/components/ui/dialog";
+import { Button } from "../../../core/components/ui/button";
 import { MergeStrategySelector, type MergeMethod } from "./MergeStrategySelector";
 
 interface MergeConfirmDialogProps {

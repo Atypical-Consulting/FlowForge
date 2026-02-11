@@ -1,17 +1,17 @@
 import { open } from "@tauri-apps/plugin-dialog";
 import { Folder } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useGitOpsStore as useBranchStore } from "../../../stores/domain/git-ops";
-import { useGitOpsStore as useWorktreeStore } from "../../../stores/domain/git-ops";
-import { Button } from "../../../components/ui/button";
+import { useGitOpsStore as useBranchStore } from "../../../core/stores/domain/git-ops";
+import { useGitOpsStore as useWorktreeStore } from "../../../core/stores/domain/git-ops";
+import { Button } from "../../../core/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../../components/ui/dialog";
-import { Input } from "../../../components/ui/input";
+} from "../../../core/components/ui/dialog";
+import { Input } from "../../../core/components/ui/input";
 
 interface CreateWorktreeDialogProps {
   open: boolean;

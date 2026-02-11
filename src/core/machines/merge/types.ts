@@ -1,4 +1,4 @@
-import type { MergeResult } from "../../bindings";
+import type { MergeResult } from "../../../bindings";
 
 export interface MergeContext {
   sourceBranch: string | null;

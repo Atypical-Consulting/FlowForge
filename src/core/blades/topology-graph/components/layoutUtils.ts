@@ -1,10 +1,10 @@
-import type { GraphEdge, GraphNode } from "../../../bindings";
+import type { GraphEdge, GraphNode } from "../../../../bindings";
 import {
   BRANCH_HEX_COLORS,
   BRANCH_BADGE_STYLES,
   BRANCH_RING_COLORS,
 } from "../../../lib/branchClassifier";
-import { parseConventionalMessage } from "../../../extensions/conventional-commits/lib/conventional-utils";
+import { parseConventionalMessage } from "../../../../extensions/conventional-commits/lib/conventional-utils";
 
 export { BRANCH_HEX_COLORS, BRANCH_BADGE_STYLES, BRANCH_RING_COLORS };
 

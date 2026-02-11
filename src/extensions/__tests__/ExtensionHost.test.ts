@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import { useExtensionHost } from "../ExtensionHost";
 import type { BuiltInExtensionConfig } from "../extensionTypes";
-import { useToolbarRegistry } from "../../lib/toolbarRegistry";
+import { useToolbarRegistry } from "../../core/lib/toolbarRegistry";
 import type { LucideIcon } from "lucide-react";
 
 // Mock Tauri / infrastructure dependencies
@@ -13,14 +13,14 @@ vi.mock("../../bindings", () => ({
     discoverExtensions: vi.fn(),
   },
 }));
-vi.mock("../../lib/store", () => ({
+vi.mock("../../core/lib/store", () => ({
   getStore: vi.fn(async () => ({
     get: vi.fn(async () => []),
     set: vi.fn(),
     save: vi.fn(),
   })),
 }));
-vi.mock("../../stores/toast", () => ({
+vi.mock("../../core/stores/toast", () => ({
   toast: { error: vi.fn(), success: vi.fn(), info: vi.fn() },
 }));
 

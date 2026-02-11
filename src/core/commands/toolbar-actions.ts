@@ -26,7 +26,7 @@ import {
   Undo2,
   X,
 } from "lucide-react";
-import { type SyncProgress, commands as tauriCommands } from "../bindings";
+import { type SyncProgress, commands as tauriCommands } from "../../bindings";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
 import { gitHookBus } from "../lib/gitHookBus";
 import { openBlade } from "../lib/bladeOpener";
