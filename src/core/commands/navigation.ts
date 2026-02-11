@@ -55,3 +55,21 @@ registerCommand({
   },
   enabled: () => !!useRepositoryStore.getState().repoStatus,
 });
+
+registerCommand({
+  id: "open-branch-manager",
+  title: "Open Branch Manager",
+  description: "Open the branch management blade",
+  category: "Navigation",
+  shortcut: "mod+shift+b",
+  icon: GitBranch,
+  action: () => {
+    getNavigationActor().send({
+      type: "PUSH_BLADE",
+      bladeType: "branch-manager" as const,
+      title: "Branch Manager",
+      props: {},
+    });
+  },
+  enabled: () => !!useRepositoryStore.getState().repoStatus,
+});
