@@ -2,13 +2,13 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { motion } from "framer-motion";
 import { AlertCircle, FolderOpen, GitFork } from "lucide-react";
 import appIcon from "../../src-tauri/icons/icon.png";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { commands } from "../bindings";
 import { useRecentRepos } from "../hooks/useRecentRepos";
 import { fadeInUp, staggerContainer, staggerItem } from "../lib/animations";
+import { useBladeRegistry } from "../lib/bladeRegistry";
 import { modKeyLabel } from "../lib/platform";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
-import { InitRepoBlade } from "../blades/init-repo";
 import { CloneForm } from "./clone/CloneForm";
 import { RecentRepos } from "./RecentRepos";
 import { Button } from "./ui/button";
@@ -21,6 +21,8 @@ export function WelcomeView() {
   const [showCloneForm, setShowCloneForm] = useState(false);
   const [pendingInitPath, setPendingInitPath] = useState<string | null>(null);
   const [showInitRepo, setShowInitRepo] = useState(false);
+
+  const initRepoRegistration = useBladeRegistry((s) => s.blades.get("init-repo"));
 
   const openDialog = useCallback(async () => {
     try {
@@ -115,18 +117,36 @@ export function WelcomeView() {
 
   // Show Init Repo blade in standalone mode
   if (showInitRepo && pendingInitPath) {
+    if (!initRepoRegistration) {
+      // Defensive fallback: blade not yet registered (race condition guard)
+      return (
+        <div className="h-[calc(100vh-3.5rem)] bg-ctp-base flex items-center justify-center">
+          <p className="text-ctp-subtext0">Preparing repository setup...</p>
+        </div>
+      );
+    }
+
+    const InitComponent = initRepoRegistration.component;
     return (
       <div className="h-[calc(100vh-3.5rem)] bg-ctp-base">
-        <InitRepoBlade
-          directoryPath={pendingInitPath}
-          onCancel={() => setShowInitRepo(false)}
-          onComplete={async (path) => {
-            await openRepository(path);
-            await addRecentRepo(path);
-            setShowInitRepo(false);
-            setPendingInitPath(null);
-          }}
-        />
+        <Suspense
+          fallback={
+            <div className="h-full flex items-center justify-center">
+              <p className="text-ctp-subtext0">Loading...</p>
+            </div>
+          }
+        >
+          <InitComponent
+            directoryPath={pendingInitPath}
+            onCancel={() => setShowInitRepo(false)}
+            onComplete={async (path: string) => {
+              await openRepository(path);
+              await addRecentRepo(path);
+              setShowInitRepo(false);
+              setPendingInitPath(null);
+            }}
+          />
+        </Suspense>
       </div>
     );
   }
