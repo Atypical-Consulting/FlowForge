@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import type { SyncProgress } from "../../bindings";
 import { commands as tauriCommands } from "../../bindings";
+import { getErrorMessage } from "../lib/errors";
 import { registerCommand } from "../lib/commandRegistry";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { toast } from "../stores/toast";
@@ -22,7 +23,15 @@ registerCommand({
   action: async () => {
     try {
       const channel = new Channel<SyncProgress>();
-      await tauriCommands.pushToRemote("origin", channel);
+      const result = await tauriCommands.pushToRemote("origin", channel);
+      if (result.status === "error") {
+        toast.error(`Push failed: ${getErrorMessage(result.error)}`);
+        return;
+      }
+      if (!result.data.success) {
+        toast.error(`Push failed: ${result.data.message}`);
+        return;
+      }
       toast.success("Pushed to origin");
     } catch (error) {
       toast.error(`Push failed: ${String(error)}`);
@@ -41,7 +50,15 @@ registerCommand({
   action: async () => {
     try {
       const channel = new Channel<SyncProgress>();
-      await tauriCommands.pullFromRemote("origin", channel);
+      const result = await tauriCommands.pullFromRemote("origin", channel);
+      if (result.status === "error") {
+        toast.error(`Pull failed: ${getErrorMessage(result.error)}`);
+        return;
+      }
+      if (!result.data.success) {
+        toast.error(`Pull failed: ${result.data.message}`);
+        return;
+      }
       toast.success("Pulled from origin");
     } catch (error) {
       toast.error(`Pull failed: ${String(error)}`);
@@ -60,7 +77,15 @@ registerCommand({
   action: async () => {
     try {
       const channel = new Channel<SyncProgress>();
-      await tauriCommands.fetchFromRemote("origin", channel);
+      const result = await tauriCommands.fetchFromRemote("origin", channel);
+      if (result.status === "error") {
+        toast.error(`Fetch failed: ${getErrorMessage(result.error)}`);
+        return;
+      }
+      if (!result.data.success) {
+        toast.error(`Fetch failed: ${result.data.message}`);
+        return;
+      }
       toast.success("Fetched from origin");
     } catch (error) {
       toast.error(`Fetch failed: ${String(error)}`);

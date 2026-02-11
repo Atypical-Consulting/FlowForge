@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { type SyncProgress, commands as tauriCommands } from "../../bindings";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
+import { getErrorMessage } from "../lib/errors";
 import { gitHookBus } from "../lib/gitHookBus";
 import { openBlade } from "../lib/bladeOpener";
 import { queryClient } from "../lib/queryClient";
@@ -186,7 +187,15 @@ const coreActions: ToolbarAction[] = [
       fetchLoading = true;
       try {
         const channel = new Channel<SyncProgress>();
-        await tauriCommands.fetchFromRemote("origin", channel);
+        const result = await tauriCommands.fetchFromRemote("origin", channel);
+        if (result.status === "error") {
+          toast.error(`Fetch failed: ${getErrorMessage(result.error)}`);
+          return;
+        }
+        if (!result.data.success) {
+          toast.error(`Fetch failed: ${result.data.message}`);
+          return;
+        }
         gitHookBus.emitDid("fetch");
         toast.success("Fetched from origin");
       } catch (error) {
@@ -211,7 +220,15 @@ const coreActions: ToolbarAction[] = [
       pullLoading = true;
       try {
         const channel = new Channel<SyncProgress>();
-        await tauriCommands.pullFromRemote("origin", channel);
+        const result = await tauriCommands.pullFromRemote("origin", channel);
+        if (result.status === "error") {
+          toast.error(`Pull failed: ${getErrorMessage(result.error)}`);
+          return;
+        }
+        if (!result.data.success) {
+          toast.error(`Pull failed: ${result.data.message}`);
+          return;
+        }
         gitHookBus.emitDid("pull");
         toast.success("Pulled from origin");
       } catch (error) {
@@ -236,7 +253,15 @@ const coreActions: ToolbarAction[] = [
       pushLoading = true;
       try {
         const channel = new Channel<SyncProgress>();
-        await tauriCommands.pushToRemote("origin", channel);
+        const result = await tauriCommands.pushToRemote("origin", channel);
+        if (result.status === "error") {
+          toast.error(`Push failed: ${getErrorMessage(result.error)}`);
+          return;
+        }
+        if (!result.data.success) {
+          toast.error(`Push failed: ${result.data.message}`);
+          return;
+        }
         gitHookBus.emitDid("push");
         toast.success("Pushed to origin");
       } catch (error) {

@@ -1,6 +1,7 @@
 import { Channel } from "@tauri-apps/api/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type SyncProgress, commands } from "../../bindings";
+import { getErrorMessage } from "../lib/errors";
 import { gitHookBus } from "../lib/gitHookBus";
 import { toast } from "../stores/toast";
 
@@ -23,7 +24,17 @@ export function useCommitExecution(options?: UseCommitExecutionOptions) {
       const channel = new Channel<SyncProgress>();
       return commands.pushToRemote("origin", channel);
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      if (result.status === "error") {
+        toast.error(`Push failed: ${getErrorMessage(result.error)}`);
+        options?.onPushError?.(result.error);
+        return;
+      }
+      if (!result.data.success) {
+        toast.error(`Push failed: ${result.data.message}`);
+        options?.onPushError?.(new Error(result.data.message));
+        return;
+      }
       toast.success("Pushed to origin");
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
       gitHookBus.emitDid("push");
