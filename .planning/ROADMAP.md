@@ -133,7 +133,10 @@ Plans:
   2. Disabling the Worktree extension removes the sidebar panel and its command palette entries without errors
   3. No hardcoded worktree JSX remains in RepositoryView (all contributed via extension API)
   4. Worktree data operations (list, create, delete, switch) continue working because the data slice remains in core GitOpsStore
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 44-01-PLAN.md -- Create worktrees extension (entry point, sidebar panel wrapper, move components, badge API)
+- [ ] 44-02-PLAN.md -- Wire extension into app, remove hardcoded RepositoryView worktree code, delete old directory
 
 ### Phase 45: Init Repo Extraction
 **Goal**: Init Repo is a toggleable built-in extension that activates early enough to serve both WelcomeView and blade navigation contexts
@@ -176,7 +179,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 43. Infrastructure Prep | v1.7.0 | 3/3 | ✓ Complete | 2026-02-11 |
-| 44. Worktree Extraction | v1.7.0 | 0/TBD | Not started | - |
+| 44. Worktree Extraction | v1.7.0 | 0/2 | Planned | - |
 | 45. Init Repo Extraction | v1.7.0 | 0/TBD | Not started | - |
 | 46. Topology Extraction | v1.7.0 | 0/TBD | Not started | - |
 | 47. Cleanup & Verification | v1.7.0 | 0/TBD | Not started | - |
