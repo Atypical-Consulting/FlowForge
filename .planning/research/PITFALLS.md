@@ -1,939 +1,541 @@
-# FlowForge Critical Pitfalls
+# Domain Pitfalls: Extracting Topology, Worktrees, and Init Repo into Extensions
 
-> **Research Dimension**: Pitfalls
-> **Project**: FlowForge -- AI-native Git client (Tauri + Rust + React)
-> **Target Constraints**: <50MB binary, <200MB memory, <100ms common operations
-> **Last Updated**: 2026-02-09
-
----
-
-## Executive Summary
-
-42 domain-specific pitfalls identified across two milestone scopes. Pitfalls 1-24 cover the core Git client foundation (established). Pitfalls 25-42 cover the extension system, GitHub integration, and toolbar UX overhaul -- the focus of the next milestone. The extension/GitHub pitfalls are particularly dangerous because they introduce untrusted code execution, external network access, and new attack surface to an app that was previously entirely local.
+**Domain:** Extension extraction for Topology Graph, Worktree Management, Init Repo; Zustand registry migration
+**Project:** FlowForge v1.7.0 (subsequent milestone after v1.6.0 extension platform)
+**Researched:** 2026-02-11
+**Overall confidence:** HIGH (based on deep codebase analysis and v1.6.0 extraction lessons)
 
 ---
 
-## PART A: Core Git Client Pitfalls (Established)
+## Critical Pitfalls
 
-These pitfalls were identified during initial project research and remain relevant.
-
----
-
-### Critical Pitfalls (Phase 1)
-
-### 1. IPC Serialization Bottleneck
-
-**Problem**: Tauri's default JSON serialization becomes a bottleneck for Git data. A 10MB diff takes 5ms on macOS but 200ms on Windows.
-
-**Warning Signs**:
-- UI freezes during large diffs
-- Clone progress updates lag
-- Status refresh takes >100ms
-
-**Prevention**:
-- Paginate everything (commits, files, diffs)
-- Keep bulk data in Rust, send summaries to frontend
-- Use Channels for streaming, not single large payloads
-- Treat WebView as display-only, not data storage
-
-**Phase**: Address in Phase 1 (Foundation)
+Mistakes that cause rewrites, broken core workflows, or multi-week recovery.
 
 ---
 
-### 2. Blocking the Async Runtime
+### Pitfall 1: Topology Is a Navigation Process Root, Not Just a Blade
 
-**Problem**: git2-rs is synchronous. Calling it directly on Tokio's async runtime blocks all other tasks.
+**What goes wrong:** Topology is not merely a blade registered in the blade registry -- it is one of two fundamental "process types" that define the entire navigation system. The XState navigation machine (`navigationMachine.ts`) has a hardcoded `ProcessType = "staging" | "topology"` enum. The `rootBladeForProcess()` function in `actions.ts` returns the `"topology-graph"` blade type when the process is `"topology"`. The `ProcessNavigation` component hardcodes two process tabs (Staging and Topology). When a developer extracts topology to an extension and the extension is disabled, the entire right side of the navigation breaks: users can still click the "Topology" tab, but the blade stack initializes with a blade type that has no registration, rendering nothing or throwing.
 
-**Warning Signs**:
-- UI freezes during Git operations
-- File watcher events delayed
-- Commands queue up
-
-**Prevention**:
-```rust
-// WRONG - blocks runtime
-#[tauri::command]
-async fn get_status(repo: State<'_, Repo>) -> Result<Status, Error> {
-    repo.statuses(None)?  // Blocks!
-}
-
-// CORRECT - spawn blocking task
-#[tauri::command]
-async fn get_status(repo: State<'_, Repo>) -> Result<Status, Error> {
-    let repo = repo.clone();
-    tokio::task::spawn_blocking(move || {
-        repo.statuses(None)
-    }).await?
-}
-```
-
-**Phase**: Address in Phase 1 (Foundation)
-
----
-
-### 3. libgit2 Thread Safety
-
-**Problem**: git2 Repository objects cannot be shared across threads. Attempting to do so causes undefined behavior or panics.
-
-**Warning Signs**:
-- Random panics in Git operations
-- Data corruption
-- Segfaults
-
-**Prevention**:
-- One Repository handle per thread
-- Use `Arc<Mutex<Repository>>` for shared access
-- Never share git2 objects (Commit, Tree, etc.) across threads
-- Clone Repository for parallel operations
-
-**Phase**: Address in Phase 1 (Foundation)
-
----
-
-### 4. Cross-Platform WebView Differences
-
-**Problem**: Windows (WebView2), macOS (WKWebView), and Linux (WebKitGTK) behave differently in subtle ways.
-
-**Warning Signs**:
-- Works on Mac, broken on Windows
-- CSS rendering differences
-- IPC performance varies 10-40x between platforms
-
-**Prevention**:
-- CI builds and tests on all three platforms from day one
-- Test IPC performance on each platform
-- Avoid platform-specific CSS features
-- Document known platform quirks
-
-**Phase**: Address in Phase 1 (Foundation)
-
----
-
-### High Priority Pitfalls (Phases 2-4)
-
-### 5. Memory Leaks from git2
-
-**Problem**: Long-lived Repository handles accumulate file descriptors and memory. libgit2 caches aggressively.
-
-**Prevention**:
-- Open Repository per-operation OR with explicit lifecycle
-- Call `Repository::cleanup_state()` periodically
-- Monitor file descriptor count in development
-- Consider re-opening repo after N operations
-
-**Phase**: Address in Phase 2 (Core Git)
-
----
-
-### 6. File Watching Platform Limits
-
-**Problem**: Each platform has different limits and behaviors:
-- Linux inotify: Default 8,192 watches (configurable)
-- macOS kqueue: Opens file descriptor per file (~256 default)
-- Windows: Can only watch directories, not individual files
-
-**Prevention**:
-- Use notify-rs (handles cross-platform)
-- Watch directories, not files
-- Watch `.git/` directory specifically, not entire worktree
-- Implement polling fallback for network filesystems
-- Debounce events (Git operations generate hundreds)
-
-**Phase**: Address in Phase 3 (Real-Time Updates)
-
----
-
-### 7. Large Repository History Loading
-
-**Problem**: 100K+ commits cannot be loaded at once. `git log --graph` takes 2.8+ seconds even on moderate repos.
-
-**Prevention**:
-- Virtual scrolling in commit list (only render visible)
-- Incremental loading (load 100 at a time)
-- Use git commit-graph for faster traversal
-- Defer graph layout calculation
-- Cache commit metadata
-
-**Phase**: Address in Phase 4 (Branch Operations) and Phase 8 (Topology)
-
----
-
-### 8. Gitflow Double-Merge Enforcement
-
-**Problem**: Release and hotfix branches must merge to BOTH main AND develop. Easy to forget one.
-
-**Prevention**:
-- State machine tracks pending merges
-- Block branch deletion until both merges complete
-- UI shows merge checklist for release/hotfix finish
-- Implement as transaction (rollback if either fails)
-
-**Phase**: Address in Phase 5 (Gitflow State Machine)
-
----
-
-### 9. DAG Layout Complexity
-
-**Problem**: Naive graph layout algorithms are O(n^2) or worse. Real repos have thousands of nodes.
-
-**Prevention**:
-- Use swimlane algorithm (O(n))
-- Virtualize rendering (only visible nodes)
-- Cluster old commits
-- Pre-compute layout in Rust, send positions to frontend
-- Limit visible history (show last 1000, load more on demand)
-
-**Phase**: Address in Phase 8 (Topology)
-
----
-
-### Medium Priority Pitfalls
-
-### 10. Linux WebKitGTK Version Hell
-
-**Problem**: Ubuntu 20.04, 22.04, and 24.04 ship different WebKitGTK versions. They are not compatible.
-
-**Prevention**:
-- Target minimum WebKitGTK version explicitly
-- Test on multiple Ubuntu versions in CI
-- Document system requirements
-- Consider AppImage for better isolation
-
-**Phase**: Address throughout development
-
----
-
-### 11. Event Storms from File Watching
-
-**Problem**: A single `git checkout` generates hundreds of file events. Processing each individually overwhelms the UI.
-
-**Prevention**:
-```rust
-// Debounce events - only process after 100ms of quiet
-let debouncer = new_debouncer(Duration::from_millis(100), move |events| {
-    // Batch process
-})?;
-```
-
-**Phase**: Address in Phase 3 (Real-Time Updates)
-
----
-
-### 12. Atomic File Update Blindness
-
-**Problem**: Many editors (vim, VSCode) save files atomically via rename. If you are watching the original file, you miss the update.
-
-**Prevention**:
-- Watch directories, not files
-- Use notify-rs which handles this
-- Re-establish watches after rename events
-
-**Phase**: Address in Phase 3 (Real-Time Updates)
-
----
-
-### 13. Gitflow is Polarizing
-
-**Problem**: Gitflow has critics. Some teams prefer GitHub Flow or trunk-based development. The original gitflow repo was archived October 2025.
-
-**Prevention**:
-- Position Gitflow as primary but not exclusive
-- Design state machine to support multiple workflows
-- Consider GitHub Flow support in v2
-- Do not force Gitflow on repos that do not use it
-
-**Phase**: Design consideration throughout
-
----
-
-### 14. Merge Conflict During Multi-Step Operations
-
-**Problem**: Gitflow "finish release" involves multiple merges. A conflict in the first breaks the flow.
-
-**Prevention**:
-- Check for potential conflicts before starting
-- Make operations transactional (complete or rollback)
-- Save state to allow resuming after conflict resolution
-- Clear UI for "operation in progress" state
-
-**Phase**: Address in Phase 5 (Gitflow State Machine)
-
----
-
-### 15. Stale Branch Detection False Positives
-
-**Problem**: A branch may be "old" but actively worked on in a worktree.
-
-**Prevention**:
-- Cross-reference worktree status
-- Use last commit date, not creation date
-- Allow user to mark branches as "active"
-- Do not auto-delete, only suggest
-
-**Phase**: Address in Phase 7 (Worktrees)
-
----
-
-### Performance Pitfalls
-
-### 16. Status on Large Worktrees
-
-**Problem**: `git status` touches every file in the worktree. On repos with 50K+ files, this takes seconds.
-
-**Prevention**:
-- Use libgit2's `StatusOptions::include_untracked(false)` for quick checks
-- Cache status, invalidate on file change
-- Show "checking..." state, do not block UI
-- Respect `.gitignore` strictly
-
-**Phase**: Address in Phase 2 (Core Git)
-
----
-
-### 17. Diff Memory Explosion
-
-**Problem**: Loading both sides of a large diff into memory for comparison can use gigabytes.
-
-**Prevention**:
-- Stream diffs line-by-line
-- Limit diff display size (offer "show full" option)
-- Use libgit2's delta compression when available
-- Paginate hunks
-
-**Phase**: Address in Phase 2 (Core Git)
-
----
-
-### 18. Commit Message Scope Inference Failures
-
-**Problem**: Rule-based scope inference from file paths fails for monorepos with complex structures, files that moved, and cross-cutting changes.
-
-**Prevention**:
-- Use most common directory as scope
-- Allow manual override (always)
-- Learn from previous commits in same paths
-- Do not over-engineer v1 - 80% accuracy is fine
-
-**Phase**: Address in Phase 6 (Conventional Commits)
-
----
-
-### Security Pitfalls
-
-### 19. Credential Exposure
-
-**Problem**: Git credentials (tokens, passwords) can leak through logs, error messages, or IPC.
-
-**Prevention**:
-- Never log URLs with credentials
-- Sanitize error messages before sending to frontend
-- Use OS keychain (macOS Keychain, Windows Credential Manager)
-- Never store credentials in config files
-
-**Phase**: Address throughout development
-
----
-
-### 20. Path Traversal in Worktree Operations
-
-**Problem**: User-controlled paths in worktree creation could escape intended directories.
-
-**Prevention**:
-- Validate all paths on backend
-- Canonicalize paths before operations
-- Reject paths with `..` components
-- Use allowlist of permitted parent directories
-
-**Phase**: Address in Phase 7 (Worktrees)
-
----
-
-### UX Pitfalls
-
-### 21. Topology Overload
-
-**Problem**: Showing all branches, all commits, all information overwhelms users.
-
-**Prevention**:
-- Default to collapsed/filtered view
-- Hide old/merged branches by default
-- Progressive disclosure
-- Quick filters (this week, this month, this branch)
-
-**Phase**: Address in Phase 8 (Topology)
-
----
-
-### 22. Conventional Commit Rigidity
-
-**Problem**: Strict validation frustrates users who are learning or have edge cases.
-
-**Prevention**:
-- Warnings, not errors (allow non-conventional commits)
-- Helpful error messages ("Did you mean `feat:` instead of `feature:`?")
-- Quick-fix suggestions
-- Optional strict mode
-
-**Phase**: Address in Phase 6 (Conventional Commits)
-
----
-
-### 23. Worktree Path Confusion
-
-**Problem**: Users forget which worktree they are in, make changes in wrong location.
-
-**Prevention**:
-- Clear visual indicator of current worktree
-- Show worktree path prominently
-- Different window title per worktree
-- Quick switcher
-
-**Phase**: Address in Phase 7 (Worktrees)
-
----
-
-### 24. Lost Work During Destructive Operations
-
-**Problem**: Branch deletion, stash drop, reset can lose work permanently.
-
-**Prevention**:
-- Reflog integration (allow recovery)
-- Confirmation dialogs for destructive operations
-- Show what will be lost before proceeding
-- Undo where possible
-
-**Phase**: Address throughout development
-
----
-
-## PART B: Extension System, GitHub Integration, and Toolbar UX Pitfalls
-
-These pitfalls are specific to adding an extension system, GitHub PR/issues integration, and toolbar UX overhaul to the existing FlowForge codebase. They focus on integration risks with the existing blade/store/FSM architecture.
-
-**Researched**: 2026-02-09
-
----
-
-### CRITICAL -- Mistakes that cause rewrites, security vulnerabilities, or fundamental breakage
-
----
-
-### 25. Extension Code Escaping the Sandbox
-
-**What goes wrong:** Extensions loaded from `.flowforge/extensions/` per-repo execute arbitrary JavaScript in the same context as the core app. A malicious or buggy extension gains full access to Zustand stores, the XState navigation actor, Tauri IPC commands, and the filesystem.
-
-**Why it happens:** The natural approach -- `import()` or `eval()` of extension code -- runs that code in the same JavaScript Realm as the host app. There is no isolation boundary. Figma learned this the hard way: their initial Realms-shim sandbox had multiple escape vulnerabilities where sandbox code could access host objects. They ultimately switched to QuickJS compiled to WebAssembly for true isolation.
+**Why it happens:** In v1.6.0, the extracted features (Gitflow, CC, Content Viewers) were all "leaf" features -- they contributed sidebar panels, blades, and commands, but none of them were structural to the navigation architecture. Topology is fundamentally different: it is a process root. The developer treats it like any other blade extraction and misses that it underpins the navigation state machine itself.
 
 **Consequences:**
-- Extension reads/writes to any Zustand store (git-ops, preferences, UI state)
-- Extension sends arbitrary events to the navigation machine (`RESET_STACK`, `SWITCH_PROCESS`)
-- Extension calls Tauri IPC commands directly (file access, shell commands if exposed)
-- Supply-chain attack vector: a repo's `.flowforge/extensions/` folder is cloned by contributors
+- Clicking "Topology" tab renders a blank panel or crashes because `BladeRenderer` looks up `"topology-graph"` and gets `undefined`
+- The `Enter` keyboard shortcut (which opens commit details from selected topology commit) throws because `topologySelectedCommit` state no longer exists in the store
+- The `defaultTab: "topology"` user setting in `GeneralSettings` sends `SWITCH_PROCESS` to the navigation actor on startup, which initializes the blade stack with a missing blade type
+- Auto-refresh in `App.tsx` (lines 132-135) calls `topologyState.loadGraph()` which references a slice that was extracted
 
 **Prevention:**
-- Run extension logic in a sandboxed `<iframe>` with `sandbox="allow-scripts"` and no `allow-same-origin`, communicating via `postMessage()` only
-- Alternatively, use a Web Worker with a Blob URL for non-UI extensions -- Worker cannot access DOM, Tauri IPC, or main-thread globals
-- Define a strict Extension API surface as a message protocol (not direct function calls): `{ type: "registerCommand", payload: {...} }`
-- Never allow extensions to `import` from core modules or access `window.__TAURI__`
+1. Topology MUST remain a core blade registration, even when extracted. Use `coreOverride: true` (like Gitflow cheatsheet and CC blade already do) so the blade type stays `"topology-graph"` not `"ext:topology:topology-graph"`. This preserves compatibility with the navigation machine.
+2. The `TopologySlice` in `GitOpsStore` cannot simply be removed. It must remain as a thin facade or the extension must provide a replacement that the navigation machine can reference. Either: (a) keep the slice in core with the extension providing the UI, or (b) refactor `ProcessType` to be dynamic.
+3. Do NOT make `ProcessType` dynamic in this milestone -- that is a navigation machine rewrite. Instead, keep topology as a "core-guaranteed" blade type where the extension provides the component but the blade registration always exists.
+4. Add a fallback blade that renders "Topology extension is disabled. Enable it in Extension Manager." if the topology extension is deactivated but the user navigates to the process.
 
-**Detection:** Any extension that uses `import()`, `eval()`, `new Function()`, or accesses `window.__TAURI_INTERNALS__` in its code.
+**Detection:** Disable the topology extension. Click the "Topology" tab. If the app crashes or shows blank content, the extraction broke the navigation root.
 
-**Phase:** Must be addressed in the Extension System foundation phase. Retrofitting sandboxing is a rewrite.
+**Warning signs:** Any PR that removes `"topology-graph"` from `BladePropsMap` in `bladeTypes.ts`, or removes `TopologySlice` from `GitOpsStore` without providing a navigation-safe fallback.
 
-**Confidence:** HIGH -- Figma's public post-mortem and the Zendesk engineering sandbox analysis both confirm Realm-based approaches are insufficient. WebWorker/iframe isolation is well-established.
+**Phase:** Address first. This is the single most dangerous pitfall because topology is the most-used view and it is structural, not just feature-level.
 
 ---
 
-### 26. Extension BladeType Collisions with Core Blade Registry
+### Pitfall 2: TopologySlice Cross-Store Access From App.tsx File Watcher
 
-**What goes wrong:** Extensions register blade types that collide with the 15 existing core types or with other extensions. The `BladePropsMap` interface is a compile-time TypeScript map; extensions cannot extend it at runtime without breaking type safety. The `bladeRegistry` Map uses `BladeType` as key, and `registerBlade()` silently overwrites existing registrations.
+**What goes wrong:** `App.tsx` lines 130-136 contain a file watcher listener that directly accesses `useTopologyStore.getState()` to check if nodes are loaded and auto-refresh the graph:
 
-**Why it happens:** The current architecture uses a string-literal union type for `BladeType`:
 ```typescript
-export type BladeType = keyof BladePropsMap;
-// "staging-changes" | "topology-graph" | "commit-details" | ...
-```
-Extensions need to register new blade types, but this union is closed at compile time. Developers either widen it to `string` (losing type safety for core blades) or create a parallel untyped registry (fragmenting the system).
-
-**Consequences:**
-- Extension registers `"settings"` blade type, overwriting core settings blade
-- The `SINGLETON_TYPES` set in `navigationMachine.ts` is hardcoded -- extension singletons are not enforced
-- `_discovery.ts` exhaustiveness check fires false positives for extension types
-- The navigation machine's `PUSH_BLADE` event type accepts only `BladeType`, rejecting extension blade types at the TypeScript level
-
-**Prevention:**
-- Namespace extension blade types: `ext:{extension-id}:{blade-name}` (e.g., `ext:github:pr-list`)
-- Create a separate `ExtensionBladeType` that is `string` but validated at runtime, alongside the compile-time `BladeType` union
-- Make the navigation machine accept `BladeType | ExtensionBladeType` with runtime validation
-- Add a guard in `registerBlade()` that rejects registration of core blade types by extensions
-- Add namespace prefix validation in the extension loader before any registration calls
-
-**Detection:** Extension registering a blade type without the `ext:` prefix. Core blade types listed in `EXPECTED_TYPES` appearing in extension manifests.
-
-**Phase:** Extension System foundation phase. The `BladeType` type system must be extended before any extension can provide UI.
-
-**Confidence:** HIGH -- directly verified from codebase analysis of `bladeTypes.ts`, `bladeRegistry.ts`, and `navigationMachine.ts`.
-
----
-
-### 27. GitHub OAuth Token Stored in Plaintext via tauri-plugin-store
-
-**What goes wrong:** The natural approach is to store the GitHub OAuth token using the existing `getStore()` function (which writes to `flowforge-settings.json`). This stores the token as plaintext JSON on disk, readable by any process with filesystem access.
-
-**Why it happens:** `tauri-plugin-store` is designed for preferences, not secrets. The existing settings store at `flowforge-settings.json` is unencrypted. Developers reach for the tool they already have.
-
-**Consequences:**
-- OAuth token readable by any local process or malware
-- Token persists on disk even after logout if not explicitly cleared
-- On shared machines, other users could access tokens
-- If the repo is on a network drive, tokens could be exposed over the network
-
-**Prevention:**
-- Use `tauri-plugin-keyring` (wraps OS keychain: macOS Keychain, Windows Credential Manager, Linux Secret Service) for all OAuth tokens
-- Never store tokens in `flowforge-settings.json` or any tauri-plugin-store instance
-- Store only a boolean `isGitHubConnected` flag in the preferences store; retrieve the actual token from keyring at runtime
-- Implement token clearing on explicit logout
-
-**Detection:** Any `store.set()` call with keys like "github_token", "access_token", or "oauth_token".
-
-**Phase:** GitHub OAuth phase. Must be the first thing decided before any token storage code is written.
-
-**Confidence:** HIGH -- Tauri's own documentation recommends native keychain. Stronghold is deprecated in v3. The `tauri-plugin-store` docs explicitly state it is for non-sensitive data.
-
----
-
-### 28. CSP is Null -- Extensions and GitHub Integration Widen the Attack Surface
-
-**What goes wrong:** The current `tauri.conf.json` has `"csp": null`, meaning no Content Security Policy is enforced. This was acceptable when the app only loaded local assets and communicated with Tauri IPC. Adding an extension system and GitHub API calls (external network requests) without CSP means any XSS vulnerability grants full access to both the extension API and GitHub tokens.
-
-**Why it happens:** CSP was never needed because the app was entirely local. Adding network-facing features without tightening CSP is an oversight that creates a large attack surface.
-
-**Consequences:**
-- Injected scripts can call Tauri IPC commands (all permissions in `default.json` are available)
-- Injected scripts can steal GitHub OAuth tokens from memory
-- Extension-provided HTML/UI could inject scripts that escape the extension sandbox
-- No protection against script injection via Git commit messages, branch names, or PR content rendered in the UI
-
-**Prevention:**
-- Before adding GitHub integration or extensions, set a strict CSP:
-  ```json
-  "csp": "default-src 'self'; script-src 'self'; connect-src 'self' https://api.github.com https://github.com; img-src 'self' https://avatars.githubusercontent.com data:; style-src 'self' 'unsafe-inline'"
-  ```
-- Sanitize all GitHub API response content before rendering (PR bodies contain arbitrary markdown with potential XSS payloads)
-- Extension iframes must have their own restrictive CSP via sandbox attributes
-- Test CSP in development -- Vite dev server may need `connect-src` adjustments
-
-**Detection:** `"csp": null` in `tauri.conf.json`. Any `dangerouslySetInnerHTML` usage with unsanitized GitHub API content.
-
-**Phase:** Must be addressed before either GitHub integration or extension system. This is a prerequisite security hardening step.
-
-**Confidence:** HIGH -- directly verified from `tauri.conf.json` in the codebase. Tauri security documentation explicitly warns about CSP misconfiguration.
-
----
-
-### 29. Command Name Collisions Between Extensions and Core
-
-**What goes wrong:** Extensions register commands via `registerCommand()` with IDs that collide with existing core commands. The current `commandRegistry.ts` silently overwrites commands by ID:
-```typescript
-const existingIndex = commands.findIndex((c) => c.id === cmd.id);
-if (existingIndex >= 0) {
-  commands[existingIndex] = cmd; // Silent overwrite!
+const topologyState = useTopologyStore.getState();
+if (topologyState.nodes.length > 0) {
+  topologyState.loadGraph();
 }
 ```
 
-**Why it happens:** The command registry was designed for a closed set of core commands. There is no namespace enforcement. Extensions naturally want IDs like "open-settings" or "refresh" that may conflict with core commands.
+This runs in core code, not in the topology extension. If `TopologySlice` is extracted from `GitOpsStore`, this code either (a) references a removed slice causing a runtime error, or (b) references a stale store that no longer holds topology state. Either way, the auto-refresh on file system changes -- which keeps the commit graph current when the user makes commits -- silently breaks.
 
-**Consequences:**
-- Extension overwrites core command, breaking keyboard shortcut
-- Two extensions register the same command ID, last-write-wins with no warning
-- Command palette shows extension commands mixed with core commands with no visual distinction
+**Why it happens:** The topology auto-refresh was added as a core concern (react to repository-changed Tauri events) rather than as a topology-internal concern. When extracting, the developer focuses on moving the blade and its components but does not audit App.tsx for cross-cutting references.
 
-**Prevention:**
-- Namespace extension commands: `ext:{extension-id}:{command-name}`
-- Add a `source` field to the `Command` interface: `source: "core" | { extension: string }`
-- Reject `registerCommand()` calls that would overwrite a `source: "core"` command
-- Add an "Extensions" category to the `CommandCategory` union or per-extension categories
-- Show extension provenance in the command palette UI (icon badge, section grouping)
-
-**Detection:** `registerCommand()` called with an ID that does not start with `ext:` prefix from extension context.
-
-**Phase:** Extension System foundation phase, alongside blade type namespacing.
-
-**Confidence:** HIGH -- directly verified from `commandRegistry.ts` source code.
-
----
-
-### MODERATE -- Significant bugs, poor UX, or technical debt
-
----
-
-### 30. GitHub Device Flow User Abandonment and Stale Polling
-
-**What goes wrong:** User starts OAuth Device Flow, sees the code, opens browser, gets distracted, and never completes authorization. The app polls GitHub every 5 seconds for up to 15 minutes (the code expiration window), consuming 180 unnecessary HTTP requests. If the component unmounts during polling, the interval continues in background.
-
-**Why it happens:** Device Flow requires polling -- there is no callback or webhook. The 15-minute timeout and 5-second interval are GitHub's constraints. Developers implement the polling loop but forget cleanup on component unmount or app state change.
+**Consequences:** The topology graph goes stale after commits, pushes, pulls. Users see outdated commit history until they manually navigate away and back. This is subtle -- no error, no crash, just incorrect data.
 
 **Prevention:**
-- Track polling with an `AbortController`; abort on component unmount, repo switch, or user cancel
-- Show a clear "Cancel" button alongside the device code display
-- Show elapsed time / time remaining (the code expires after 900 seconds)
-- Implement exponential backoff on `slow_down` errors (add 5 seconds per GitHub's spec)
-- After 3 minutes without completion, show a "Still waiting... Re-enter code?" prompt
-- Store the device flow state in a dedicated Zustand slice, not component-local state, so the flow survives blade navigation
+1. The topology extension's `onActivate()` must set up its own file watcher subscription using `api.onDispose()` for cleanup. The core `App.tsx` file watcher should NOT reference topology state.
+2. Before extraction, audit ALL references to topology state outside the topology blade directory. Search for: `useTopologyStore`, `topologySelectedCommit`, `loadGraph`, `topologyState`.
+3. The `useKeyboardShortcuts.ts` (line 224-231) also directly accesses `useTopologyStore.getState().topologySelectedCommit` for the Enter key handler. This must become extension-contributed (register a command that the Enter key invokes).
+4. Use `gitHookBus` or the Tauri event listener pattern from the GitHub extension (`listen("repository-changed", ...)`) within the topology extension itself.
 
-**Detection:** Network tab showing repeated POST requests to `https://github.com/login/oauth/access_token` after user has navigated away.
+**Detection:** After extraction, make a commit while viewing the topology. If the graph does not auto-refresh within 2 seconds, the watcher hookup is broken.
 
-**Phase:** GitHub OAuth implementation phase.
+**Warning signs:** `App.tsx` still importing `useTopologyStore` after extraction. Any core file referencing topology store state.
 
-**Confidence:** HIGH -- GitHub's Device Flow docs explicitly document polling protocol, error codes (`authorization_pending`, `slow_down`, `expired_token`, `access_denied`), and timeout behavior.
+**Phase:** Address in the same phase as Pitfall 1 (topology extraction). These are inseparable.
 
 ---
 
-### 31. GitHub API Rate Limits Hit Silently Without User Feedback
+### Pitfall 3: Worktree switchToWorktree() Calls openRepository() -- Store Entanglement
 
-**What goes wrong:** The app makes many GitHub API calls (list PRs, issues, fetch PR details, check CI status) and hits the rate limit (5,000 requests/hour for authenticated users, 60/hour unauthenticated). API calls start returning 403/429 errors with no user-visible feedback.
+**What goes wrong:** The `worktrees.slice.ts` contains `switchToWorktree()` which calls `get().openRepository(path)`. `openRepository` is a method from `RepositorySlice` -- a different slice in the same `GitOpsStore`. This is the exact same cross-slice coupling pattern that made the v1.6.0 Gitflow extraction dangerous (ADR-2 lesson). When the worktree slice is extracted to a standalone store or extension, the `get().openRepository()` call breaks because the extracted store no longer has access to `RepositorySlice`.
 
-**Why it happens:** Developers build the happy path first. Rate limit handling is added as an afterthought, usually as a console.error that users never see.
+**Why it happens:** `switchToWorktree` needs to change the active repository to the worktree's path. In the monolithic `GitOpsStore`, this is trivial -- just call another slice's method via `get()`. After extraction, this implicit coupling surfaces.
 
-**Consequences:**
-- PR list shows stale data with no indication of staleness
-- Issue creation fails silently
-- CI status checks stop updating
+**Consequences:** The "Switch to Worktree" action silently fails. Users click it, nothing happens, no error shown. The worktree panel appears to work (list, create, delete all work) but the critical workflow of switching to a worktree is broken.
 
 **Prevention:**
-- Read `X-RateLimit-Remaining` and `X-RateLimit-Reset` headers on every GitHub API response
-- Store rate limit state in a Zustand slice; show a subtle indicator when remaining < 100
-- When rate limited: show toast with reset time, disable fetch buttons, show countdown
-- Use conditional requests with `If-None-Match` / `ETag` headers -- 304 responses do not count against rate limit
-- Prefer GraphQL over REST for PR/issue queries: single request fetches PR + reviews + CI status vs. 3+ REST calls
-- Cache GitHub responses with `@tanstack/react-query` using appropriate `staleTime` (30-60 seconds for PR lists)
+1. `switchToWorktree` should NOT call `openRepository` directly. Instead, it should emit a navigation/application event: `gitHookBus.emit("after", "worktree-switch", { path })` and the core `RepositorySlice` (or `App.tsx`) subscribes to handle the repository switch.
+2. Alternatively, the worktree extension can import `useGitOpsStore` directly for this one call (built-in extensions CAN import core stores -- the GitHub extension does this). But this must be a deliberate decision, not an accidental coupling.
+3. The `openInExplorer` method uses `import("@tauri-apps/plugin-opener")` which is fine for an extension. But ensure the dynamic import is preserved, not converted to a static import that would increase bundle coupling.
 
-**Detection:** GitHub API response with `X-RateLimit-Remaining: 0` and no corresponding UI feedback.
+**Detection:** After extraction, click "Switch to Worktree" on a worktree in the sidebar. If the repository does not switch, the cross-slice call broke.
 
-**Phase:** GitHub API integration phase. Must be designed into the API client from the start.
+**Warning signs:** The extracted worktree store containing `get().openRepository` or `get().refreshRepoStatus` calls. Any `get()` call that references methods from other slices.
 
-**Confidence:** HIGH -- GitHub rate limit documentation is explicit and well-documented.
+**Phase:** Address during worktree extraction. Must be resolved before the worktree sidebar panel can be contributed via extension.
 
 ---
 
-### 32. Extension Lifecycle Misalignment with Navigation Machine
+### Pitfall 4: Worktree Sidebar Is Hardcoded With Dialog State Management in RepositoryView
 
-**What goes wrong:** Extension activates, registers blades and commands, then the user navigates to a different process (`SWITCH_PROCESS`) or resets the stack (`RESET_STACK`). Extension state persists in Zustand stores and the command registry, but the extension's blades are gone from the stack. When the extension is deactivated, its registered commands and blade types remain as orphans.
+**What goes wrong:** `RepositoryView.tsx` hardcodes the Worktree section (lines 188-209) with direct JSX rendering `<WorktreePanel onOpenDeleteDialog={...} />`. But critically, the worktree section has TWO associated dialogs (`CreateWorktreeDialog`, `DeleteWorktreeDialog`) whose open/close state is managed by `useState` hooks in `RepositoryView` itself (line 98-99: `showWorktreeDialog`, `worktreeToDelete`). When extracting worktrees to an extension sidebar panel, these dialog state hooks cannot stay in `RepositoryView` -- they must move to the extension. But the dialog rendering happens OUTSIDE the sidebar section (lines 231-239), as portal-like elements at the RepositoryView root.
 
-**Why it happens:** The navigation machine's `resetStack` and `switchProcess` actions clear the `bladeStack` and `dirtyBladeIds`, but have no concept of extension lifecycle. Extensions register side effects (commands, store slices, event listeners) that outlive their blades. The `resetAllStores()` function in `registry.ts` resets all registered stores but does not deregister extension-added slices.
+**Why it happens:** Dialog state lives in the parent component (RepositoryView) that coordinates between the sidebar panel (WorktreePanel) and the dialogs (CreateWorktreeDialog, DeleteWorktreeDialog). In v1.6.0, the Gitflow extraction was simpler because Gitflow's dialogs were self-contained within GitflowPanel. Worktree's architecture splits state between the panel and the parent.
 
-**Consequences:**
-- Orphaned commands in command palette from deactivated extensions
-- Memory leaks from extension event listeners not cleaned up
-- Store state pollution: extension slices persist after deactivation
-- Zombie blade registrations in `bladeRegistry` after extension removal
+**Consequences:** If you naively move WorktreePanel into an extension sidebar contribution, the dialog triggers (`setShowWorktreeDialog`, `setWorktreeToDelete`) become undefined because they were callback props from RepositoryView. The create/delete worktree buttons in the sidebar either crash or do nothing.
 
 **Prevention:**
-- Extension activation must return a `dispose()` function that cleans up all registrations:
-  ```typescript
-  interface ExtensionActivation {
-    dispose: () => void; // Removes commands, blades, store subscriptions, listeners
-  }
-  ```
-- Track all registrations per extension in a `Map<extensionId, Registration[]>`
-- On extension deactivation: call `dispose()`, then verify cleanup with a dev-mode check
-- Listen to navigation machine transitions to clean up extension blades removed from stack
-- Never allow extensions to modify `registerStoreForReset()` -- extension stores should be managed by the extension lifecycle, not the global reset
+1. Before extraction, refactor WorktreePanel to be self-contained: move `CreateWorktreeDialog` and `DeleteWorktreeDialog` INSIDE the WorktreePanel component (or a wrapper). Manage `showCreate`/`pendingDelete` state within the panel itself.
+2. The "+" button in the sidebar section header (currently rendered by RepositoryView's `<details><summary>` block) must become part of the panel's `renderAction` callback in the `SidebarPanelConfig`.
+3. Test the self-contained refactoring BEFORE the extension extraction. This is a safe, zero-risk refactoring that can be a separate commit.
 
-**Detection:** After disabling an extension, search the command palette for its commands (they should be gone). Check `bladeRegistry` size before and after deactivation.
+**Detection:** After extraction, click the "+" button in the Worktrees sidebar section. If the Create Worktree dialog does not appear, the state management broke.
 
-**Phase:** Extension System foundation phase. The lifecycle protocol must be defined before any extension can register anything.
+**Warning signs:** A PR that contributes worktrees as a sidebar panel but still has `showWorktreeDialog` state or `<CreateWorktreeDialog>` rendering in `RepositoryView.tsx`.
 
-**Confidence:** HIGH -- directly verified from `registry.ts`, `commandRegistry.ts`, and `navigationMachine.ts`.
+**Phase:** Address as a pre-extraction refactoring step. This should be done BEFORE the actual extension work begins.
 
 ---
 
-### 33. Toolbar Overflow Menu Loses Items Without User Awareness
+### Pitfall 5: Init Repo Used In Two Contexts -- Blade AND Standalone Component in WelcomeView
 
-**What goes wrong:** The current `Header.tsx` renders 10+ action buttons in a `flex` row. When the window narrows, items either overflow invisibly (hidden by `overflow-hidden`) or wrap to a second line (breaking the 56px header height). Users lose access to actions they know exist, with no indication that more items are available.
+**What goes wrong:** `InitRepoBlade` is used in TWO completely different rendering contexts:
+1. As a registered blade (via `registration.ts`) rendered within the blade container when a repo is open
+2. As a direct component import in `WelcomeView.tsx` (line 117-131) rendered standalone when NO repository is open and the user selects a non-git directory
 
-**Why it happens:** The current header uses `flex items-center justify-between` with no overflow strategy. At the current window width of 1200px this works. Below ~900px, items start overlapping or disappearing. There is no `ResizeObserver`-based measurement, no overflow menu, and no responsive breakpoint handling.
+Context 2 is the critical one. `WelcomeView.tsx` directly imports `InitRepoBlade` from `../blades/init-repo` and renders it with `onCancel` and `onComplete` callbacks. If Init Repo becomes an extension blade, this direct import in WelcomeView breaks because: (a) the component moves to `src/extensions/init-repo/`, (b) the extension may not be activated yet (extensions activate after repo open, but WelcomeView shows BEFORE repo open).
 
-**Consequences:**
-- At narrow widths: Settings, Theme Toggle, Command Palette, Undo, Refresh, Sync, Gitflow, Repo Browser, Changelog, Close, Reveal, Open buttons compete for ~400px of space
-- Users cannot access hidden actions
-- No keyboard path to hidden items (violates WCAG 2.1 toolbar pattern)
-- Adding GitHub integration buttons (PR, Issues) makes the overflow worse
+**Why it happens:** Init Repo serves a dual purpose -- it is both a blade for in-app use AND the first-run experience for new directories. The first-run context operates outside the extension lifecycle because extensions discover and activate after a repository is opened (see `App.tsx` lines 96-112).
+
+**Consequences:** New users selecting a non-git directory see a broken or empty init screen. The first-run experience -- one of the most critical UX moments -- fails silently. The `onComplete` callback (which calls `openRepository` + `addRecentRepo`) never fires, leaving users stuck on the welcome screen.
 
 **Prevention:**
-- Implement a `useToolbarOverflow` hook using `ResizeObserver` to measure available space
-- Prioritize items: always-visible (Open, Branch Switcher, Command Palette), conditionally-visible (Sync, Refresh), overflow-menu (Gitflow, Changelog, Reveal, Close)
-- Overflow menu button with count badge: "... +4" showing number of hidden items
-- Follow W3C APG toolbar pattern: `role="toolbar"`, roving tabindex, Left/Right arrow navigation
-- Overflow menu must be keyboard-accessible: `aria-haspopup="true"`, `aria-expanded`, `role="menu"` for items
-- Add `aria-label` to all icon-only buttons (some already have `aria-label`, several do not)
+1. Init Repo should NOT be a toggleable extension. It should either remain core or be a "non-disableable" built-in extension. The WelcomeView use case cannot degrade gracefully -- there is no meaningful fallback for "initialize a repository."
+2. If extracting anyway, the Init Repo extension must be activated during app startup (before repo open), not during the normal extension discovery/activation cycle. This requires a separate activation path: `registerBuiltIn` already runs on mount in `App.tsx` (lines 62-93), which IS before repo open.
+3. The WelcomeView should NOT import the component directly. Instead, it should use the blade registry to look up `"init-repo"` and render it. This way, the component source (core or extension) is transparent.
+4. However, the blade registry lookup requires the extension to be registered. Since `registerBuiltIn` runs on mount and `onActivate` is called immediately for built-in extensions, this should work -- but ONLY if Init Repo is registered in the initial `registerBuiltIn` batch, not deferred to `activateAll()`.
 
-**Detection:** Resize window to 800px wide. Count visible toolbar items vs. expected items. Check that all toolbar items are reachable via keyboard.
+**Detection:** Open FlowForge with no repo. Select a non-git directory. If the init repo form does not appear, the extraction broke the first-run flow.
 
-**Phase:** Toolbar UX phase. Should be implemented before adding any new toolbar items (GitHub buttons would make this worse).
+**Warning signs:** The Init Repo extension's `onActivate` being called inside `activateAll()` (which runs after repo open) instead of `registerBuiltIn()` (which runs on mount). Or: `WelcomeView.tsx` still having a direct import from the old location after extraction.
 
-**Confidence:** HIGH -- directly verified from `Header.tsx` source code.
+**Phase:** Address last among the three extractions. Init Repo has the most nuanced lifecycle requirements.
 
 ---
 
-### 34. GitHub Token Identity Mismatch After Account Switch
+## Moderate Pitfalls
 
-**What goes wrong:** User authenticates with GitHub account A. Later, they switch GitHub accounts in their browser. The app still uses account A's token. PRs are created under the wrong account. GitHub's Device Flow docs explicitly warn: "a user can change which account they are signed into."
+Issues that cause multi-day delays or significant rework but not full rewrites.
 
-**Why it happens:** OAuth tokens are bound to the account that authorized them, not the account currently logged into the browser. The token has no visible "identity" in the app.
+---
+
+### Pitfall 6: commandRegistry and previewRegistry Migration to Zustand Breaks Non-Reactive Consumers
+
+**What goes wrong:** `commandRegistry.ts` and `previewRegistry.ts` are currently plain module-scoped Maps/arrays with imperative `registerCommand()`/`registerPreview()` functions. They are NOT Zustand stores. When migrating them to Zustand for reactive behavior (matching `bladeRegistry`, `toolbarRegistry`, `sidebarPanelRegistry`, `statusBarRegistry` which ARE Zustand stores), all consumers that call `getCommands()` or `getPreviewForFile()` imperatively (not in React render) will continue to work, BUT consumers that need reactivity (like the CommandPalette) may behave differently.
+
+The specific danger: `commandRegistry.ts` uses a module-scoped `const commands = new Map<string, Command>()` (line 31). Multiple files import `registerCommand` at module load time during the side-effect import chain (`./commands` in `App.tsx` line 4). If the registry becomes a Zustand store, the registration calls must happen AFTER the store is initialized. With the module-scoped Map, initialization order does not matter because the Map exists at module parse time. With a Zustand store, if `create()` hasn't run yet when `registerCommand()` is called, the store does not exist.
+
+**Why it happens:** The developer changes `const commands = new Map()` to `const useCommandRegistry = create(...)` but does not realize that side-effect imports execute in dependency order, not declaration order. The Zustand store may not be initialized when early side-effect imports run.
+
+**Consequences:** Commands registered during module load (`./commands/toolbar-actions.ts`, `./commands/context-menu-items.ts`, `./commands/extensions.ts`) silently fail to register. The command palette shows zero commands. Or worse, some commands register and others don't, depending on bundler import order.
 
 **Prevention:**
-- After OAuth flow completes, fetch `GET /user` to get the authenticated user's login and avatar
-- Display the connected GitHub identity prominently in the UI (avatar + username)
-- Provide a "Switch Account" / "Disconnect" action that clears the keyring token and restarts the device flow
-- Before sensitive operations (create PR, push), verify the token is still valid with a lightweight API call
-- Store the GitHub username alongside the token (in preferences, not keyring) to show identity without re-fetching
+1. Keep backward-compatible function exports (`registerCommand()`, `getCommands()`, etc.) that delegate to the Zustand store, exactly as `bladeRegistry.ts` already does (lines 96-136). The external API does not change; only the internal storage becomes reactive.
+2. Zustand's `create()` is synchronous and the store exists immediately when the module is loaded. As long as `commandRegistry.ts` is imported (not dynamically loaded), the store will be ready. Verify this by checking that `commandRegistry.ts` is in the static import chain, not lazy-loaded.
+3. Run a dev-mode assertion after all side-effect imports complete (in `App.tsx` or a setup file): `if (getCommands().length === 0) console.error("No commands registered")`.
+4. Migrate one registry at a time (command first, preview second). Do not migrate both simultaneously.
 
-**Detection:** After authenticating, switch GitHub accounts in browser, then check the app's "Connected as" display.
+**Detection:** After migration, open the command palette. If it is empty or missing commands, the migration broke registration ordering.
 
-**Phase:** GitHub OAuth implementation phase.
+**Warning signs:** The new Zustand-based registry using `export const useCommandRegistry = create(...)` without providing backward-compatible function wrappers that match the existing API signatures.
 
-**Confidence:** HIGH -- GitHub's official Device Flow documentation explicitly warns about this.
+**Phase:** Address as a tech debt cleanup phase, before or independently of the feature extractions.
 
 ---
 
-### 35. Extensions Corrupting Navigation Machine State
+### Pitfall 7: previewRegistry Migration Breaks Staging Preview Cascade
 
-**What goes wrong:** An extension sends events directly to the navigation actor via `getNavigationActor().send()`. A buggy extension sends `PUSH_BLADE` in a rapid loop, filling the blade stack to `maxStackDepth` (8). Or sends `RESET_STACK` while the user is editing a conventional commit (dirty blade), bypassing the `confirmingDiscard` guard.
+**What goes wrong:** `previewRegistry.ts` is a plain array (`const registry: PreviewRegistration[] = []`) with a `registerPreview()` that pushes and sorts by priority. The staging blade calls `getPreviewForFile()` to determine how to render file previews. If this becomes a Zustand store, the staging blade must subscribe to the store to get reactive updates when new previews are registered (e.g., when a content viewer extension activates late).
 
-**Why it happens:** The navigation actor is a module-level singleton exported via `getNavigationActor()`. Any code in the main thread can send events to it. Extensions that `import` or access this function can manipulate navigation state directly.
+The current code uses `registry.find()` on every render, which always reads the latest array. With Zustand, the selector-based subscription model means the staging blade must use the store correctly to avoid stale closures.
+
+But the bigger risk: `previewRegistrations.ts` (imported by the staging blade) uses `import.meta.glob` to eagerly load all preview registration files. This is a core module. After content viewers were extracted to an extension in v1.6.0, the preview registrations for markdown, code, and 3D viewers were removed from the core glob and re-registered via the extension's `onActivate`. If the previewRegistry becomes Zustand-based, the reactive subscription in the staging blade must handle: (1) initial core registrations available immediately, (2) extension registrations arriving asynchronously after extension activation. The staging blade might render before extensions activate, showing all files as "text diff" for a flash before the correct viewer kicks in.
+
+**Why it happens:** Module-scoped array: reads are always latest. Zustand store with selector: reads are snapshot-based. The developer migrates storage but does not add a `registrationTick` counter (like `toolbarRegistry.visibilityTick`) to force re-renders when new registrations arrive.
+
+**Consequences:** Flash of incorrect content. Images briefly show as text diff. Markdown files briefly show as plaintext. The staging blade "flickers" on first load as extension previews register late.
 
 **Prevention:**
-- Extensions must not have direct access to `getNavigationActor()` -- enforce via sandboxing (iframe/Worker)
-- Provide a mediated API: `extensionApi.openBlade(type, props)` that validates the blade type, enforces namespace, and rate-limits push events
-- Add rate limiting to the navigation machine: reject `PUSH_BLADE` events faster than 1 per 100ms
-- When an extension is deactivated, pop all its blades from the stack (filter by `ext:` prefix)
-- Add an `extension_id` field to `TypedBlade` for extension-provided blades, enabling targeted cleanup
+1. Add a `registrationTick` counter to the preview registry store, incremented on every `registerPreview()` call. The staging blade subscribes to this tick to force re-evaluation.
+2. Alternatively, keep previewRegistry as a plain module-scoped array (non-reactive). The reactivity benefit is minimal since preview registrations only change during extension activation/deactivation, not during normal usage. The existing v1.6.0 pattern works fine without Zustand here.
+3. If migrating anyway, ensure the staging blade's preview resolution runs in a `useMemo` that depends on the registration tick.
 
-**Detection:** Navigation machine receiving events with extension blade types. Blade stack containing blades from deactivated extensions.
+**Detection:** Open the staging blade immediately after app launch. If file previews flash from "text diff" to the correct viewer, the async registration timing is visible.
 
-**Phase:** Extension System foundation phase.
+**Warning signs:** previewRegistry becoming a Zustand store without a corresponding subscription in the staging blade, or without a `registrationTick` mechanism.
 
-**Confidence:** HIGH -- directly verified from `context.tsx` (module-level singleton with public getter) and `navigationMachine.ts`.
+**Phase:** Address alongside or after commandRegistry migration. Consider deferring entirely -- the existing pattern works.
 
 ---
 
-### 36. GitHub GraphQL vs REST Choice Made Per-Endpoint Instead of Strategically
+### Pitfall 8: Topology's branchClassifier Dependency Creates Shared Code Ownership Ambiguity
 
-**What goes wrong:** Developers use REST for some endpoints and GraphQL for others based on what they find in docs first. This creates two separate API clients, two authentication paths, two rate-limit tracking systems, and inconsistent error handling.
+**What goes wrong:** `TopologyPanel.tsx` imports `classifyBranch` and `GitflowBranchType` from `../../lib/branchClassifier`. The topology extension uses this to colorize commit lanes by branch type (main=blue, feature=mauve, etc.). The `branchClassifier` module is also imported by 8 other files across the codebase: `BranchItem.tsx`, `BranchTypeBadge.tsx`, `BulkDeleteDialog.tsx`, `useBranches.ts`, `branchScopes.ts`, and 3 Gitflow extension files.
 
-**Why it happens:** GitHub provides both REST and GraphQL for most resources. Tutorials often mix them.
+After topology extraction, `branchClassifier.ts` is consumed by both core (BranchItem, BranchTypeBadge) and two extensions (Gitflow, Topology). The question becomes: who owns `branchClassifier`? If it stays in `src/lib/` (core), that is fine for built-in extensions that can import core. But it sets a precedent where extensions depend on specific core utility modules, making those modules harder to refactor.
 
-**Consequences:**
-- Duplicate API client infrastructure
-- Rate limits consumed from two separate budgets (REST: 5,000 req/hr; GraphQL: 5,000 points/hr)
-- Pagination logic implemented twice (cursor-based for GraphQL, Link header for REST)
-- Inconsistent caching strategy
+The real pitfall: if someone later refactors `branchClassifier` (e.g., making branch type configurable, adding new types), both the Gitflow AND Topology extensions break if they import directly from core. With two extension consumers, the blast radius of core utility changes doubles.
+
+**Why it happens:** Shared utilities are the most common coupling vector in monolith-to-plugin extractions. The utility is "too small to duplicate, too shared to own."
+
+**Consequences:** Not immediate breakage, but accumulated tech debt. Each core utility change requires updating multiple extensions. Over time, extensions accumulate undeclared dependencies on core internals.
 
 **Prevention:**
-- Commit to GraphQL as the primary API for all read operations (PRs, issues, CI status, repo metadata) -- it allows fetching exactly the needed fields in one request
-- Use REST only for write operations where GraphQL mutations are not available or less documented
-- Build a single `GitHubClient` class that handles auth, rate limiting, and caching for both protocols
-- Implement one shared rate-limit tracker that accounts for both REST and GraphQL consumption
+1. Keep `branchClassifier.ts` in core (`src/lib/`). This is the right call. It is a pure utility with no side effects, no state, and no React components. Built-in extensions importing pure core utilities is acceptable and even expected (the existing GitHub extension imports `openBlade`, `queryClient`, etc.).
+2. Document it as a "stable core API" -- changes to its interface must be treated as breaking. Add a JSDoc `@stable` annotation.
+3. Do NOT duplicate the classifier into each extension. The v1.6.0 lessons explicitly warned against this (Pitfall 10: shim accumulation).
+4. If the classifier becomes more complex in the future (user-configurable branch types), expose it through `ExtensionAPI.utils.classifyBranch()` which core provides and extensions consume through the API facade.
 
-**Detection:** Two or more separate `fetch()` / `reqwest` call patterns with independent error handling.
+**Detection:** Run `madge --orphans src/lib/branchClassifier.ts` to see all dependents. If the count exceeds 10, consider whether the module should become a formal API surface.
 
-**Phase:** GitHub API integration phase. Decide the strategy before writing the first API call.
+**Warning signs:** A developer duplicating `classifyBranch` into the topology extension "to avoid the dependency." Or a PR changing `branchClassifier` without checking extension consumers.
 
-**Confidence:** MEDIUM -- based on GitHub API documentation comparison. The 2025 GraphQL resource limits announcement adds uncertainty about future cost calculations.
-
----
-
-### MINOR -- Polish issues, developer confusion, or minor bugs
+**Phase:** Acknowledge during topology extraction. No action needed beyond documentation.
 
 ---
 
-### 37. Toolbar Icon-Only Buttons Without Consistent Tooltip/Label Pattern
+### Pitfall 9: _discovery.ts Exhaustiveness Check Does Not Know About Extension-Provided Core Blade Types
 
-**What goes wrong:** The current Header.tsx mixes patterns: some buttons use `ShortcutTooltip` (Settings, Command Palette, Open), some use `title` attribute only (Gitflow, Repo Browser, Refresh), and some have both `title` and `aria-label` while others have neither beyond `title`. New GitHub integration buttons follow whichever pattern the developer finds first.
+**What goes wrong:** After v1.6.0, `_discovery.ts` has an `EXPECTED_TYPES` array listing 12 blade types. Extensions using `coreOverride: true` register blade types that LOOK like core types (`"gitflow-cheatsheet"`, `"conventional-commit"`, `"changelog"`, `"viewer-markdown"`, `"viewer-code"`, `"viewer-3d"`). These are in `EXPECTED_TYPES` but their `registration.ts` files no longer exist in `src/blades/`. The exhaustiveness check already handles this because the check runs AFTER extension activation.
+
+But when adding `"topology-graph"`, `"init-repo"`, and potentially worktree-related blade types to the extraction, the developer must update `EXPECTED_TYPES` in `_discovery.ts`. If `"topology-graph"` is removed from `EXPECTED_TYPES` but the extension's `coreOverride: true` registration happens before the check runs, there is no warning. But if the extension activation order changes (e.g., topology extension fails to activate), `"topology-graph"` silently disappears from the registry with no dev warning.
+
+**Why it happens:** The exhaustiveness check was designed for a world where all blade types were registered synchronously via `import.meta.glob`. With `coreOverride` extensions, some "core" types are registered asynchronously during extension activation. The check may run at the wrong time.
+
+**Consequences:** Dev-mode warning fatigue or missed warnings. A developer removes `"topology-graph"` from `EXPECTED_TYPES`, the topology extension fails to activate in some edge case, and nobody notices the blade is unregistered because the check was updated to not expect it.
 
 **Prevention:**
-- Create a `ToolbarButton` component that enforces: icon, label (for screen readers), tooltip text, optional shortcut
-- Audit existing buttons and migrate to `ToolbarButton`
-- Make `aria-label` required in the component props (TypeScript enforcement)
-- Use `ShortcutTooltip` for all toolbar buttons, even those without shortcuts (show just the label)
+1. Split `EXPECTED_TYPES` into `EXPECTED_CORE_TYPES` (registered by `src/blades/*/registration.ts` glob) and `EXPECTED_EXTENSION_TYPES` (registered by built-in extensions with `coreOverride`).
+2. Run the extension type check AFTER `activateAll()` completes, not during module load. This ensures extension-provided core types are present.
+3. Add `"topology-graph"` to `EXPECTED_EXTENSION_TYPES` when it moves to an extension. Keep it in `EXPECTED_CORE_TYPES` if it remains a core blade with extension-enhanced rendering.
 
-**Phase:** Toolbar UX phase.
+**Detection:** In dev mode, intentionally break the topology extension's `onActivate` (throw error). Check if the dev console warns about the missing `"topology-graph"` blade type.
 
-**Confidence:** HIGH -- directly verified from `Header.tsx` source code.
+**Warning signs:** `EXPECTED_TYPES` being modified without updating the corresponding check timing logic.
+
+**Phase:** Address during topology extraction as a small sub-task.
 
 ---
 
-### 38. Extension Manifest Validation Happens Too Late
+### Pitfall 10: Init Repo's useGitignoreTemplates Hook Uses react-query Keys That May Conflict
 
-**What goes wrong:** Extension manifest is loaded and parsed, but validation happens after some initialization. A malformed manifest (missing `name`, invalid `version`, unsupported `apiVersion`) causes a runtime crash deep in the extension loader rather than a clean error at load time.
+**What goes wrong:** `InitRepoBlade.tsx` uses `useProjectDetection(directoryPath)` from `hooks/useGitignoreTemplates`. This hook uses `@tanstack/react-query` with query keys like `["projectDetection", directoryPath]`. After extraction to an extension, the queryClient instance is shared (it is global, provided in `main.tsx`). If the extension is deactivated and reactivated, stale react-query cache entries from the previous activation persist, potentially showing outdated project detection results for a directory that changed.
+
+More importantly, the `commands.getGitignoreTemplate(name)` call in `InitRepoBlade.tsx` (line 63-66) runs inside a `useEffect` without react-query, directly calling Tauri commands. This is a side-effect pattern that cannot be easily cleaned up on extension deactivation -- pending promises from `commands.getGitignoreTemplate` may resolve after the extension is deactivated, calling `setTemplateContent` on a store that has been reset.
+
+**Why it happens:** The init-repo store uses `createBladeStore` (which auto-resets on blade unmount), but the `useEffect` for template fetching can outlive the component if the extension is deactivated while the effect is running.
+
+**Consequences:** Console errors about state updates on unmounted components. Stale template data appearing in re-activated init-repo. Minor UX issues, not crashes.
 
 **Prevention:**
-- Define a strict JSON Schema or Zod schema for extension manifests
-- Validate the entire manifest before any extension code is loaded
-- Provide clear error messages: "Extension 'foo' has invalid manifest: missing required field 'name'"
-- Include an `apiVersion` field that must match the current extension API version
-- Fail fast and fail clearly -- never partially load an extension with an invalid manifest
+1. The `useEffect` for template fetching should use an abort controller or a `mounted` flag to prevent state updates after unmount.
+2. When extracting, ensure the init-repo store's `reset()` is called during `onDeactivate()`, not just on blade unmount.
+3. The react-query keys are fine as long as the queryClient is global. No namespacing needed for built-in extensions.
 
-**Phase:** Extension System foundation phase.
+**Detection:** Open init-repo, select a directory, quickly disable the init-repo extension. Check console for "state update on unmounted component" warnings.
 
-**Confidence:** MEDIUM -- based on general plugin system architecture patterns.
+**Warning signs:** `useEffect` callbacks that call `set()` on Zustand stores without checking if the component/extension is still active.
+
+**Phase:** Minor. Address during init-repo extraction as a quality improvement.
 
 ---
 
-### 39. GitHub Pagination Fetches All Pages Eagerly
+## Minor Pitfalls
 
-**What goes wrong:** When fetching PR or issue lists, the API client fetches all pages upfront. For repos with hundreds of open PRs, this means 3-10 API calls just to render a list where the user sees only the first 20 items.
+Issues that cause hours of debugging or minor UX problems.
+
+---
+
+### Pitfall 11: defaultTab "topology" Setting Breaks If Topology Extension Is Disabled
+
+**What goes wrong:** `GeneralSettings.tsx` offers three default tab options: "changes", "history", "topology". `App.tsx` reads this setting on startup (lines 51-56) and sends `SWITCH_PROCESS` to the navigation actor if `defaultTab === "topology"`. If the user has `"topology"` selected but later disables the topology extension, the app attempts to switch to the topology process on every startup, initializing the blade stack with a potentially unregistered blade type.
+
+**Why it happens:** The user preference persists in the Tauri store independently of extension state. The settings UI does not know which extensions are enabled.
+
+**Consequences:** The app starts with a blank main panel every time until the user manually changes the default tab setting. Confusing for users who may not connect the topology extension being disabled with their default tab preference.
 
 **Prevention:**
-- Use `@tanstack/react-query`'s `useInfiniteQuery` for all paginated GitHub resources
-- Fetch only the first page (25-50 items) on initial load
-- Implement "Load more" or virtual scrolling for additional pages
-- Set `first: 25` in GraphQL queries, not `first: 100`
-- Cache pages independently so navigating back does not re-fetch
+1. When the topology extension deactivates, check if `defaultTab === "topology"` and, if so, reset it to `"changes"` with a toast notification: "Default tab reset to Changes because Topology extension was disabled."
+2. Alternatively, in `App.tsx`, verify the blade type exists in the registry before sending `SWITCH_PROCESS`. If not registered, fall back to `"staging"` and log a warning.
+3. The GeneralSettings UI should conditionally show the "topology" option only when the topology extension is active.
 
-**Phase:** GitHub API integration phase.
+**Detection:** Set default tab to "topology". Disable topology extension. Restart app. Verify the app falls back to "changes" gracefully.
 
-**Confidence:** HIGH -- standard pagination pattern issue.
+**Warning signs:** `App.tsx` SWITCH_PROCESS logic not checking blade registry before switching.
+
+**Phase:** Address during topology extraction.
 
 ---
 
-### 40. Tauri Capabilities Not Scoped for GitHub Network Access
+### Pitfall 12: Worktree CreateWorktreeDialog Imports BranchSlice Directly
 
-**What goes wrong:** Adding GitHub API calls requires network permissions. The current capabilities file (`default.json`) has no HTTP/network permissions. Developers add broad permissions like `"http:default"` that allow the frontend to make arbitrary HTTP requests, widening the attack surface.
+**What goes wrong:** `CreateWorktreeDialog.tsx` imports `useBranchStore` from `stores/domain/git-ops` to load and display the branch list in the branch selector dropdown (line 4, 25). If the worktree extension tries to be "pure" and avoid core store imports, this branch list access breaks. But branches are a core concept -- the worktree dialog genuinely needs them.
+
+**Why it happens:** Worktrees are inherently cross-cutting: creating a worktree requires selecting a branch (BranchSlice), the worktree filesystem path (Tauri dialog), and worktree operations (WorktreeSlice). This is not a coupling mistake; it is a genuine domain dependency.
+
+**Consequences:** If the developer tries to decouple the worktree extension from BranchSlice, they either duplicate branch loading logic (maintenance burden) or add a complex indirection layer (over-engineering).
 
 **Prevention:**
-- Route all GitHub API calls through Tauri commands (Rust backend), not the frontend
-- The Rust backend already has `reqwest` -- add dedicated commands like `github_fetch_prs`, `github_create_pr`
-- If frontend HTTP access is needed, scope it: `"http:allow-fetch"` with URL scope restricted to `https://api.github.com/*` and `https://github.com/login/*`
-- Keep the capabilities file minimal; document why each permission exists
+1. Accept that built-in extensions can and should import core stores directly. The Gitflow extension already imports `useGitOpsStore` (via `useRepositoryStore`) in its `index.ts`. The GitHub extension imports from `stores/repository`. This is the established pattern.
+2. Do NOT create a `api.getBranches()` method just for this one dialog. That adds API surface for a single consumer.
+3. The import should be `useGitOpsStore` for `loadBranches` and `branchList`, which remains in core after worktree slice extraction.
 
-**Detection:** `default.json` containing `"http:default"` without URL scope restrictions.
+**Detection:** After extraction, open the Create Worktree dialog. If the branch dropdown is empty, the branch data access broke.
 
-**Phase:** GitHub integration phase. Decide routing (frontend vs. backend) before implementing.
+**Warning signs:** An indirection layer or adapter being built solely to avoid importing core stores in the worktree extension.
 
-**Confidence:** HIGH -- directly verified from Tauri v2 capabilities documentation and the current `default.json`.
+**Phase:** Acknowledge during worktree extraction. No special action needed -- follow the established pattern.
 
 ---
 
-### 41. Store Subscription Leaks from Extension Hot-Reload
+### Pitfall 13: Init Repo createBladeStore Pattern May Conflict With Extension Lifecycle
 
-**What goes wrong:** During development, extensions are modified and hot-reloaded. Each reload creates new Zustand `subscribe()` calls without cleaning up previous subscriptions. Store updates trigger callbacks from both old and new extension instances.
+**What goes wrong:** `useInitRepoStore` is created with `createBladeStore("init-repo", ...)`. The `createBladeStore` utility (defined in `stores/createBladeStore.ts`) creates a Zustand store that auto-resets when the blade unmounts. After extraction, the store lives inside the extension module. If the extension is deactivated while the init-repo blade is mounted (unlikely but possible via command palette), the store reset happens but the extension's cleanup runs after, potentially causing double-reset or orphaned subscriptions.
 
-**Why it happens:** The current HMR handling in `_discovery.ts` calls `clearRegistry()` on dispose, but there is no equivalent mechanism for extension store subscriptions.
+**Why it happens:** `createBladeStore` ties store lifecycle to React component lifecycle (via `useEffect` cleanup). Extension lifecycle is managed by `ExtensionHost.deactivateExtension()`. These are two different lifecycle systems that can race.
+
+**Consequences:** Minor: potential console warnings about double-reset. The existing blade lifecycle cleanup (blade unmount on deactivation) should handle most cases because the blade is removed from the registry first.
 
 **Prevention:**
-- Extension activation must return disposers for all subscriptions
-- The extension host must call all disposers before re-activating on HMR
-- Use Zustand's `subscribe()` return value (the unsubscribe function) consistently
-- Implement a dev-mode warning that detects duplicate subscriptions from the same extension ID
+1. Ensure that extension deactivation first removes the blade from the registry (which triggers unmount of any rendered blade, including its store cleanup), THEN calls `onDeactivate()`. This is already the order in `ExtensionAPI.cleanup()`.
+2. Add an `onDeactivate` callback in the init-repo extension that explicitly calls `useInitRepoStore.getState().reset()` as a safety net.
+3. This is a minor risk. The existing cleanup order handles it correctly in practice.
 
-**Phase:** Extension System development experience phase.
+**Detection:** Mount init-repo blade, deactivate the init-repo extension via command palette. Check for console errors.
 
-**Confidence:** MEDIUM -- inferred from the existing HMR pattern in `_discovery.ts` and general Zustand subscription behavior.
+**Warning signs:** N/A. This is theoretical and low-risk.
+
+**Phase:** Acknowledge. No special action needed.
 
 ---
 
-### 42. Extension API Version Mismatch After Core Update
+### Pitfall 14: Topology layoutUtils.ts Imports branchClassifier At Module Level
 
-**What goes wrong:** FlowForge updates its extension API (changes a message type, adds a required field, removes a deprecated method). Existing installed extensions break silently because they were written against the old API version.
+**What goes wrong:** `layoutUtils.ts` imports `classifyBranch` and `BRANCH_HEX_COLORS` from `../../../lib/branchClassifier` at the top of the file. When this file moves into the topology extension, the import path changes to `../../../../lib/branchClassifier`. The deep relative path is fragile. More importantly, if the project ever introduces path aliases or moves the topology extension to a different directory structure, these deep relative imports break.
+
+**Why it happens:** Extensions in `src/extensions/` are deeply nested. Importing from `src/lib/` requires traversing up 3-4 directories. Every extraction increases relative import depth.
+
+**Consequences:** Build failures from incorrect relative paths. Developer spends time adjusting imports after moving files.
 
 **Prevention:**
-- Include `apiVersion` in extension manifests: `"apiVersion": "1.0"`
-- The extension host checks `apiVersion` against a supported range at load time
-- If incompatible: disable the extension with a clear message
-- Use semantic versioning for the extension API
-- Consider a compatibility shim layer for one major version back
+1. Use TypeScript path aliases. The `tsconfig.json` likely already has `"paths"` configured (or should have). Add `"@core/*": ["./src/*"]` so extension files import as `import { classifyBranch } from "@core/lib/branchClassifier"`.
+2. If path aliases are not feasible, verify all import paths in moved files during extraction. Use `tsc --noEmit` after every file move.
+3. Establish a convention: extensions import core utilities via `../../lib/` (from `src/extensions/{ext}/`) not via `../../../lib/` (from nested component directories within extensions).
 
-**Phase:** Extension System foundation phase.
+**Detection:** `tsc --noEmit` after file moves.
 
-**Confidence:** MEDIUM -- standard plugin versioning concern.
+**Warning signs:** Import paths with more than 3 `../` segments.
 
----
-
-## Phase-Mapped Summary
-
-### Core Git Client (Established)
-
-| Phase | Critical Pitfalls |
-|-------|-------------------|
-| 1 (Foundation) | IPC serialization, spawn_blocking, thread safety, cross-platform CI |
-| 2 (Core Git) | Memory leaks, status performance, diff memory |
-| 3 (Real-Time) | File watching limits, event storms, atomic updates |
-| 4 (Branches) | History loading |
-| 5 (Gitflow) | Double-merge enforcement, conflict handling |
-| 6 (Commits) | Scope inference, validation UX |
-| 7 (Worktrees) | Path validation, context clarity |
-| 8 (Topology) | DAG layout, visual overload |
-
-### Extension System, GitHub, Toolbar (New Milestone)
-
-| Phase Topic | Likely Pitfall | Mitigation |
-|-------------|---------------|------------|
-| Security hardening (prerequisite) | #28 CSP null, asset protocol scope `["**"]` too broad | Set strict CSP, narrow asset scope before adding extensions or GitHub |
-| Extension System foundation | #25 Sandbox escape, #26 blade/command collisions, #32 lifecycle mismanagement, #35 FSM corruption | iframe/Worker sandbox, namespace enforcement, dispose protocol, mediated API |
-| Extension development experience | #41 HMR subscription leaks, #38 manifest validation too late, #42 API version mismatch | Disposer protocol, upfront schema validation, version negotiation |
-| GitHub OAuth | #27 Token in plaintext, #30 user abandonment during device flow, #34 identity mismatch | Keyring storage, AbortController polling, identity display |
-| GitHub API integration | #31 Rate limits silent, #36 GraphQL/REST inconsistency, #39 eager pagination, #40 capability scope | Rate limit tracking, GraphQL-first strategy, infinite query, backend routing |
-| Toolbar UX overhaul | #33 Overflow items hidden, #37 inconsistent patterns | ResizeObserver overflow, ToolbarButton component, APG toolbar pattern |
-| Adding GitHub buttons to toolbar | #33 Toolbar already overcrowded before new items added | Implement overflow first, then add GitHub buttons |
+**Phase:** Address as a one-time project configuration update before extractions.
 
 ---
 
-## Quality Gate Verification
+## Integration Pitfalls: Registry Migration to Zustand
 
-- [x] Pitfalls are specific to Tauri + Git GUI + libgit2 domain
-- [x] Extension system pitfalls cover sandbox escape, blade/store/FSM integration, lifecycle management
-- [x] GitHub OAuth pitfalls cover token storage, device flow polling, identity management
-- [x] GitHub API pitfalls cover rate limiting, GraphQL/REST strategy, pagination
-- [x] Toolbar UX pitfalls cover overflow, accessibility, consistency
-- [x] Prevention strategies are actionable (specific code patterns, configuration values, component designs)
-- [x] Phase mapping included for roadmap integration
-- [x] Integration pitfalls between extensions and core blade/store/FSM covered
+---
+
+### Integration Pitfall A: commandRegistry Migration Breaks Module-Load-Time Registrations
+
+**What goes wrong:** Commands are registered via side-effect imports in `App.tsx`:
+```typescript
+import "./commands";                    // loads src/commands/index.ts
+import "./commands/toolbar-actions";    // registers toolbar actions
+import "./commands/context-menu-items"; // registers context menu items
+```
+
+Each file calls `registerCommand()` at module load time. If `commandRegistry` becomes a Zustand store, the `registerCommand()` wrapper function must delegate to `useCommandRegistry.getState().register()`. This works IF `useCommandRegistry` has been created (via `create()`) before these side-effect imports execute.
+
+In the current import order: `App.tsx` imports `./commands` BEFORE importing any stores. If the commandRegistry store module is imported by `./commands`, the Zustand `create()` runs when the module loads, which is fine. But if a circular dependency prevents the module from loading, the store does not exist.
+
+**Why it happens:** Zustand's `create()` is synchronous and runs at module load. The risk is not Zustand timing -- it is circular imports. If `commandRegistry.ts` imports from a module that imports back into commands, you get a circular reference that causes the store to be `undefined` when first accessed.
+
+**Consequences:** Silent failure: `useCommandRegistry.getState()` returns the initial state with an empty Map, commands registered "successfully" but the store reference has since been replaced. Or: runtime error `Cannot read property 'getState' of undefined`.
+
+**Prevention:**
+1. Run `madge --circular src/lib/commandRegistry.ts` before and after migration. Zero circular references is required.
+2. The migration should be a 1:1 replacement of the internal data structure. The external API (`registerCommand`, `getCommands`, `getCommandById`, etc.) stays identical. Consumers should not know the storage changed.
+3. Follow the exact pattern used in `bladeRegistry.ts` (lines 36-94 for Zustand store, lines 96-136 for backward-compatible function wrappers). This is proven.
+4. Add `devtools` middleware for debugging, matching the pattern in `toolbarRegistry.ts`.
+
+**Detection:** After migration, verify `getCommands().length` in the browser console. Should match the pre-migration count (test with both numbers to confirm).
+
+**Warning signs:** The migration changing the function signatures of `registerCommand`, `getCommands`, etc. These MUST remain backward-compatible.
+
+**Phase:** Address as a standalone tech debt task, independent of feature extractions.
+
+---
+
+### Integration Pitfall B: Zustand Registry Map Equality Breaks React.memo Consumers
+
+**What goes wrong:** When registries use `Map<string, T>` as the primary storage (as all existing Zustand registries do), every registration creates a new Map reference (`new Map(get().actions)`). Components that subscribe to the registry with a selector like `(s) => s.actions` will re-render on every registration, even if the specific items they care about did not change.
+
+For the command palette (which consumes commandRegistry), this means: every extension activation (which registers commands) triggers a command palette re-render, even though the palette is closed. If 4 extensions register 20 commands total during activation, the palette component tree re-renders 20 times for no visible effect.
+
+**Why it happens:** Zustand uses shallow comparison by default. A new Map is always !== the old Map, even if the entries are identical. Selectors that return the entire Map will always trigger re-renders.
+
+**Consequences:** Performance degradation during extension activation. Noticeable on slower machines. Not a correctness issue, but a wasted render issue.
+
+**Prevention:**
+1. Consumers should use derived selectors, not raw Map access. Instead of `(s) => s.commands`, use `(s) => s.getFilteredCommands(query)` where the result is a new array only when the content actually changes.
+2. Use `registrationTick` counter pattern for consumers that need to know "something changed" without subscribing to the full Map. The command palette can subscribe to `(s) => s.registrationTick` and re-derive its command list only when the tick changes.
+3. For the commandRegistry migration specifically: the existing `getCommands()` function creates a new array on every call. Consumers already handle this. The migration to Zustand does not make this worse -- it just makes the re-render trigger explicit (Map reference change) rather than implicit (function call).
+
+**Detection:** Use React DevTools Profiler. Enable "Record why each component rendered." Register an extension. Check if CommandPalette re-renders. It should only re-render when opened, not during extension activation.
+
+**Warning signs:** Components subscribing to `(s) => s.commands` or `(s) => s.blades` directly instead of through filtered accessors.
+
+**Phase:** Address alongside the commandRegistry migration.
+
+---
+
+### Integration Pitfall C: previewRegistry Lacks Source Tagging for Extension Cleanup
+
+**What goes wrong:** The current `previewRegistry.ts` (a plain array) has no `source` field on `PreviewRegistration`. When content viewer extensions register previews, there is no way to remove them by source during extension deactivation. The existing code has `registerPreview()` but NO `unregisterPreview()` or `unregisterBySource()`.
+
+In v1.6.0, this was handled by the content-viewers extension using `coreOverride: true` blade registrations, not preview registrations. But if a future extension wants to add a new file preview type (e.g., a PDF viewer extension), it needs `registerPreview()` with proper cleanup.
+
+**Why it happens:** `previewRegistry.ts` was written before the extension system existed. It has no concept of sources or cleanup.
+
+**Consequences:** Disabling a viewer extension leaves phantom preview registrations. File previews use the old viewer's matcher even though the component is gone. This causes React errors when the staging blade tries to render a preview component from a deactivated extension.
+
+**Prevention:**
+1. Add `source?: string` to `PreviewRegistration`.
+2. Add `unregisterBySource(source: string)` that removes all entries matching the source.
+3. Call `unregisterBySource` in `ExtensionAPI.cleanup()` alongside the other registry cleanups.
+4. If migrating to Zustand, this comes free with the standard pattern. If keeping as plain array, add these two methods manually.
+
+**Detection:** Register a preview via an extension, deactivate the extension, open a file that matched the extension's preview. If the staging blade crashes, cleanup is missing.
+
+**Warning signs:** `ExtensionAPI.cleanup()` not having a previewRegistry cleanup step.
+
+**Phase:** Address alongside registry migration or during content viewer tech debt cleanup.
+
+---
+
+## Phase-Specific Warnings
+
+| Phase Topic | Likely Pitfall | Severity | Mitigation |
+|-------------|---------------|----------|------------|
+| Topology extraction | Navigation process root breakage (#1) | CRITICAL | coreOverride + fallback blade, keep TopologySlice facade |
+| Topology extraction | App.tsx file watcher cross-store access (#2) | CRITICAL | Move auto-refresh into extension, audit all topology refs in core |
+| Topology extraction | defaultTab "topology" persistence (#11) | MINOR | Fallback to "changes" if blade type missing |
+| Topology extraction | branchClassifier shared ownership (#8) | MODERATE | Keep in core, document as stable API |
+| Topology extraction | _discovery.ts expected types (#9) | MODERATE | Split into CORE and EXTENSION expected types |
+| Worktree extraction | switchToWorktree cross-slice call (#3) | CRITICAL | Use gitHookBus or direct store import |
+| Worktree extraction | Dialog state split across RepositoryView (#4) | CRITICAL | Self-contain dialogs in panel BEFORE extraction |
+| Worktree extraction | BranchSlice import in CreateWorktreeDialog (#12) | MINOR | Accept built-in extension can import core stores |
+| Init Repo extraction | Dual context blade + WelcomeView (#5) | CRITICAL | Non-disableable extension, early activation path |
+| Init Repo extraction | createBladeStore lifecycle race (#13) | MINOR | Explicit reset in onDeactivate |
+| Init Repo extraction | react-query cache + pending promises (#10) | MODERATE | Abort controller, mounted flag |
+| Registry migration: command | Module-load registration timing (#6) | MODERATE | Follow bladeRegistry pattern, check circular imports |
+| Registry migration: command | Map equality re-render storm (Int-B) | MODERATE | Derived selectors, registrationTick |
+| Registry migration: preview | No source tagging or cleanup (Int-C) | MODERATE | Add source field, unregisterBySource |
+| Registry migration: preview | Staging preview cascade flash (#7) | MODERATE | registrationTick or keep plain array |
+| All phases | Deep relative import paths (#14) | MINOR | TypeScript path aliases |
+
+---
+
+## Extraction Difficulty Ranking
+
+Based on analysis of coupling depth, consumer count, and architectural entanglement:
+
+| Feature | Difficulty | Why | Recommended Order |
+|---------|-----------|-----|-------------------|
+| **Worktrees** | MEDIUM | Sidebar panel + two dialogs with split state management. Cross-slice call to openRepository. But limited scope -- 4 component files + 1 slice. | 1st |
+| **Init Repo** | LOW-MEDIUM | Self-contained blade store, few external consumers. But dual-context usage (blade + WelcomeView) requires careful lifecycle handling. | 2nd |
+| **Topology** | HIGH | Navigation process root. 18+ consumers across core. File watcher integration. Keyboard shortcut integration. Settings integration. branchClassifier shared dependency. | 3rd |
+
+**Recommended extraction order:** Worktrees (simplest cross-slice decoupling, good warmup) -> Init Repo (self-contained but lifecycle nuance) -> Topology (hardest, requires navigation system awareness).
+
+---
+
+## "Looks Done But Isn't" Checklist for This Milestone
+
+### Topology extraction completeness
+- [ ] Navigation machine still works with topology extension disabled (fallback blade)
+- [ ] `App.tsx` file watcher no longer references TopologySlice directly
+- [ ] `useKeyboardShortcuts.ts` Enter key handler works via extension-contributed command
+- [ ] `GeneralSettings.tsx` "topology" default tab option conditionally available
+- [ ] `ProcessNavigation.tsx` handles disabled topology gracefully (greyed out or hidden)
+- [ ] branchClassifier import path documented as stable core API
+- [ ] _discovery.ts EXPECTED_TYPES updated
+
+### Worktree extraction completeness
+- [ ] WorktreePanel is self-contained with dialogs INSIDE (pre-extraction refactoring done)
+- [ ] switchToWorktree uses indirect mechanism (event or direct store import), not cross-slice get()
+- [ ] RepositoryView no longer has worktree-specific useState hooks or dialog rendering
+- [ ] "+" button works via SidebarPanelConfig.renderAction
+- [ ] Create and Delete dialogs accessible from the panel
+
+### Init Repo extraction completeness
+- [ ] WelcomeView renders init-repo via blade registry lookup, not direct import
+- [ ] Extension activates during registerBuiltIn (before repo open), not activateAll
+- [ ] Template fetching has abort/mounted guard
+- [ ] Init-repo store reset called in onDeactivate
+- [ ] First-run experience works identically to pre-extraction
+
+### Registry migration completeness
+- [ ] commandRegistry has Zustand store with backward-compatible function wrappers
+- [ ] previewRegistry has source tagging and unregisterBySource
+- [ ] No circular imports introduced (run madge --circular)
+- [ ] All existing consumers work without modification
+- [ ] Dev-mode assertion verifies registration count after startup
 
 ---
 
 ## Sources
 
-### Official Documentation
-- [Tauri v2 Security](https://v2.tauri.app/security/)
-- [Tauri v2 Capabilities](https://v2.tauri.app/security/capabilities/)
-- [Tauri v2 Isolation Pattern](https://v2.tauri.app/concept/inter-process-communication/isolation/)
-- [Tauri Stronghold (deprecated)](https://v2.tauri.app/plugin/stronghold/)
-- [Tauri IPC Performance Discussion](https://github.com/tauri-apps/tauri/discussions/7146)
-- [GitHub OAuth Device Flow](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps)
-- [GitHub REST Rate Limits](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api)
-- [GitHub GraphQL Rate Limits](https://docs.github.com/en/graphql/overview/rate-limits-and-query-limits-for-the-graphql-api)
-- [GitHub GraphQL Resource Limits (Sept 2025)](https://github.blog/changelog/2025-09-01-graphql-api-resource-limits/)
-- [W3C APG Toolbar Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/)
-- [libgit2 Threading Documentation](https://github.com/libgit2/libgit2/blob/main/docs/threading.md)
+### Internal Codebase (PRIMARY -- HIGH confidence)
+- `src/machines/navigation/types.ts` -- ProcessType = "staging" | "topology" (hardcoded)
+- `src/machines/navigation/actions.ts` -- rootBladeForProcess returns topology-graph blade
+- `src/machines/navigation/navigationMachine.ts` -- XState FSM with SWITCH_PROCESS handling
+- `src/blades/_shared/ProcessNavigation.tsx` -- Hardcoded PROCESSES array with staging + topology
+- `src/stores/domain/git-ops/topology.slice.ts` -- TopologySlice in GitOpsStore (9-slice composite)
+- `src/stores/domain/git-ops/worktrees.slice.ts` -- switchToWorktree calls get().openRepository()
+- `src/stores/domain/git-ops/index.ts` -- GitOpsStore composition (critical for extraction planning)
+- `src/components/RepositoryView.tsx` -- Hardcoded worktree sidebar with dialog state in parent
+- `src/components/WelcomeView.tsx` -- Direct InitRepoBlade import for first-run context
+- `src/blades/init-repo/store.ts` -- createBladeStore pattern for init-repo
+- `src/hooks/useCommitGraph.ts` -- Topology hook consuming TopologySlice
+- `src/hooks/useKeyboardShortcuts.ts` -- Enter key directly accesses topologySelectedCommit
+- `src/App.tsx` -- File watcher directly accesses topology store; extension activation lifecycle
+- `src/lib/commandRegistry.ts` -- Module-scoped Map, side-effect registration pattern
+- `src/lib/previewRegistry.ts` -- Plain array, no source tagging, no cleanup
+- `src/lib/bladeRegistry.ts` -- Reference pattern for Zustand migration (proven)
+- `src/extensions/ExtensionAPI.ts` -- coreOverride pattern, cleanup() method
+- `src/extensions/gitflow/index.ts` -- Reference: how v1.6.0 extraction used coreOverride
+- `src/blades/_discovery.ts` -- EXPECTED_TYPES exhaustiveness check
 
-### Community / Engineering Blogs
-- [Figma Plugin Security Update](https://www.figma.com/blog/an-update-on-plugin-security/)
-- [Figma Plugin System Architecture](https://www.figma.com/blog/how-we-built-the-figma-plugin-system/)
-- [Zendesk: Sandboxing JavaScript](https://medium.com/zendesk-engineering/sandboxing-javascript-e4def55e855e)
-- [JavaScript Sandbox Architecture (DEV)](https://dev.to/alexgriss/the-architecture-of-browser-sandboxes-a-deep-dive-into-javascript-code-isolation-1dnj)
-- [Tauri Discussion: Safe Storage API](https://github.com/tauri-apps/tauri/discussions/7846)
-- [notify-rs Documentation](https://docs.rs/notify/latest/notify/)
-- [Tauri WebView Versions](https://v2.tauri.app/reference/webview-versions/)
+### v1.6.0 Lessons Learned (HIGH confidence)
+- `.planning/research/v1.6.0-PITFALLS.md` -- Extraction pitfalls from Gitflow/CC/Viewers
+- `.planning/research/v1.6.0-ARCHITECTURE.md` -- Extension system architecture and patterns
 
-### Third-Party Libraries
-- [tauri-plugin-keyring](https://github.com/HuakunShen/tauri-plugin-keyring)
-- [zustand-namespaces](https://github.com/mooalot/zustand-namespaces)
-- [Octokit Auth Device Flow](https://github.com/octokit/auth-oauth-device.js)
-
-### Codebase Files Analyzed
-- `src/stores/bladeTypes.ts` -- BladeType union, BladePropsMap interface
-- `src/lib/bladeRegistry.ts` -- registerBlade(), clearRegistry()
-- `src/lib/commandRegistry.ts` -- registerCommand() with silent overwrite
-- `src/machines/navigation/navigationMachine.ts` -- XState FSM, SINGLETON_TYPES, event handling
-- `src/machines/navigation/context.tsx` -- Module-level singleton actor, public getNavigationActor()
-- `src/machines/navigation/types.ts` -- NavigationContext, NavigationEvent types
-- `src/stores/registry.ts` -- registerStoreForReset(), resetAllStores()
-- `src/stores/domain/ui-state/index.ts` -- UIStore composition
-- `src/lib/store.ts` -- Tauri plugin-store for settings (plaintext JSON)
-- `src/components/Header.tsx` -- Current toolbar with 10+ buttons, no overflow handling
-- `src/blades/_discovery.ts` -- import.meta.glob blade discovery, HMR handling
-- `src-tauri/tauri.conf.json` -- CSP null, asset protocol scope **
-- `src-tauri/capabilities/default.json` -- Current permission set
-- `src-tauri/Cargo.toml` -- reqwest already available in backend
+### Zustand Documentation (HIGH confidence)
+- Zustand create() is synchronous module-level initialization
+- Zustand shallow comparison for selector-based subscriptions
+- Zustand slices pattern and cross-slice access via get()

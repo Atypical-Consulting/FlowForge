@@ -1,229 +1,432 @@
 # Technology Stack
 
-**Project:** FlowForge v1.5.0 -- Extension System, GitHub Integration, Toolbar UX
-**Researched:** 2026-02-09
+**Project:** FlowForge v1.7.0 -- Extract Topology, Worktrees, Init Repo into Extensions + Registry Zustand Migration
+**Researched:** 2026-02-11
+**Scope:** Stack additions/changes needed for NEW feature extractions and tech debt cleanup ONLY
 
-## Scope
+## Executive Summary
 
-This document covers ONLY the stack additions/changes needed for:
-1. Extension system (manifest, loading, lifecycle, sandboxing)
-2. GitHub integration (OAuth Device Flow, REST/GraphQL API, token storage)
-3. Toolbar UX (overflow menu, responsive toolbar, customization)
+This milestone requires **zero new dependencies**. The existing stack (Zustand 5.0.11, React 19, TypeScript 5.9, ExtensionAPI facade with coreOverride pattern) already provides every capability needed. The work is purely architectural: moving code from core modules into the `src/extensions/` directory structure, wiring them through the existing ExtensionAPI facade, and converting two plain-Map registries (commandRegistry, previewRegistry) into Zustand stores to match the pattern established by the other five registries.
 
-Existing stack is validated and unchanged: Tauri 2.x, React 19, TypeScript, Tailwind v4, Catppuccin, XState v5, Zustand 5, React Query v5, Monaco, framer-motion, git2-rs, tauri-specta, reqwest.
+## Recommended Stack
 
----
+### No New Dependencies Required
 
-## Recommended Stack Additions
+The entire milestone is achievable with the current dependency set. Here is why:
 
-### 1. GitHub OAuth -- Rust Side (Device Flow)
+| Capability Needed | Already Provided By | Version |
+|---|---|---|
+| Extension lifecycle (activate/deactivate) | ExtensionHost Zustand store | Zustand 5.0.11 |
+| Blade registration with coreOverride | ExtensionAPI.registerBlade() | In-house |
+| Sidebar panel contribution | ExtensionAPI.contributeSidebarPanel() | In-house |
+| Command registration | ExtensionAPI.registerCommand() | In-house |
+| Toolbar contribution | ExtensionAPI.contributeToolbar() | In-house |
+| Reactive Zustand store pattern | create() + devtools() middleware | Zustand 5.0.11 |
+| Backward-compatible function exports | Established pattern in bladeRegistry.ts | In-house |
+| Lazy component loading | React.lazy() | React 19.2.4 |
+| Topology graph layout | layoutUtils.ts (custom SVG) | In-house |
+| Worktree Tauri commands | commands.listWorktrees/createWorktree/deleteWorktree | Tauri v2 bindings |
+| Init repo Tauri commands | commands.getGitignoreTemplate/initRepository | Tauri v2 bindings |
 
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| reqwest (existing) | 0.12 | HTTP client for Device Flow endpoints | Already a dependency. Device Flow is 2 POST endpoints + polling. Adding a crate for this is overkill. |
-| keyring | ^3 | OS-native secure token storage | Uses macOS Keychain, Windows Credential Manager, Linux Secret Service. No passwords to manage (unlike Stronghold). Already the de facto Rust standard for credential storage. |
+### Core Framework (Unchanged)
 
-**Why NOT these alternatives:**
+| Technology | Version | Purpose | Status |
+|---|---|---|---|
+| React | ^19.2.4 | UI framework | Keep as-is |
+| TypeScript | ^5.9.3 | Type safety | Keep as-is |
+| Zustand | ^5 (5.0.11 installed) | State management + registry stores | Key for registry migration |
+| Tauri v2 | ^2 | Desktop runtime + git commands | Keep as-is |
+| Tailwind v4 | ^4 | Styling | Keep as-is |
 
-| Alternative | Why Not |
-|------------|---------|
-| `github-device-flow` crate | v0.2.0, 306 lines, uses blocking reqwest 0.11 (project uses async reqwest 0.12). Trivial to implement ourselves with existing deps. |
-| `oauth2-rs` | Full OAuth2 library with generic abstractions. Device Flow is only 3 HTTP calls -- too heavy for what we need. |
-| `tauri-plugin-stronghold` | Requires user to enter a password to unlock the vault. Wrong UX for transparent token management. |
-| `tauri-plugin-keyring` | Community plugin wrapping the keyring crate. Adds a Tauri plugin indirection layer we don't need -- we can use keyring directly from our Rust commands. |
-| `tauri-plugin-secure-storage` | New plugin (July 2025), limited version history. Keyring crate is more established (v3.6.3, widely used). |
+### Registry Stores (Migration Targets)
 
-**Implementation approach:** Implement Device Flow directly with reqwest in a new `src-tauri/src/github/` module. 3 functions: `request_device_code()`, `poll_for_token()`, `refresh_token()`. Store tokens via keyring crate. Expose as Tauri commands via tauri-specta.
+These two registries need migration from plain Maps to Zustand stores. No new libraries needed -- the pattern is already proven by five existing Zustand-backed registries.
 
-**Confidence: HIGH** -- reqwest is already a dependency, keyring v3 is well-established, Device Flow is documented at [GitHub Docs](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps).
+| Registry | Current Pattern | Target Pattern | Reference Implementation |
+|---|---|---|---|
+| commandRegistry | Plain `Map<string, Command>` + exported functions | Zustand `create()` + `devtools()` + backward-compat function exports | `bladeRegistry.ts` (identical shape) |
+| previewRegistry | Plain `PreviewRegistration[]` + exported functions | Zustand `create()` + `devtools()` + backward-compat function exports | `contextMenuRegistry.ts` (similar sorted-list shape) |
 
-### 2. GitHub API -- Frontend Side
+**Already Zustand-backed (no changes needed):**
 
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| `@octokit/rest` | ^22 | GitHub REST API client | Typed, complete REST API coverage. Decomposable -- only loads endpoint methods you import. |
-| `@octokit/graphql` | ^8 | GitHub GraphQL API client | For efficient PR/issue queries that need nested data (reviews, labels, checks). Avoids N+1 REST calls. |
-| `@octokit/auth-oauth-device` | ^8 | Device Flow auth strategy | Handles polling, code display, token exchange. The `onVerification` callback integrates cleanly with React state. |
+| Registry | Store Hook | File |
+|---|---|---|
+| BladeRegistry | `useBladeRegistry` | `src/lib/bladeRegistry.ts` |
+| ToolbarRegistry | `useToolbarRegistry` | `src/lib/toolbarRegistry.ts` |
+| ContextMenuRegistry | `useContextMenuRegistry` | `src/lib/contextMenuRegistry.ts` |
+| SidebarPanelRegistry | `useSidebarPanelRegistry` | `src/lib/sidebarPanelRegistry.ts` |
+| StatusBarRegistry | `useStatusBarRegistry` | `src/lib/statusBarRegistry.ts` |
 
-**Why NOT these alternatives:**
+## Detailed Migration Plan: commandRegistry
 
-| Alternative | Why Not |
-|------------|---------|
-| `octokit` (batteries-included) | Includes App client, Action client, webhook handling. We need only REST + GraphQL + device auth. Individual packages are smaller. |
-| Raw `fetch` via Rust backend only | Loses TypeScript types for GitHub API. Octokit provides complete type coverage for 700+ endpoints. React Query integration is simpler from the frontend. |
+### Current Implementation (src/lib/commandRegistry.ts)
 
-**Architecture decision: Hybrid Rust + JS approach.**
-- **Rust side:** Handles OAuth Device Flow (because it requires polling in background, opening browser via opener plugin, and storing tokens in OS keychain).
-- **JS side:** Uses Octokit with token retrieved from Rust backend. React Query wraps Octokit calls for caching, refetching, optimistic updates.
+```typescript
+// Plain Map -- not reactive
+const commands = new Map<string, Command>();
 
-**Confidence: HIGH** -- Octokit is the official GitHub SDK, actively maintained (v22.0.1 published Nov 2025). @octokit/auth-oauth-device v8.0.3 published Jan 2026.
+export function registerCommand(cmd: Command): void {
+  commands.set(cmd.id, cmd);
+}
 
-### 3. Extension System -- No New Dependencies
-
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| (existing) `serde` + `serde_json` | 1.x | Parse extension manifest.json | Already dependencies. Extension manifests are JSON. |
-| (existing) `tokio::fs` | 1.x | Async filesystem ops for extension loading | Already a dependency (tokio with "full" features). |
-| (existing) `notify` | 8.x | Watch extension directory for changes | Already a dependency for git watcher. Reuse for `.flowforge/extensions/` watching. |
-| (existing) Blade Registry | -- | Register extension-provided blades | Existing `bladeRegistry.ts` pattern handles component registration. Extensions add blades via same mechanism. |
-| (existing) Command Registry | -- | Register extension-provided commands | Existing `commandRegistry.ts` handles command registration. Extensions add commands via same mechanism. |
-
-**Why no new dependencies for extensions:**
-
-The extension system is fundamentally about:
-1. Reading a `manifest.json` (serde_json -- have it)
-2. Scanning a directory (tokio::fs -- have it)
-3. Watching for installs/uninstalls (notify -- have it)
-4. Registering components at runtime (blade/command registries -- have them)
-5. Loading JS bundles dynamically (dynamic `import()` -- built into the platform)
-
-**Sandboxing approach:** Extensions run in the same React context (not iframes) for v1.5. They cannot access Tauri IPC directly -- they go through a constrained `ExtensionAPI` object that the host provides. True sandboxing (iframe isolation) is a v2.0 concern when third-party extensions are supported.
-
-**Confidence: HIGH** -- All required capabilities exist in current dependencies.
-
-### 4. Toolbar UX -- No New Dependencies
-
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| (existing) `ResizeObserver` API | Web API | Measure toolbar container width | Built into all modern browsers/webview. No library needed. |
-| (existing) `framer-motion` | ^12 | Animate overflow menu transitions | Already a dependency. Use `AnimatePresence` + `motion.div` for dropdown. |
-| (existing) `react-hotkeys-hook` | ^5 | Keyboard shortcuts for toolbar items | Already a dependency. |
-| (existing) `@tauri-apps/plugin-store` | ^2 | Persist toolbar customization | Already used for settings. Store toolbar item visibility/order in same settings file. |
-
-**Why no new dependencies for toolbar:**
-
-The overflow menu pattern requires:
-1. Measuring container width (ResizeObserver -- web API)
-2. Measuring item widths (refs + `getBoundingClientRect()`)
-3. Moving items to overflow when they don't fit (React state)
-4. Animating the overflow dropdown (framer-motion -- have it)
-5. Persisting show/hide preferences (tauri-plugin-store -- have it)
-
-This is 100-200 lines of custom hook code (`useOverflowToolbar`), not a library problem.
-
-**Confidence: HIGH** -- Standard web API pattern, no external dependencies needed.
-
----
-
-## Supporting Infrastructure
-
-### Tauri Capabilities Update
-
-The following Tauri capabilities/permissions need updating (not new dependencies, but config changes):
-
-| Capability | Purpose | Notes |
-|-----------|---------|-------|
-| `opener:default` | Open GitHub device verification URL in browser | Already configured. `openUrl` is already used in MarkdownLink component. |
-| `store:default` | Persist extension settings, toolbar config | Already configured. |
-
-**No new Tauri plugins needed.** The keyring crate is a pure Rust dependency, not a Tauri plugin, so it needs no capability configuration.
-
-### Rust Dependencies to Add
-
-```toml
-# In src-tauri/Cargo.toml [dependencies]
-keyring = { version = "3", features = ["apple-native", "windows-native", "linux-native"] }
+export function getCommands(): Command[] {
+  return Array.from(commands.values());
+}
+// ... 7 more exported functions
 ```
 
-That is the ONLY new Rust dependency.
+**Problem:** The CommandPalette reads commands via `getEnabledCommands()` inside a `useMemo` keyed on `isOpen`. This means commands registered after the palette first opens are invisible until it re-opens. Extension-contributed commands show up only on the second open. Moving to a Zustand store with reactive subscription fixes this.
 
-### npm Dependencies to Add
+### Target Implementation Pattern
 
-```bash
-npm install @octokit/rest@^22 @octokit/graphql@^8 @octokit/auth-oauth-device@^8
+Follow the exact pattern from `bladeRegistry.ts`:
+
+1. **Zustand store** with `create()` + `devtools()` middleware
+2. **Store state** holds `commands: Map<string, Command>` (immutable updates via `new Map()`)
+3. **Computed getters** as store methods (e.g., `getEnabledCommands`, `getOrderedCategories`)
+4. **Backward-compatible function exports** that delegate to `useCommandRegistry.getState()`
+5. **Hook export** `useCommandRegistry` for components needing reactive subscriptions
+
+**Consumer impact (25+ files):** Zero breaking changes. All existing imports of `registerCommand`, `getCommands`, `getEnabledCommands`, `getOrderedCategories`, `getCommandById`, `executeCommand`, `unregisterCommand`, `unregisterCommandsBySource` continue working unchanged via backward-compat function exports.
+
+**CommandPalette improvement:** Replace `useMemo(() => getEnabledCommands(), [isOpen])` with `useCommandRegistry((s) => s.commands)` + derived memo. Commands become reactive -- new extension commands appear instantly.
+
+### Files Affected
+
+| File | Change Type |
+|---|---|
+| `src/lib/commandRegistry.ts` | Rewrite to Zustand store + backward-compat exports |
+| `src/components/command-palette/CommandPalette.tsx` | Subscribe to store hook for reactivity |
+| `src/extensions/ExtensionAPI.ts` | No change (already uses `registerCommand`/`unregisterCommand` functions) |
+| `src/commands/*.ts` (8 files) | No change (all use `registerCommand()` function) |
+| `src/blades/extension-detail/ExtensionDetailBlade.tsx` | No change (uses `getCommands()` function) |
+| `src/lib/fuzzySearch.ts` | No change (imports `Command` type only) |
+
+## Detailed Migration Plan: previewRegistry
+
+### Current Implementation (src/lib/previewRegistry.ts)
+
+```typescript
+// Plain sorted array -- not reactive
+const registry: PreviewRegistration[] = [];
+
+export function registerPreview(config: PreviewRegistration): void {
+  registry.push(config);
+  registry.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+}
 ```
 
-Three packages, all from the official Octokit organization.
+**Problem:** Non-reactive, no devtools visibility, no source tracking for extension cleanup.
 
----
+### Target Implementation Pattern
+
+1. **Zustand store** with `create()` + `devtools()` middleware
+2. **Store state** holds `previews: Map<string, PreviewRegistration>` (keyed by `key` field)
+3. **`getPreviewForFile` as store method** -- iterates priority-sorted entries, returns first match
+4. **Add `source` field** to `PreviewRegistration` for extension cleanup
+5. **Add `unregisterBySource`** method for extension deactivation
+6. **Backward-compatible function exports** for `registerPreview()` and `getPreviewForFile()`
+
+### Files Affected
+
+| File | Change Type |
+|---|---|
+| `src/lib/previewRegistry.ts` | Rewrite to Zustand store + backward-compat exports |
+| `src/blades/staging-changes/components/previewRegistrations.ts` | No change (uses `registerPreview()` function) |
+| `src/blades/staging-changes/components/StagingDiffPreview.tsx` | No change (uses `getPreviewForFile()` function) |
+
+## Extension Extraction: What Moves Where
+
+### Topology Graph Extension
+
+**Current locations -> Extension directory:**
+
+| Source | Destination | Notes |
+|---|---|---|
+| `src/blades/topology-graph/TopologyRootBlade.tsx` | `src/extensions/topology-graph/blades/TopologyRootBlade.tsx` | Component moves |
+| `src/blades/topology-graph/components/*` (6 files) | `src/extensions/topology-graph/components/*` | All subcomponents |
+| `src/blades/topology-graph/registration.ts` | DELETED | Replaced by extension activate |
+| `src/hooks/useCommitGraph.ts` | `src/extensions/topology-graph/hooks/useCommitGraph.ts` | Hook moves with extension |
+| `src/stores/domain/git-ops/topology.slice.ts` | **Stays in GitOpsStore** | See "Slice Coupling" below |
+
+**New files to create:**
+
+| File | Purpose |
+|---|---|
+| `src/extensions/topology-graph/index.ts` | `onActivate`/`onDeactivate` with `coreOverride: true` |
+
+**Registration pattern (follows gitflow/content-viewers):**
+
+```typescript
+// src/extensions/topology-graph/index.ts
+import { lazy } from "react";
+import type { ExtensionAPI } from "../ExtensionAPI";
+
+export async function onActivate(api: ExtensionAPI): Promise<void> {
+  const TopologyRootBlade = lazy(() =>
+    import("./blades/TopologyRootBlade").then(m => ({ default: m.TopologyRootBlade }))
+  );
+
+  api.registerBlade({
+    type: "topology-graph",
+    title: "Topology",
+    component: TopologyRootBlade,
+    lazy: true,
+    wrapInPanel: false,
+    showBack: false,
+    coreOverride: true,
+  });
+}
+
+export function onDeactivate(): void {}
+```
+
+**Critical dependency: Navigation machine.** `src/machines/navigation/actions.ts` hardcodes `"topology-graph"` as the root blade for the "topology" process. With `coreOverride: true`, the blade type name stays `"topology-graph"` (not `"ext:topology-graph:topology-graph"`), so the navigation machine continues to work unchanged.
+
+### Worktree Management Extension
+
+**Current locations -> Extension directory:**
+
+| Source | Destination | Notes |
+|---|---|---|
+| `src/components/worktree/WorktreePanel.tsx` | `src/extensions/worktree-management/components/WorktreePanel.tsx` | Component moves |
+| `src/components/worktree/WorktreeItem.tsx` | `src/extensions/worktree-management/components/WorktreeItem.tsx` | Component moves |
+| `src/components/worktree/CreateWorktreeDialog.tsx` | `src/extensions/worktree-management/components/CreateWorktreeDialog.tsx` | Component moves |
+| `src/components/worktree/DeleteWorktreeDialog.tsx` | `src/extensions/worktree-management/components/DeleteWorktreeDialog.tsx` | Component moves |
+| `src/components/worktree/index.ts` | DELETED | Replaced by extension activate |
+| `src/stores/domain/git-ops/worktrees.slice.ts` | **Stays in GitOpsStore** | See "Slice Coupling" below |
+
+**New files to create:**
+
+| File | Purpose |
+|---|---|
+| `src/extensions/worktree-management/index.ts` | `onActivate`/`onDeactivate` |
+
+**Registration pattern:** Worktrees currently render as a hardcoded sidebar section in `RepositoryView.tsx` (lines 188-209). The extension should use `api.contributeSidebarPanel()` to register it dynamically, matching how the Gitflow extension contributes its panel. The panel component must be self-contained, handling its own Create/Delete dialogs internally (not relying on RepositoryView state).
+
+**Critical dependency: RepositoryView.tsx.** The hardcoded `<details>` block with `<WorktreePanel>`, `<CreateWorktreeDialog>`, and `<DeleteWorktreeDialog>` must be removed. Dialog state (`showWorktreeDialog`, `worktreeToDelete`) currently lives in RepositoryView -- this state must move into the extension's self-contained panel component.
+
+**Command palette:** The `commandRegistry.ts` already defines `CoreCommandCategory` including `"Worktrees"`. The extension should register worktree commands via `api.registerCommand()` with category `"Worktrees"`.
+
+### Init Repo Extension
+
+**Current locations -> Extension directory:**
+
+| Source | Destination | Notes |
+|---|---|---|
+| `src/blades/init-repo/InitRepoBlade.tsx` | `src/extensions/init-repo/blades/InitRepoBlade.tsx` | Component moves |
+| `src/blades/init-repo/components/*` (6 files) | `src/extensions/init-repo/components/*` | All subcomponents |
+| `src/blades/init-repo/store.ts` | `src/extensions/init-repo/store.ts` | Self-contained blade store moves |
+| `src/blades/init-repo/registration.ts` | DELETED | Replaced by extension activate |
+
+**New files to create:**
+
+| File | Purpose |
+|---|---|
+| `src/extensions/init-repo/index.ts` | `onActivate`/`onDeactivate` with `coreOverride: true` |
+
+**Critical dependency: WelcomeView.tsx.** Currently imports `InitRepoBlade` directly from `src/blades/init-repo` (line 11). After extraction, two options exist:
+
+| Option | Approach | Tradeoff |
+|---|---|---|
+| **A: Re-export from extension path** | WelcomeView imports from `src/extensions/init-repo/blades/InitRepoBlade` | Simple, acceptable coupling for built-in extension |
+| **B: Dynamic blade lookup** | WelcomeView calls `openBlade("init-repo", { directoryPath })` | Architecturally cleaner but requires blade navigation in welcome context |
+
+**Recommendation: Option A** because WelcomeView renders InitRepoBlade inline (not as a blade in the stack). The welcome screen has no blade navigation context. Option B would require significant refactoring of the welcome flow.
+
+## Slice Coupling Analysis
+
+### Topology Slice -- Keep in GitOpsStore
+
+The `topologySlice` lives inside `GitOpsStore` as a combined Zustand slice. It calls `commands.getCommitGraph()` (Tauri binding) -- no coupling to other slices.
+
+**Why keep it in GitOpsStore:**
+- Store reset via `registerStoreForReset(useGitOpsStore)` resets topology state on repo close
+- Extracting into standalone store requires new reset registration, new devtools naming -- churn with no user benefit
+- Precedent: the gitflow extension already imports `useGitOpsStore` from core for its slice data
+- The extension components import `useGitOpsStore` to read topology state -- same pattern as gitflow
+
+### Worktree Slice -- Keep in GitOpsStore
+
+The worktree slice calls Tauri bindings and one cross-slice method (`get().openRepository()`) for `switchToWorktree`.
+
+**Why keep it in GitOpsStore:**
+- `switchToWorktree` calls `openRepository()` from the repository slice -- this cross-slice dependency requires the combined store
+- Same reset pattern reasoning as topology
+- Extension components import `useGitOpsStore` to read worktree state
+
+### Init Repo Store -- Move with Extension
+
+The init-repo blade uses `createBladeStore("init-repo", ...)` -- completely self-contained, not part of GitOpsStore. Zero coupling to any other slice.
+
+**Action:** Move `store.ts` into `src/extensions/init-repo/store.ts`. No coupling concerns.
+
+## BladePropsMap and _discovery.ts Updates
+
+### BladePropsMap (src/stores/bladeTypes.ts)
+
+The `BladePropsMap` interface includes `"topology-graph"` and `"init-repo"`. With `coreOverride: true`, these blade type strings are preserved.
+
+**Action:** Keep entries in BladePropsMap. They provide type checking for `openBlade()` calls. Extensions that use coreOverride intentionally preserve core blade type names.
+
+### _discovery.ts (src/blades/_discovery.ts)
+
+The blade discovery module uses `import.meta.glob("./*/registration.{ts,tsx}")` to scan for registrations. The `EXPECTED_TYPES` array includes `"topology-graph"` and `"init-repo"`.
+
+**Action:**
+1. Remove `"topology-graph"` and `"init-repo"` from the `EXPECTED_TYPES` array
+2. Delete `src/blades/topology-graph/registration.ts` and `src/blades/init-repo/registration.ts`
+3. Delete the now-empty blade directories (or keep as empty marker if preferred)
+
+## ExtensionAPI Surface Area
+
+### Existing Methods Sufficient for Extractions
+
+| Method | Used By | Purpose |
+|---|---|---|
+| `registerBlade({ coreOverride: true })` | topology-graph, init-repo | Replace core blade registrations |
+| `contributeSidebarPanel()` | worktree-management | Replace hardcoded sidebar section |
+| `registerCommand()` | all three extensions | Command palette entries |
+| `contributeToolbar()` | topology-graph (optional) | Toolbar button for topology view |
+| `onDispose()` | worktree-management | Cleanup dialog state |
+
+### New Method: registerPreview (Future-Proofing)
+
+Once previewRegistry becomes a Zustand store with source tracking, adding `registerPreview()` to ExtensionAPI completes the registry API surface. This is not strictly required for v1.7.0 extractions but should be done alongside the previewRegistry migration for consistency.
+
+```typescript
+// Addition to ExtensionAPI.ts
+registerPreview(config: ExtensionPreviewConfig): void {
+  const namespacedKey = `ext:${this.extensionId}:${config.key}`;
+  usePreviewRegistry.getState().register({
+    ...config,
+    key: namespacedKey,
+    source: `ext:${this.extensionId}`,
+  });
+  this.registeredPreviews.push(namespacedKey);
+}
+```
+
+### ExtensionAPI cleanup() -- Already Handles All Registries
+
+The `cleanup()` method in ExtensionAPI already calls `unregisterBySource` on all Zustand-backed registries. After migrating commandRegistry and previewRegistry to Zustand stores, their cleanup must be added to this method:
+
+```typescript
+// Add to cleanup() in ExtensionAPI.ts
+useCommandRegistry.getState().unregisterBySource(`ext:${this.extensionId}`);
+usePreviewRegistry.getState().unregisterBySource(`ext:${this.extensionId}`);
+```
+
+## App.tsx Registration Updates
+
+Three new `registerBuiltIn()` calls need adding to `src/App.tsx` (following the pattern of the existing four):
+
+```typescript
+// After existing registerBuiltIn calls (lines 62-93)
+registerBuiltIn({
+  id: "topology-graph",
+  name: "Topology Graph",
+  version: "1.0.0",
+  activate: topologyActivate,
+  deactivate: topologyDeactivate,
+});
+
+registerBuiltIn({
+  id: "worktree-management",
+  name: "Worktree Management",
+  version: "1.0.0",
+  activate: worktreeActivate,
+  deactivate: worktreeDeactivate,
+});
+
+registerBuiltIn({
+  id: "init-repo",
+  name: "Init Repository",
+  version: "1.0.0",
+  activate: initRepoActivate,
+  deactivate: initRepoDeactivate,
+});
+```
+
+## Alternatives Considered
+
+| Category | Recommended | Alternative | Why Not |
+|---|---|---|---|
+| Registry reactivity | Zustand store migration | RxJS / EventEmitter | Zustand is already used for 5 other registries; adding RxJS introduces a new paradigm |
+| Registry reactivity | Zustand store migration | React context + useReducer | Cannot be used outside React components; registries are imported by non-component code |
+| Topology slice location | Keep in GitOpsStore | Standalone Zustand store | Larger refactor, breaks `registerStoreForReset` pattern, no user benefit |
+| Worktree dialog handling | Self-contained in extension panel | Portal dialogs from RepositoryView | Extension must be self-contained for toggle-ability |
+| Init repo in WelcomeView | Import from extension path | Dynamic blade navigation | WelcomeView renders InitRepoBlade inline before any repo is open; blade navigation requires a repo context |
+| ViewerRegistry migration | Migrate to Zustand with others | Leave as-is | ViewerRegistry (`src/components/viewers/ViewerRegistry.ts`) is similar to previewRegistry (plain array); consistency argues for migrating all non-Zustand registries at once |
 
 ## What NOT to Add
 
-| Temptation | Why Not |
-|-----------|---------|
-| `tauri-plugin-fs` | Extension manifest loading happens in Rust (tokio::fs). Frontend doesn't need filesystem access for extensions. |
-| `tauri-plugin-stronghold` | Requires user-entered password. OAuth tokens should be transparent. Use keyring instead. |
-| `tauri-plugin-http` | We need HTTP only on the Rust side (reqwest, already there). Frontend GitHub API calls go through Octokit which uses fetch. |
-| `iframe` sandboxing for extensions | Premature for v1.5 which only ships the GitHub extension (first-party). Adds massive complexity for message passing, style isolation, state sharing. |
-| `@radix-ui/react-dropdown-menu` | Already have custom dropdown patterns with framer-motion. Adding a component library for one dropdown is wrong. |
-| `@floating-ui/react` | Overflow menu is a simple absolute-positioned dropdown. CSS `position: absolute` + `right: 0` is sufficient. |
-| React Query for Rust backend calls | Already established pattern: Zustand stores call Tauri commands directly. Don't mix patterns. React Query is for Octokit (HTTP API) only. |
-| Full JSON Schema validator (e.g., `ajv`) | Extension manifests have <15 fields. TypeScript type guards + runtime checks are sufficient. |
+| Technology | Why Not |
+|---|---|
+| **No new npm packages** | Everything needed is in the current deps |
+| **No event emitter library** | Zustand subscriptions provide reactivity |
+| **No state machine for extension lifecycle** | Extension lifecycle is simple activate/deactivate; XState would be overengineering |
+| **No plugin architecture overhaul** | The current ExtensionHost + ExtensionAPI pattern is proven with 4 extensions |
+| **No separate stores for topology/worktree state** | Slice coupling with GitOpsStore is manageable; extraction adds complexity without benefit |
 
----
+## ViewerRegistry: Also Migrate?
 
-## Integration Points with Existing Stack
+The `ViewerRegistry` (`src/components/viewers/ViewerRegistry.ts`) has the same plain-array pattern as previewRegistry. It should be evaluated for Zustand migration alongside previewRegistry for consistency. However, it has only 2 consumers and no extension integration, so it could be deferred if scope needs trimming.
 
-### Extension System -> Blade Registry
-Extensions register blades via `registerBlade()` from `bladeRegistry.ts`. The existing `BladeRegistration` interface already supports everything an extension blade needs: type, component, title, lazy loading, singleton behavior.
+**Recommendation:** Include ViewerRegistry migration in this milestone since the pattern is identical and the effort is minimal (< 30 min). This achieves "all registries are Zustand stores" completion.
 
-### Extension System -> Command Registry
-Extensions register commands via `registerCommand()` from `commandRegistry.ts`. The existing `Command` interface supports id, title, category, action, shortcut, icon, enabled predicate.
+## Verification Notes
 
-### GitHub Integration -> Zustand Stores
-New `useGitHubStore` Zustand store manages auth state, current user, token validity. Pattern: matches existing 3 domain stores (git-ops, ui-state, preferences).
+| Claim | Source | Confidence |
+|---|---|---|
+| Zustand 5.0.11 installed | `node_modules/zustand/package.json` | HIGH |
+| bladeRegistry Zustand pattern works | `src/lib/bladeRegistry.ts` -- 26 consumers, backward-compat exports | HIGH |
+| coreOverride preserves blade type name | `ExtensionAPI.registerBlade()` lines 164-166 | HIGH |
+| Navigation machine hardcodes topology-graph | `src/machines/navigation/actions.ts` line 13 | HIGH |
+| commandRegistry has 25+ consumer call sites | grep count across src/ | HIGH |
+| previewRegistry has 3 consumer files | grep count across src/ | HIGH |
+| RepositoryView hardcodes worktree section | `src/components/RepositoryView.tsx` lines 188-209 | HIGH |
+| WelcomeView imports InitRepoBlade directly | `src/components/WelcomeView.tsx` line 11 | HIGH |
+| Init repo store uses createBladeStore (self-contained) | `src/blades/init-repo/store.ts` line 1 | HIGH |
+| Topology/worktree slices are in combined GitOpsStore | `src/stores/domain/git-ops/index.ts` lines 11-12, 18-19 | HIGH |
+| Worktree slice has cross-slice dependency on openRepository | `src/stores/domain/git-ops/worktrees.slice.ts` line 76 | HIGH |
 
-### GitHub Extension -> React Query
-GitHub PR/issue data is fetched via React Query + Octokit. Follows existing React Query patterns (`@tanstack/react-query` is already a dependency). Cache keys: `["github", "prs"]`, `["github", "issues"]`, etc.
-
-### Toolbar -> Preferences Store
-Toolbar customization (visible items, order) stored in preferences domain store. The existing `settings.slice.ts` and `navigation.slice.ts` patterns show how to persist UI preferences.
-
-### OAuth -> Opener Plugin
-Device Flow shows user a code and opens `https://github.com/login/device` in browser. The `openUrl` function from `@tauri-apps/plugin-opener` is already used (see `MarkdownLink.tsx`). Reuse for OAuth flow.
-
----
-
-## Version Verification Summary
-
-| Package | Claimed Version | Verification | Confidence |
-|---------|----------------|--------------|------------|
-| keyring (Rust) | ^3 (latest 3.6.3) | [crates.io](https://crates.io/crates/keyring), [docs.rs](https://docs.rs/keyring) | HIGH |
-| @octokit/rest | ^22 (latest 22.0.1) | [npm](https://www.npmjs.com/package/@octokit/rest), [GitHub releases](https://github.com/octokit/rest.js/releases) | HIGH |
-| @octokit/graphql | ^8 | [npm](https://www.npmjs.com/package/@octokit/graphql) | MEDIUM -- exact latest minor not verified |
-| @octokit/auth-oauth-device | ^8 (latest 8.0.3) | [npm](https://www.npmjs.com/package/@octokit/auth-oauth-device) | HIGH |
-| reqwest (existing) | 0.12 | Already in Cargo.toml | HIGH |
-| tokio (existing) | 1.x full | Already in Cargo.toml | HIGH |
-| notify (existing) | 8.x | Already in Cargo.toml | HIGH |
-
----
-
-## Installation Commands
-
-### Rust (Cargo.toml)
-
-```toml
-# Add to [dependencies] in src-tauri/Cargo.toml
-keyring = { version = "3", features = ["apple-native", "windows-native", "linux-native"] }
-```
-
-### JavaScript (npm)
+## Installation
 
 ```bash
-npm install @octokit/rest@^22 @octokit/graphql@^8 @octokit/auth-oauth-device@^8
+# No new packages to install.
+# The milestone is a pure refactoring of existing code.
 ```
-
-### Dev Dependencies
-
-No new dev dependencies needed.
-
----
 
 ## Sources
 
-- [GitHub OAuth Device Flow documentation](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps)
-- [GitHub Device Flow changelog announcement](https://github.blog/changelog/2022-03-16-enable-oauth-device-authentication-flow-for-apps/)
-- [@octokit/auth-oauth-device.js repository](https://github.com/octokit/auth-oauth-device.js)
-- [@octokit/rest.js documentation](https://octokit.github.io/rest.js/v22/)
-- [Octokit.js main repository](https://github.com/octokit/octokit.js/)
-- [keyring crate documentation](https://docs.rs/keyring)
-- [keyring crate on crates.io](https://crates.io/crates/keyring)
-- [Tauri v2 Store plugin](https://v2.tauri.app/plugin/store/)
-- [Tauri v2 Opener plugin](https://v2.tauri.app/plugin/opener/)
-- [Tauri v2 Stronghold plugin](https://v2.tauri.app/plugin/stronghold/)
-- [Tauri v2 Plugin Development](https://v2.tauri.app/develop/plugins/)
-- [Tauri secure storage discussion](https://github.com/tauri-apps/tauri/discussions/7846)
-- [tauri-plugin-keyring](https://github.com/HuakunShen/tauri-plugin-keyring)
-- [VS Code Extension Manifest format](https://code.visualstudio.com/api/references/extension-manifest)
-- [VS Code Contribution Points](https://code.visualstudio.com/api/references/contribution-points)
-- [ResizeObserver MDN](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver)
+All findings are from direct codebase inspection (HIGH confidence):
+- `src/lib/bladeRegistry.ts` -- Zustand registry store pattern reference
+- `src/lib/commandRegistry.ts` -- Migration target (plain Map, 110 lines)
+- `src/lib/previewRegistry.ts` -- Migration target (plain array, 31 lines)
+- `src/lib/contextMenuRegistry.ts` -- Zustand registry pattern reference (Map-based)
+- `src/lib/toolbarRegistry.ts` -- Zustand registry pattern reference
+- `src/lib/sidebarPanelRegistry.ts` -- Zustand registry pattern reference
+- `src/lib/statusBarRegistry.ts` -- Zustand registry pattern reference
+- `src/components/viewers/ViewerRegistry.ts` -- Additional plain-array registry
+- `src/extensions/ExtensionAPI.ts` -- Extension facade with coreOverride (449 lines)
+- `src/extensions/ExtensionHost.ts` -- Extension lifecycle management (407 lines)
+- `src/extensions/gitflow/index.ts` -- Reference coreOverride extension pattern
+- `src/extensions/content-viewers/index.ts` -- Reference coreOverride extension pattern
+- `src/extensions/conventional-commits/index.ts` -- Reference coreOverride extension pattern
+- `src/blades/topology-graph/` -- Extraction source (6 component files + registration)
+- `src/blades/topology-graph/components/TopologyPanel.tsx` -- Primary topology component
+- `src/hooks/useCommitGraph.ts` -- Topology hook to move with extension
+- `src/components/worktree/` -- Extraction source (4 component files + index)
+- `src/blades/init-repo/` -- Extraction source (7 files + registration + store)
+- `src/blades/init-repo/store.ts` -- Self-contained createBladeStore (131 lines)
+- `src/stores/domain/git-ops/index.ts` -- Combined store with topology + worktree slices
+- `src/stores/domain/git-ops/topology.slice.ts` -- Topology state (103 lines)
+- `src/stores/domain/git-ops/worktrees.slice.ts` -- Worktree state with openRepository cross-slice dep
+- `src/machines/navigation/actions.ts` -- Hardcoded topology-graph root blade
+- `src/components/RepositoryView.tsx` -- Hardcoded worktree sidebar section (243 lines)
+- `src/components/WelcomeView.tsx` -- Direct InitRepoBlade import
+- `src/blades/_discovery.ts` -- Blade glob-based registration + EXPECTED_TYPES check
+- `src/stores/bladeTypes.ts` -- BladePropsMap with topology-graph + init-repo entries
+- `src/App.tsx` -- Built-in extension registration point (4 existing, 3 to add)
+- `src/components/command-palette/CommandPalette.tsx` -- commandRegistry consumer (reactive fix target)
