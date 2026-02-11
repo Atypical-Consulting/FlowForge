@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-11)
 Phase: 46 (fourth of 5 in v1.7.0) — Topology Extraction
 Plan: —
 Status: Ready to plan
-Last activity: 2026-02-11 - Completed quick task 44: create 3 new extensions from viewer-image, viewer-nupkg and viewer-plaintext
+Last activity: 2026-02-11 - Completed quick task 45: migrate welcome screen to an extension
 
 Progress: [██████░░░░] 60%
 
@@ -81,6 +81,7 @@ None active.
 | 42 | create src/core/ structure, move core files from src/ | 2026-02-11 | 37537a1 | [42-create-a-folder-src-core-same-structure-](./quick/42-create-a-folder-src-core-same-structure-/) |
 | 43 | extension preview should render readme file of the extension. Extension Manager should categorize extensions. | 2026-02-11 | 64f36ce | [43-extension-preview-should-render-readme-f](./quick/43-extension-preview-should-render-readme-f/) |
 | 44 | create 3 new extensions from viewer-image, viewer-nupkg and viewer-plaintext | 2026-02-11 | cbdb0e2 | [44-create-3-new-extensions-from-viewer-imag](./quick/44-create-3-new-extensions-from-viewer-imag/) |
+| 45 | migrate welcome screen to an extension | 2026-02-11 | 37e1456 | [45-migrate-welcome-screen-to-an-extension-w](./quick/45-migrate-welcome-screen-to-an-extension-w/) |
 
 ### Pending Todos
 
