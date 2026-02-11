@@ -1,6 +1,6 @@
 import { REQUIRES_TRUST_METHODS } from "./sandbox-api-surface";
 import type { RequiresTrustMethod } from "./sandbox-api-surface";
-import type { ExtensionAPI } from "../ExtensionAPI";
+import type { ExtensionAPI, BladeNavigationEvent } from "../ExtensionAPI";
 import type { GitOperation, DidHandler, WillHandler } from "../../lib/gitHookBus";
 import type { Disposable } from "../ExtensionAPI";
 
@@ -47,6 +47,18 @@ export class SandboxedExtensionAPI {
 
   onDispose(disposable: Disposable): void {
     this.hostApi.onDispose(disposable);
+  }
+
+  onDidNavigate(handler: (event: BladeNavigationEvent) => void): () => void {
+    return this.hostApi.onDidNavigate(handler);
+  }
+
+  get events() {
+    return this.hostApi.events;
+  }
+
+  get settings() {
+    return this.hostApi.settings;
   }
 
   private trustError(method: string): Error {

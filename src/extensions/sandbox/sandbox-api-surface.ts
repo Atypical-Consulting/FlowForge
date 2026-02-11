@@ -12,6 +12,9 @@ export const SANDBOX_SAFE_METHODS = [
   "onDidGit",
   "onWillGit",
   "onDispose",
+  "onDidNavigate",
+  "events",
+  "settings",
 ] as const;
 
 /** Methods that require trust level "built-in" or "user-trusted" */
