@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   AlertTriangle,
   Blocks,
+  BookOpen,
   Command,
   Info,
   Layers,
@@ -15,6 +16,8 @@ import {
   Wrench,
 } from "lucide-react";
 import { useExtensionHost } from "../../../extensions/ExtensionHost";
+import { getExtensionReadme } from "../../../extensions/extensionReadme";
+import { MarkdownRenderer } from "../../components/markdown/MarkdownRenderer";
 import { useToolbarRegistry } from "../../lib/toolbarRegistry";
 import { useContextMenuRegistry } from "../../lib/contextMenuRegistry";
 import { useSidebarPanelRegistry } from "../../lib/sidebarPanelRegistry";
@@ -289,6 +292,18 @@ export function ExtensionDetailBlade({ extensionId }: ExtensionDetailBladeProps)
           </div>
         </Section>
       )}
+
+      {/* Documentation (README) */}
+      {(() => {
+        const readmeContent = getExtensionReadme(extensionId);
+        return readmeContent ? (
+          <Section title="Documentation" icon={BookOpen}>
+            <div className="max-h-[500px] overflow-y-auto rounded-lg border border-ctp-surface1 bg-ctp-mantle p-3">
+              <MarkdownRenderer content={readmeContent} className="prose-sm" />
+            </div>
+          </Section>
+        ) : null;
+      })()}
 
       {/* Actions */}
       <div className="flex items-center gap-2 pt-2 border-t border-ctp-surface1">
