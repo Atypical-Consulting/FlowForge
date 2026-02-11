@@ -1,12 +1,14 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { GitCommit, Loader2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { EmptyState } from "../ui/EmptyState";
 import { Skeleton } from "../ui/Skeleton";
 import { Virtuoso } from "react-virtuoso";
 import { type CommitSummary, commands } from "../../bindings";
+import { useContextMenuRegistry } from "../../lib/contextMenuRegistry";
 import { cn } from "../../lib/utils";
 import { CommitTypeIcon } from "../icons/CommitTypeIcon";
+import { AuthorFilter } from "./AuthorFilter";
 import { CommitSearch } from "./CommitSearch";
 
 interface CommitHistoryProps {
@@ -24,6 +26,7 @@ export function CommitHistory({
   onCommitSelect,
 }: CommitHistoryProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [authorFilter, setAuthorFilter] = useState("");
 
   // Regular paginated history (when not searching)
   const historyQuery = useInfiniteQuery({
@@ -64,13 +67,21 @@ export function CommitHistory({
 
   // Determine which data to show
   const isSearching = !!searchQuery;
-  const commits = isSearching
+  const allCommits = isSearching
     ? (searchQueryResult.data ?? [])
     : (historyQuery.data?.pages.flat() ?? []);
   const isLoading = isSearching
     ? searchQueryResult.isLoading
     : historyQuery.isLoading;
   const error = isSearching ? searchQueryResult.error : historyQuery.error;
+
+  // Apply author filter
+  const commits = useMemo(() => {
+    if (!authorFilter) return allCommits;
+    return allCommits.filter(
+      (c) => `${c.authorName} <${c.authorEmail}>` === authorFilter,
+    );
+  }, [allCommits, authorFilter]);
 
   // Auto-select first commit when data loads and no selection exists (old mode only)
   useEffect(() => {
@@ -90,9 +101,14 @@ export function CommitHistory({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Search input */}
-      <div className="px-2 py-2 border-b border-ctp-surface0">
+      {/* Search and filters */}
+      <div className="px-2 py-2 border-b border-ctp-surface0 space-y-1.5">
         <CommitSearch value={searchQuery} onChange={handleSearchChange} />
+        <AuthorFilter
+          commits={allCommits}
+          value={authorFilter}
+          onChange={setAuthorFilter}
+        />
       </div>
 
       {/* Results */}
@@ -120,10 +136,14 @@ export function CommitHistory({
           <div className="flex items-center justify-center h-full">
             <EmptyState
               icon={<GitCommit className="w-full h-full" />}
-              title={isSearching ? "No matching commits" : "Fresh start!"}
+              title={
+                isSearching || authorFilter
+                  ? "No matching commits"
+                  : "Fresh start!"
+              }
               description={
-                isSearching
-                  ? "Try a different search term."
+                isSearching || authorFilter
+                  ? "Try a different search term or author filter."
                   : "Make your first commit and it will appear here."
               }
             />
@@ -150,6 +170,14 @@ export function CommitHistory({
                   } else if (onSelectCommit) {
                     onSelectCommit(commit);
                   }
+                }}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  useContextMenuRegistry.getState().showMenu(
+                    { x: e.clientX, y: e.clientY },
+                    "commit-list",
+                    { location: "commit-list", commitOid: commit.oid },
+                  );
                 }}
                 className={cn(
                   "w-full text-left px-3 py-2 cursor-pointer border-b border-ctp-surface0",
