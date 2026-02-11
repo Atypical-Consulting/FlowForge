@@ -100,7 +100,7 @@
 
 **Milestone Goal:** Push FlowForge closer to a minimal core by extracting Topology, Worktrees, and Init Repo into toggleable built-in extensions, plus cleaning up extension-related tech debt (registry migration, sandbox surface, CC store reset).
 
-- [ ] **Phase 43: Infrastructure Prep** - Registry migration to Zustand + tech debt fixes enabling clean extractions
+- [x] **Phase 43: Infrastructure Prep** - Registry migration to Zustand + tech debt fixes enabling clean extractions -- completed 2026-02-11
 - [ ] **Phase 44: Worktree Extraction** - Worktree management as toggleable built-in extension via sidebar panel
 - [ ] **Phase 45: Init Repo Extraction** - Init Repo as toggleable built-in extension with dual-context activation
 - [ ] **Phase 46: Topology Extraction** - Topology graph as toggleable built-in extension with commit list fallback
@@ -120,9 +120,9 @@
   5. CC store state clears when Conventional Commits extension is disabled (no ghost data on re-enable)
 **Plans:** 3 plans
 Plans:
-- [ ] 43-01-PLAN.md -- Registry migrations (commandRegistry + previewRegistry to Zustand stores)
-- [ ] 43-02-PLAN.md -- Reactive CommandPalette, process tab visibility, WelcomeView registry lookup
-- [ ] 43-03-PLAN.md -- CC store reset on extension disable + sandbox API expansion
+- [x] 43-01-PLAN.md -- Registry migrations (commandRegistry + previewRegistry to Zustand stores)
+- [x] 43-02-PLAN.md -- Reactive CommandPalette, process tab visibility, WelcomeView registry lookup
+- [x] 43-03-PLAN.md -- CC store reset on extension disable + sandbox API expansion
 
 ### Phase 44: Worktree Extraction
 **Goal**: Worktree management is a self-contained toggleable built-in extension that users can enable/disable from Extension Manager
@@ -175,11 +175,11 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 43. Infrastructure Prep | v1.7.0 | 0/3 | Planned | - |
+| 43. Infrastructure Prep | v1.7.0 | 3/3 | ✓ Complete | 2026-02-11 |
 | 44. Worktree Extraction | v1.7.0 | 0/TBD | Not started | - |
 | 45. Init Repo Extraction | v1.7.0 | 0/TBD | Not started | - |
 | 46. Topology Extraction | v1.7.0 | 0/TBD | Not started | - |
 | 47. Cleanup & Verification | v1.7.0 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-11 -- v1.7.0 roadmap created*
+*Last updated: 2026-02-11 -- Phase 43 complete*

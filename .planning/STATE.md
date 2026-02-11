@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** v1.7.0 Extensions Everywhere -- Phase 43: Infrastructure Prep
+**Current focus:** v1.7.0 Extensions Everywhere -- Phase 44: Worktree Extraction
 
 ## Current Position
 
-Phase: 43 (first of 5 in v1.7.0) — Infrastructure Prep
+Phase: 44 (second of 5 in v1.7.0) — Worktree Extraction
 Plan: —
 Status: Ready to plan
-Last activity: 2026-02-11 — Roadmap created for v1.7.0 (5 phases, 32 requirements)
+Last activity: 2026-02-11 — Phase 43 complete (3/3 plans, verified 17/17 must-haves)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██░░░░░░░░] 20%
 
 ## Milestone History
 
@@ -34,9 +34,9 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 42 complete, 5 planned
-- Total plans: ~217 complete
-- Total requirements validated: 264 (32 new in v1.7.0)
+- Total phases: 43 complete, 4 planned
+- Total plans: ~220 complete
+- Total requirements validated: 271 (7 new in phase 43)
 - Codebase: ~49,470 LOC (38,325 TypeScript + 11,145 Rust)
 - Tests: 233 (Vitest + jsdom)
 
@@ -57,7 +57,7 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 
 ### Research Flags
 
-- Phase 43: Verify no circular imports before commandRegistry migration (madge --circular)
+- Phase 43: ✓ Registry migration complete, no circular imports introduced
 - Phase 46: Navigation machine fallback pattern needs careful design
 
 ### Blockers/Concerns
@@ -79,9 +79,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Roadmap created for v1.7.0, ready to plan Phase 43
+Stopped at: Phase 43 complete, ready to plan Phase 44
 Resume file: None
 
 ---
 *State updated: 2026-02-11*
-*v1.7.0 roadmap created. Next: plan Phase 43 (Infrastructure Prep)*
+*Phase 43 complete. Next: plan Phase 44 (Worktree Extraction)*
