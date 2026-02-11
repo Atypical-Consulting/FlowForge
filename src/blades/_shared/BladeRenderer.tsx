@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Puzzle } from "lucide-react";
-import { getBladeRegistration } from "../../lib/bladeRegistry";
+import { useBladeRegistry } from "../../lib/bladeRegistry";
 import { openBlade } from "../../lib/bladeOpener";
 import { BladePanel } from "./BladePanel";
 import { BladeLoadingFallback } from "./BladeLoadingFallback";
@@ -13,7 +13,7 @@ interface BladeRendererProps {
 }
 
 export function BladeRenderer({ blade, goBack }: BladeRendererProps) {
-  const reg = getBladeRegistration(blade.type);
+  const reg = useBladeRegistry((s) => s.blades.get(blade.type));
   if (!reg)
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8">
