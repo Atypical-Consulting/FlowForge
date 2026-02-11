@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { ChevronRight, Trash2 } from "lucide-react";
 import type { ExtensionInfo } from "../../../extensions/extensionTypes";
 import { ToggleSwitch } from "../../../extensions/github/components/ToggleSwitch";
 import { PermissionBadge } from "../../../extensions/github/components/PermissionBadge";
 import { useExtensionHost } from "../../../extensions/ExtensionHost";
+import { useBladeNavigation } from "../../../hooks/useBladeNavigation";
 import { Button } from "../../../components/ui/button";
 import { toast } from "../../../stores/toast";
 import { cn } from "../../../lib/utils";
@@ -16,6 +17,7 @@ interface ExtensionCardProps {
 export function ExtensionCard({ extension, onUninstall }: ExtensionCardProps) {
   const [isToggling, setIsToggling] = useState(false);
   const { activateExtension, deactivateExtension } = useExtensionHost();
+  const { openBlade } = useBladeNavigation();
 
   const isActive = extension.status === "active";
   const isBuiltIn = extension.builtIn === true;
@@ -46,13 +48,26 @@ export function ExtensionCard({ extension, onUninstall }: ExtensionCardProps) {
     }
   };
 
+  const handleOpenDetail = () => {
+    openBlade("extension-detail", { extensionId: extension.id }, extension.name);
+  };
+
   return (
     <div
+      role="button"
+      tabIndex={0}
+      onClick={handleOpenDetail}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleOpenDetail();
+        }
+      }}
       className={cn(
-        "p-4 rounded-lg border",
+        "p-4 rounded-lg border cursor-pointer transition-colors",
         isError
-          ? "border-ctp-red/30 bg-ctp-red/5"
-          : "border-ctp-surface1 bg-ctp-surface0",
+          ? "border-ctp-red/30 bg-ctp-red/5 hover:bg-ctp-red/10"
+          : "border-ctp-surface1 bg-ctp-surface0 hover:bg-ctp-surface0/80",
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -100,7 +115,8 @@ export function ExtensionCard({ extension, onUninstall }: ExtensionCardProps) {
         </div>
 
         {/* Right side */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+        <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
           {!isError && (
             <ToggleSwitch
               checked={isActive}
@@ -120,6 +136,7 @@ export function ExtensionCard({ extension, onUninstall }: ExtensionCardProps) {
               <Trash2 className="w-3.5 h-3.5" />
             </Button>
           )}
+          <ChevronRight className="w-4 h-4 text-ctp-overlay0" />
         </div>
       </div>
     </div>

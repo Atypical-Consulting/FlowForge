@@ -29,6 +29,7 @@ export interface BladePropsMap {
   "init-repo": { directoryPath: string };
   "conventional-commit": { amend?: boolean };
   "extension-manager": Record<string, never>;
+  "extension-detail": { extensionId: string };
 }
 
 /** Core blade types derived from the map — single source of truth */

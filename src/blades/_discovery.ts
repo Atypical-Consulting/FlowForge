@@ -17,7 +17,7 @@ if (import.meta.env.DEV && !import.meta.hot?.data?.isUpdate) {
   const EXPECTED_TYPES: string[] = [
     "staging-changes", "topology-graph", "commit-details", "diff",
     "viewer-nupkg", "viewer-image", "viewer-plaintext", "repo-browser", "settings",
-    "init-repo", "extension-manager",
+    "init-repo", "extension-manager", "extension-detail",
   ];
   const missing = EXPECTED_TYPES.filter(t => !registered.has(t as any));
   if (missing.length > 0) {
