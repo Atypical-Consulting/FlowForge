@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** v1.7.0 Extensions Everywhere -- Complete
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 47 (fifth of 5 in v1.7.0) — Cleanup & Verification
-Plan: 3/3 complete
-Status: Phase complete, milestone complete
-Last activity: 2026-02-11 - Completed Phase 47: Cleanup & Verification (3/3 plans)
+Phase: — (between milestones)
+Plan: —
+Status: v1.7.0 shipped, awaiting next milestone
+Last activity: 2026-02-11 - Completed v1.7.0 Extensions Everywhere milestone
 
-Progress: [██████████] 100%
+Progress: [██████████] 100% (v1.7.0)
 
 ## Milestone History
 
@@ -27,7 +27,7 @@ Progress: [██████████] 100%
 | v1.4.0 Architecture & Navigation Overhaul | Complete | 2026-02-09 |
 | v1.5.0 GitHub Extension | Complete | 2026-02-10 |
 | v1.6.0 Refactor to Extensions | Complete | 2026-02-11 |
-| v1.7.0 Extensions Everywhere | **Active** | — |
+| v1.7.0 Extensions Everywhere | Complete | 2026-02-11 |
 
 See `.planning/MILESTONES.md` for full history.
 
@@ -35,10 +35,11 @@ See `.planning/MILESTONES.md` for full history.
 
 **Cumulative:**
 - Total phases: 47 complete
-- Total plans: ~227 complete
-- Total requirements validated: 296 (4 new in phase 47)
-- Codebase: ~49,470 LOC (38,325 TypeScript + 11,145 Rust)
-- Tests: 233 (Vitest + jsdom)
+- Total plans: ~230 complete
+- Total requirements validated: 296
+- Codebase: ~41,705 LOC TypeScript + ~11,145 Rust
+- Tests: 270 (Vitest + jsdom)
+- Built-in extensions: 13
 
 ## Accumulated Context
 
@@ -50,42 +51,15 @@ See `.planning/MILESTONES.md` for full history.
 - Pre-existing TS2440 in auto-generated bindings.ts
 - Phase 34 human runtime testing pending (6 OAuth flow items)
 - GFEX-06 needs human runtime verification (architecture correct)
+- 13 items pending human runtime verification from v1.7.0
 
 ### Key Decisions
 
 All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 
-### Research Flags
-
-- Phase 43: ✓ Registry migration complete, no circular imports introduced
-- Phase 44: ✓ Worktree extraction clean, CustomEvent pattern for cross-component dialog triggers
-- Phase 45: ✓ Init Repo extraction clean, coreOverride pattern for WelcomeView compatibility, fallback banner pattern
-- Phase 46: ✓ Topology extraction clean, registry-aware rootBladeForProcess fallback, file watcher in extension lifecycle
-- Phase 47: ✓ Discovery split clean, core/extension boundary enforced, 25 toggle tests, all 13 extensions have READMEs
-
 ### Blockers/Concerns
 
 None active.
-
-### Quick Tasks Completed
-
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 34 | move files related to extensions closer (like for the github extension) | 2026-02-10 | 74a0b78 | [34-move-files-related-to-extensions-closer-](./quick/34-move-files-related-to-extensions-closer-/) |
-| 35 | implement 10 high-value features (copy SHA, ahead/behind, bulk staging, author filter, ext detail, settings API, event bus, onDidNavigate, badges) | 2026-02-11 | 9975187 | [35-implement-10-high-value-features-copy-sh](./quick/35-implement-10-high-value-features-copy-sh/) |
-| 36 | fix duplicate GitHub linked toast on repo open | 2026-02-11 | d18e497 | [36-fix-duplicate-github-linked-toast-on-rep](./quick/36-fix-duplicate-github-linked-toast-on-rep/) |
-| 37 | add common actions into app toolbar (File, View, Repository, Branch menus) mapped to extensions | 2026-02-11 | 9ab8014 | [37-add-common-actions-into-app-toolbar-file](./quick/37-add-common-actions-into-app-toolbar-file/) |
-| 38 | explore XState architecture from UX, technical architecture, and expert dev angles with focus on extensibility | 2026-02-11 | b9f910e | [38-explore-xstate-architecture-from-ux-tech](./quick/38-explore-xstate-architecture-from-ux-tech/) |
-| 39 | full XState integration: MachineRegistry + merge/gitflow machines | 2026-02-11 | 400a749 | [39-full-xstate-integration-navigation-machi](./quick/39-full-xstate-integration-navigation-machi/) |
-| 40 | split content viewers extension to 3 extensions | 2026-02-11 | a2c5a51 | [40-split-content-viewers-extension-to-3-ext](./quick/40-split-content-viewers-extension-to-3-ext/) |
-| 41 | create a readme for each extension, define standard file structure, move files accordingly | 2026-02-11 | 56aaeeb | [41-create-a-readme-for-each-extension-defin](./quick/41-create-a-readme-for-each-extension-defin/) |
-| 42 | create src/core/ structure, move core files from src/ | 2026-02-11 | 37537a1 | [42-create-a-folder-src-core-same-structure-](./quick/42-create-a-folder-src-core-same-structure-/) |
-| 43 | extension preview should render readme file of the extension. Extension Manager should categorize extensions. | 2026-02-11 | 64f36ce | [43-extension-preview-should-render-readme-f](./quick/43-extension-preview-should-render-readme-f/) |
-| 44 | create 3 new extensions from viewer-image, viewer-nupkg and viewer-plaintext | 2026-02-11 | cbdb0e2 | [44-create-3-new-extensions-from-viewer-imag](./quick/44-create-3-new-extensions-from-viewer-imag/) |
-| 45 | migrate welcome screen to an extension | 2026-02-11 | 37e1456 | [45-migrate-welcome-screen-to-an-extension-w](./quick/45-migrate-welcome-screen-to-an-extension-w/) |
-| 46 | implement the show branches blade (with management) as a core blade | 2026-02-11 | 5e129a7 | [46-implement-the-show-branches-blade-with-m](./quick/46-implement-the-show-branches-blade-with-m/) |
-| 47 | fix push/pull/fetch sync commands + HTTPS auth in Tauri | 2026-02-11 | cb4e170 | [47-repository-push-from-the-menu-is-broken-](./quick/47-repository-push-from-the-menu-is-broken-/) |
-| 48 | refresh branches panel after push from app menu | 2026-02-11 | 38b47a7 | [48-refresh-branches-panel-after-push-from-a](./quick/48-refresh-branches-panel-after-push-from-a/) |
 
 ### Pending Todos
 
@@ -94,9 +68,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Phase 47 complete, v1.7.0 milestone complete
+Stopped at: v1.7.0 milestone complete
 Resume file: None
 
 ---
 *State updated: 2026-02-11*
-*Phase 47 complete. v1.7.0 Extensions Everywhere milestone complete. Next: /gsd:complete-milestone*
+*v1.7.0 Extensions Everywhere shipped. Next: /gsd:new-milestone*

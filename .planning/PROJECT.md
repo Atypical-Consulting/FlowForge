@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A cross-platform desktop Git client built on Tauri (Rust backend + React frontend) that makes Gitflow, conventional commits, and worktrees the structural foundation of the interface — not afterthoughts buried in menus. Features a blade-based navigation system with 22+ blade types managed by an XState finite state machine, co-located feature modules, 3 consolidated domain stores, and a fully extensible platform where core features (Gitflow, Conventional Commits, content viewers) are independently toggleable built-in extensions alongside GitHub integration. Includes sandbox infrastructure for future third-party extension safety.
+A cross-platform desktop Git client built on Tauri (Rust backend + React frontend) that makes Gitflow, conventional commits, and worktrees the structural foundation of the interface — not afterthoughts buried in menus. Features a blade-based navigation system with 22+ blade types managed by an XState finite state machine, co-located feature modules, 3 consolidated domain stores, and a fully extensible platform with 13 independently toggleable built-in extensions (including GitHub, Gitflow, Conventional Commits, Topology, Worktrees, Init Repo, and content viewers). All registries (blades, commands, previews, sidebar panels) are reactive Zustand stores with source-based cleanup. Includes sandbox infrastructure for future third-party extension safety.
 
 ## Core Value
 
@@ -196,19 +196,29 @@ Each layer adds value; each inner layer stands without the outer ones.
 - ✓ BladeRenderer reactive subscription to blade registry via Zustand — v1.6
 - ✓ SandboxedExtensionAPI uses REQUIRES_TRUST_METHODS constant — v1.6
 
+- ✓ commandRegistry migrated to Zustand store with backward-compatible function exports — v1.7
+- ✓ previewRegistry migrated to Zustand store with source-based cleanup support — v1.7
+- ✓ CommandPalette reactively updates when extensions register/unregister commands — v1.7
+- ✓ Process tab visibility hook conditionally hides topology tab when extension disabled — v1.7
+- ✓ WelcomeView uses BladeRegistry lookup instead of direct InitRepoBlade import — v1.7
+- ✓ CC Zustand store explicitly reset when Conventional Commits extension disabled — v1.7
+- ✓ 3 new ExtensionAPI methods (onDidNavigate, events, settings) added to sandbox-api-surface.ts — v1.7
+- ✓ Worktree management as toggleable built-in extension via contributeSidebarPanel() — v1.7
+- ✓ Worktree sidebar panel with create/delete dialogs, command palette entries, badge support — v1.7
+- ✓ No hardcoded worktree JSX in RepositoryView — v1.7
+- ✓ Init Repo as toggleable built-in extension with early activation and coreOverride blade — v1.7
+- ✓ WelcomeView "Run git init" fallback when Init Repo extension disabled — v1.7
+- ✓ Topology graph as toggleable built-in extension with commit-list-fallback blade — v1.7
+- ✓ Registry-aware rootBladeForProcess with graceful fallback — v1.7
+- ✓ File watcher auto-refresh moved from App.tsx into Topology extension lifecycle — v1.7
+- ✓ Keyboard shortcut for topology contributed by extension, disappears when disabled — v1.7
+- ✓ Settings defaultTab falls back to "changes" when Topology disabled — v1.7
+- ✓ Extension Manager shows 13 independently toggleable built-in extensions — v1.7
+- ✓ _discovery.ts EXPECTED_TYPES split into CORE (9) and EXTENSION (12) lists — v1.7
+- ✓ Toggle tests for topology (9), worktrees (7), and init-repo (9) extensions — v1.7
+- ✓ Extension developer documentation updated with new built-in extension examples — v1.7
+
 ### Active
-
-## Current Milestone: v1.7.0 Extensions Everywhere
-
-**Goal:** Push FlowForge closer to a minimal core by extracting Topology, Worktrees, and Init Repo into toggleable built-in extensions, plus cleaning up extension-related tech debt.
-
-**Target features:**
-- Extract Topology Graph into toggleable built-in extension with simple commit list fallback
-- Extract Worktree Management into toggleable built-in extension
-- Extract Init Repo into toggleable built-in extension with basic git init fallback
-- Migrate commandRegistry and previewRegistry to Zustand stores (reactive like BladeRegistry)
-- CC Zustand store explicit reset on extension disable
-- Add 3 new ExtensionAPI methods to sandbox-api-surface.ts
 
 ### Deferred to v2+
 
@@ -239,15 +249,15 @@ Each layer adds value; each inner layer stands without the outer ones.
 
 ## Context
 
-**Current state:** Shipped v1.6.0 with ~49,470 LOC (38,325 TypeScript + 11,145 Rust).
-Tech stack: Tauri 2.x, React 19, XState v5, Zustand (3 domain stores + Zustand-based registries), React Query, Monaco Editor, Three.js, framer-motion, reqwest, keyring.
-All 264 requirements implemented across 42 phases (~217 plans) in seven milestones.
+**Current state:** Shipped v1.7.0 with ~41,705 LOC TypeScript + ~11,145 Rust.
+Tech stack: Tauri 2.x, React 19, XState v5, Zustand (3 domain stores + 4 Zustand-based registries: blades, commands, previews, sidebar panels), React Query, Monaco Editor, Three.js, framer-motion, reqwest, keyring.
+All 296 requirements implemented across 47 phases (~230 plans) in eight milestones.
 22+ blade types in co-located feature modules with XState FSM navigation.
-Extension platform with 4 built-in extensions (GitHub, Gitflow, Conventional Commits, Content Viewers) — all independently toggleable.
-4 new registries (ContextMenu, SidebarPanel, StatusBar, GitHookBus) + expanded ExtensionAPI.
+Extension platform with 13 independently toggleable built-in extensions (GitHub, Gitflow, Conventional Commits, Topology, Worktrees, Init Repo, Welcome Screen, and 6 content viewers).
+All registries (blades, commands, previews) are reactive Zustand stores with source-based cleanup.
 Sandbox infrastructure: trust levels, Worker prototype, API method classification.
-233 tests (Vitest + jsdom) covering stores, components, extensions, and machine logic.
-Documentation website live on GitHub Pages with extension developer guides.
+270 tests (Vitest + jsdom) covering stores, components, extensions, toggle lifecycle, and machine logic.
+Documentation website live on GitHub Pages with extension developer guides and READMEs for all 13 extensions.
 
 **Known tech debt:**
 - CC blade accessibility polish (aria-live debounce, amend mode styling, aria-labels)
@@ -256,9 +266,7 @@ Documentation website live on GitHub Pages with extension developer guides.
 - Pre-existing TS2440 in auto-generated bindings.ts
 - Phase 34 human runtime testing pending (6 OAuth flow items)
 - GFEX-06 needs human runtime verification (architecture correct)
-- 3 new ExtensionAPI methods (onDidNavigate, events, settings) not yet in sandbox surface
-- commandRegistry and previewRegistry still use plain Maps (not Zustand)
-- CC Zustand store not explicitly reset on extension disable (ghost data invisible)
+- 13 items pending human runtime verification from v1.7.0 (CommandPalette, toggle UIs, dialog flows)
 
 **v2 vision:** MCP server exposing repository state (branches, worktrees, commit history, diffs, Gitflow context) as structured resources and tools. Tiered autonomy model:
 - **Tier 1 (full autonomy):** Reversible, local, convention-clear operations
@@ -327,6 +335,12 @@ Documentation website live on GitHub Pages with extension developer guides.
 | BladeRegistry as Zustand store (v1.6) | Reactive subscriptions enable auto-restore when extensions re-enabled; backward-compat wrappers | ✓ Good — seamless UX |
 | Worker sandbox over iframe (v1.6) | Tauri has iframe limitations (Windows ES Module, Linux request confusion); Worker gives clean postMessage API | ✓ Good — prototype works |
 | Trust levels for extension API methods (v1.6) | REQUIRES_TRUST_METHODS constant + isSandboxSafe() guard; compile-time exhaustiveness check | ✓ Good — safe API surface |
+| Zustand for all registries (v1.7) | Completing migration started in v1.6; commands + previews now reactive like blades | ✓ Good — uniform reactive pattern |
+| CustomEvent for cross-component dialog triggers (v1.7) | Worktree sidebar panel needs to open dialogs in parent context; CustomEvent avoids prop drilling | ✓ Good — clean decoupling |
+| coreOverride for Init Repo + Topology (v1.7) | Extensions override core blade types without namespace changes; proven pattern from v1.6 | ✓ Good — seamless extraction |
+| Registry-aware rootBladeForProcess (v1.7) | Navigation machine checks BladeRegistry before returning topology; falls back to commit-list-fallback | ✓ Good — graceful degradation |
+| File watcher in extension lifecycle (v1.7) | Topology file watcher moves from App.tsx to extension onActivate/onDeactivate; no orphaned listeners | ✓ Good — proper cleanup |
+| CORE vs EXTENSION discovery split (v1.7) | _discovery.ts splits EXPECTED_TYPES into core (warn) and extension (debug) for clear architectural boundary | ✓ Good — enforces layering |
 
 ---
-*Last updated: 2026-02-11 after v1.7.0 milestone start*
+*Last updated: 2026-02-11 after v1.7.0 milestone*

@@ -230,3 +230,37 @@
 
 ---
 
+
+## v1.7.0 Extensions Everywhere (Shipped: 2026-02-11)
+
+**Delivered:** Pushed FlowForge closer to a minimal core by extracting Topology, Worktrees, and Init Repo into toggleable built-in extensions, migrating registries to reactive Zustand stores, and establishing core/extension boundaries with comprehensive toggle tests.
+
+**Phases completed:** 43-47 (5 phases, 13 plans, 32 requirements)
+
+**Key accomplishments:**
+
+- Migrated commandRegistry and previewRegistry to reactive Zustand stores with backward-compatible function exports, completing the Zustand registry migration started in v1.6 with BladeRegistry
+- Extracted Worktree management into a toggleable built-in extension with self-contained sidebar panel, CustomEvent dialog triggers, and badge support
+- Extracted Init Repo into a toggleable built-in extension with early activation for WelcomeView, coreOverride blade registration, and "Run git init" fallback banner
+- Extracted Topology graph into a toggleable built-in extension with commit-list-fallback blade, registry-aware process navigation, and file watcher moved to extension lifecycle
+- Split _discovery.ts EXPECTED_TYPES into CORE (9) and EXTENSION (12) lists, enforcing the core/extension architectural boundary
+- Added 25 toggle tests covering full enable/disable lifecycle for all 3 new extensions; grew platform from 4 to 13 independently toggleable built-in extensions
+
+**Stats:**
+
+- 558 files changed (+26,630/-1,374 lines)
+- ~41,705 lines TypeScript
+- 5 phases, 13 plans, 32 requirements
+- 1 day (2026-02-11)
+
+**Git range:** `feat(43-01)` → `docs(v1.7.0)`
+
+**Tech debt accepted:**
+- 13 items pending human runtime verification (CommandPalette updates, topology tab toggle, dialog flows, fallback UIs)
+- 3 pre-existing Monaco Editor test file failures (unrelated)
+- Pre-existing TS2440 in auto-generated bindings.ts
+
+**What's next:** v2.0 — MCP server, tiered autonomy model, or further polish
+
+---
+
