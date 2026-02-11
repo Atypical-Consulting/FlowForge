@@ -1,5 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSelector } from "@xstate/react";
 import { Suspense, useCallback, useEffect } from "react";
 import "./core/commands";
 import "./core/commands/toolbar-actions";
@@ -12,7 +13,9 @@ import { ContextMenuPortal } from "./core/components/ui/ContextMenu";
 import { StatusBar } from "./core/components/ui/StatusBar";
 import { ToastContainer } from "./core/components/ui/ToastContainer";
 import { useKeyboardShortcuts } from "./core/hooks/useKeyboardShortcuts";
-import { getNavigationActor, NavigationProvider } from "./core/machines/navigation/context";
+import { BladeRenderer } from "./core/blades/_shared/BladeRenderer";
+import { getNavigationActor, NavigationProvider, useNavigationActorRef } from "./core/machines/navigation/context";
+import { selectBladeStack } from "./core/machines/navigation/selectors";
 import { usePreferencesStore as useBranchMetadataStore } from "./core/stores/domain/preferences";
 import { usePreferencesStore as useNavigationStore } from "./core/stores/domain/preferences";
 import { useGitOpsStore } from "./core/stores/domain/git-ops";
@@ -40,6 +43,9 @@ import { onActivate as welcomeActivate, onDeactivate as welcomeDeactivate } from
 
 function WelcomeFallback() {
   const { openRepository } = useGitOpsStore();
+  const actorRef = useNavigationActorRef();
+  const bladeStack = useSelector(actorRef, selectBladeStack);
+  const pushedBlade = bladeStack.length > 1 ? bladeStack[bladeStack.length - 1] : null;
 
   const openDialog = useCallback(async () => {
     const { open } = await import("@tauri-apps/plugin-dialog");
@@ -58,6 +64,18 @@ function WelcomeFallback() {
     document.addEventListener("open-repository-dialog", handler);
     return () => document.removeEventListener("open-repository-dialog", handler);
   }, [openDialog]);
+
+  // Render blades pushed via command palette / toolbar (e.g. Extension Manager, Settings)
+  if (pushedBlade) {
+    return (
+      <div className="h-[calc(100vh-3.5rem)] bg-ctp-base">
+        <BladeRenderer
+          blade={pushedBlade}
+          goBack={() => actorRef.send({ type: "POP_BLADE" })}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-3.5rem)] gap-4 bg-ctp-base">
