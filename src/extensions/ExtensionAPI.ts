@@ -29,6 +29,7 @@ import {
   type WillHandler,
 } from "../lib/gitHookBus";
 import { ExtensionSettings } from "./extensionSettings";
+import { extensionEventBus, type EventHandler } from "./extensionEventBus";
 
 // --- Config types for extension authors ---
 
@@ -290,10 +291,31 @@ export class ExtensionAPI {
   }
 
   /**
+   * Pub/sub event bus for inter-extension communication.
+   *
+   * - `emit(event, payload?)` — broadcasts as `ext:{extensionId}:{event}`
+   * - `on(event, handler)` — subscribes to any fully-qualified event name;
+   *   returns an unsubscribe function. Auto-disposed on cleanup.
+   * @sandboxSafety sandbox-safe - Handlers receive/send serializable payloads.
+   */
+  get events() {
+    return {
+      emit: (event: string, payload?: unknown) => {
+        extensionEventBus.emit(`ext:${this.extensionId}:${event}`, payload);
+      },
+      on: (event: string, handler: EventHandler) => {
+        const unsub = extensionEventBus.on(event, handler, this.extensionId);
+        this.disposables.push({ dispose: unsub });
+        return unsub;
+      },
+    };
+  }
+
+  /**
    * Remove ALL registrations made through this API instance.
    * Called during deactivation or on activation failure (partial cleanup).
    *
-   * Cleanup order: existing registries -> new UI registries -> git hooks -> disposables (reverse).
+   * Cleanup order: existing registries -> new UI registries -> event bus -> git hooks -> disposables (reverse).
    * Each disposable is wrapped in try/catch to ensure one failure doesn't prevent others from running.
    */
   cleanup(): void {
@@ -319,7 +341,10 @@ export class ExtensionAPI {
       .getState()
       .unregisterBySource(`ext:${this.extensionId}`);
 
-    // 3. Git hooks
+    // 3. Extension event bus
+    extensionEventBus.removeAllForSource(this.extensionId);
+
+    // 4. Git hooks
     gitHookBus.removeBySource(`ext:${this.extensionId}`);
     for (const unsub of this.gitHookUnsubscribes) {
       try {
@@ -332,7 +357,7 @@ export class ExtensionAPI {
       }
     }
 
-    // 4. Disposables in reverse order (LIFO)
+    // 5. Disposables in reverse order (LIFO)
     for (let i = this.disposables.length - 1; i >= 0; i--) {
       try {
         const d = this.disposables[i];
@@ -349,7 +374,7 @@ export class ExtensionAPI {
       }
     }
 
-    // 5. Reset all tracking arrays
+    // 6. Reset all tracking arrays
     this.registeredBlades = [];
     this.registeredCommands = [];
     this.registeredToolbarActions = [];
