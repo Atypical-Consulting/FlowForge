@@ -8,7 +8,7 @@
 - **v1.3.0 Blades Blades Blades** - Phases 20-24 (shipped 2026-02-08) -> [archive](milestones/v1.3.0-ROADMAP.md)
 - **v1.4.0 Architecture & Navigation Overhaul** - Phases 25-30 (shipped 2026-02-09) -> [archive](milestones/v1.4.0-ROADMAP.md)
 - **v1.5.0 GitHub Extension** - Phases 31-36 (shipped 2026-02-10) -> [archive](milestones/v1.5.0-ROADMAP.md)
-- **v1.6.0 Refactor to Extensions** - Phases 37-41 (in progress)
+- **v1.6.0 Refactor to Extensions** - Phases 37-42 (in progress)
 
 ## Phases
 
@@ -16,7 +16,8 @@
 - [x] **Phase 38: Content Viewer Extraction** - Markdown, code, and 3D viewers extracted to built-in extension
 - [x] **Phase 39: Conventional Commits Extraction** - CC composer, validation, and changelog extracted to built-in extension
 - [x] **Phase 40: Gitflow Extraction** - Gitflow sidebar, cheatsheet, and branch coloring extracted to built-in extension
-- [ ] **Phase 41: Sandbox & Polish** - Trust flags, Worker prototype, deprecation cleanup, tests, docs, version bump
+- [x] **Phase 41: Sandbox & Polish** - Trust flags, Worker prototype, deprecation cleanup, tests, docs, version bump
+- [ ] **Phase 42: Audit Tech Debt Cleanup** - BladeRenderer registry subscription, SandboxedExtensionAPI cleanup, GFEX-03 doc fix
 
 ## Phase Details
 
@@ -101,11 +102,22 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 41-01-PLAN.md -- Trust level flag in manifest + API method sandbox classification
-- [ ] 41-02-PLAN.md -- Remove 16 deprecated store re-export shims, update all consumers
-- [ ] 41-03-PLAN.md -- Worker-based sandbox prototype with postMessage bridge
-- [ ] 41-04-PLAN.md -- Extension lifecycle tests (GitHub extension + ExtensionHost)
-- [ ] 41-05-PLAN.md -- Extension developer documentation + version bump to v1.6.0
+- [x] 41-01-PLAN.md -- Trust level flag in manifest + API method sandbox classification
+- [x] 41-02-PLAN.md -- Remove 16 deprecated store re-export shims, update all consumers
+- [x] 41-03-PLAN.md -- Worker-based sandbox prototype with postMessage bridge
+- [x] 41-04-PLAN.md -- Extension lifecycle tests (GitHub extension + ExtensionHost)
+- [x] 41-05-PLAN.md -- Extension developer documentation + version bump to v1.6.0
+
+#### Phase 42: Audit Tech Debt Cleanup
+**Goal**: Close tech debt items identified by v1.6.0 milestone audit — BladeRenderer registry subscription, SandboxedExtensionAPI cleanup, and requirement doc alignment
+**Depends on**: Phase 41
+**Requirements**: None (tech debt closure from audit)
+**Gap Closure:** Closes gaps from v1.6.0-MILESTONE-AUDIT.md
+**Success Criteria** (what must be TRUE):
+  1. BladeRenderer subscribes to blade registry changes so already-open blades auto-restore when a disabled extension is re-enabled (no manual close/reopen needed)
+  2. SandboxedExtensionAPI uses the REQUIRES_TRUST_METHODS constant from sandbox-api-surface.ts instead of hardcoding method names
+  3. GFEX-03 requirement text in REQUIREMENTS.md reflects ADR-2 decision (branch classification remains in core)
+**Plans**: TBD
 
 ## Progress
 
@@ -188,7 +200,8 @@ Plans:
 | 38. Content Viewer Extraction | 2/2 | ✓ Complete | 2026-02-10 |
 | 39. Conventional Commits Extraction | 3/3 | ✓ Complete | 2026-02-10 |
 | 40. Gitflow Extraction | 2/2 | ✓ Complete | 2026-02-10 |
-| 41. Sandbox & Polish | 0/5 | Not started | - |
+| 41. Sandbox & Polish | 5/5 | ✓ Complete | 2026-02-11 |
+| 42. Audit Tech Debt Cleanup | 0/1 | Not started | - |
 
 ---
-*Last updated: 2026-02-10 after Phase 40 completion*
+*Last updated: 2026-02-11 after gap closure phase creation*

@@ -35,7 +35,7 @@ Requirements for v1.6.0 Refactor to Extensions. Each maps to roadmap phases.
 
 - [ ] **GFEX-01**: Gitflow sidebar panel (branch creation, merge flows) runs as a built-in Gitflow extension
 - [ ] **GFEX-02**: Gitflow cheatsheet blade provided by Gitflow extension
-- [ ] **GFEX-03**: Branch classification and coloring for Gitflow branches provided by Gitflow extension
+- [ ] **GFEX-03**: Branch classification and coloring remains in core (10+ consumers across topology graph and branch list; classification is core Git UX, not Gitflow-specific — per ADR-2)
 - [ ] **GFEX-04**: Pre-merge review checklist provided by Gitflow extension
 - [ ] **GFEX-05**: User can disable Gitflow extension and use FlowForge as a plain Git client
 - [ ] **GFEX-06**: Gitflow extension state always defers to Rust backend (no frontend state caching)
@@ -110,7 +110,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CCEX-05 | Phase 39 | Pending |
 | GFEX-01 | Phase 40 | Pending |
 | GFEX-02 | Phase 40 | Pending |
-| GFEX-03 | Phase 40 | Pending |
+| GFEX-03 | Phase 40 | Satisfied (ADR-2) |
 | GFEX-04 | Phase 40 | Pending |
 | GFEX-05 | Phase 40 | Pending |
 | GFEX-06 | Phase 40 | Pending |
