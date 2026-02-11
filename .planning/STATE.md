@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-11)
 Phase: 46 (fourth of 5 in v1.7.0) — Topology Extraction
 Plan: —
 Status: Ready to plan
-Last activity: 2026-02-11 - Completed quick task 39: full XState integration - navigation machine + extension lifecycle state machines from quick-38 research
+Last activity: 2026-02-11 - Completed quick task 40: split content viewers extension to 3 extensions
 
 Progress: [██████░░░░] 60%
 
@@ -76,6 +76,7 @@ None active.
 | 37 | add common actions into app toolbar (File, View, Repository, Branch menus) mapped to extensions | 2026-02-11 | 9ab8014 | [37-add-common-actions-into-app-toolbar-file](./quick/37-add-common-actions-into-app-toolbar-file/) |
 | 38 | explore XState architecture from UX, technical architecture, and expert dev angles with focus on extensibility | 2026-02-11 | b9f910e | [38-explore-xstate-architecture-from-ux-tech](./quick/38-explore-xstate-architecture-from-ux-tech/) |
 | 39 | full XState integration: MachineRegistry + merge/gitflow machines | 2026-02-11 | 400a749 | [39-full-xstate-integration-navigation-machi](./quick/39-full-xstate-integration-navigation-machi/) |
+| 40 | split content viewers extension to 3 extensions | 2026-02-11 | a2c5a51 | [40-split-content-viewers-extension-to-3-ext](./quick/40-split-content-viewers-extension-to-3-ext/) |
 
 ### Pending Todos
 
