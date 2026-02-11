@@ -101,7 +101,7 @@
 **Milestone Goal:** Push FlowForge closer to a minimal core by extracting Topology, Worktrees, and Init Repo into toggleable built-in extensions, plus cleaning up extension-related tech debt (registry migration, sandbox surface, CC store reset).
 
 - [x] **Phase 43: Infrastructure Prep** - Registry migration to Zustand + tech debt fixes enabling clean extractions -- completed 2026-02-11
-- [ ] **Phase 44: Worktree Extraction** - Worktree management as toggleable built-in extension via sidebar panel
+- [ ] **Phase 44: Worktree Extraction** - Worktree management as toggleable built-in extension via sidebar panel (2 plans)
 - [ ] **Phase 45: Init Repo Extraction** - Init Repo as toggleable built-in extension with dual-context activation
 - [ ] **Phase 46: Topology Extraction** - Topology graph as toggleable built-in extension with commit list fallback
 - [ ] **Phase 47: Cleanup & Verification** - Remove scaffolding, split discovery types, tests, documentation
