@@ -14,6 +14,10 @@ import { toast } from "../../stores/toast";
 import { openBlade } from "../../lib/bladeOpener";
 import type { AuthStep } from "./types";
 
+// Deduplication guard: prevents duplicate "Linked to" toast
+// (React StrictMode double-fires effects, causing two detectRemotes calls)
+let lastLinkedToastRepo: string | null = null;
+
 // Module-level poll timeout ID (NOT in Zustand state -- non-serializable)
 let pollTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
@@ -392,10 +396,14 @@ export const useGitHubStore = create<GitHubState>()(
             "github/remotes-detected",
           );
 
-          // Show info toast if remotes found and authenticated
+          // Show info toast if remotes found and authenticated (deduplicate)
           if (result.data.length > 0 && get().isAuthenticated) {
             const first = result.data[0];
-            toast.info(`Linked to github.com/${first.owner}/${first.repo}`);
+            const key = `${first.owner}/${first.repo}`;
+            if (lastLinkedToastRepo !== key) {
+              lastLinkedToastRepo = key;
+              toast.info(`Linked to github.com/${key}`);
+            }
           }
         } catch {
           // Silent fail
@@ -403,6 +411,7 @@ export const useGitHubStore = create<GitHubState>()(
       },
 
       resetRemotes: () => {
+        lastLinkedToastRepo = null;
         set({ detectedRemotes: [], selectedRemoteIndex: 0 }, false, "github/reset-remotes");
       },
 
