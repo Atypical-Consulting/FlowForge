@@ -4,6 +4,7 @@ import { useBulkSelect } from "../../hooks/useBulkSelect";
 import { useBranchScopes } from "../../hooks/useBranchScopes";
 import { useMergeWorkflow } from "../../hooks/useMergeWorkflow";
 import { bulkDeleteBranches, getProtectedBranches } from "../../lib/bulkBranchOps";
+import { gitHookBus } from "../../lib/gitHookBus";
 import { usePreferencesStore as useBranchMetadataStore } from "../../stores/domain/preferences";
 import { useGitOpsStore as useBranchStore } from "../../stores/domain/git-ops";
 import { useGitOpsStore as useGitflowStore } from "../../stores/domain/git-ops";
@@ -58,6 +59,22 @@ export function BranchList({
     loadBranches();
     loadAllBranches(true);
     useBranchMetadataStore.getState().initMetadata();
+  }, [loadBranches, loadAllBranches]);
+
+  // Refresh branch list after push/fetch/pull operations
+  useEffect(() => {
+    const refresh = () => {
+      loadBranches();
+      loadAllBranches(true);
+    };
+    const unsubPush = gitHookBus.onDid("push", refresh, "branch-list");
+    const unsubFetch = gitHookBus.onDid("fetch", refresh, "branch-list");
+    const unsubPull = gitHookBus.onDid("pull", refresh, "branch-list");
+    return () => {
+      unsubPush();
+      unsubFetch();
+      unsubPull();
+    };
   }, [loadBranches, loadAllBranches]);
 
   const handleCheckout = async (branchName: string) => {

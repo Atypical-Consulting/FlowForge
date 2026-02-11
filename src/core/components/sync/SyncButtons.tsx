@@ -4,6 +4,7 @@ import { ArrowDown, ArrowUp, CloudDownload, Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { type SyncProgress, commands } from "../../../bindings";
 import { formatShortcut } from "../../hooks/useKeyboardShortcuts";
+import { gitHookBus } from "../../lib/gitHookBus";
 import { toast } from "../../stores/toast";
 import { ShortcutTooltip } from "../ui/ShortcutTooltip";
 import { Button } from "../ui/button";
@@ -41,6 +42,7 @@ export function SyncButtons() {
     onSuccess: () => {
       toast.success(`Pushed to ${defaultRemote}`);
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
+      gitHookBus.emitDid("push");
     },
     onError: (error) => {
       toast.error(`Push failed: ${String(error)}`, {
@@ -60,6 +62,7 @@ export function SyncButtons() {
       queryClient.invalidateQueries({ queryKey: ["stagingStatus"] });
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
       queryClient.invalidateQueries({ queryKey: ["repositoryStatus"] });
+      gitHookBus.emitDid("pull");
     },
     onError: (error) => {
       toast.error(`Pull failed: ${String(error)}`, {
@@ -76,6 +79,7 @@ export function SyncButtons() {
     },
     onSuccess: () => {
       toast.success(`Fetched from ${defaultRemote}`);
+      gitHookBus.emitDid("fetch");
     },
     onError: (error) => {
       toast.error(`Fetch failed: ${String(error)}`, {
