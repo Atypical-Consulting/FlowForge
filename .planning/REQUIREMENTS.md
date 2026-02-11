@@ -90,44 +90,44 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | — | Pending |
-| INFRA-02 | — | Pending |
-| INFRA-03 | — | Pending |
-| INFRA-04 | — | Pending |
-| INFRA-05 | — | Pending |
-| INFRA-06 | — | Pending |
-| INFRA-07 | — | Pending |
-| WKTR-01 | — | Pending |
-| WKTR-02 | — | Pending |
-| WKTR-03 | — | Pending |
-| WKTR-04 | — | Pending |
-| WKTR-05 | — | Pending |
-| WKTR-06 | — | Pending |
-| INIT-01 | — | Pending |
-| INIT-02 | — | Pending |
-| INIT-03 | — | Pending |
-| INIT-04 | — | Pending |
-| INIT-05 | — | Pending |
-| INIT-06 | — | Pending |
-| TOPO-01 | — | Pending |
-| TOPO-02 | — | Pending |
-| TOPO-03 | — | Pending |
-| TOPO-04 | — | Pending |
-| TOPO-05 | — | Pending |
-| TOPO-06 | — | Pending |
-| TOPO-07 | — | Pending |
-| TOPO-08 | — | Pending |
-| TOPO-09 | — | Pending |
-| CLEAN-01 | — | Pending |
-| CLEAN-02 | — | Pending |
-| CLEAN-03 | — | Pending |
-| CLEAN-04 | — | Pending |
+| INFRA-01 | Phase 43 | Pending |
+| INFRA-02 | Phase 43 | Pending |
+| INFRA-03 | Phase 43 | Pending |
+| INFRA-04 | Phase 43 | Pending |
+| INFRA-05 | Phase 43 | Pending |
+| INFRA-06 | Phase 43 | Pending |
+| INFRA-07 | Phase 43 | Pending |
+| WKTR-01 | Phase 44 | Pending |
+| WKTR-02 | Phase 44 | Pending |
+| WKTR-03 | Phase 44 | Pending |
+| WKTR-04 | Phase 44 | Pending |
+| WKTR-05 | Phase 44 | Pending |
+| WKTR-06 | Phase 44 | Pending |
+| INIT-01 | Phase 45 | Pending |
+| INIT-02 | Phase 45 | Pending |
+| INIT-03 | Phase 45 | Pending |
+| INIT-04 | Phase 45 | Pending |
+| INIT-05 | Phase 45 | Pending |
+| INIT-06 | Phase 45 | Pending |
+| TOPO-01 | Phase 46 | Pending |
+| TOPO-02 | Phase 46 | Pending |
+| TOPO-03 | Phase 46 | Pending |
+| TOPO-04 | Phase 46 | Pending |
+| TOPO-05 | Phase 46 | Pending |
+| TOPO-06 | Phase 46 | Pending |
+| TOPO-07 | Phase 46 | Pending |
+| TOPO-08 | Phase 46 | Pending |
+| TOPO-09 | Phase 46 | Pending |
+| CLEAN-01 | Phase 47 | Pending |
+| CLEAN-02 | Phase 47 | Pending |
+| CLEAN-03 | Phase 47 | Pending |
+| CLEAN-04 | Phase 47 | Pending |
 
 **Coverage:**
-- v1.7 requirements: 28 total
-- Mapped to phases: 0
-- Unmapped: 28
+- v1.7 requirements: 32 total
+- Mapped to phases: 32
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-11*
-*Last updated: 2026-02-11 after initial definition*
+*Last updated: 2026-02-11 after roadmap creation (all 32 requirements mapped)*

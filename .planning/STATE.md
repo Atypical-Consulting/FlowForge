@@ -5,14 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** v1.7.0 Extensions Everywhere
+**Current focus:** v1.7.0 Extensions Everywhere -- Phase 43: Infrastructure Prep
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 43 (first of 5 in v1.7.0) — Infrastructure Prep
 Plan: —
-Status: Defining requirements
-Last activity: 2026-02-11 — Milestone v1.7.0 started
+Status: Ready to plan
+Last activity: 2026-02-11 — Roadmap created for v1.7.0 (5 phases, 32 requirements)
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Milestone History
 
@@ -32,9 +34,9 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 42 complete
+- Total phases: 42 complete, 5 planned
 - Total plans: ~217 complete
-- Total requirements validated: 264
+- Total requirements validated: 264 (32 new in v1.7.0)
 - Codebase: ~49,470 LOC (38,325 TypeScript + 11,145 Rust)
 - Tests: 233 (Vitest + jsdom)
 
@@ -43,15 +45,11 @@ See `.planning/MILESTONES.md` for full history.
 ### Known Tech Debt
 
 - CC blade accessibility polish (aria-live debounce, amend mode styling, aria-labels)
-- Maximize button in CommitForm missing aria-label (identified by UX review)
 - Init Repo blade UX refinements (focus behavior, listbox pattern, aria-describedby)
 - 3D viewer reliability on some hardware (diagnostic logging only)
 - Pre-existing TS2440 in auto-generated bindings.ts
 - Phase 34 human runtime testing pending (6 OAuth flow items)
 - GFEX-06 needs human runtime verification (architecture correct)
-- 3 new ExtensionAPI methods (onDidNavigate, events, settings) not yet in sandbox-api-surface.ts
-- commandRegistry and previewRegistry still use plain Maps (not Zustand)
-- CC Zustand store not explicitly reset on extension disable (ghost data invisible)
 
 ### Key Decisions
 
@@ -59,7 +57,8 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 
 ### Research Flags
 
-None active.
+- Phase 43: Verify no circular imports before commandRegistry migration (madge --circular)
+- Phase 46: Navigation machine fallback pattern needs careful design
 
 ### Blockers/Concerns
 
@@ -80,9 +79,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Defining v1.7.0 requirements
+Stopped at: Roadmap created for v1.7.0, ready to plan Phase 43
 Resume file: None
 
 ---
 *State updated: 2026-02-11*
-*v1.7.0 milestone started. Defining requirements.*
+*v1.7.0 roadmap created. Next: plan Phase 43 (Infrastructure Prep)*
