@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** v1.7.0 Extensions Everywhere -- Phase 46: Topology Extraction
+**Current focus:** v1.7.0 Extensions Everywhere -- Phase 47: Cleanup & Verification
 
 ## Current Position
 
-Phase: 46 (fourth of 5 in v1.7.0) — Topology Extraction
+Phase: 47 (fifth of 5 in v1.7.0) — Cleanup & Verification
 Plan: —
 Status: Ready to plan
-Last activity: 2026-02-11 - Completed quick task 48: refresh branches panel after push from app menu
+Last activity: 2026-02-11 - Completed Phase 46: Topology Extraction (3/3 plans)
 
-Progress: [██████░░░░] 60%
+Progress: [████████░░] 80%
 
 ## Milestone History
 
@@ -34,9 +34,9 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 45 complete, 2 planned
+- Total phases: 46 complete, 1 planned
 - Total plans: ~224 complete
-- Total requirements validated: 283 (6 new in phase 45)
+- Total requirements validated: 292 (9 new in phase 46)
 - Codebase: ~49,470 LOC (38,325 TypeScript + 11,145 Rust)
 - Tests: 233 (Vitest + jsdom)
 
@@ -60,7 +60,7 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 - Phase 43: ✓ Registry migration complete, no circular imports introduced
 - Phase 44: ✓ Worktree extraction clean, CustomEvent pattern for cross-component dialog triggers
 - Phase 45: ✓ Init Repo extraction clean, coreOverride pattern for WelcomeView compatibility, fallback banner pattern
-- Phase 46: Navigation machine fallback pattern needs careful design
+- Phase 46: ✓ Topology extraction clean, registry-aware rootBladeForProcess fallback, file watcher in extension lifecycle
 
 ### Blockers/Concerns
 
@@ -93,9 +93,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Phase 45 complete, ready to plan Phase 46
+Stopped at: Phase 46 complete, ready to plan Phase 47
 Resume file: None
 
 ---
 *State updated: 2026-02-11*
-*Phase 45 complete. Next: plan Phase 46 (Topology Extraction)*
+*Phase 46 complete. Next: plan Phase 47 (Cleanup & Verification)*

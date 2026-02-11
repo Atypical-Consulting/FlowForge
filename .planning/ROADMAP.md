@@ -103,7 +103,7 @@
 - [x] **Phase 43: Infrastructure Prep** - Registry migration to Zustand + tech debt fixes enabling clean extractions -- completed 2026-02-11
 - [x] **Phase 44: Worktree Extraction** - Worktree management as toggleable built-in extension via sidebar panel (2 plans) -- completed 2026-02-11
 - [x] **Phase 45: Init Repo Extraction** - Init Repo as toggleable built-in extension with dual-context activation -- completed 2026-02-11
-- [ ] **Phase 46: Topology Extraction** - Topology graph as toggleable built-in extension with commit list fallback
+- [x] **Phase 46: Topology Extraction** - Topology graph as toggleable built-in extension with commit list fallback -- completed 2026-02-11
 - [ ] **Phase 47: Cleanup & Verification** - Remove scaffolding, split discovery types, tests, documentation
 
 ## Phase Details
@@ -164,9 +164,9 @@ Plans:
   5. Extension Manager shows 7 independently toggleable built-in extensions (GitHub, Gitflow, CC, Content Viewers, Worktrees, Init Repo, Topology)
 **Plans:** 3 plans
 Plans:
-- [ ] 46-01-PLAN.md -- Foundation: extract parseConventionalType, create commit-list-fallback blade, make rootBladeForProcess registry-aware
-- [ ] 46-02-PLAN.md -- Create topology extension, move components, implement entry point with blade/command/file-watcher
-- [ ] 46-03-PLAN.md -- Wire extension in App.tsx, remove old core references, update settings/shortcuts/categories
+- [x] 46-01-PLAN.md -- Foundation: extract parseConventionalType, create commit-list-fallback blade, make rootBladeForProcess registry-aware
+- [x] 46-02-PLAN.md -- Create topology extension, move components, implement entry point with blade/command/file-watcher
+- [x] 46-03-PLAN.md -- Wire extension in App.tsx, remove old core references, update settings/shortcuts/categories
 
 ### Phase 47: Cleanup & Verification
 **Goal**: All extraction scaffolding is removed, discovery types are properly split, and every new extension has toggle tests and documentation
@@ -188,8 +188,8 @@ Plans:
 | 43. Infrastructure Prep | v1.7.0 | 3/3 | ✓ Complete | 2026-02-11 |
 | 44. Worktree Extraction | v1.7.0 | 2/2 | ✓ Complete | 2026-02-11 |
 | 45. Init Repo Extraction | v1.7.0 | 2/2 | ✓ Complete | 2026-02-11 |
-| 46. Topology Extraction | v1.7.0 | 0/3 | Planned | - |
+| 46. Topology Extraction | v1.7.0 | 3/3 | ✓ Complete | 2026-02-11 |
 | 47. Cleanup & Verification | v1.7.0 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-11 -- Phase 45 complete*
+*Last updated: 2026-02-11 -- Phase 46 complete*
