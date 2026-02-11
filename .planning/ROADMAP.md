@@ -102,7 +102,7 @@
 
 - [x] **Phase 43: Infrastructure Prep** - Registry migration to Zustand + tech debt fixes enabling clean extractions -- completed 2026-02-11
 - [x] **Phase 44: Worktree Extraction** - Worktree management as toggleable built-in extension via sidebar panel (2 plans) -- completed 2026-02-11
-- [ ] **Phase 45: Init Repo Extraction** - Init Repo as toggleable built-in extension with dual-context activation
+- [x] **Phase 45: Init Repo Extraction** - Init Repo as toggleable built-in extension with dual-context activation -- completed 2026-02-11
 - [ ] **Phase 46: Topology Extraction** - Topology graph as toggleable built-in extension with commit list fallback
 - [ ] **Phase 47: Cleanup & Verification** - Remove scaffolding, split discovery types, tests, documentation
 
@@ -149,8 +149,8 @@ Plans:
   4. Init Repo blade store lives in the extension directory, not in the old core blade location
 **Plans:** 2 plans
 Plans:
-- [ ] 45-01-PLAN.md -- Create init-repo extension (entry point, store, components), register in App.tsx, delete old directory
-- [ ] 45-02-PLAN.md -- WelcomeView fallback UI when extension disabled, mid-session disable recovery
+- [x] 45-01-PLAN.md -- Create init-repo extension (entry point, store, components), register in App.tsx, delete old directory
+- [x] 45-02-PLAN.md -- WelcomeView fallback UI when extension disabled, mid-session disable recovery
 
 ### Phase 46: Topology Extraction
 **Goal**: Topology graph is a toggleable built-in extension, and disabling it degrades gracefully to a simple commit list with process tab hidden
@@ -183,9 +183,9 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 43. Infrastructure Prep | v1.7.0 | 3/3 | ✓ Complete | 2026-02-11 |
 | 44. Worktree Extraction | v1.7.0 | 2/2 | ✓ Complete | 2026-02-11 |
-| 45. Init Repo Extraction | v1.7.0 | 0/2 | Planned | - |
+| 45. Init Repo Extraction | v1.7.0 | 2/2 | ✓ Complete | 2026-02-11 |
 | 46. Topology Extraction | v1.7.0 | 0/TBD | Not started | - |
 | 47. Cleanup & Verification | v1.7.0 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-11 -- Phase 44 complete*
+*Last updated: 2026-02-11 -- Phase 45 complete*

@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** v1.7.0 Extensions Everywhere -- Phase 45: Init Repo Extraction
+**Current focus:** v1.7.0 Extensions Everywhere -- Phase 46: Topology Extraction
 
 ## Current Position
 
-Phase: 45 (third of 5 in v1.7.0) — Init Repo Extraction
+Phase: 46 (fourth of 5 in v1.7.0) — Topology Extraction
 Plan: —
 Status: Ready to plan
-Last activity: 2026-02-11 — Phase 44 complete (2/2 plans, verified 6/6 must-haves)
+Last activity: 2026-02-11 — Phase 45 complete (2/2 plans, verified 10/10 must-haves)
 
-Progress: [████░░░░░░] 40%
+Progress: [██████░░░░] 60%
 
 ## Milestone History
 
@@ -34,9 +34,9 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 44 complete, 3 planned
-- Total plans: ~222 complete
-- Total requirements validated: 277 (6 new in phase 44)
+- Total phases: 45 complete, 2 planned
+- Total plans: ~224 complete
+- Total requirements validated: 283 (6 new in phase 45)
 - Codebase: ~49,470 LOC (38,325 TypeScript + 11,145 Rust)
 - Tests: 233 (Vitest + jsdom)
 
@@ -59,6 +59,7 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 
 - Phase 43: ✓ Registry migration complete, no circular imports introduced
 - Phase 44: ✓ Worktree extraction clean, CustomEvent pattern for cross-component dialog triggers
+- Phase 45: ✓ Init Repo extraction clean, coreOverride pattern for WelcomeView compatibility, fallback banner pattern
 - Phase 46: Navigation machine fallback pattern needs careful design
 
 ### Blockers/Concerns
@@ -80,9 +81,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Phase 44 complete, ready to plan Phase 45
+Stopped at: Phase 45 complete, ready to plan Phase 46
 Resume file: None
 
 ---
 *State updated: 2026-02-11*
-*Phase 44 complete. Next: plan Phase 45 (Init Repo Extraction)*
+*Phase 45 complete. Next: plan Phase 46 (Topology Extraction)*
