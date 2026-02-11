@@ -567,6 +567,13 @@ For each improvement, ensure:
 
 ---
 
+## Related Documents
+
+- [UX-UI-USER-STORIES.md](./UX-UI-USER-STORIES.md) — Detailed user stories for all remaining features
+- [UX-DESIGN-PRINCIPLES-AUDIT.md](./UX-DESIGN-PRINCIPLES-AUDIT.md) — 7 UX principles (2026) mapped to FlowForge, with gap analysis and 6 new feature ideas
+
+---
+
 *Document created: February 2026*
 *Last updated: February 2026*
 *Version: 2.0 — Updated with implementation status*

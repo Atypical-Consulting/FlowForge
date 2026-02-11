@@ -118,7 +118,11 @@
   3. Topology tab in process navigation hides when no topology blade is available in the registry
   4. WelcomeView renders the Init Repo experience from BladeRegistry lookup, not a hardcoded import
   5. CC store state clears when Conventional Commits extension is disabled (no ghost data on re-enable)
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 43-01-PLAN.md -- Registry migrations (commandRegistry + previewRegistry to Zustand stores)
+- [ ] 43-02-PLAN.md -- Reactive CommandPalette, process tab visibility, WelcomeView registry lookup
+- [ ] 43-03-PLAN.md -- CC store reset on extension disable + sandbox API expansion
 
 ### Phase 44: Worktree Extraction
 **Goal**: Worktree management is a self-contained toggleable built-in extension that users can enable/disable from Extension Manager
@@ -171,7 +175,7 @@
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 43. Infrastructure Prep | v1.7.0 | 0/TBD | Not started | - |
+| 43. Infrastructure Prep | v1.7.0 | 0/3 | Planned | - |
 | 44. Worktree Extraction | v1.7.0 | 0/TBD | Not started | - |
 | 45. Init Repo Extraction | v1.7.0 | 0/TBD | Not started | - |
 | 46. Topology Extraction | v1.7.0 | 0/TBD | Not started | - |
