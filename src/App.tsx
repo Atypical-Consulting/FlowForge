@@ -28,6 +28,7 @@ import { onActivate as ccActivate, onDeactivate as ccDeactivate } from "./extens
 import { onActivate as gitflowActivate, onDeactivate as gitflowDeactivate } from "./extensions/gitflow";
 import { onActivate as worktreesActivate, onDeactivate as worktreesDeactivate } from "./extensions/worktrees";
 import { onActivate as githubActivate, onDeactivate as githubDeactivate } from "./extensions/github";
+import { onActivate as initRepoActivate, onDeactivate as initRepoDeactivate } from "./extensions/init-repo";
 
 function App() {
   const queryClient = useQueryClient();
@@ -91,6 +92,14 @@ function App() {
       version: "1.0.0",
       activate: worktreesActivate,
       deactivate: worktreesDeactivate,
+    });
+
+    registerBuiltIn({
+      id: "init-repo",
+      name: "Init Repository",
+      version: "1.0.0",
+      activate: initRepoActivate,
+      deactivate: initRepoDeactivate,
     });
 
     registerBuiltIn({
