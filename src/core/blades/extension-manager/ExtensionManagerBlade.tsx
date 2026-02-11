@@ -1,5 +1,15 @@
 import { useState, useMemo } from "react";
-import { Plus, Search, Puzzle } from "lucide-react";
+import {
+  Eye,
+  FolderOpen,
+  GitBranch,
+  Globe,
+  Plus,
+  Puzzle,
+  Search,
+  Workflow,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useExtensionHost } from "../../../extensions/ExtensionHost";
 import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
 import { commands } from "../../../bindings";
@@ -7,6 +17,19 @@ import { toast } from "../../stores/toast";
 import { Button } from "../../components/ui/button";
 import { ExtensionCard } from "./components/ExtensionCard";
 import { InstallExtensionDialog } from "./components/InstallExtensionDialog";
+import {
+  groupExtensionsByCategory,
+  getCategoryMeta,
+  type ExtensionCategory,
+} from "../../../extensions/extensionCategories";
+
+const CATEGORY_ICONS: Record<ExtensionCategory, LucideIcon> = {
+  "source-control": GitBranch,
+  viewers: Eye,
+  integration: Globe,
+  workflow: Workflow,
+  setup: FolderOpen,
+};
 
 export function ExtensionManagerBlade() {
   const [installDialogOpen, setInstallDialogOpen] = useState(false);
@@ -17,8 +40,8 @@ export function ExtensionManagerBlade() {
 
   const extensionsDir = repoPath ? repoPath + "/.flowforge/extensions" : "";
 
-  // Convert Map to sorted array, filtered by search
-  const { builtInExts, installedExts } = useMemo(() => {
+  // Convert Map to sorted array, filtered by search, grouped by category
+  const { categorizedBuiltIn, installedExts } = useMemo(() => {
     const all = Array.from(extensions.values());
     const query = searchQuery.toLowerCase();
     const filtered = query
@@ -29,9 +52,12 @@ export function ExtensionManagerBlade() {
         )
       : all;
 
+    const builtIn = filtered.filter((ext) => ext.builtIn);
+    const installed = filtered.filter((ext) => !ext.builtIn).sort((a, b) => a.name.localeCompare(b.name));
+
     return {
-      builtInExts: filtered.filter((ext) => ext.builtIn).sort((a, b) => a.name.localeCompare(b.name)),
-      installedExts: filtered.filter((ext) => !ext.builtIn).sort((a, b) => a.name.localeCompare(b.name)),
+      categorizedBuiltIn: groupExtensionsByCategory(builtIn),
+      installedExts: installed,
     };
   }, [extensions, searchQuery]);
 
@@ -107,25 +133,30 @@ export function ExtensionManagerBlade() {
           </section>
         )}
 
-        {/* Built-in section */}
-        {builtInExts.length > 0 && (
-          <section>
-            <h3 className="text-xs font-medium text-ctp-subtext1 mb-2 flex items-center gap-1.5">
-              Built-in
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-ctp-surface1 text-ctp-overlay0">
-                {builtInExts.length}
-              </span>
-            </h3>
-            <div className="space-y-2">
-              {builtInExts.map((ext) => (
-                <ExtensionCard key={ext.id} extension={ext} />
-              ))}
-            </div>
-          </section>
-        )}
+        {/* Category-grouped built-in sections */}
+        {Array.from(categorizedBuiltIn.entries()).map(([category, exts]) => {
+          const meta = getCategoryMeta(category);
+          const Icon = CATEGORY_ICONS[category];
+          return (
+            <section key={category}>
+              <h3 className="text-xs font-medium text-ctp-subtext1 mb-2 flex items-center gap-1.5">
+                <Icon className="w-3.5 h-3.5" />
+                {meta.label}
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-ctp-surface1 text-ctp-overlay0">
+                  {exts.length}
+                </span>
+              </h3>
+              <div className="space-y-2">
+                {exts.map((ext) => (
+                  <ExtensionCard key={ext.id} extension={ext} />
+                ))}
+              </div>
+            </section>
+          );
+        })}
 
         {/* Empty state */}
-        {builtInExts.length === 0 && installedExts.length === 0 && (
+        {categorizedBuiltIn.size === 0 && installedExts.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-ctp-overlay0">
             <Puzzle className="w-10 h-10 mb-3 opacity-50" />
             <p className="text-sm">
