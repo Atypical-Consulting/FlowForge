@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-11)
 Phase: 46 (fourth of 5 in v1.7.0) — Topology Extraction
 Plan: —
 Status: Ready to plan
-Last activity: 2026-02-11 - Completed quick task 47: fix push/pull/fetch sync commands + HTTPS auth in Tauri
+Last activity: 2026-02-11 - Completed quick task 48: refresh branches panel after push from app menu
 
 Progress: [██████░░░░] 60%
 
@@ -84,6 +84,7 @@ None active.
 | 45 | migrate welcome screen to an extension | 2026-02-11 | 37e1456 | [45-migrate-welcome-screen-to-an-extension-w](./quick/45-migrate-welcome-screen-to-an-extension-w/) |
 | 46 | implement the show branches blade (with management) as a core blade | 2026-02-11 | 5e129a7 | [46-implement-the-show-branches-blade-with-m](./quick/46-implement-the-show-branches-blade-with-m/) |
 | 47 | fix push/pull/fetch sync commands + HTTPS auth in Tauri | 2026-02-11 | cb4e170 | [47-repository-push-from-the-menu-is-broken-](./quick/47-repository-push-from-the-menu-is-broken-/) |
+| 48 | refresh branches panel after push from app menu | 2026-02-11 | a474c3a | [48-refresh-branches-panel-after-push-from-a](./quick/48-refresh-branches-panel-after-push-from-a/) |
 
 ### Pending Todos
 
