@@ -12,7 +12,7 @@ import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { CloneForm } from "./clone/CloneForm";
 import { RecentRepos } from "./RecentRepos";
 import { Button } from "./ui/button";
-import { AnimatedGradientBg, GitInitBanner } from "./welcome";
+import { AnimatedGradientBg, GitInitBanner, GitInitFallbackBanner } from "./welcome";
 
 export function WelcomeView() {
   const { openRepository, repoIsLoading: isLoading, repoError: error, clearRepoError: clearError } = useRepositoryStore();
@@ -23,6 +23,14 @@ export function WelcomeView() {
   const [showInitRepo, setShowInitRepo] = useState(false);
 
   const initRepoRegistration = useBladeRegistry((s) => s.blades.get("init-repo"));
+
+  // Mid-session disable recovery: if user is viewing Init Repo blade
+  // and the extension is disabled, reset to prevent stuck loading screen
+  useEffect(() => {
+    if (showInitRepo && !initRepoRegistration) {
+      setShowInitRepo(false);
+    }
+  }, [showInitRepo, initRepoRegistration]);
 
   const openDialog = useCallback(async () => {
     try {
@@ -253,11 +261,23 @@ export function WelcomeView() {
         )}
 
         {pendingInitPath && !error && !showInitRepo && (
-          <GitInitBanner
-            path={pendingInitPath}
-            onDismiss={() => setPendingInitPath(null)}
-            onSetup={() => setShowInitRepo(true)}
-          />
+          initRepoRegistration ? (
+            <GitInitBanner
+              path={pendingInitPath}
+              onDismiss={() => setPendingInitPath(null)}
+              onSetup={() => setShowInitRepo(true)}
+            />
+          ) : (
+            <GitInitFallbackBanner
+              path={pendingInitPath}
+              onDismiss={() => setPendingInitPath(null)}
+              onComplete={async (path) => {
+                await openRepository(path);
+                await addRecentRepo(path);
+                setPendingInitPath(null);
+              }}
+            />
+          )
         )}
 
         {/* Recent repos */}
