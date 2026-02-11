@@ -1,5 +1,7 @@
 import type { ComponentType, ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
+import type { AnyActorRef, AnyStateMachine, Subscription } from "xstate";
+import { createActor } from "xstate";
 import {
   registerBlade,
   unregisterBlade,
@@ -10,6 +12,10 @@ import {
   unregisterCommand,
   type CommandCategory,
 } from "../lib/commandRegistry";
+import {
+  useMachineRegistry,
+  type MachineRegistryEntry,
+} from "../lib/machineRegistry";
 import { useToolbarRegistry, type ToolbarGroup } from "../lib/toolbarRegistry";
 import {
   useContextMenuRegistry,
@@ -125,6 +131,16 @@ export interface ExtensionGitHookConfig {
   handler: (context: GitHookContext) => void | Promise<void>;
 }
 
+export interface ExtensionMachineConfig {
+  /** Unique machine ID (will be namespaced as ext:{extensionId}:{id}) */
+  id: string;
+  /** The XState machine definition */
+  machine: AnyStateMachine;
+  /** Machine category for grouping (default: "workflow") */
+  category?: string;
+  description?: string;
+}
+
 export type Disposable =
   | (() => void | Promise<void>)
   | { dispose: () => void | Promise<void> };
@@ -146,6 +162,8 @@ export class ExtensionAPI {
   private registeredStatusBarItems: string[] = [];
   private gitHookUnsubscribes: (() => void)[] = [];
   private navigationUnsubscribes: (() => void)[] = [];
+  private registeredMachines: Array<{ id: string; actor: AnyActorRef }> = [];
+  private machineSubscriptions: Subscription[] = [];
   private disposables: Disposable[] = [];
 
   /** Namespaced key-value settings storage for this extension. */
@@ -323,6 +341,60 @@ export class ExtensionAPI {
   }
 
   /**
+   * Register an XState machine with automatic namespacing.
+   * The machine ID becomes `ext:{extensionId}:{config.id}`.
+   * The actor is automatically started and stopped on deactivation.
+   */
+  registerMachine(config: ExtensionMachineConfig): AnyActorRef {
+    const namespacedId = `ext:${this.extensionId}:${config.id}`;
+    const actor = createActor(config.machine);
+    actor.start();
+
+    useMachineRegistry.getState().register({
+      id: namespacedId,
+      actor,
+      machine: config.machine,
+      source: `ext:${this.extensionId}`,
+      category: config.category ?? "workflow",
+      description: config.description,
+    });
+
+    this.registeredMachines.push({ id: namespacedId, actor });
+    return actor;
+  }
+
+  /**
+   * Get a registered machine's actor reference by its full ID.
+   */
+  getMachineActor(machineId: string): AnyActorRef | undefined {
+    return useMachineRegistry.getState().getActor(machineId);
+  }
+
+  /**
+   * Subscribe to state transitions on a registered machine.
+   * Returns an unsubscribe function. Automatically cleaned up on deactivation.
+   */
+  onMachineTransition(
+    machineId: string,
+    handler: (snapshot: unknown) => void,
+  ): () => void {
+    const actor = useMachineRegistry.getState().getActor(machineId);
+    if (!actor) {
+      console.warn(
+        `[ExtensionAPI] Machine "${machineId}" not found in registry`,
+      );
+      return () => {};
+    }
+
+    const subscription = actor.subscribe((snapshot) => {
+      handler(snapshot);
+    });
+
+    this.machineSubscriptions.push(subscription);
+    return () => subscription.unsubscribe();
+  }
+
+  /**
    * Register a disposable that will be called during cleanup.
    * Disposables execute in reverse registration order (LIFO).
    * Supports both function and { dispose } object patterns.
@@ -365,7 +437,7 @@ export class ExtensionAPI {
    * Remove ALL registrations made through this API instance.
    * Called during deactivation or on activation failure (partial cleanup).
    *
-   * Cleanup order: existing registries -> new UI registries -> event bus -> navigation -> git hooks -> disposables (reverse).
+   * Cleanup order: existing registries -> new UI registries -> machines -> event bus -> navigation -> git hooks -> disposables (reverse).
    * Each disposable is wrapped in try/catch to ensure one failure doesn't prevent others from running.
    */
   cleanup(): void {
@@ -391,10 +463,35 @@ export class ExtensionAPI {
       .getState()
       .unregisterBySource(`ext:${this.extensionId}`);
 
-    // 3. Extension event bus
+    // 3. Machine registry (stop actors and unregister)
+    for (const sub of this.machineSubscriptions) {
+      try {
+        sub.unsubscribe();
+      } catch (err) {
+        console.error(
+          `[ExtensionAPI] Error unsubscribing machine for "${this.extensionId}":`,
+          err,
+        );
+      }
+    }
+    for (const { actor } of this.registeredMachines) {
+      try {
+        actor.stop();
+      } catch (err) {
+        console.error(
+          `[ExtensionAPI] Error stopping machine actor for "${this.extensionId}":`,
+          err,
+        );
+      }
+    }
+    useMachineRegistry
+      .getState()
+      .unregisterBySource(`ext:${this.extensionId}`);
+
+    // 4. Extension event bus
     extensionEventBus.removeAllForSource(this.extensionId);
 
-    // 4. Navigation subscriptions
+    // 5. Navigation subscriptions
     for (const unsub of this.navigationUnsubscribes) {
       try {
         unsub();
@@ -406,7 +503,7 @@ export class ExtensionAPI {
       }
     }
 
-    // 5. Git hooks
+    // 6. Git hooks
     gitHookBus.removeBySource(`ext:${this.extensionId}`);
     for (const unsub of this.gitHookUnsubscribes) {
       try {
@@ -419,7 +516,7 @@ export class ExtensionAPI {
       }
     }
 
-    // 6. Disposables in reverse order (LIFO)
+    // 7. Disposables in reverse order (LIFO)
     for (let i = this.disposables.length - 1; i >= 0; i--) {
       try {
         const d = this.disposables[i];
@@ -436,7 +533,7 @@ export class ExtensionAPI {
       }
     }
 
-    // 7. Reset all tracking arrays
+    // 8. Reset all tracking arrays
     this.registeredBlades = [];
     this.registeredCommands = [];
     this.registeredToolbarActions = [];
@@ -445,6 +542,8 @@ export class ExtensionAPI {
     this.registeredStatusBarItems = [];
     this.gitHookUnsubscribes = [];
     this.navigationUnsubscribes = [];
+    this.registeredMachines = [];
+    this.machineSubscriptions = [];
     this.disposables = [];
   }
 }

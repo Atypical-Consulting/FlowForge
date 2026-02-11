@@ -1,8 +1,7 @@
 import { X } from "lucide-react";
 import { useState } from "react";
-import { useGitOpsStore as useBranchStore } from "../../../stores/domain/git-ops";
+import { useGitflowWorkflow } from "../../../hooks/useGitflowWorkflow";
 import { useGitOpsStore as useGitflowStore } from "../../../stores/domain/git-ops";
-import { useGitOpsStore as useRepositoryStore } from "../../../stores/domain/git-ops";
 import { ReviewChecklist } from "./ReviewChecklist";
 
 interface FinishFlowDialogProps {
@@ -11,16 +10,8 @@ interface FinishFlowDialogProps {
 }
 
 export function FinishFlowDialog({ flowType, onClose }: FinishFlowDialogProps) {
-  const {
-    gitflowStatus: status,
-    finishFeature,
-    finishRelease,
-    finishHotfix,
-    gitflowIsLoading: isLoading,
-    gitflowError: error,
-  } = useGitflowStore();
-  const { loadBranches } = useBranchStore();
-  const { refreshRepoStatus: refreshStatus } = useRepositoryStore();
+  const { gitflowStatus: status } = useGitflowStore();
+  const { isBusy: isLoading, error, finishOperation } = useGitflowWorkflow();
   const [tagMessage, setTagMessage] = useState("");
 
   const needsTagMessage = flowType === "release" || flowType === "hotfix";
@@ -61,27 +52,10 @@ export function FinishFlowDialog({ flowType, onClose }: FinishFlowDialogProps) {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    let success = false;
-    switch (flowType) {
-      case "feature":
-        success = await finishFeature();
-        break;
-      case "release":
-        success = !!(await finishRelease(tagMessage || undefined));
-        break;
-      case "hotfix":
-        success = !!(await finishHotfix(tagMessage || undefined));
-        break;
-    }
-
-    if (success) {
-      await loadBranches();
-      await refreshStatus(); // Update header to show new branch (develop after feature finish)
-      onClose();
-    }
+    finishOperation(flowType, tagMessage || undefined);
+    onClose();
   };
 
   return (

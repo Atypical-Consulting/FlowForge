@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useGitOpsStore as useBranchStore } from "../../../stores/domain/git-ops";
 import { useGitOpsStore as useGitflowStore } from "../../../stores/domain/git-ops";
 import { useBladeNavigation } from "../../../hooks/useBladeNavigation";
+import { useGitflowWorkflow } from "../../../hooks/useGitflowWorkflow";
 import { FinishFlowDialog } from "./FinishFlowDialog";
 import { InitGitflowDialog } from "./InitGitflowDialog";
 import { StartFlowDialog } from "./StartFlowDialog";
@@ -10,8 +11,9 @@ import { StartFlowDialog } from "./StartFlowDialog";
 type FlowType = "feature" | "release" | "hotfix";
 
 export function GitflowPanel() {
-  const { gitflowStatus: status, gitflowIsLoading: isLoading, gitflowError: error, refreshGitflow: refresh, abortGitflow: abort, clearGitflowError: clearError } =
+  const { gitflowStatus: status, gitflowIsLoading: isLoading, gitflowError: error, refreshGitflow: refresh, clearGitflowError: clearError } =
     useGitflowStore();
+  const { abortGitflow: abort, isBusy: machineIsBusy } = useGitflowWorkflow();
   const { openBlade } = useBladeNavigation();
   const branches = useBranchStore((s) => s.branchList);
   const [showStartDialog, setShowStartDialog] = useState<FlowType | null>(null);

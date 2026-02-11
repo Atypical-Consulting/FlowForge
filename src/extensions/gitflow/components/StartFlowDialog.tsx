@@ -1,7 +1,6 @@
 import { X } from "lucide-react";
 import { useState } from "react";
-import { useGitOpsStore as useBranchStore } from "../../../stores/domain/git-ops";
-import { useGitOpsStore as useGitflowStore } from "../../../stores/domain/git-ops";
+import { useGitflowWorkflow } from "../../../hooks/useGitflowWorkflow";
 
 interface StartFlowDialogProps {
   flowType: "feature" | "release" | "hotfix";
@@ -30,34 +29,16 @@ const config = {
 };
 
 export function StartFlowDialog({ flowType, onClose }: StartFlowDialogProps) {
-  const { startFeature, startRelease, startHotfix, gitflowIsLoading: isLoading, gitflowError: error } =
-    useGitflowStore();
-  const { loadBranches } = useBranchStore();
+  const { isBusy: isLoading, error, startOperation } = useGitflowWorkflow();
   const [name, setName] = useState("");
 
   const { title, label, placeholder, prefix } = config[flowType];
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
-
-    let result: string | null = null;
-    switch (flowType) {
-      case "feature":
-        result = await startFeature(name.trim());
-        break;
-      case "release":
-        result = await startRelease(name.trim());
-        break;
-      case "hotfix":
-        result = await startHotfix(name.trim());
-        break;
-    }
-
-    if (result) {
-      await loadBranches();
-      onClose();
-    }
+    startOperation(flowType, name.trim());
+    onClose();
   };
 
   return (

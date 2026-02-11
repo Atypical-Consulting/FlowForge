@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Pin, Shield } from "lucide-react";
 import { useBulkSelect } from "../../hooks/useBulkSelect";
 import { useBranchScopes } from "../../hooks/useBranchScopes";
+import { useMergeWorkflow } from "../../hooks/useMergeWorkflow";
 import { bulkDeleteBranches, getProtectedBranches } from "../../lib/bulkBranchOps";
 import { usePreferencesStore as useBranchMetadataStore } from "../../stores/domain/preferences";
 import { useGitOpsStore as useBranchStore } from "../../stores/domain/git-ops";
@@ -37,7 +38,8 @@ export function BranchList({
     loadAllBranches,
   } = useBranchScopes();
 
-  const { checkoutBranch, deleteBranch, mergeBranch, branchLastMergeResult: lastMergeResult, clearBranchError: clearError, clearBranchMergeResult: clearMergeResult } = useBranchStore();
+  const { checkoutBranch, deleteBranch, clearBranchError: clearError } = useBranchStore();
+  const { mergeResult: lastMergeResult, startMerge, abort: abortMerge, isMerging: mergeIsLoading } = useMergeWorkflow();
   const [mergingBranch, setMergingBranch] = useState<string | null>(null);
 
   // Bulk delete state
@@ -95,23 +97,14 @@ export function BranchList({
     setMergingBranch(branchName);
   };
 
-  const confirmMerge = async () => {
+  const confirmMerge = () => {
     if (mergingBranch) {
-      const result = await mergeBranch(mergingBranch);
-      if (result) {
-        await loadAllBranches(true);
-        if (result.hasConflicts) {
-          toast.warning(`Merge has conflicts - resolve manually`);
-        } else {
-          toast.success(`Merged ${mergingBranch} successfully`);
-        }
-      }
+      startMerge(mergingBranch);
     }
   };
 
   const closeMergeDialog = () => {
     setMergingBranch(null);
-    clearMergeResult();
     clearError();
   };
 

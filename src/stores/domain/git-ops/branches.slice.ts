@@ -1,18 +1,18 @@
 import type { StateCreator } from "zustand";
-import type { BranchInfo, MergeResult } from "../../../bindings";
+import type { BranchInfo } from "../../../bindings";
 import { commands } from "../../../bindings";
 import { getErrorMessage } from "../../../lib/errors";
 import { gitHookBus } from "../../../lib/gitHookBus";
 import type { GitOpsMiddleware } from "./types";
 import type { GitOpsStore } from "./index";
 
+// Merge workflow moved to src/machines/merge/
+
 export interface BranchSlice {
   branchList: BranchInfo[];
   branchAllList: BranchInfo[];
   branchIsLoading: boolean;
   branchError: string | null;
-  branchMergeInProgress: boolean;
-  branchLastMergeResult: MergeResult | null;
 
   loadBranches: () => Promise<void>;
   loadAllBranches: (includeRemote: boolean) => Promise<void>;
@@ -20,10 +20,7 @@ export interface BranchSlice {
   checkoutBranch: (name: string) => Promise<boolean>;
   checkoutRemoteBranch: (remoteBranch: string) => Promise<boolean>;
   deleteBranch: (name: string, force: boolean) => Promise<boolean>;
-  mergeBranch: (sourceBranch: string) => Promise<MergeResult | null>;
-  abortMerge: () => Promise<boolean>;
   clearBranchError: () => void;
-  clearBranchMergeResult: () => void;
 }
 
 export const createBranchSlice: StateCreator<
@@ -36,8 +33,6 @@ export const createBranchSlice: StateCreator<
   branchAllList: [],
   branchIsLoading: false,
   branchError: null,
-  branchMergeInProgress: false,
-  branchLastMergeResult: null,
 
   loadBranches: async () => {
     set({ branchIsLoading: true, branchError: null }, undefined, "gitOps:branch/load");
@@ -106,37 +101,5 @@ export const createBranchSlice: StateCreator<
     return false;
   },
 
-  mergeBranch: async (sourceBranch) => {
-    set({ branchIsLoading: true, branchError: null, branchMergeInProgress: true }, undefined, "gitOps:branch/merge");
-    const result = await commands.mergeBranch(sourceBranch);
-    if (result.status === "ok") {
-      set({
-        branchLastMergeResult: result.data,
-        branchMergeInProgress: result.data.hasConflicts,
-        branchIsLoading: false,
-      }, undefined, "gitOps:branch/mergeOk");
-      await get().loadBranches();
-      gitHookBus.emitDid("merge", { branchName: sourceBranch });
-      return result.data;
-    }
-    set({
-      branchError: getErrorMessage(result.error),
-      branchMergeInProgress: false,
-      branchIsLoading: false,
-    });
-    return null;
-  },
-
-  abortMerge: async () => {
-    const result = await commands.abortMerge();
-    if (result.status === "ok") {
-      set({ branchMergeInProgress: false, branchLastMergeResult: null }, undefined, "gitOps:branch/abortMerge");
-      await get().loadBranches();
-      return true;
-    }
-    return false;
-  },
-
   clearBranchError: () => set({ branchError: null }, undefined, "gitOps:branch/clearError"),
-  clearBranchMergeResult: () => set({ branchLastMergeResult: null }, undefined, "gitOps:branch/clearMergeResult"),
 });

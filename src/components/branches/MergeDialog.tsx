@@ -1,6 +1,6 @@
 import { AlertTriangle, Check, GitMerge, X } from "lucide-react";
 import type { MergeResult } from "../../bindings";
-import { useGitOpsStore as useBranchStore } from "../../stores/domain/git-ops";
+import { useMergeWorkflow } from "../../hooks/useMergeWorkflow";
 
 interface MergeDialogProps {
   sourceBranch: string;
@@ -15,10 +15,10 @@ export function MergeDialog({
   onConfirm,
   onClose,
 }: MergeDialogProps) {
-  const { branchIsLoading: isLoading, abortMerge } = useBranchStore();
+  const { isMerging: isLoading, isAborting, abort } = useMergeWorkflow();
 
-  const handleAbort = async () => {
-    await abortMerge();
+  const handleAbort = () => {
+    abort();
     onClose();
   };
 
@@ -114,9 +114,10 @@ export function MergeDialog({
             <button
               type="button"
               onClick={handleAbort}
-              className="px-4 py-2 text-sm bg-ctp-red hover:bg-ctp-red/80 rounded"
+              disabled={isAborting}
+              className="px-4 py-2 text-sm bg-ctp-red hover:bg-ctp-red/80 rounded disabled:opacity-50"
             >
-              Abort Merge
+              {isAborting ? "Aborting..." : "Abort Merge"}
             </button>
           </div>
         )}
