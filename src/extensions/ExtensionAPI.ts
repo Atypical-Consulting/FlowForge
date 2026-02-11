@@ -28,8 +28,18 @@ import {
   type DidHandler,
   type WillHandler,
 } from "../lib/gitHookBus";
+import { getNavigationActor } from "../machines/navigation/context";
+import type { LastAction } from "../machines/navigation/types";
 import { ExtensionSettings } from "./extensionSettings";
 import { extensionEventBus, type EventHandler } from "./extensionEventBus";
+
+// --- Navigation event type for extensions ---
+
+export interface BladeNavigationEvent {
+  action: "push" | "pop" | "replace" | "reset";
+  blade: { type: string; props: Record<string, unknown> };
+  stackDepth: number;
+}
 
 // --- Config types for extension authors ---
 
@@ -133,6 +143,7 @@ export class ExtensionAPI {
   private registeredSidebarPanels: string[] = [];
   private registeredStatusBarItems: string[] = [];
   private gitHookUnsubscribes: (() => void)[] = [];
+  private navigationUnsubscribes: (() => void)[] = [];
   private disposables: Disposable[] = [];
 
   /** Namespaced key-value settings storage for this extension. */
@@ -273,6 +284,43 @@ export class ExtensionAPI {
   }
 
   /**
+   * Register a handler that fires when blade navigation occurs (push, pop, replace, reset).
+   * Returns an unsubscribe function. Automatically cleaned up on extension deactivation.
+   * @sandboxSafety sandbox-safe - Handler receives serializable BladeNavigationEvent.
+   */
+  onDidNavigate(handler: (event: BladeNavigationEvent) => void): () => void {
+    const actor = getNavigationActor();
+    let prevLastAction: LastAction = actor.getSnapshot().context.lastAction;
+
+    const subscription = actor.subscribe((snapshot) => {
+      const { lastAction, bladeStack } = snapshot.context;
+      // Only fire when lastAction actually changes to a navigation action
+      if (lastAction === prevLastAction) return;
+      prevLastAction = lastAction;
+
+      if (
+        lastAction === "push" ||
+        lastAction === "pop" ||
+        lastAction === "replace" ||
+        lastAction === "reset"
+      ) {
+        const topBlade = bladeStack[bladeStack.length - 1];
+        handler({
+          action: lastAction,
+          blade: topBlade
+            ? { type: topBlade.type, props: topBlade.props as Record<string, unknown> }
+            : { type: "", props: {} },
+          stackDepth: bladeStack.length,
+        });
+      }
+    });
+
+    const unsub = () => subscription.unsubscribe();
+    this.navigationUnsubscribes.push(unsub);
+    return unsub;
+  }
+
+  /**
    * Register a disposable that will be called during cleanup.
    * Disposables execute in reverse registration order (LIFO).
    * Supports both function and { dispose } object patterns.
@@ -315,7 +363,7 @@ export class ExtensionAPI {
    * Remove ALL registrations made through this API instance.
    * Called during deactivation or on activation failure (partial cleanup).
    *
-   * Cleanup order: existing registries -> new UI registries -> event bus -> git hooks -> disposables (reverse).
+   * Cleanup order: existing registries -> new UI registries -> event bus -> navigation -> git hooks -> disposables (reverse).
    * Each disposable is wrapped in try/catch to ensure one failure doesn't prevent others from running.
    */
   cleanup(): void {
@@ -344,7 +392,19 @@ export class ExtensionAPI {
     // 3. Extension event bus
     extensionEventBus.removeAllForSource(this.extensionId);
 
-    // 4. Git hooks
+    // 4. Navigation subscriptions
+    for (const unsub of this.navigationUnsubscribes) {
+      try {
+        unsub();
+      } catch (err) {
+        console.error(
+          `[ExtensionAPI] Error unsubscribing navigation for "${this.extensionId}":`,
+          err,
+        );
+      }
+    }
+
+    // 5. Git hooks
     gitHookBus.removeBySource(`ext:${this.extensionId}`);
     for (const unsub of this.gitHookUnsubscribes) {
       try {
@@ -357,7 +417,7 @@ export class ExtensionAPI {
       }
     }
 
-    // 5. Disposables in reverse order (LIFO)
+    // 6. Disposables in reverse order (LIFO)
     for (let i = this.disposables.length - 1; i >= 0; i--) {
       try {
         const d = this.disposables[i];
@@ -374,7 +434,7 @@ export class ExtensionAPI {
       }
     }
 
-    // 6. Reset all tracking arrays
+    // 7. Reset all tracking arrays
     this.registeredBlades = [];
     this.registeredCommands = [];
     this.registeredToolbarActions = [];
@@ -382,6 +442,7 @@ export class ExtensionAPI {
     this.registeredSidebarPanels = [];
     this.registeredStatusBarItems = [];
     this.gitHookUnsubscribes = [];
+    this.navigationUnsubscribes = [];
     this.disposables = [];
   }
 }
