@@ -1,4 +1,5 @@
 import { REQUIRES_TRUST_METHODS } from "./sandbox-api-surface";
+import type { RequiresTrustMethod } from "./sandbox-api-surface";
 import type { ExtensionAPI } from "../ExtensionAPI";
 import type { GitOperation, DidHandler, WillHandler } from "../../lib/gitHookBus";
 import type { Disposable } from "../ExtensionAPI";
@@ -8,12 +9,30 @@ import type { Disposable } from "../ExtensionAPI";
  *
  * Exposes only sandbox-safe methods. Calling any requires-trust method
  * throws a descriptive error explaining what trust level is needed.
+ *
+ * Blocked method stubs are generated dynamically from REQUIRES_TRUST_METHODS
+ * in the constructor — adding a new requires-trust method only needs an
+ * update to sandbox-api-surface.ts plus a type declaration here.
  */
 export class SandboxedExtensionAPI {
   private hostApi: ExtensionAPI;
 
+  // Blocked methods (dynamically assigned from REQUIRES_TRUST_METHODS in constructor)
+  registerBlade!: () => never;
+  registerCommand!: () => never;
+  contributeToolbar!: () => never;
+  contributeContextMenu!: () => never;
+  contributeSidebarPanel!: () => never;
+  contributeStatusBar!: () => never;
+
   constructor(hostApi: ExtensionAPI) {
     this.hostApi = hostApi;
+
+    for (const method of REQUIRES_TRUST_METHODS) {
+      (this as any)[method] = () => {
+        throw this.trustError(method);
+      };
+    }
   }
 
   // --- Sandbox-safe methods ---
@@ -30,32 +49,6 @@ export class SandboxedExtensionAPI {
     this.hostApi.onDispose(disposable);
   }
 
-  // --- Blocked methods (requires-trust) ---
-
-  registerBlade(): never {
-    throw this.trustError("registerBlade");
-  }
-
-  registerCommand(): never {
-    throw this.trustError("registerCommand");
-  }
-
-  contributeToolbar(): never {
-    throw this.trustError("contributeToolbar");
-  }
-
-  contributeContextMenu(): never {
-    throw this.trustError("contributeContextMenu");
-  }
-
-  contributeSidebarPanel(): never {
-    throw this.trustError("contributeSidebarPanel");
-  }
-
-  contributeStatusBar(): never {
-    throw this.trustError("contributeStatusBar");
-  }
-
   private trustError(method: string): Error {
     return new Error(
       `${method}() requires trust level "built-in" or "user-trusted". ` +
@@ -65,3 +58,9 @@ export class SandboxedExtensionAPI {
     );
   }
 }
+
+// Compile-time exhaustiveness check: ensures all REQUIRES_TRUST_METHODS
+// have corresponding type declarations on the class.
+type _AssertTrustCovered = {
+  [K in RequiresTrustMethod]: SandboxedExtensionAPI[K];
+};
