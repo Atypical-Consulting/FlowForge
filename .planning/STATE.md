@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Phase 42 - Audit Tech Debt Cleanup
+**Current focus:** v1.6.0 milestone complete — ready for archival
 
 ## Current Position
 
-Phase: 42 of 42 (Audit Tech Debt Cleanup)
-Plan: 0 of 1 in current phase
-Status: Ready to plan
-Last activity: 2026-02-11 - Completed quick task 36: fix duplicate GitHub linked toast
+Phase: 42 of 42 (Audit Tech Debt Cleanup) ✓ Complete
+Plan: 1 of 1 in current phase
+Status: Phase complete, milestone ready for archival
+Last activity: 2026-02-11 - Phase 42 executed: BladeRegistry Zustand, SandboxedAPI constant, GFEX-03
 
-Progress: [█████████░] 93% (15/16 plans)
+Progress: [██████████] 100% (16/16 plans)
 
 ## Milestone History
 
@@ -26,15 +26,15 @@ Progress: [█████████░] 93% (15/16 plans)
 | v1.3.0 Blades Blades Blades | Complete | 2026-02-08 |
 | v1.4.0 Architecture & Navigation Overhaul | Complete | 2026-02-09 |
 | v1.5.0 GitHub Extension | Complete | 2026-02-10 |
-| v1.6.0 Refactor to Extensions | In progress | - |
+| v1.6.0 Refactor to Extensions | Complete | 2026-02-11 |
 
 See `.planning/MILESTONES.md` for full history.
 
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 41 complete, 1 planned
-- Total plans: ~216 complete, 1 planned
+- Total phases: 42 complete
+- Total plans: ~217 complete
 - Total requirements validated: 232
 - Codebase: ~45,400 LOC (34,300 TypeScript + 11,075 Rust)
 - Tests: 233 (Vitest + jsdom)
@@ -49,11 +49,11 @@ See `.planning/MILESTONES.md` for full history.
 - 3D viewer reliability on some hardware (diagnostic logging only)
 - Pre-existing TS2440 in auto-generated bindings.ts
 - Phase 34 human runtime testing pending (6 OAuth flow items)
-- BladeRenderer does not subscribe to blade registry changes — targeted for Phase 42
 - CC Zustand store not explicitly reset on extension disable (ghost data persists but invisible)
 - Gitflow sidebar panel position shifted below Worktrees (renders via DynamicSidebarPanels at priority 65)
-- SandboxedExtensionAPI hardcodes method list instead of using REQUIRES_TRUST_METHODS constant — targeted for Phase 42
 - GFEX-06 needs human runtime verification (Gitflow extension state defers to Rust backend)
+- commandRegistry and previewRegistry still use plain Maps (not Zustand) — flagged by architecture analysis
+- 3 new ExtensionAPI methods (onDidNavigate, events, settings) missing from sandbox-api-surface.ts classification
 
 ### Key Decisions
 
@@ -61,7 +61,7 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 Phase 38: coreOverride pattern adopted for built-in extension blade registration — avoids cascading namespace changes.
 Phase 39: CC extraction follows content-viewers pattern for blades, GitHub extension pattern for toolbar/commands. Read-side CC utilities (commit-type-theme, conventional-utils) stay in core. emitWill("commit") infrastructure wired but no handler registered (CC validates via canCommit).
 Phase 40: Gitflow extraction follows CC pattern. branchClassifier.ts stays in core (ADR-2: 10+ core consumers, classification is core Git UX). gitflow.slice.ts stays in GitOpsStore (ADR-1: cross-slice deps on loadBranches/refreshRepoStatus).
-Phase 42: Gap closure phase created from v1.6.0 audit. GFEX-03 requirement wording fixed to match ADR-2 decision.
+Phase 42: BladeRegistry converted to Zustand store with backward-compat wrappers. SandboxedExtensionAPI uses REQUIRES_TRUST_METHODS constant. Used targeted Zustand selector in BladeRenderer for optimal performance.
 
 ### Research Flags
 
@@ -86,9 +86,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Phase 42 created, ready to plan
+Stopped at: Phase 42 complete, v1.6.0 milestone ready for archival
 Resume file: None
 
 ---
 *State updated: 2026-02-11*
-*Gap closure phase created from v1.6.0 milestone audit. GFEX-03 requirement text updated to match ADR-2. Phase 41 marked complete in ROADMAP.*
+*Phase 42 executed: BladeRegistry Zustand conversion, SandboxedExtensionAPI constant usage, GFEX-03 checkbox. All 3 audit tech debt items resolved.*

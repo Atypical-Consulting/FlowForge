@@ -17,7 +17,7 @@
 - [x] **Phase 39: Conventional Commits Extraction** - CC composer, validation, and changelog extracted to built-in extension
 - [x] **Phase 40: Gitflow Extraction** - Gitflow sidebar, cheatsheet, and branch coloring extracted to built-in extension
 - [x] **Phase 41: Sandbox & Polish** - Trust flags, Worker prototype, deprecation cleanup, tests, docs, version bump
-- [ ] **Phase 42: Audit Tech Debt Cleanup** - BladeRenderer registry subscription, SandboxedExtensionAPI cleanup, GFEX-03 doc fix
+- [x] **Phase 42: Audit Tech Debt Cleanup** - BladeRenderer registry subscription, SandboxedExtensionAPI cleanup, GFEX-03 doc fix
 
 ## Phase Details
 
@@ -120,7 +120,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 42-01-PLAN.md — BladeRegistry Zustand conversion, SandboxedExtensionAPI constant usage, GFEX-03 checkbox
+- [x] 42-01-PLAN.md — BladeRegistry Zustand conversion, SandboxedExtensionAPI constant usage, GFEX-03 checkbox
 
 ## Progress
 
@@ -204,7 +204,7 @@ Plans:
 | 39. Conventional Commits Extraction | 3/3 | ✓ Complete | 2026-02-10 |
 | 40. Gitflow Extraction | 2/2 | ✓ Complete | 2026-02-10 |
 | 41. Sandbox & Polish | 5/5 | ✓ Complete | 2026-02-11 |
-| 42. Audit Tech Debt Cleanup | 0/1 | Planned | - |
+| 42. Audit Tech Debt Cleanup | 1/1 | ✓ Complete | 2026-02-11 |
 
 ---
-*Last updated: 2026-02-11 after gap closure phase creation*
+*Last updated: 2026-02-11 after Phase 42 execution — all v1.6.0 phases complete*
