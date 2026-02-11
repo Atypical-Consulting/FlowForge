@@ -4,11 +4,13 @@ import type { AheadBehind } from "../../../bindings";
 import { commands } from "../../../bindings";
 import type { EnrichedBranch } from "../../lib/branchClassifier";
 import { useContextMenuRegistry } from "../../lib/contextMenuRegistry";
+import { gitHookBus } from "../../lib/gitHookBus";
 import { cn } from "../../lib/utils";
 import { BranchTypeBadge } from "./BranchTypeBadge";
 
 function AheadBehindBadge({ branchName, isRemote }: { branchName: string; isRemote: boolean }) {
   const [counts, setCounts] = useState<AheadBehind | null>(null);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     if (isRemote) return;
@@ -19,7 +21,19 @@ function AheadBehindBadge({ branchName, isRemote }: { branchName: string; isRemo
       }
     });
     return () => { cancelled = true; };
-  }, [branchName, isRemote]);
+  }, [branchName, isRemote, tick]);
+
+  // Re-fetch ahead/behind after push/fetch/pull
+  useEffect(() => {
+    if (isRemote) return;
+    const bump = () => setTick((t) => t + 1);
+    const unsubs = [
+      gitHookBus.onDid("push", bump, "ahead-behind-badge"),
+      gitHookBus.onDid("fetch", bump, "ahead-behind-badge"),
+      gitHookBus.onDid("pull", bump, "ahead-behind-badge"),
+    ];
+    return () => unsubs.forEach((u) => u());
+  }, [isRemote]);
 
   if (!counts || (counts.ahead === 0 && counts.behind === 0)) return null;
 
