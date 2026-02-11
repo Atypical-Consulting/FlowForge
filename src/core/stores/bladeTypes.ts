@@ -14,6 +14,7 @@ import type { DiffSource } from "../blades/diff";
 export interface BladePropsMap {
   "staging-changes": Record<string, never>;
   "topology-graph": Record<string, never>;
+  "commit-list-fallback": Record<string, never>;
   "commit-details": { oid: string };
   "diff": { source: DiffSource };
   "viewer-nupkg": { filePath: string };

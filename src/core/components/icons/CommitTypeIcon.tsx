@@ -5,7 +5,7 @@ import {
   type ConventionalCommitType,
 } from "../../../extensions/conventional-commits/lib/commit-type-theme";
 import { cn } from "../../lib/utils";
-import { parseConventionalType } from "../../blades/topology-graph/components/layoutUtils";
+import { parseConventionalType } from "../../lib/commitClassifier";
 
 interface CommitTypeIconProps {
   /** Pass a commit type directly. */

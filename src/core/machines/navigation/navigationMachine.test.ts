@@ -21,10 +21,17 @@ describe("navigationMachine", () => {
         singleton: true,
       } as any);
     }
+    // Register topology-graph so rootBladeForProcess finds it in the blade registry
+    registerBlade({
+      type: "topology-graph",
+      defaultTitle: "Topology",
+      component: () => null,
+    } as any);
     return () => {
       for (const type of singletonTypes) {
         unregisterBlade(type);
       }
+      unregisterBlade("topology-graph");
     };
   });
 
