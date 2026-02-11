@@ -117,7 +117,10 @@ Plans:
   1. BladeRenderer subscribes to blade registry changes so already-open blades auto-restore when a disabled extension is re-enabled (no manual close/reopen needed)
   2. SandboxedExtensionAPI uses the REQUIRES_TRUST_METHODS constant from sandbox-api-surface.ts instead of hardcoding method names
   3. GFEX-03 requirement text in REQUIREMENTS.md reflects ADR-2 decision (branch classification remains in core)
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 42-01-PLAN.md — BladeRegistry Zustand conversion, SandboxedExtensionAPI constant usage, GFEX-03 checkbox
 
 ## Progress
 
@@ -201,7 +204,7 @@ Plans:
 | 39. Conventional Commits Extraction | 3/3 | ✓ Complete | 2026-02-10 |
 | 40. Gitflow Extraction | 2/2 | ✓ Complete | 2026-02-10 |
 | 41. Sandbox & Polish | 5/5 | ✓ Complete | 2026-02-11 |
-| 42. Audit Tech Debt Cleanup | 0/1 | Not started | - |
+| 42. Audit Tech Debt Cleanup | 0/1 | Planned | - |
 
 ---
 *Last updated: 2026-02-11 after gap closure phase creation*
