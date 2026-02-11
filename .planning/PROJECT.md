@@ -198,7 +198,17 @@ Each layer adds value; each inner layer stands without the outer ones.
 
 ### Active
 
-(None — planning next milestone)
+## Current Milestone: v1.7.0 Extensions Everywhere
+
+**Goal:** Push FlowForge closer to a minimal core by extracting Topology, Worktrees, and Init Repo into toggleable built-in extensions, plus cleaning up extension-related tech debt.
+
+**Target features:**
+- Extract Topology Graph into toggleable built-in extension with simple commit list fallback
+- Extract Worktree Management into toggleable built-in extension
+- Extract Init Repo into toggleable built-in extension with basic git init fallback
+- Migrate commandRegistry and previewRegistry to Zustand stores (reactive like BladeRegistry)
+- CC Zustand store explicit reset on extension disable
+- Add 3 new ExtensionAPI methods to sandbox-api-surface.ts
 
 ### Deferred to v2+
 
@@ -319,4 +329,4 @@ Documentation website live on GitHub Pages with extension developer guides.
 | Trust levels for extension API methods (v1.6) | REQUIRES_TRUST_METHODS constant + isSandboxSafe() guard; compile-time exhaustiveness check | ✓ Good — safe API surface |
 
 ---
-*Last updated: 2026-02-11 after v1.6.0 milestone*
+*Last updated: 2026-02-11 after v1.7.0 milestone start*

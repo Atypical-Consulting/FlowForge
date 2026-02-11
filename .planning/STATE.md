@@ -5,16 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Planning next milestone
+**Current focus:** v1.7.0 Extensions Everywhere
 
 ## Current Position
 
-Phase: 42 of 42 (all phases complete)
-Plan: N/A — milestone archived
-Status: v1.6.0 shipped and archived
-Last activity: 2026-02-11 - v1.6.0 milestone complete
-
-Progress: [██████████] 100% (all milestones through v1.6.0 shipped)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-11 — Milestone v1.7.0 started
 
 ## Milestone History
 
@@ -27,6 +25,7 @@ Progress: [██████████] 100% (all milestones through v1.6.0 s
 | v1.4.0 Architecture & Navigation Overhaul | Complete | 2026-02-09 |
 | v1.5.0 GitHub Extension | Complete | 2026-02-10 |
 | v1.6.0 Refactor to Extensions | Complete | 2026-02-11 |
+| v1.7.0 Extensions Everywhere | **Active** | — |
 
 See `.planning/MILESTONES.md` for full history.
 
@@ -81,9 +80,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: v1.6.0 milestone archived
+Stopped at: Defining v1.7.0 requirements
 Resume file: None
 
 ---
 *State updated: 2026-02-11*
-*v1.6.0 milestone archived. Ready for /gsd:new-milestone.*
+*v1.7.0 milestone started. Defining requirements.*
