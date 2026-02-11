@@ -2,8 +2,8 @@ import { motion } from "framer-motion";
 import { FolderGit2, GitBranch, Info, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { commands } from "../../../bindings";
-import { fadeInUp } from "../../lib/animations";
-import { Button } from "../ui/button";
+import { fadeInUp } from "../../../core/lib/animations";
+import { Button } from "../../../core/components/ui/button";
 
 interface GitInitFallbackBannerProps {
   path: string;

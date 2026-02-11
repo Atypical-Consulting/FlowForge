@@ -1,6 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import "./core/commands";
 import "./core/commands/toolbar-actions";
 import "./core/commands/context-menu-items";
@@ -8,7 +8,6 @@ import "./core/blades/_discovery";
 import { CommandPalette } from "./core/components/command-palette";
 import { Header } from "./core/components/Header";
 import { RepositoryView } from "./core/components/RepositoryView";
-import { WelcomeView } from "./core/components/WelcomeView";
 import { ContextMenuPortal } from "./core/components/ui/ContextMenu";
 import { StatusBar } from "./core/components/ui/StatusBar";
 import { ToastContainer } from "./core/components/ui/ToastContainer";
@@ -22,6 +21,8 @@ import { usePreferencesStore as useSettingsStore } from "./core/stores/domain/pr
 import { usePreferencesStore as useThemeStore } from "./core/stores/domain/preferences";
 import { useGitOpsStore as useTopologyStore } from "./core/stores/domain/git-ops";
 import { useGitOpsStore as useUndoStore } from "./core/stores/domain/git-ops";
+import { useBladeRegistry } from "./core/lib/bladeRegistry";
+import { modKeyLabel } from "./core/lib/platform";
 import { useExtensionHost } from "./extensions";
 import { onActivate as viewerCodeActivate, onDeactivate as viewerCodeDeactivate } from "./extensions/viewer-code";
 import { onActivate as viewerMarkdownActivate, onDeactivate as viewerMarkdownDeactivate } from "./extensions/viewer-markdown";
@@ -34,6 +35,39 @@ import { onActivate as initRepoActivate, onDeactivate as initRepoDeactivate } fr
 import { onActivate as viewerImageActivate, onDeactivate as viewerImageDeactivate } from "./extensions/viewer-image";
 import { onActivate as viewerNupkgActivate, onDeactivate as viewerNupkgDeactivate } from "./extensions/viewer-nupkg";
 import { onActivate as viewerPlaintextActivate, onDeactivate as viewerPlaintextDeactivate } from "./extensions/viewer-plaintext";
+import { onActivate as welcomeActivate, onDeactivate as welcomeDeactivate } from "./extensions/welcome-screen";
+
+function WelcomeScreen() {
+  const registration = useBladeRegistry((s) => s.blades.get("welcome-screen"));
+
+  if (!registration) {
+    // Graceful fallback if extension is disabled
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-3.5rem)] gap-4 bg-ctp-base">
+        <p className="text-ctp-subtext0">
+          Press{" "}
+          <kbd className="px-1.5 py-0.5 bg-ctp-surface0 rounded text-ctp-subtext1 font-mono text-xs">
+            {modKeyLabel}+O
+          </kbd>{" "}
+          to open a repository
+        </p>
+      </div>
+    );
+  }
+
+  const WelcomeComponent = registration.component;
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)] bg-ctp-base">
+          <p className="text-ctp-subtext0">Loading...</p>
+        </div>
+      }
+    >
+      <WelcomeComponent />
+    </Suspense>
+  );
+}
 
 function App() {
   const queryClient = useQueryClient();
@@ -154,6 +188,14 @@ function App() {
       activate: viewerPlaintextActivate,
       deactivate: viewerPlaintextDeactivate,
     });
+
+    registerBuiltIn({
+      id: "welcome-screen",
+      name: "Welcome Screen",
+      version: "1.0.0",
+      activate: welcomeActivate,
+      deactivate: welcomeDeactivate,
+    });
   }, [initTheme, initSettings, initNavigation, initMetadata, initChecklist, registerBuiltIn]);
 
   // Discover and activate extensions when a repository is opened
@@ -209,7 +251,7 @@ function App() {
       <div className="flex flex-col h-screen bg-ctp-base text-ctp-text font-sans">
         <Header />
         <main className="flex-1 min-h-0 overflow-hidden">
-          {status ? <RepositoryView /> : <WelcomeView />}
+          {status ? <RepositoryView /> : <WelcomeScreen />}
         </main>
         {status && <StatusBar />}
         <ToastContainer />

@@ -30,6 +30,7 @@ export interface BladePropsMap {
   "conventional-commit": { amend?: boolean };
   "extension-manager": Record<string, never>;
   "extension-detail": { extensionId: string };
+  "welcome-screen": Record<string, never>;
 }
 
 /** Core blade types derived from the map — single source of truth */

@@ -1,24 +1,22 @@
 import { open } from "@tauri-apps/plugin-dialog";
-import { useSelector } from "@xstate/react";
 import { motion } from "framer-motion";
 import { AlertCircle, FolderOpen, GitFork } from "lucide-react";
-import appIcon from "../../../src-tauri/icons/icon.png";
+import appIcon from "../../../../src-tauri/icons/icon.png";
 import { Suspense, useCallback, useEffect, useState } from "react";
-import { commands } from "../../bindings";
-import { BladeRenderer } from "../blades/_shared/BladeRenderer";
-import { useRecentRepos } from "../hooks/useRecentRepos";
-import { fadeInUp, staggerContainer, staggerItem } from "../lib/animations";
-import { useBladeRegistry } from "../lib/bladeRegistry";
-import { modKeyLabel } from "../lib/platform";
-import { useNavigationActorRef } from "../machines/navigation/context";
-import { selectBladeStack } from "../machines/navigation/selectors";
-import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
-import { CloneForm } from "./clone/CloneForm";
+import { commands } from "../../../bindings";
+import { useRecentRepos } from "../../../core/hooks/useRecentRepos";
+import { fadeInUp, staggerContainer, staggerItem } from "../../../core/lib/animations";
+import { useBladeRegistry } from "../../../core/lib/bladeRegistry";
+import { modKeyLabel } from "../../../core/lib/platform";
+import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";
+import { CloneForm } from "../../../core/components/clone/CloneForm";
+import { Button } from "../../../core/components/ui/button";
+import { AnimatedGradientBg } from "./AnimatedGradientBg";
+import { GitInitBanner } from "./GitInitBanner";
+import { GitInitFallbackBanner } from "./GitInitFallbackBanner";
 import { RecentRepos } from "./RecentRepos";
-import { Button } from "./ui/button";
-import { AnimatedGradientBg, GitInitBanner, GitInitFallbackBanner } from "./welcome";
 
-export function WelcomeView() {
+export function WelcomeContent() {
   const { openRepository, repoIsLoading: isLoading, repoError: error, clearRepoError: clearError } = useRepositoryStore();
   const { addRecentRepo } = useRecentRepos();
   const [isDragOver, setIsDragOver] = useState(false);
@@ -27,12 +25,6 @@ export function WelcomeView() {
   const [showInitRepo, setShowInitRepo] = useState(false);
 
   const initRepoRegistration = useBladeRegistry((s) => s.blades.get("init-repo"));
-
-  // Watch navigation blade stack for blades pushed while on WelcomeView
-  // (e.g. Settings, Extension Manager from command palette or toolbar)
-  const actorRef = useNavigationActorRef();
-  const bladeStack = useSelector(actorRef, selectBladeStack);
-  const pushedBlade = bladeStack.length > 1 ? bladeStack[bladeStack.length - 1] : null;
 
   // Mid-session disable recovery: if user is viewing Init Repo blade
   // and the extension is disabled, reset to prevent stuck loading screen
@@ -132,19 +124,6 @@ export function WelcomeView() {
     },
     [openRepository, addRecentRepo, clearError],
   );
-
-  // Show blades pushed via command palette / toolbar while on WelcomeView
-  // (e.g. Settings, Extension Manager)
-  if (pushedBlade) {
-    return (
-      <div className="h-[calc(100vh-3.5rem)] bg-ctp-base">
-        <BladeRenderer
-          blade={pushedBlade}
-          goBack={() => actorRef.send({ type: "POP_BLADE" })}
-        />
-      </div>
-    );
-  }
 
   // Show Init Repo blade in standalone mode
   if (showInitRepo && pendingInitPath) {

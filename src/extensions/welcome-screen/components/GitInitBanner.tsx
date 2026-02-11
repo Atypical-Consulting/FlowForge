@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { FolderGit2, GitBranch } from "lucide-react";
-import { fadeInUp } from "../../lib/animations";
-import { Button } from "../ui/button";
+import { fadeInUp } from "../../../core/lib/animations";
+import { Button } from "../../../core/components/ui/button";
 
 interface GitInitBannerProps {
   path: string;

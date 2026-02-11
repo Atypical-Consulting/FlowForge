@@ -1,0 +1,17 @@
+{
+  "id": "welcome-screen",
+  "name": "Welcome Screen",
+  "version": "1.0.0",
+  "description": "Welcome screen with repository open/clone actions, recent repos list, and animated background. Displayed as the first blade when no repository is open.",
+  "apiVersion": "1",
+  "main": "index.ts",
+  "contributes": {
+    "blades": [
+      { "type": "welcome-screen", "title": "Welcome", "singleton": true }
+    ],
+    "commands": null,
+    "toolbar": null
+  },
+  "permissions": null,
+  "trustLevel": "built-in"
+}
