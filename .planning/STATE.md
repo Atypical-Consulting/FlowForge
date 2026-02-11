@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** v1.7.0 Extensions Everywhere -- Phase 47: Cleanup & Verification
+**Current focus:** v1.7.0 Extensions Everywhere -- Complete
 
 ## Current Position
 
 Phase: 47 (fifth of 5 in v1.7.0) — Cleanup & Verification
-Plan: —
-Status: Ready to plan
-Last activity: 2026-02-11 - Completed Phase 46: Topology Extraction (3/3 plans)
+Plan: 3/3 complete
+Status: Phase complete, milestone complete
+Last activity: 2026-02-11 - Completed Phase 47: Cleanup & Verification (3/3 plans)
 
-Progress: [████████░░] 80%
+Progress: [██████████] 100%
 
 ## Milestone History
 
@@ -34,9 +34,9 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 46 complete, 1 planned
-- Total plans: ~224 complete
-- Total requirements validated: 292 (9 new in phase 46)
+- Total phases: 47 complete
+- Total plans: ~227 complete
+- Total requirements validated: 296 (4 new in phase 47)
 - Codebase: ~49,470 LOC (38,325 TypeScript + 11,145 Rust)
 - Tests: 233 (Vitest + jsdom)
 
@@ -61,6 +61,7 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 - Phase 44: ✓ Worktree extraction clean, CustomEvent pattern for cross-component dialog triggers
 - Phase 45: ✓ Init Repo extraction clean, coreOverride pattern for WelcomeView compatibility, fallback banner pattern
 - Phase 46: ✓ Topology extraction clean, registry-aware rootBladeForProcess fallback, file watcher in extension lifecycle
+- Phase 47: ✓ Discovery split clean, core/extension boundary enforced, 25 toggle tests, all 13 extensions have READMEs
 
 ### Blockers/Concerns
 
@@ -93,9 +94,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Phase 46 complete, ready to plan Phase 47
+Stopped at: Phase 47 complete, v1.7.0 milestone complete
 Resume file: None
 
 ---
 *State updated: 2026-02-11*
-*Phase 46 complete. Next: plan Phase 47 (Cleanup & Verification)*
+*Phase 47 complete. v1.7.0 Extensions Everywhere milestone complete. Next: /gsd:complete-milestone*
