@@ -12,6 +12,8 @@ interface FileItemProps {
   section: "staged" | "unstaged" | "untracked";
   depth?: number;
   showFilenameOnly?: boolean;
+  checked?: boolean;
+  onCheckChange?: (path: string, checked: boolean) => void;
 }
 
 function getStatusDot(status: FileStatus): { color: string; title: string } {
@@ -32,6 +34,8 @@ export function FileItem({
   section,
   depth = 0,
   showFilenameOnly = false,
+  checked,
+  onCheckChange,
 }: FileItemProps) {
   const queryClient = useQueryClient();
   const { stagingSelectedFile, selectFile } = useStagingStore();
@@ -87,6 +91,19 @@ export function FileItem({
         isSelected && "bg-ctp-blue/20 border-l-2 border-ctp-blue",
       )}
     >
+      {onCheckChange !== undefined && (
+        <input
+          type="checkbox"
+          checked={checked ?? false}
+          onChange={(e) => {
+            e.stopPropagation();
+            onCheckChange(file.path, e.target.checked);
+          }}
+          onClick={(e) => e.stopPropagation()}
+          className="shrink-0 w-3.5 h-3.5 accent-ctp-blue rounded cursor-pointer"
+          aria-label={`Select ${file.path}`}
+        />
+      )}
       <div className="relative shrink-0">
         <FileTypeIcon path={file.path} className="w-4 h-4" />
         <span

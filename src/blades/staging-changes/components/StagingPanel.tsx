@@ -278,18 +278,21 @@ export function StagingPanel() {
               files={status.staged}
               section="staged"
               onUnstageAll={() => unstageAllMutation.mutate()}
+              onBulkUnstage={(paths) => unstageFolderMutation.mutate(paths)}
             />
             <FileList
               title="Changes"
               files={status.unstaged}
               section="unstaged"
               onStageAll={() => stageAllMutation.mutate()}
+              onBulkStage={(paths) => stageFolderMutation.mutate(paths)}
             />
             <FileList
               title="Untracked Files"
               files={status.untracked}
               section="untracked"
               onStageAll={() => stageAllMutation.mutate()}
+              onBulkStage={(paths) => stageFolderMutation.mutate(paths)}
             />
           </>
         )}
