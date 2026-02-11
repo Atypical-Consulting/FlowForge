@@ -72,7 +72,7 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: "github", link: "https://github.com/phmatray/FlowForge" },
+      { icon: "github", link: "https://github.com/Atypical-Consulting/FlowForge" },
     ],
   },
 

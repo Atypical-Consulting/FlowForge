@@ -1,6 +1,6 @@
 # GitHub Integration
 
-FlowForge's GitHub extension connects your local repository to GitHub, letting you manage pull requests, issues, and authentication without leaving the app. It ships as the first built-in extension in FlowForge v1.5.0.
+FlowForge's GitHub extension connects your local repository to GitHub, letting you manage pull requests, issues, and authentication without leaving the app. It ships as one of four built-in extensions in FlowForge v1.6.0.
 
 ## Authentication
 
@@ -17,6 +17,7 @@ Browse, inspect, and create pull requests from within FlowForge.
 - **Browse PRs** — View open, closed, and merged pull requests for the current repository.
 - **PR details** — See the description, reviewers, labels, CI check status, and merge state for any PR.
 - **Create PRs** — Open a new pull request from your current branch with title, body, base branch selector, and draft toggle.
+- **Merge PRs** — Merge with strategy selector (merge commit, squash, or rebase) and confirmation dialog.
 - **Toolbar access** — A pull requests button appears in the toolbar when authenticated and a GitHub remote is detected.
 
 ## Issues
@@ -35,3 +36,4 @@ FlowForge automatically detects GitHub remotes when you open a repository. If a 
 
 - [Getting Started](/getting-started) — Set up FlowForge and open your first repository.
 - [Blade Navigation](/concepts/blade-navigation) — Understand the stack-based UI model that powers the GitHub blades.
+- [Extension API](/extension-api) — Learn how extensions like GitHub register blades, commands, and toolbar actions.

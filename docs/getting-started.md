@@ -20,7 +20,7 @@ Grab the latest release for your platform from the [Download page](/download). P
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/phmatray/FlowForge.git
+git clone https://github.com/Atypical-Consulting/FlowForge.git
 cd FlowForge
 npm install
 ```

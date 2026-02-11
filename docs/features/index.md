@@ -5,7 +5,7 @@ FlowForge brings together the tools you need for daily Git work in a single nati
 ## Core Capabilities
 
 ### Gitflow Workflow
-Start, finish, and manage **feature**, **release**, and **hotfix** branches through a guided interface. FlowForge handles the merge strategy and tag creation automatically. [Learn more &rarr;](/features/gitflow)
+Start, finish, and manage **feature**, **release**, and **hotfix** branches through a guided interface. FlowForge handles the merge strategy and tag creation automatically. Ships as a toggleable built-in extension — disable it to use FlowForge as a plain Git client. [Learn more &rarr;](/features/gitflow)
 
 ### Staging & Commits
 View file diffs, stage individual files or hunks, write commit messages, and amend previous commits — all from a unified panel. [Learn more &rarr;](/features/staging)
@@ -26,7 +26,7 @@ Save and restore work-in-progress changes with Git stash. Name your stashes for 
 Create new Git repositories from any folder with guided `.gitignore` template selection, project type auto-detection, and optional initial commit generation. [Learn more &rarr;](/features/init-repo)
 
 ### Conventional Commits
-Write structured commit messages with a dedicated editor that breaks messages into type, scope, description, and body fields. Live preview ensures correct formatting before you commit. [Learn more &rarr;](/features/conventional-commits)
+Write structured commit messages with a dedicated editor that breaks messages into type, scope, description, and body fields. Live preview ensures correct formatting before you commit. Ships as a toggleable built-in extension — disable it for a plain text commit form. [Learn more &rarr;](/features/conventional-commits)
 
 ### Review Checklist
 Before finishing a Gitflow branch, an advisory checklist reminds you of common pre-merge steps. Items are customizable per flow type in Settings.
@@ -34,5 +34,8 @@ Before finishing a Gitflow branch, an advisory checklist reminds you of common p
 ### GitHub Integration
 Connect your local repository to GitHub without leaving FlowForge. Browse and create pull requests, view issues, and manage your GitHub account — all from dedicated blades. Sign in securely via GitHub's Device Flow. [Learn more &rarr;](/features/github-integration)
 
-### Extension System
-FlowForge v1.5.0 introduces a modular extension architecture that allows new integrations to be added as self-contained plugins. GitHub Integration ships as the first built-in extension, with the framework ready for community and first-party extensions in future releases.
+### Content Viewers
+Preview Markdown files, source code (via Monaco editor), and 3D models (`.gltf`/`.glb`) directly in FlowForge. Ships as a toggleable built-in extension — when disabled, file previews fall back to plain text display.
+
+### Extension Platform
+FlowForge v1.6.0 features a fully extensible platform with four independently toggleable built-in extensions: **GitHub**, **Gitflow**, **Conventional Commits**, and **Content Viewers**. Extensions can contribute context menus, sidebar panels, status bar widgets, toolbar actions, and git operation hooks. Sandbox infrastructure (trust levels, Worker prototype) prepares for future third-party extension safety. [Learn about the API &rarr;](/extension-api)
