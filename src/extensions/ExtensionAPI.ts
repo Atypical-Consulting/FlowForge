@@ -106,6 +106,8 @@ export interface ExtensionSidebarPanelConfig {
   when?: () => boolean;
   defaultOpen?: boolean;
   renderAction?: () => ReactNode;
+  /** Optional badge function returning a count/label to display on the panel header. */
+  badge?: () => number | string | null;
 }
 
 export interface ExtensionStatusBarConfig {
