@@ -1,6 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { useQueryClient } from "@tanstack/react-query";
-import { Suspense, useEffect } from "react";
+import { Suspense, useCallback, useEffect } from "react";
 import "./core/commands";
 import "./core/commands/toolbar-actions";
 import "./core/commands/context-menu-items";
@@ -15,6 +15,7 @@ import { useKeyboardShortcuts } from "./core/hooks/useKeyboardShortcuts";
 import { getNavigationActor, NavigationProvider } from "./core/machines/navigation/context";
 import { usePreferencesStore as useBranchMetadataStore } from "./core/stores/domain/preferences";
 import { usePreferencesStore as useNavigationStore } from "./core/stores/domain/preferences";
+import { useGitOpsStore } from "./core/stores/domain/git-ops";
 import { useGitOpsStore as useRepositoryStore } from "./core/stores/domain/git-ops";
 import { usePreferencesStore as useReviewChecklistStore } from "./core/stores/domain/preferences";
 import { usePreferencesStore as useSettingsStore } from "./core/stores/domain/preferences";
@@ -37,22 +38,45 @@ import { onActivate as viewerNupkgActivate, onDeactivate as viewerNupkgDeactivat
 import { onActivate as viewerPlaintextActivate, onDeactivate as viewerPlaintextDeactivate } from "./extensions/viewer-plaintext";
 import { onActivate as welcomeActivate, onDeactivate as welcomeDeactivate } from "./extensions/welcome-screen";
 
+function WelcomeFallback() {
+  const { openRepository } = useGitOpsStore();
+
+  const openDialog = useCallback(async () => {
+    const { open } = await import("@tauri-apps/plugin-dialog");
+    const { commands } = await import("./bindings");
+    const selected = await open({ directory: true, multiple: false, title: "Open Git Repository" });
+    if (selected && typeof selected === "string") {
+      const isRepo = await commands.isGitRepository(selected);
+      if (isRepo.status === "ok" && isRepo.data) {
+        await openRepository(selected);
+      }
+    }
+  }, [openRepository]);
+
+  useEffect(() => {
+    const handler = () => openDialog();
+    document.addEventListener("open-repository-dialog", handler);
+    return () => document.removeEventListener("open-repository-dialog", handler);
+  }, [openDialog]);
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-3.5rem)] gap-4 bg-ctp-base">
+      <p className="text-ctp-subtext0">
+        Press{" "}
+        <kbd className="px-1.5 py-0.5 bg-ctp-surface0 rounded text-ctp-subtext1 font-mono text-xs">
+          {modKeyLabel}+O
+        </kbd>{" "}
+        to open a repository
+      </p>
+    </div>
+  );
+}
+
 function WelcomeScreen() {
   const registration = useBladeRegistry((s) => s.blades.get("welcome-screen"));
 
   if (!registration) {
-    // Graceful fallback if extension is disabled
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-3.5rem)] gap-4 bg-ctp-base">
-        <p className="text-ctp-subtext0">
-          Press{" "}
-          <kbd className="px-1.5 py-0.5 bg-ctp-surface0 rounded text-ctp-subtext1 font-mono text-xs">
-            {modKeyLabel}+O
-          </kbd>{" "}
-          to open a repository
-        </p>
-      </div>
-    );
+    return <WelcomeFallback />;
   }
 
   const WelcomeComponent = registration.component;
