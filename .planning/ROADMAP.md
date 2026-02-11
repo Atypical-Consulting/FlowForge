@@ -177,7 +177,11 @@ Plans:
   2. _discovery.ts EXPECTED_TYPES is split into CORE and EXTENSION lists reflecting the new architecture
   3. Toggle tests pass for all 3 new extensions (enable/disable cycles produce no errors or stale state)
   4. Extension developer documentation includes examples from the new built-in extensions (worktrees, init-repo, topology)
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 47-01-PLAN.md -- Discovery types split, ToggleSwitch/PermissionBadge relocation, stale comment cleanup
+- [ ] 47-02-PLAN.md -- Toggle tests for topology, worktrees, and init-repo extensions
+- [ ] 47-03-PLAN.md -- Topology extension README documentation
 
 ## Progress
 
@@ -189,7 +193,7 @@ Plans:
 | 44. Worktree Extraction | v1.7.0 | 2/2 | ✓ Complete | 2026-02-11 |
 | 45. Init Repo Extraction | v1.7.0 | 2/2 | ✓ Complete | 2026-02-11 |
 | 46. Topology Extraction | v1.7.0 | 3/3 | ✓ Complete | 2026-02-11 |
-| 47. Cleanup & Verification | v1.7.0 | 0/TBD | Not started | - |
+| 47. Cleanup & Verification | v1.7.0 | 0/3 | Not started | - |
 
 ---
 *Last updated: 2026-02-11 -- Phase 46 complete*
