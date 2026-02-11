@@ -28,6 +28,7 @@ import {
   type DidHandler,
   type WillHandler,
 } from "../lib/gitHookBus";
+import { ExtensionSettings } from "./extensionSettings";
 
 // --- Config types for extension authors ---
 
@@ -133,8 +134,12 @@ export class ExtensionAPI {
   private gitHookUnsubscribes: (() => void)[] = [];
   private disposables: Disposable[] = [];
 
+  /** Namespaced key-value settings storage for this extension. */
+  readonly settings: ExtensionSettings;
+
   constructor(extensionId: string) {
     this.extensionId = extensionId;
+    this.settings = new ExtensionSettings(extensionId);
   }
 
   /**
@@ -274,6 +279,14 @@ export class ExtensionAPI {
    */
   onDispose(disposable: Disposable): void {
     this.disposables.push(disposable);
+  }
+
+  /**
+   * Remove all persisted settings for this extension.
+   * Intended for uninstall scenarios where data should not linger.
+   */
+  async clearSettings(): Promise<void> {
+    await this.settings.clear();
   }
 
   /**
