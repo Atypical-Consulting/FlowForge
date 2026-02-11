@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import "./commands";
 import "./commands/toolbar-actions";
+import "./commands/context-menu-items";
 import "./blades/_discovery";
 import { CommandPalette } from "./components/command-palette";
 import { Header } from "./components/Header";

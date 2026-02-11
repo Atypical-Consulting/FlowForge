@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { Clock, Copy, GitCommit, Loader2, User } from "lucide-react";
+import { Check, Clock, Copy, GitCommit, Loader2, User } from "lucide-react";
 import { useState } from "react";
 import { commands } from "../../bindings";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
+import { toast } from "../../stores/toast";
 import { FileTreeBlade } from "../_shared/FileTreeBlade";
 
 interface CommitDetailsBladeProps {
@@ -46,6 +47,7 @@ export function CommitDetailsBlade({ oid }: CommitDetailsBladeProps) {
   const handleCopySha = async () => {
     await navigator.clipboard.writeText(details.oid);
     setCopied(true);
+    toast.success("SHA copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -88,11 +90,12 @@ export function CommitDetailsBlade({ oid }: CommitDetailsBladeProps) {
             title="Copy full SHA"
           >
             {details.oid}
-            <Copy className="w-3 h-3" />
+            {copied ? (
+              <Check className="w-3 h-3 text-ctp-green" />
+            ) : (
+              <Copy className="w-3 h-3" />
+            )}
           </button>
-          {copied && (
-            <span className="text-xs text-ctp-green">Copied!</span>
-          )}
         </div>
 
         {details.parentOids.length > 0 && (

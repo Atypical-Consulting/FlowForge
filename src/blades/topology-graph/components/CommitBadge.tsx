@@ -5,6 +5,7 @@ import {
   COMMIT_TYPE_THEME,
   type ConventionalCommitType,
 } from "../../../lib/commit-type-theme";
+import { useContextMenuRegistry } from "../../../lib/contextMenuRegistry";
 import { cn } from "../../../lib/utils";
 import {
   BRANCH_BADGE_STYLES,
@@ -35,6 +36,14 @@ export const CommitBadge = memo(
     return (
       <div
         onClick={onClick}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          useContextMenuRegistry.getState().showMenu(
+            { x: e.clientX, y: e.clientY },
+            "commit-list",
+            { location: "commit-list", commitOid: node.oid },
+          );
+        }}
         className={cn(
           "px-2 py-1 rounded-md border cursor-pointer transition-all",
           "h-full flex items-center gap-1.5 text-xs",
