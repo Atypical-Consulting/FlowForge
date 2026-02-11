@@ -1,0 +1,17 @@
+{
+  "id": "viewer-plaintext",
+  "name": "Plain Text Viewer",
+  "version": "1.0.0",
+  "description": "Displays plain text files with proper loading states and binary file detection.",
+  "apiVersion": "1",
+  "main": "index.ts",
+  "contributes": {
+    "blades": [
+      { "type": "viewer-plaintext", "title": "Plain Text" }
+    ],
+    "commands": null,
+    "toolbar": null
+  },
+  "permissions": null,
+  "trustLevel": "built-in"
+}

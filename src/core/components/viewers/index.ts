@@ -1,4 +1,3 @@
-export { NugetPackageViewer } from "./NugetPackageViewer";
 export {
   getViewerForFile,
   registerViewer,

@@ -1,0 +1,17 @@
+{
+  "id": "viewer-nupkg",
+  "name": "NuGet Package Viewer",
+  "version": "1.0.0",
+  "description": "Displays NuGet package information by parsing .nupkg filenames and fetching metadata from NuGet.org.",
+  "apiVersion": "1",
+  "main": "index.ts",
+  "contributes": {
+    "blades": [
+      { "type": "viewer-nupkg", "title": "Package" }
+    ],
+    "commands": null,
+    "toolbar": null
+  },
+  "permissions": null,
+  "trustLevel": "built-in"
+}

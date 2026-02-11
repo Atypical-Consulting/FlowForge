@@ -1,0 +1,17 @@
+{
+  "id": "viewer-image",
+  "name": "Image Viewer",
+  "version": "1.0.0",
+  "description": "Displays image files with base64 loading from working tree or commit history.",
+  "apiVersion": "1",
+  "main": "index.ts",
+  "contributes": {
+    "blades": [
+      { "type": "viewer-image", "title": "Image" }
+    ],
+    "commands": null,
+    "toolbar": null
+  },
+  "permissions": null,
+  "trustLevel": "built-in"
+}

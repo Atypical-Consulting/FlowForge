@@ -31,6 +31,9 @@ import { onActivate as gitflowActivate, onDeactivate as gitflowDeactivate } from
 import { onActivate as worktreesActivate, onDeactivate as worktreesDeactivate } from "./extensions/worktrees";
 import { onActivate as githubActivate, onDeactivate as githubDeactivate } from "./extensions/github";
 import { onActivate as initRepoActivate, onDeactivate as initRepoDeactivate } from "./extensions/init-repo";
+import { onActivate as viewerImageActivate, onDeactivate as viewerImageDeactivate } from "./extensions/viewer-image";
+import { onActivate as viewerNupkgActivate, onDeactivate as viewerNupkgDeactivate } from "./extensions/viewer-nupkg";
+import { onActivate as viewerPlaintextActivate, onDeactivate as viewerPlaintextDeactivate } from "./extensions/viewer-plaintext";
 
 function App() {
   const queryClient = useQueryClient();
@@ -126,6 +129,30 @@ function App() {
       version: "1.0.0",
       activate: githubActivate,
       deactivate: githubDeactivate,
+    });
+
+    registerBuiltIn({
+      id: "viewer-image",
+      name: "Image Viewer",
+      version: "1.0.0",
+      activate: viewerImageActivate,
+      deactivate: viewerImageDeactivate,
+    });
+
+    registerBuiltIn({
+      id: "viewer-nupkg",
+      name: "NuGet Package Viewer",
+      version: "1.0.0",
+      activate: viewerNupkgActivate,
+      deactivate: viewerNupkgDeactivate,
+    });
+
+    registerBuiltIn({
+      id: "viewer-plaintext",
+      name: "Plain Text Viewer",
+      version: "1.0.0",
+      activate: viewerPlaintextActivate,
+      deactivate: viewerPlaintextDeactivate,
     });
   }, [initTheme, initSettings, initNavigation, initMetadata, initChecklist, registerBuiltIn]);
 

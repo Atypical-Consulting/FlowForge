@@ -9,7 +9,7 @@ import {
   User,
 } from "lucide-react";
 import { commands } from "../../../bindings";
-import type { ViewerProps } from "./ViewerRegistry";
+import type { ViewerProps } from "../../../core/components/viewers/ViewerRegistry";
 
 // Extract package ID and version from filename: PackageName.1.2.3.nupkg
 function parseNupkgFilename(

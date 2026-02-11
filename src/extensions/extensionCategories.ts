@@ -27,7 +27,10 @@ const EXTENSION_CATEGORIES: Record<string, ExtensionCategory> = {
   "init-repo": "setup",
   "viewer-3d": "viewers",
   "viewer-code": "viewers",
+  "viewer-image": "viewers",
   "viewer-markdown": "viewers",
+  "viewer-nupkg": "viewers",
+  "viewer-plaintext": "viewers",
   worktrees: "source-control",
 };
 

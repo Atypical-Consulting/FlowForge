@@ -1,4 +1,4 @@
-import { render } from "../../test-utils/render";
+import { render } from "../../../core/test-utils/render";
 
 const mockCommands = vi.hoisted(() => ({
   getFileBase64: vi.fn().mockResolvedValue({

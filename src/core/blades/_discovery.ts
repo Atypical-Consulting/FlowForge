@@ -16,7 +16,7 @@ if (import.meta.env.DEV && !import.meta.hot?.data?.isUpdate) {
   const registered = new Set(getAllBladeTypes());
   const EXPECTED_TYPES: string[] = [
     "staging-changes", "topology-graph", "commit-details", "diff",
-    "viewer-nupkg", "viewer-image", "viewer-plaintext", "repo-browser", "settings",
+    "repo-browser", "settings",
     "extension-manager", "extension-detail",
   ];
   const missing = EXPECTED_TYPES.filter(t => !registered.has(t as any));

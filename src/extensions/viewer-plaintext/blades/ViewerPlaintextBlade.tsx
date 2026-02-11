@@ -1,8 +1,8 @@
 import { FileText } from "lucide-react";
-import { useRepoFile } from "../../hooks/useRepoFile";
-import { BladeContentLoading } from "../_shared/BladeContentLoading";
-import { BladeContentError } from "../_shared/BladeContentError";
-import { BladeContentEmpty } from "../_shared/BladeContentEmpty";
+import { useRepoFile } from "../../../core/hooks/useRepoFile";
+import { BladeContentLoading } from "../../../core/blades/_shared/BladeContentLoading";
+import { BladeContentError } from "../../../core/blades/_shared/BladeContentError";
+import { BladeContentEmpty } from "../../../core/blades/_shared/BladeContentEmpty";
 
 interface ViewerPlaintextBladeProps {
   filePath: string;
