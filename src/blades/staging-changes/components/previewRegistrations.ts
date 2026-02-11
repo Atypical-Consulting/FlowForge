@@ -15,6 +15,7 @@ registerPreview({
     icon: File,
     message: "Binary file — click to expand",
   },
+  source: "core",
 });
 
 registerPreview({
@@ -26,6 +27,7 @@ registerPreview({
     icon: FileImage,
     message: "Image file — click to expand for preview",
   },
+  source: "core",
 });
 
 registerPreview({
@@ -37,6 +39,7 @@ registerPreview({
     icon: FileArchive,
     message: "Archive file — click to expand",
   },
+  source: "core",
 });
 
 registerPreview({
@@ -48,6 +51,7 @@ registerPreview({
     icon: Box,
     message: "3D model — click to expand for viewer",
   },
+  source: "core",
 });
 
 registerPreview({
@@ -55,4 +59,5 @@ registerPreview({
   priority: -100,
   mode: "inline-diff",
   matches: () => true,
+  source: "core",
 });
