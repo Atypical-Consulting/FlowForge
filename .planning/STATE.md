@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-11)
 Phase: 46 (fourth of 5 in v1.7.0) — Topology Extraction
 Plan: —
 Status: Ready to plan
-Last activity: 2026-02-11 - Completed quick task 45: migrate welcome screen to an extension
+Last activity: 2026-02-11 - Completed quick task 46: implement the show branches blade (with management) as a core blade
 
 Progress: [██████░░░░] 60%
 
@@ -82,6 +82,7 @@ None active.
 | 43 | extension preview should render readme file of the extension. Extension Manager should categorize extensions. | 2026-02-11 | 64f36ce | [43-extension-preview-should-render-readme-f](./quick/43-extension-preview-should-render-readme-f/) |
 | 44 | create 3 new extensions from viewer-image, viewer-nupkg and viewer-plaintext | 2026-02-11 | cbdb0e2 | [44-create-3-new-extensions-from-viewer-imag](./quick/44-create-3-new-extensions-from-viewer-imag/) |
 | 45 | migrate welcome screen to an extension | 2026-02-11 | 37e1456 | [45-migrate-welcome-screen-to-an-extension-w](./quick/45-migrate-welcome-screen-to-an-extension-w/) |
+| 46 | implement the show branches blade (with management) as a core blade | 2026-02-11 | 5e129a7 | [46-implement-the-show-branches-blade-with-m](./quick/46-implement-the-show-branches-blade-with-m/) |
 
 ### Pending Todos
 
