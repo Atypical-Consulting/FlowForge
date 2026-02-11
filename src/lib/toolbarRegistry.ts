@@ -48,6 +48,8 @@ export interface ToolbarAction {
   isLoading?: () => boolean;
   /** "core" for built-in, "ext:{extId}" for extensions */
   source?: string;
+  /** Badge callback returning a count or label to overlay on the button */
+  badge?: () => number | string | null;
   /** Optional custom render function. When provided, replaces the default ToolbarButton rendering.
    *  Receives the action and the computed tabIndex for roving tabindex integration. */
   renderCustom?: (action: ToolbarAction, tabIndex: number) => ReactNode;

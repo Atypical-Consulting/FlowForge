@@ -15,6 +15,7 @@ export interface SidebarPanelConfig {
   defaultOpen?: boolean;
   source?: string;
   renderAction?: () => ReactNode;
+  badge?: () => number | string | null;
 }
 
 // --- Store ---

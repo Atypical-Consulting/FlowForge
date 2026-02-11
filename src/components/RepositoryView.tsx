@@ -70,6 +70,15 @@ function DynamicSidebarPanels() {
           <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
             <panel.icon className="w-4 h-4" />
             <span className="font-semibold text-sm flex-1">{panel.title}</span>
+            {panel.badge && (() => {
+              const value = panel.badge!();
+              if (value == null || value === 0 || value === '') return null;
+              return (
+                <span className="bg-ctp-blue text-ctp-base text-[10px] font-medium px-1.5 min-w-[18px] text-center rounded-full">
+                  {value}
+                </span>
+              );
+            })()}
             {panel.renderAction?.()}
           </summary>
           <ExtensionPanelErrorBoundary>
