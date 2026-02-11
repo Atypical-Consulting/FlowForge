@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-11)
 Phase: 46 (fourth of 5 in v1.7.0) — Topology Extraction
 Plan: —
 Status: Ready to plan
-Last activity: 2026-02-11 - Completed quick task 38: explore XState architecture from UX, technical architecture, and expert dev angles with focus on extensibility
+Last activity: 2026-02-11 - Completed quick task 39: full XState integration - navigation machine + extension lifecycle state machines from quick-38 research
 
 Progress: [██████░░░░] 60%
 
@@ -75,6 +75,7 @@ None active.
 | 36 | fix duplicate GitHub linked toast on repo open | 2026-02-11 | d18e497 | [36-fix-duplicate-github-linked-toast-on-rep](./quick/36-fix-duplicate-github-linked-toast-on-rep/) |
 | 37 | add common actions into app toolbar (File, View, Repository, Branch menus) mapped to extensions | 2026-02-11 | 9ab8014 | [37-add-common-actions-into-app-toolbar-file](./quick/37-add-common-actions-into-app-toolbar-file/) |
 | 38 | explore XState architecture from UX, technical architecture, and expert dev angles with focus on extensibility | 2026-02-11 | b9f910e | [38-explore-xstate-architecture-from-ux-tech](./quick/38-explore-xstate-architecture-from-ux-tech/) |
+| 39 | full XState integration: MachineRegistry + merge/gitflow machines | 2026-02-11 | 400a749 | [39-full-xstate-integration-navigation-machi](./quick/39-full-xstate-integration-navigation-machi/) |
 
 ### Pending Todos
 
