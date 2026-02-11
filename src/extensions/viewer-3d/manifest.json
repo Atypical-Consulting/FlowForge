@@ -1,0 +1,17 @@
+{
+  "id": "viewer-3d",
+  "name": "3D Model Viewer",
+  "version": "1.0.0",
+  "description": "Renders 3D model files (.obj, .stl, .gltf) using Three.js with orbit controls and lighting.",
+  "apiVersion": "1",
+  "main": "index.ts",
+  "contributes": {
+    "blades": [
+      { "type": "viewer-3d", "title": "3D Model" }
+    ],
+    "commands": null,
+    "toolbar": null
+  },
+  "permissions": null,
+  "trustLevel": "built-in"
+}

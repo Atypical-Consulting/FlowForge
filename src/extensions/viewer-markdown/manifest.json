@@ -1,0 +1,17 @@
+{
+  "id": "viewer-markdown",
+  "name": "Markdown Viewer",
+  "version": "1.0.0",
+  "description": "Renders Markdown files with full formatting, syntax-highlighted code blocks, and live preview.",
+  "apiVersion": "1",
+  "main": "index.ts",
+  "contributes": {
+    "blades": [
+      { "type": "viewer-markdown", "title": "Markdown" }
+    ],
+    "commands": null,
+    "toolbar": null
+  },
+  "permissions": null,
+  "trustLevel": "built-in"
+}

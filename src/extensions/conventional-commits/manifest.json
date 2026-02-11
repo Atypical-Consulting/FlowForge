@@ -1,0 +1,23 @@
+{
+  "id": "conventional-commits",
+  "name": "Conventional Commits",
+  "version": "1.0.0",
+  "description": "Provides a conventional commit composer and changelog generator following the Conventional Commits specification.",
+  "apiVersion": "1",
+  "main": "index.ts",
+  "contributes": {
+    "blades": [
+      { "type": "conventional-commit", "title": "Conventional Commit", "singleton": true },
+      { "type": "changelog", "title": "Generate Changelog", "singleton": true }
+    ],
+    "commands": [
+      { "id": "generate-changelog", "title": "Generate Changelog", "category": "Repository" },
+      { "id": "open-conventional-commit", "title": "Open Conventional Commit Composer", "category": "Repository" }
+    ],
+    "toolbar": [
+      { "id": "changelog", "label": "Changelog", "group": "views", "priority": 30 }
+    ]
+  },
+  "permissions": null,
+  "trustLevel": "built-in"
+}

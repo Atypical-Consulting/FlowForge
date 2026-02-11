@@ -1,0 +1,21 @@
+{
+  "id": "worktrees",
+  "name": "Worktrees",
+  "version": "1.0.0",
+  "description": "Git worktree management via a sidebar panel with create, delete, and switch operations.",
+  "apiVersion": "1",
+  "main": "index.tsx",
+  "contributes": {
+    "blades": null,
+    "commands": [
+      { "id": "create-worktree", "title": "Create Worktree", "category": "Worktrees" },
+      { "id": "refresh-worktrees", "title": "Refresh Worktrees", "category": "Worktrees" }
+    ],
+    "toolbar": null,
+    "sidebarPanels": [
+      { "id": "worktree-panel", "title": "Worktrees", "defaultOpen": false }
+    ]
+  },
+  "permissions": null,
+  "trustLevel": "built-in"
+}

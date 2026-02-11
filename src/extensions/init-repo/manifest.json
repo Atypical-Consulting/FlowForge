@@ -1,0 +1,19 @@
+{
+  "id": "init-repo",
+  "name": "Init Repository",
+  "version": "1.0.0",
+  "description": "Repository initialization wizard with .gitignore templates, README generation, and initial commit creation.",
+  "apiVersion": "1",
+  "main": "index.ts",
+  "contributes": {
+    "blades": [
+      { "type": "init-repo", "title": "Initialize Repository", "singleton": true }
+    ],
+    "commands": [
+      { "id": "init-repository", "title": "Initialize Repository", "category": "Repository" }
+    ],
+    "toolbar": null
+  },
+  "permissions": null,
+  "trustLevel": "built-in"
+}

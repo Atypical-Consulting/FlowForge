@@ -1,0 +1,24 @@
+{
+  "id": "gitflow",
+  "name": "Gitflow",
+  "version": "1.0.0",
+  "description": "Provides Gitflow workflow management with a cheatsheet blade, sidebar panel, and action dialogs.",
+  "apiVersion": "1",
+  "main": "index.ts",
+  "contributes": {
+    "blades": [
+      { "type": "gitflow-cheatsheet", "title": "Gitflow Guide", "singleton": true }
+    ],
+    "commands": [
+      { "id": "open-gitflow-cheatsheet", "title": "Gitflow Cheatsheet", "category": "Navigation" }
+    ],
+    "toolbar": [
+      { "id": "gitflow-guide", "label": "Gitflow Guide", "group": "views", "priority": 50 }
+    ],
+    "sidebarPanels": [
+      { "id": "gitflow-panel", "title": "Gitflow", "defaultOpen": false }
+    ]
+  },
+  "permissions": null,
+  "trustLevel": "built-in"
+}

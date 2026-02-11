@@ -1,0 +1,17 @@
+{
+  "id": "viewer-code",
+  "name": "Code Viewer",
+  "version": "1.0.0",
+  "description": "Displays source code files with syntax highlighting using Monaco Editor.",
+  "apiVersion": "1",
+  "main": "index.ts",
+  "contributes": {
+    "blades": [
+      { "type": "viewer-code", "title": "Code" }
+    ],
+    "commands": null,
+    "toolbar": null
+  },
+  "permissions": null,
+  "trustLevel": "built-in"
+}

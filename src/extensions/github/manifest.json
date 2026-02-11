@@ -1,0 +1,34 @@
+{
+  "id": "github",
+  "name": "GitHub Integration",
+  "version": "1.0.0",
+  "description": "Comprehensive GitHub integration with OAuth authentication, pull request management, issue tracking, and repository status.",
+  "apiVersion": "1",
+  "main": "index.ts",
+  "contributes": {
+    "blades": [
+      { "type": "sign-in", "title": "GitHub Sign In", "singleton": true },
+      { "type": "account", "title": "GitHub Account", "singleton": true },
+      { "type": "pull-requests", "title": "Pull Requests", "singleton": true },
+      { "type": "pull-request", "title": "Pull Request", "singleton": false },
+      { "type": "issues", "title": "Issues", "singleton": true },
+      { "type": "issue", "title": "Issue", "singleton": false },
+      { "type": "create-pr", "title": "Create Pull Request", "singleton": true }
+    ],
+    "commands": [
+      { "id": "sign-in", "title": "Sign in to GitHub", "category": "GitHub" },
+      { "id": "sign-out", "title": "Sign out of GitHub", "category": "GitHub" },
+      { "id": "open-pull-requests", "title": "View Pull Requests", "category": "GitHub" },
+      { "id": "open-issues", "title": "View Issues", "category": "GitHub" },
+      { "id": "create-pull-request", "title": "Create Pull Request", "category": "GitHub" }
+    ],
+    "toolbar": [
+      { "id": "github-status", "label": "GitHub", "group": "app", "priority": 60 },
+      { "id": "open-pull-requests", "label": "Pull Requests", "group": "views", "priority": 50 },
+      { "id": "open-issues", "label": "Issues", "group": "views", "priority": 45 },
+      { "id": "create-pr", "label": "Create Pull Request", "group": "views", "priority": 55 }
+    ]
+  },
+  "permissions": null,
+  "trustLevel": "built-in"
+}

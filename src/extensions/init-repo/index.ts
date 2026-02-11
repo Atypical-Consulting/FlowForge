@@ -5,7 +5,7 @@ import { openBlade } from "../../lib/bladeOpener";
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {
   const InitRepoBlade = lazy(() =>
-    import("./components/InitRepoBlade").then((m) => ({
+    import("./blades/InitRepoBlade").then((m) => ({
       default: m.InitRepoBlade,
     }))
   );
