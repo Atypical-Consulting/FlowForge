@@ -1,0 +1,13 @@
+{
+  "id": "topology",
+  "name": "Topology Graph",
+  "version": "1.0.0",
+  "description": "Visualize commit history as an interactive lane-based graph with branch classification and commit type icons.",
+  "apiVersion": "1",
+  "main": "index.ts",
+  "contributes": {
+    "blades": [{ "type": "topology-graph", "title": "Topology" }],
+    "commands": [{ "id": "show-topology", "title": "Show History", "category": "Navigation" }]
+  },
+  "trustLevel": "built-in"
+}
