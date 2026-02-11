@@ -147,7 +147,10 @@ Plans:
   2. Disabling the Init Repo extension shows a simple "Run git init" fallback button in WelcomeView
   3. Init Repo command appears in command palette when extension is enabled and disappears when disabled
   4. Init Repo blade store lives in the extension directory, not in the old core blade location
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 45-01-PLAN.md -- Create init-repo extension (entry point, store, components), register in App.tsx, delete old directory
+- [ ] 45-02-PLAN.md -- WelcomeView fallback UI when extension disabled, mid-session disable recovery
 
 ### Phase 46: Topology Extraction
 **Goal**: Topology graph is a toggleable built-in extension, and disabling it degrades gracefully to a simple commit list with process tab hidden
@@ -180,7 +183,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 43. Infrastructure Prep | v1.7.0 | 3/3 | ✓ Complete | 2026-02-11 |
 | 44. Worktree Extraction | v1.7.0 | 2/2 | ✓ Complete | 2026-02-11 |
-| 45. Init Repo Extraction | v1.7.0 | 0/TBD | Not started | - |
+| 45. Init Repo Extraction | v1.7.0 | 0/2 | Planned | - |
 | 46. Topology Extraction | v1.7.0 | 0/TBD | Not started | - |
 | 47. Cleanup & Verification | v1.7.0 | 0/TBD | Not started | - |
 
