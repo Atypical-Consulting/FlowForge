@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-11)
 Phase: 46 (fourth of 5 in v1.7.0) — Topology Extraction
 Plan: —
 Status: Ready to plan
-Last activity: 2026-02-11 - Completed quick task 42: create src/core/ structure, move core files from src/
+Last activity: 2026-02-11 - Completed quick task 43: extension preview should render readme file of the extension. Extension Manager should categorize extensions.
 
 Progress: [██████░░░░] 60%
 
@@ -79,6 +79,7 @@ None active.
 | 40 | split content viewers extension to 3 extensions | 2026-02-11 | a2c5a51 | [40-split-content-viewers-extension-to-3-ext](./quick/40-split-content-viewers-extension-to-3-ext/) |
 | 41 | create a readme for each extension, define standard file structure, move files accordingly | 2026-02-11 | 56aaeeb | [41-create-a-readme-for-each-extension-defin](./quick/41-create-a-readme-for-each-extension-defin/) |
 | 42 | create src/core/ structure, move core files from src/ | 2026-02-11 | 37537a1 | [42-create-a-folder-src-core-same-structure-](./quick/42-create-a-folder-src-core-same-structure-/) |
+| 43 | extension preview should render readme file of the extension. Extension Manager should categorize extensions. | 2026-02-11 | 64f36ce | [43-extension-preview-should-render-readme-f](./quick/43-extension-preview-should-render-readme-f/) |
 
 ### Pending Todos
 
