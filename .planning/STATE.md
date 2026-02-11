@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-10)
 Phase: 42 of 42 (Audit Tech Debt Cleanup)
 Plan: 0 of 1 in current phase
 Status: Ready to plan
-Last activity: 2026-02-11 - Created gap closure phase from milestone audit
+Last activity: 2026-02-11 - Completed quick task 35: implement 10 high-value features
 
 Progress: [█████████░] 93% (15/16 plans)
 
@@ -76,6 +76,7 @@ None active.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 34 | move files related to extensions closer (like for the github extension) | 2026-02-10 | 74a0b78 | [34-move-files-related-to-extensions-closer-](./quick/34-move-files-related-to-extensions-closer-/) |
+| 35 | implement 10 high-value features (copy SHA, ahead/behind, bulk staging, author filter, ext detail, settings API, event bus, onDidNavigate, badges) | 2026-02-11 | 9975187 | [35-implement-10-high-value-features-copy-sh](./quick/35-implement-10-high-value-features-copy-sh/) |
 
 ### Pending Todos
 
