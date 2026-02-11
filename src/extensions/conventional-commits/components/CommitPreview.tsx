@@ -1,10 +1,10 @@
 import { useState, useCallback } from "react";
 import { Check, Copy } from "lucide-react";
-import { parseConventionalMessage } from "../../../lib/conventional-utils";
+import { parseConventionalMessage } from "../lib/conventional-utils";
 import {
   COMMIT_TYPE_THEME,
   type ConventionalCommitType,
-} from "../../../lib/commit-type-theme";
+} from "../lib/commit-type-theme";
 import { cn } from "../../../lib/utils";
 
 interface CommitPreviewProps {

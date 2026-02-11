@@ -1,5 +1,5 @@
 import { useSelector } from "@xstate/react";
-import { getGitflowActor } from "../machines/gitflow/context";
+import { getGitflowActor } from "../machines/context";
 import {
   selectGitflowState,
   selectOperation,
@@ -12,8 +12,8 @@ import {
   selectIsRefreshing,
   selectIsStale,
   selectIsBusy,
-} from "../machines/gitflow/selectors";
-import type { GitflowOp } from "../machines/gitflow/types";
+} from "../machines/selectors";
+import type { GitflowOp } from "../machines/types";
 
 /**
  * React hook providing the gitflow workflow API.

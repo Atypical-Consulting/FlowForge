@@ -5,7 +5,7 @@ import { getErrorMessage } from "../../../lib/errors";
 import type { GitOpsMiddleware } from "./types";
 import type { GitOpsStore } from "./index";
 
-// Gitflow operations (start/finish/abort) moved to src/machines/gitflow/
+// Gitflow operations (start/finish/abort) moved to src/extensions/gitflow/machines/
 
 export interface GitflowSlice {
   gitflowStatus: GitflowStatus | null;

@@ -8,7 +8,7 @@ import {
 import { useState } from "react";
 import { commands } from "../../../bindings";
 import { getErrorMessage } from "../../../lib/errors";
-import { composeGitignore } from "../../../lib/gitignoreComposer";
+import { composeGitignore } from "../lib/gitignoreComposer";
 import { useInitRepoStore } from "../store";
 import { useGitOpsStore as useRepositoryStore } from "../../../stores/domain/git-ops";
 import { useRecentRepos } from "../../../hooks/useRecentRepos";

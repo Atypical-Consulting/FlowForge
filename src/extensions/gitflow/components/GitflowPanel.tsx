@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useGitOpsStore as useBranchStore } from "../../../stores/domain/git-ops";
 import { useGitOpsStore as useGitflowStore } from "../../../stores/domain/git-ops";
 import { useBladeNavigation } from "../../../hooks/useBladeNavigation";
-import { useGitflowWorkflow } from "../../../hooks/useGitflowWorkflow";
+import { useGitflowWorkflow } from "../hooks/useGitflowWorkflow";
 import { FinishFlowDialog } from "./FinishFlowDialog";
 import { InitGitflowDialog } from "./InitGitflowDialog";
 import { StartFlowDialog } from "./StartFlowDialog";

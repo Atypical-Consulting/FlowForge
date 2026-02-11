@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { debounce } from "../lib/utils";
+import { debounce } from "../../../lib/utils";
 import {
   COMMIT_TYPES,
   COMMIT_TYPE_LABELS,
   type CommitType,
   useConventionalStore,
-} from "../stores/conventional";
+} from "../store";
 
 /**
  * Hook for managing conventional commit form state.

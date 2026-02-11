@@ -12,16 +12,25 @@ gitflow/
 ├── blades/
 │   ├── GitflowCheatsheetBlade.tsx  # Gitflow workflow guide blade
 │   └── GitflowCheatsheetBlade.test.tsx
-└── components/
-    ├── FinishFlowDialog.tsx
-    ├── GitflowActionCards.tsx
-    ├── GitflowBranchReference.tsx
-    ├── GitflowDiagram.tsx
-    ├── GitflowPanel.tsx            # Sidebar panel component
-    ├── InitGitflowDialog.tsx
-    ├── ReviewChecklist.tsx
-    ├── StartFlowDialog.tsx
-    └── index.ts
+├── components/
+│   ├── FinishFlowDialog.tsx
+│   ├── GitflowActionCards.tsx
+│   ├── GitflowBranchReference.tsx
+│   ├── GitflowDiagram.tsx
+│   ├── GitflowPanel.tsx            # Sidebar panel component
+│   ├── InitGitflowDialog.tsx
+│   ├── ReviewChecklist.tsx
+│   ├── StartFlowDialog.tsx
+│   └── index.ts
+├── hooks/
+│   └── useGitflowWorkflow.ts      # React hook for gitflow workflow API
+└── machines/
+    ├── index.ts                    # Barrel exports
+    ├── gitflowMachine.ts           # XState machine definition
+    ├── actors.ts                   # Promise actors (execute, abort, refresh)
+    ├── context.ts                  # Singleton actor lifecycle
+    ├── selectors.ts                # Snapshot selectors
+    └── types.ts                    # Machine context & event types
 ```
 
 ## Blades
@@ -47,6 +56,11 @@ gitflow/
 | ID | Title | Default Open |
 |----|-------|-------------|
 | `gitflow-panel` | Gitflow | No |
+
+## Hooks & Machines
+
+- **useGitflowWorkflow** - React hook providing reactive state and actions for the gitflow XState machine (start, finish, abort operations).
+- **gitflowMachine** - XState machine managing gitflow operation lifecycle (idle → executing → success/error) with abort and refresh support.
 
 <details>
 <summary>Extension Directory Convention</summary>

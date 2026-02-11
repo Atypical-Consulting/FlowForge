@@ -1,12 +1,12 @@
-import { commands } from "../bindings";
+import { commands } from "../../bindings";
 import type {
   CommitType,
   ScopeSuggestion,
   TypeSuggestion,
   ValidationResult,
-} from "../bindings";
-import { buildCommitMessage as buildMessage } from "../lib/conventional-utils";
-import { createBladeStore } from "./createBladeStore";
+} from "../../bindings";
+import { buildCommitMessage as buildMessage } from "./lib/conventional-utils";
+import { createBladeStore } from "../../stores/createBladeStore";
 
 /**
  * Valid conventional commit types.

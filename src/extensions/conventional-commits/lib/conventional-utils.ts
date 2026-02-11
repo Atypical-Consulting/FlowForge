@@ -1,4 +1,4 @@
-import type { CommitType } from "../bindings";
+import type { CommitType } from "../../../bindings";
 
 /**
  * Parts of a conventional commit message.

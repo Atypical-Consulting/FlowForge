@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { commands } from "../bindings";
+import { commands } from "../../../bindings";
 
 export function useGitignoreTemplateList() {
   return useQuery({

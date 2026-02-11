@@ -4,7 +4,7 @@ import type { GraphNode } from "../../../bindings";
 import {
   COMMIT_TYPE_THEME,
   type ConventionalCommitType,
-} from "../../../lib/commit-type-theme";
+} from "../../../extensions/conventional-commits/lib/commit-type-theme";
 import { useContextMenuRegistry } from "../../../lib/contextMenuRegistry";
 import { cn } from "../../../lib/utils";
 import {

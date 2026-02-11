@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, Check, RotateCcw } from "lucide-react";
-import { useConventionalCommit } from "../../../../hooks/useConventionalCommit";
+import { useConventionalCommit } from "../../hooks/useConventionalCommit";
 import { useCommitExecution } from "../../../../hooks/useCommitExecution";
-import { useAmendPrefill } from "../../../../hooks/useAmendPrefill";
+import { useAmendPrefill } from "../../hooks/useAmendPrefill";
 import { useBladeFormGuard } from "./hooks/useBladeFormGuard";
-import { useConventionalStore } from "../../../../stores/conventional";
+import { useConventionalStore } from "../../store";
 import { useBladeNavigation } from "../../../../hooks/useBladeNavigation";
 import { SplitPaneLayout } from "../../../../components/layout/SplitPaneLayout";
 import { TypeSelector } from "../../components/TypeSelector";
@@ -17,7 +17,7 @@ import { CommitPreview } from "../../components/CommitPreview";
 import { CommitActionBar } from "../../components/CommitActionBar";
 import { TemplateSelector } from "../../components/TemplateSelector";
 import { ScopeFrequencyChart } from "../../components/ScopeFrequencyChart";
-import type { CommitTemplate } from "../../../../stores/conventional";
+import type { CommitTemplate } from "../../store";
 import { cn } from "../../../../lib/utils";
 
 const MAX_DESCRIPTION_LENGTH = 72;

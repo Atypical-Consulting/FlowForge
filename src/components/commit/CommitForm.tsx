@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { commands } from "../../bindings";
 import { cn } from "../../lib/utils";
 import { useCommitExecution } from "../../hooks/useCommitExecution";
-import { useAmendPrefill } from "../../hooks/useAmendPrefill";
+import { useAmendPrefill } from "../../extensions/conventional-commits/hooks/useAmendPrefill";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
 import { useExtensionHost } from "../../extensions";
 import { ShortcutTooltip } from "../ui/ShortcutTooltip";

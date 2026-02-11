@@ -12,14 +12,18 @@ init-repo/
 ├── store.ts                        # Form state (directory, templates, readme)
 ├── blades/
 │   └── InitRepoBlade.tsx           # Main initialization blade (split pane)
-└── components/
-    ├── InitRepoForm.tsx            # Left pane: form inputs
-    ├── InitRepoPreview.tsx         # Right pane: live preview
-    ├── TemplatePicker.tsx          # .gitignore template grid
-    ├── ProjectDetectionBanner.tsx  # Auto-detected project type display
-    ├── CategoryFilter.tsx          # Template category filter chips
-    ├── TemplateChips.tsx           # Selected template pills
-    └── index.ts
+├── components/
+│   ├── InitRepoForm.tsx            # Left pane: form inputs
+│   ├── InitRepoPreview.tsx         # Right pane: live preview
+│   ├── TemplatePicker.tsx          # .gitignore template grid
+│   ├── ProjectDetectionBanner.tsx  # Auto-detected project type display
+│   ├── CategoryFilter.tsx          # Template category filter chips
+│   ├── TemplateChips.tsx           # Selected template pills
+│   └── index.ts
+├── hooks/
+│   └── useGitignoreTemplates.ts   # React Query hooks for template data
+└── lib/
+    └── gitignoreComposer.ts       # Merge multiple .gitignore templates
 ```
 
 ## Blades
@@ -41,6 +45,8 @@ This extension does not contribute any toolbar actions.
 ## Hooks & Stores
 
 - **store.ts** - Zustand store managing form state: selected directory, .gitignore templates, template contents, README name, and detected project types.
+- **useGitignoreTemplates** - React Query hooks for fetching template lists and project type detection.
+- **gitignoreComposer** - Utility to merge multiple .gitignore templates into a single deduplicated output.
 
 <details>
 <summary>Extension Directory Convention</summary>

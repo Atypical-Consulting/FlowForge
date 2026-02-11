@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { useState } from "react";
-import { useGitflowWorkflow } from "../../../hooks/useGitflowWorkflow";
+import { useGitflowWorkflow } from "../hooks/useGitflowWorkflow";
 
 interface StartFlowDialogProps {
   flowType: "feature" | "release" | "hotfix";

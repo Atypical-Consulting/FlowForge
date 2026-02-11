@@ -1,4 +1,4 @@
-import type { CommitTemplate } from "../stores/conventional";
+import type { CommitTemplate } from "../store";
 
 export const BUILTIN_TEMPLATES: CommitTemplate[] = [
   {

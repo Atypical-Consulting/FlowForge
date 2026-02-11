@@ -6,7 +6,7 @@ import {
   Check,
 } from "lucide-react";
 import { useMemo } from "react";
-import { composeGitignore } from "../../../lib/gitignoreComposer";
+import { composeGitignore } from "../lib/gitignoreComposer";
 import { useInitRepoStore } from "../store";
 
 export function InitRepoPreview() {
