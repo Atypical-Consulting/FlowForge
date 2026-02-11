@@ -193,3 +193,40 @@
 
 ---
 
+
+## v1.6.0 Refactor to Extensions (Shipped: 2026-02-11)
+
+**Delivered:** Transformed FlowForge from a monolithic app into a truly extensible platform — extracted Gitflow, Conventional Commits, and content viewers into four independently toggleable built-in extensions, expanded the extension API with context menus, sidebar panels, status bar, and git operation hooks, and built sandbox infrastructure for future third-party extension safety.
+
+**Phases completed:** 37-42 (6 phases, 16 plans, 32 requirements)
+
+**Key accomplishments:**
+
+- Built extension platform foundation with 4 new registries (ContextMenu, SidebarPanel, StatusBar, GitHookBus) and expanded ExtensionAPI with 6 new methods + onDispose lifecycle
+- Extracted content viewers (Markdown, Code, 3D) to toggleable built-in extension with plaintext fallback on disable
+- Extracted Conventional Commits to built-in extension with pre-commit hook infrastructure and graceful degradation to plain textarea
+- Extracted Gitflow to built-in extension — disabling enables plain Git client mode while branch coloring stays in core (ADR-2)
+- Built sandbox infrastructure: trust levels in manifest, Worker-based sandbox prototype with postMessage bridge, API method classification (sandbox-safe vs requires-trust)
+- Removed 16 deprecated v1.4 re-export shims, added extension developer documentation, bumped version to 1.6.0
+
+**Stats:**
+
+- 238 files changed (+21,075/-593 lines)
+- ~49,470 lines of code (38,325 TypeScript + 11,145 Rust)
+- 6 phases, 16 plans, 32 requirements
+- 8 days (2026-02-03 → 2026-02-11)
+- 80 commits
+
+**Git range:** `feat(37-01)` → `docs(audit)`
+
+**Tech debt accepted:**
+- GFEX-06 needs human runtime verification (architecture correct, Gitflow extension state defers to Rust backend)
+- 3 new ExtensionAPI methods (onDidNavigate, events, settings) not yet classified in sandbox-api-surface.ts
+- 3 pre-existing Monaco Editor mock test failures (not v1.6.0 related)
+- CC Zustand store not explicitly reset on extension disable (ghost data persists but invisible)
+- commandRegistry and previewRegistry still use plain Maps (not Zustand)
+
+**What's next:** v2.0 — MCP server, tiered autonomy model, or further polish
+
+---
+

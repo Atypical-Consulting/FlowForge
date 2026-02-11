@@ -2,19 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-10)
+See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** v1.6.0 milestone complete — ready for archival
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 42 of 42 (Audit Tech Debt Cleanup) ✓ Complete
-Plan: 1 of 1 in current phase
-Status: Phase complete, milestone ready for archival
-Last activity: 2026-02-11 - Phase 42 executed: BladeRegistry Zustand, SandboxedAPI constant, GFEX-03
+Phase: 42 of 42 (all phases complete)
+Plan: N/A — milestone archived
+Status: v1.6.0 shipped and archived
+Last activity: 2026-02-11 - v1.6.0 milestone complete
 
-Progress: [██████████] 100% (16/16 plans)
+Progress: [██████████] 100% (all milestones through v1.6.0 shipped)
 
 ## Milestone History
 
@@ -35,8 +35,8 @@ See `.planning/MILESTONES.md` for full history.
 **Cumulative:**
 - Total phases: 42 complete
 - Total plans: ~217 complete
-- Total requirements validated: 232
-- Codebase: ~45,400 LOC (34,300 TypeScript + 11,075 Rust)
+- Total requirements validated: 264
+- Codebase: ~49,470 LOC (38,325 TypeScript + 11,145 Rust)
 - Tests: 233 (Vitest + jsdom)
 
 ## Accumulated Context
@@ -49,19 +49,14 @@ See `.planning/MILESTONES.md` for full history.
 - 3D viewer reliability on some hardware (diagnostic logging only)
 - Pre-existing TS2440 in auto-generated bindings.ts
 - Phase 34 human runtime testing pending (6 OAuth flow items)
-- CC Zustand store not explicitly reset on extension disable (ghost data persists but invisible)
-- Gitflow sidebar panel position shifted below Worktrees (renders via DynamicSidebarPanels at priority 65)
-- GFEX-06 needs human runtime verification (Gitflow extension state defers to Rust backend)
-- commandRegistry and previewRegistry still use plain Maps (not Zustand) — flagged by architecture analysis
-- 3 new ExtensionAPI methods (onDidNavigate, events, settings) missing from sandbox-api-surface.ts classification
+- GFEX-06 needs human runtime verification (architecture correct)
+- 3 new ExtensionAPI methods (onDidNavigate, events, settings) not yet in sandbox-api-surface.ts
+- commandRegistry and previewRegistry still use plain Maps (not Zustand)
+- CC Zustand store not explicitly reset on extension disable (ghost data invisible)
 
 ### Key Decisions
 
 All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
-Phase 38: coreOverride pattern adopted for built-in extension blade registration — avoids cascading namespace changes.
-Phase 39: CC extraction follows content-viewers pattern for blades, GitHub extension pattern for toolbar/commands. Read-side CC utilities (commit-type-theme, conventional-utils) stay in core. emitWill("commit") infrastructure wired but no handler registered (CC validates via canCommit).
-Phase 40: Gitflow extraction follows CC pattern. branchClassifier.ts stays in core (ADR-2: 10+ core consumers, classification is core Git UX). gitflow.slice.ts stays in GitOpsStore (ADR-1: cross-slice deps on loadBranches/refreshRepoStatus).
-Phase 42: BladeRegistry converted to Zustand store with backward-compat wrappers. SandboxedExtensionAPI uses REQUIRES_TRUST_METHODS constant. Used targeted Zustand selector in BladeRenderer for optimal performance.
 
 ### Research Flags
 
@@ -86,9 +81,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Phase 42 complete, v1.6.0 milestone ready for archival
+Stopped at: v1.6.0 milestone archived
 Resume file: None
 
 ---
 *State updated: 2026-02-11*
-*Phase 42 executed: BladeRegistry Zustand conversion, SandboxedExtensionAPI constant usage, GFEX-03 checkbox. All 3 audit tech debt items resolved.*
+*v1.6.0 milestone archived. Ready for /gsd:new-milestone.*

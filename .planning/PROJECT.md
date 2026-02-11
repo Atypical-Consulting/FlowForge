@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A cross-platform desktop Git client built on Tauri (Rust backend + React frontend) that makes Gitflow, conventional commits, and worktrees the structural foundation of the interface — not afterthoughts buried in menus. The client enforces workflow conventions through its architecture, preventing invalid operations rather than just warning about them. Features a blade-based navigation system with 22 blade types managed by an XState finite state machine, co-located feature modules, 3 consolidated domain stores, an extension platform with the GitHub integration as the first shipped extension, and a data-driven toolbar with overflow handling.
+A cross-platform desktop Git client built on Tauri (Rust backend + React frontend) that makes Gitflow, conventional commits, and worktrees the structural foundation of the interface — not afterthoughts buried in menus. Features a blade-based navigation system with 22+ blade types managed by an XState finite state machine, co-located feature modules, 3 consolidated domain stores, and a fully extensible platform where core features (Gitflow, Conventional Commits, content viewers) are independently toggleable built-in extensions alongside GitHub integration. Includes sandbox infrastructure for future third-party extension safety.
 
 ## Core Value
 
@@ -12,7 +12,7 @@ A cross-platform desktop Git client built on Tauri (Rust backend + React fronten
 
 The product is designed in concentric circles, each standing alone:
 
-1. **Inner circle (v1):** Best-in-class Git client with visual Gitflow, smart conventional commits, first-class worktrees, and an extension platform with GitHub integration. No AI required — just excellent UX for powerful Git features.
+1. **Inner circle (v1):** Best-in-class Git client with visual Gitflow, smart conventional commits, first-class worktrees, and an extension platform with GitHub integration. Core features (Gitflow, CC, content viewers) are optional built-in extensions — users can run FlowForge as a plain Git client. No AI required — just excellent UX for powerful Git features.
 
 2. **Middle circle (v2+):** Local intelligence layer — rule-based heuristics in v1, embedded lightweight model in v2+. Smart commit suggestions, semantic diff analysis, conflict annotation. Works offline, no external dependencies.
 
@@ -175,19 +175,30 @@ Each layer adds value; each inner layer stands without the outer ones.
 - ✓ Extension permission display during install review — v1.5
 - ✓ Extension enable/disable state persisted across sessions — v1.5
 
+- ✓ Extension platform: context menu, sidebar panel, status bar, and git hook registries — v1.6
+- ✓ ExtensionAPI expanded with 6 new methods + onDispose lifecycle — v1.6
+- ✓ Content viewers (Markdown, Code, 3D) extracted to toggleable built-in extension — v1.6
+- ✓ Plaintext fallback blade when content viewers extension disabled — v1.6
+- ✓ Conventional Commits extracted to toggleable built-in extension — v1.6
+- ✓ Pre-commit hook infrastructure (emitWill/emitDid via GitHookBus) — v1.6
+- ✓ CC graceful degradation to plain textarea when extension disabled — v1.6
+- ✓ Gitflow extracted to toggleable built-in extension — v1.6
+- ✓ Branch classification and coloring remains in core (ADR-2: 10+ consumers) — v1.6
+- ✓ Plain Git client mode when Gitflow extension disabled — v1.6
+- ✓ Extension Manager shows 4 independently toggleable built-in extensions — v1.6
+- ✓ Trust level flag in extension manifest (built-in vs external) — v1.6
+- ✓ Worker-based sandbox prototype with postMessage bridge — v1.6
+- ✓ Extension API method classification (sandbox-safe vs requires-trust) — v1.6
+- ✓ 16 deprecated v1.4 re-export shims removed — v1.6
+- ✓ Extension lifecycle tests (73+ tests across phases 37-41) — v1.6
+- ✓ Extension developer documentation (extension-api.md, manifest.md, trust-levels.md) — v1.6
+- ✓ Version bumped to v1.6.0 — v1.6
+- ✓ BladeRenderer reactive subscription to blade registry via Zustand — v1.6
+- ✓ SandboxedExtensionAPI uses REQUIRES_TRUST_METHODS constant — v1.6
+
 ### Active
 
-## Current Milestone: v1.6.0 Refactor to Extensions
-
-**Goal:** Transform FlowForge from a monolithic app into a truly extensible platform where core features (Gitflow, Conventional Commits, content viewers) are optional extensions, with expanded extension hooks and sandbox infrastructure.
-
-**Target features:**
-- Extension platform enhancements (context menus, status bar, git operation hooks, richer APIs)
-- Extension sandboxing infrastructure (iframe/Worker isolation, prep for third-party)
-- Gitflow extracted to fully optional extension (disable for plain Git mode)
-- Conventional Commits extracted to toggleable extension
-- Content viewers (markdown, code, 3D) extracted to extension(s)
-- Graceful degradation when extensions are disabled
+(None — planning next milestone)
 
 ### Deferred to v2+
 
@@ -210,7 +221,7 @@ Each layer adds value; each inner layer stands without the outer ones.
 - Full PR review with inline code comments — GitHub/GitLab do this well (lightweight checklist in v1.3, read + basic actions in v1.5)
 - Real-time collaboration — high complexity
 - Mobile apps — desktop-first
-- Extension sandboxing (iframe/Worker) — infrastructure being built in v1.6; full third-party support deferred to v2
+- Full third-party extension sandbox — infrastructure built in v1.6; production isolation deferred to v2
 - Extension marketplace — URL-based install sufficient; marketplace requires hosting infrastructure
 - GitHub Actions log viewing — CI status indicators on PRs sufficient
 - GitLab/Bitbucket integration — GitHub-first; other providers can be extensions later
@@ -218,25 +229,26 @@ Each layer adds value; each inner layer stands without the outer ones.
 
 ## Context
 
-**Current state:** Shipped v1.5.0 with ~45,227 LOC (34,152 TypeScript + 11,075 Rust).
-Tech stack: Tauri 2.x, React 19, XState v5, Zustand (3 domain stores), React Query, Monaco Editor, Three.js, framer-motion, reqwest, keyring.
-All 209 requirements implemented across 36 phases (~201 plans) in six milestones.
-22 blade types in co-located feature modules with XState FSM navigation.
-Extension platform with GitHub integration as first shipped extension (7 blades, 5 commands, 4 toolbar actions).
-Data-driven toolbar with 15+ core actions and extension contributions.
-137 tests (Vitest + jsdom) covering stores, components, and machine logic.
-Documentation website live on GitHub Pages.
-
-**v1.6 direction:** Major architectural refactor — extract Gitflow, Conventional Commits, and content viewers from monolithic core into the extension system. Expand extension API surface with context menus, status bar contributions, and git operation hooks. Build sandbox infrastructure for future third-party extension safety.
+**Current state:** Shipped v1.6.0 with ~49,470 LOC (38,325 TypeScript + 11,145 Rust).
+Tech stack: Tauri 2.x, React 19, XState v5, Zustand (3 domain stores + Zustand-based registries), React Query, Monaco Editor, Three.js, framer-motion, reqwest, keyring.
+All 264 requirements implemented across 42 phases (~217 plans) in seven milestones.
+22+ blade types in co-located feature modules with XState FSM navigation.
+Extension platform with 4 built-in extensions (GitHub, Gitflow, Conventional Commits, Content Viewers) — all independently toggleable.
+4 new registries (ContextMenu, SidebarPanel, StatusBar, GitHookBus) + expanded ExtensionAPI.
+Sandbox infrastructure: trust levels, Worker prototype, API method classification.
+233 tests (Vitest + jsdom) covering stores, components, extensions, and machine logic.
+Documentation website live on GitHub Pages with extension developer guides.
 
 **Known tech debt:**
-- 16 backward-compatibility re-export shims (@deprecated) for gradual consumer migration
 - CC blade accessibility polish (aria-live debounce, amend mode styling, aria-labels)
 - Init Repo blade UX refinements (focus behavior, listbox pattern, aria-describedby)
 - 3D viewer reliability on some hardware (diagnostic logging only)
 - Pre-existing TS2440 in auto-generated bindings.ts
 - Phase 34 human runtime testing pending (6 OAuth flow items)
-- Missing formal VERIFICATION.md for phases 35-36 (mitigated by UAT/integration evidence)
+- GFEX-06 needs human runtime verification (architecture correct)
+- 3 new ExtensionAPI methods (onDidNavigate, events, settings) not yet in sandbox surface
+- commandRegistry and previewRegistry still use plain Maps (not Zustand)
+- CC Zustand store not explicitly reset on extension disable (ghost data invisible)
 
 **v2 vision:** MCP server exposing repository state (branches, worktrees, commit history, diffs, Gitflow context) as structured resources and tools. Tiered autonomy model:
 - **Tier 1 (full autonomy):** Reversible, local, convention-clear operations
@@ -250,7 +262,7 @@ Documentation website live on GitHub Pages.
 - **Binary size**: Target <50MB installed (achieved in v1.0)
 - **Memory**: Target <200MB baseline (achieved in v1.0)
 - **Offline-first**: Core functionality works without network; MCP and sync are additive
-- **Extension security**: Sandbox infrastructure in v1.6; full third-party marketplace in v2+
+- **Extension security**: Sandbox infrastructure built in v1.6; full third-party marketplace in v2+
 
 ## Key Decisions
 
@@ -283,10 +295,10 @@ Documentation website live on GitHub Pages.
 | Store registry for atomic reset (v1.4) | resetAllStores() ensures clean state on repo close without manual per-store calls | ✓ Good — no stale state |
 | createBladeStore factory (v1.4) | Auto-registers for reset + devtools; extensibility pattern for new blades | ✓ Good — consistent behavior |
 | Blade-centric file structure (v1.4) | Co-located modules reduce context switching; single-glob discovery eliminates manual registration | ✓ Good — 15 blade modules |
-| Backward-compat re-export shims (v1.4) | Zero-breaking-change migration; @deprecated annotations guide gradual adoption | ✓ Good — no consumer changes needed |
+| Backward-compat re-export shims (v1.4) | Zero-breaking-change migration; @deprecated annotations guide gradual adoption | ✓ Good — removed in v1.6 |
 | reqwest with rustls-tls for GitHub API (v1.4) | Cross-platform TLS without system dependency; gitignore template fetching | ✓ Good — works on all OS |
 | Bundled templates via include_str! (v1.4) | Compile-time embedding for offline fallback; no runtime resource loading | ✓ Good — reliable offline |
-| Vitest + jsdom for testing (v1.4) | Fast, modern test runner with excellent Vite integration; jsdom for component tests | ✓ Good — 140 tests, <5s |
+| Vitest + jsdom for testing (v1.4) | Fast, modern test runner with excellent Vite integration; jsdom for component tests | ✓ Good — 233 tests, <5s |
 | Direction-aware blade animations (v1.4) | Push slides right, pop slides left, replace crossfades; respects prefers-reduced-motion | ✓ Good — polished UX |
 | Strict CSP before extensions (v1.5) | Prevent XSS/data exfiltration before any extension code loads or external APIs are called | ✓ Good — defense in depth |
 | Data-driven toolbar over hardcoded buttons (v1.5) | Registry pattern enables extension contributions, overflow handling, user customization | ✓ Good — extensible, 15+ actions |
@@ -299,8 +311,12 @@ Documentation website live on GitHub Pages.
 | Virtuoso for PR/issue lists (v1.5) | Efficient virtual scrolling for potentially long lists; familiar API | ✓ Good — smooth performance |
 | Extension Manager as core blade (v1.5) | Manages all extensions; shouldn't be an extension itself | ✓ Good — always available |
 | Disabled vs deactivated extension states (v1.5) | disabled = user-intentional (persisted), deactivated = runtime cleanup — clear semantics | ✓ Good — predictable behavior |
-
-| Gitflow as optional extension (v1.6) | Users should choose workflow; extensible platform > opinionated monolith | — Pending |
+| Gitflow as optional extension (v1.6) | Users should choose workflow; extensible platform > opinionated monolith | ✓ Good — plain Git mode works |
+| coreOverride pattern for built-in extensions (v1.6) | Built-in extensions override core blade types without cascading namespace changes | ✓ Good — clean extraction |
+| Branch classification stays in core (v1.6, ADR-2) | 10+ core consumers including topology graph; classification is core Git UX, not Gitflow-specific | ✓ Good — no feature regression |
+| BladeRegistry as Zustand store (v1.6) | Reactive subscriptions enable auto-restore when extensions re-enabled; backward-compat wrappers | ✓ Good — seamless UX |
+| Worker sandbox over iframe (v1.6) | Tauri has iframe limitations (Windows ES Module, Linux request confusion); Worker gives clean postMessage API | ✓ Good — prototype works |
+| Trust levels for extension API methods (v1.6) | REQUIRES_TRUST_METHODS constant + isSandboxSafe() guard; compile-time exhaustiveness check | ✓ Good — safe API surface |
 
 ---
-*Last updated: 2026-02-10 after v1.6.0 milestone start*
+*Last updated: 2026-02-11 after v1.6.0 milestone*
