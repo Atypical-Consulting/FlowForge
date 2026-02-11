@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useHotkeys } from "react-hotkeys-hook";
 import { type SyncProgress, commands } from "../bindings";
 import { openBlade } from "../lib/bladeOpener";
+import { executeCommand } from "../lib/commandRegistry";
 import { getNavigationActor } from "../machines/navigation/context";
 import { useUIStore as useCommandPaletteStore } from "../stores/domain/ui-state";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
@@ -214,6 +215,74 @@ export function useKeyboardShortcuts() {
       getNavigationActor().send({ type: "POP_BLADE" });
     },
     { enableOnFormTags: false },
+  );
+
+  // New Repository shortcut
+  useHotkeys(
+    "mod+n",
+    (e) => {
+      e.preventDefault();
+      executeCommand("ext:init-repo:init-repository");
+    },
+    { preventDefault: true },
+  );
+
+  // Clone Repository shortcut
+  useHotkeys(
+    "mod+shift+o",
+    (e) => {
+      e.preventDefault();
+      executeCommand("clone-repository");
+    },
+    { preventDefault: true },
+  );
+
+  // Show Changes (staging) shortcut
+  useHotkeys(
+    "mod+1",
+    (e) => {
+      e.preventDefault();
+      if (status) {
+        getNavigationActor().send({ type: "SWITCH_PROCESS", process: "staging" });
+      }
+    },
+    { preventDefault: true, enabled: !!status },
+  );
+
+  // Show History (topology) shortcut
+  useHotkeys(
+    "mod+2",
+    (e) => {
+      e.preventDefault();
+      if (status) {
+        getNavigationActor().send({ type: "SWITCH_PROCESS", process: "topology" });
+      }
+    },
+    { preventDefault: true, enabled: !!status },
+  );
+
+  // Show Branches shortcut
+  useHotkeys(
+    "mod+b",
+    (e) => {
+      e.preventDefault();
+      if (status) {
+        executeCommand("show-branches");
+      }
+    },
+    { preventDefault: true, enabled: !!status },
+  );
+
+  // New Branch shortcut
+  useHotkeys(
+    "mod+shift+n",
+    (e) => {
+      e.preventDefault();
+      if (status) {
+        executeCommand("create-branch");
+      }
+    },
+    { preventDefault: true, enabled: !!status },
   );
 
   // Enter - open details for selected commit in topology

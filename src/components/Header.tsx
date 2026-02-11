@@ -9,6 +9,7 @@ import { useGitOpsStore as useTagStore } from "../stores/domain/git-ops";
 import { toast } from "../stores/toast";
 import { useGitOpsStore as useUndoStore } from "../stores/domain/git-ops";
 import { ProcessNavigation } from "../blades/_shared";
+import { MenuBar } from "./menu-bar";
 import { BranchSwitcher } from "./navigation/BranchSwitcher";
 import { RepoSwitcher } from "./navigation/RepoSwitcher";
 import { Toolbar } from "./toolbar/Toolbar";
@@ -129,6 +130,8 @@ export function Header() {
       <header className="flex items-center justify-between h-14 px-4 border-b border-ctp-surface0 bg-ctp-mantle/80 backdrop-blur-md select-none sticky top-0 z-50">
         <div className="flex items-center gap-2">
           <h1 className="text-lg font-semibold text-ctp-text">FlowForge</h1>
+          <div className="w-px h-6 bg-ctp-surface1" />
+          <MenuBar />
           {status && (
             <>
               <div className="w-px h-6 bg-ctp-surface1" />
