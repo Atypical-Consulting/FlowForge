@@ -162,7 +162,11 @@ Plans:
   3. Keyboard shortcut for topology is contributed by the extension and disappears when extension is disabled
   4. Settings "default tab" falls back to "changes" when topology extension is disabled (no broken preference)
   5. Extension Manager shows 7 independently toggleable built-in extensions (GitHub, Gitflow, CC, Content Viewers, Worktrees, Init Repo, Topology)
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 46-01-PLAN.md -- Foundation: extract parseConventionalType, create commit-list-fallback blade, make rootBladeForProcess registry-aware
+- [ ] 46-02-PLAN.md -- Create topology extension, move components, implement entry point with blade/command/file-watcher
+- [ ] 46-03-PLAN.md -- Wire extension in App.tsx, remove old core references, update settings/shortcuts/categories
 
 ### Phase 47: Cleanup & Verification
 **Goal**: All extraction scaffolding is removed, discovery types are properly split, and every new extension has toggle tests and documentation
@@ -184,7 +188,7 @@ Plans:
 | 43. Infrastructure Prep | v1.7.0 | 3/3 | ✓ Complete | 2026-02-11 |
 | 44. Worktree Extraction | v1.7.0 | 2/2 | ✓ Complete | 2026-02-11 |
 | 45. Init Repo Extraction | v1.7.0 | 2/2 | ✓ Complete | 2026-02-11 |
-| 46. Topology Extraction | v1.7.0 | 0/TBD | Not started | - |
+| 46. Topology Extraction | v1.7.0 | 0/3 | Planned | - |
 | 47. Cleanup & Verification | v1.7.0 | 0/TBD | Not started | - |
 
 ---
