@@ -23,7 +23,9 @@ import { usePreferencesStore as useThemeStore } from "./stores/domain/preference
 import { useGitOpsStore as useTopologyStore } from "./stores/domain/git-ops";
 import { useGitOpsStore as useUndoStore } from "./stores/domain/git-ops";
 import { useExtensionHost } from "./extensions";
-import { onActivate as contentViewersActivate, onDeactivate as contentViewersDeactivate } from "./extensions/content-viewers";
+import { onActivate as viewerCodeActivate, onDeactivate as viewerCodeDeactivate } from "./extensions/viewer-code";
+import { onActivate as viewerMarkdownActivate, onDeactivate as viewerMarkdownDeactivate } from "./extensions/viewer-markdown";
+import { onActivate as viewer3dActivate, onDeactivate as viewer3dDeactivate } from "./extensions/viewer-3d";
 import { onActivate as ccActivate, onDeactivate as ccDeactivate } from "./extensions/conventional-commits";
 import { onActivate as gitflowActivate, onDeactivate as gitflowDeactivate } from "./extensions/gitflow";
 import { onActivate as worktreesActivate, onDeactivate as worktreesDeactivate } from "./extensions/worktrees";
@@ -63,11 +65,27 @@ function App() {
 
     // Register built-in extensions
     registerBuiltIn({
-      id: "content-viewers",
-      name: "Content Viewers",
+      id: "viewer-code",
+      name: "Code Viewer",
       version: "1.0.0",
-      activate: contentViewersActivate,
-      deactivate: contentViewersDeactivate,
+      activate: viewerCodeActivate,
+      deactivate: viewerCodeDeactivate,
+    });
+
+    registerBuiltIn({
+      id: "viewer-markdown",
+      name: "Markdown Viewer",
+      version: "1.0.0",
+      activate: viewerMarkdownActivate,
+      deactivate: viewerMarkdownDeactivate,
+    });
+
+    registerBuiltIn({
+      id: "viewer-3d",
+      name: "3D Model Viewer",
+      version: "1.0.0",
+      activate: viewer3dActivate,
+      deactivate: viewer3dDeactivate,
     });
 
     registerBuiltIn({
