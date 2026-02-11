@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CheckCircle, Download, Loader2, XCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../../components/ui/dialog";
 import { Button } from "../../../components/ui/button";
-import { PermissionBadge } from "../../../../extensions/github/components/PermissionBadge";
+import { PermissionBadge } from "../../../components/ui/PermissionBadge";
 import { commands } from "../../../../bindings";
 
 type Step = "input" | "fetching" | "review" | "installing" | "success" | "error";

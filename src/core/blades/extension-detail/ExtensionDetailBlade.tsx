@@ -25,7 +25,7 @@ import { useStatusBarRegistry } from "../../lib/statusBarRegistry";
 import { getAllBladeTypes } from "../../lib/bladeRegistry";
 import { getCommands } from "../../lib/commandRegistry";
 import { Button } from "../../components/ui/button";
-import { ToggleSwitch } from "../../../extensions/github/components/ToggleSwitch";
+import { ToggleSwitch } from "../../components/ui/ToggleSwitch";
 import { toast } from "../../stores/toast";
 import { cn } from "../../lib/utils";
 import type { TrustLevel } from "../../../extensions/extensionTypes";

@@ -14,16 +14,34 @@ if (import.meta.env.DEV && Object.keys(modules).length === 0) {
 // Dev-mode exhaustiveness check
 if (import.meta.env.DEV && !import.meta.hot?.data?.isUpdate) {
   const registered = new Set(getAllBladeTypes());
-  const EXPECTED_TYPES: string[] = [
+
+  const CORE_BLADE_TYPES: string[] = [
     "staging-changes", "commit-list-fallback", "commit-details", "diff",
     "branch-manager", "repo-browser", "settings",
     "extension-manager", "extension-detail",
   ];
-  const missing = EXPECTED_TYPES.filter(t => !registered.has(t as any));
-  if (missing.length > 0) {
+
+  const EXTENSION_BLADE_TYPES: string[] = [
+    "topology-graph", "init-repo",
+    "conventional-commit", "changelog",
+    "gitflow-cheatsheet",
+    "viewer-code", "viewer-markdown", "viewer-3d",
+    "viewer-image", "viewer-nupkg", "viewer-plaintext",
+    "welcome-screen",
+  ];
+
+  const missingCore = CORE_BLADE_TYPES.filter(t => !registered.has(t as any));
+  if (missingCore.length > 0) {
     console.warn(
-      `[BladeRegistry] Missing registrations: ${missing.join(", ")}. ` +
-      `Create a registration.ts in src/blades/{blade-name}/ for each.`
+      `[BladeRegistry] Missing core registrations: ${missingCore.join(", ")}. ` +
+      `Check src/core/blades/{blade-name}/registration.ts for each.`
+    );
+  }
+
+  const missingExt = EXTENSION_BLADE_TYPES.filter(t => !registered.has(t as any));
+  if (missingExt.length > 0) {
+    console.debug(
+      `[BladeRegistry] Extension blade types not registered (extensions may be disabled): ${missingExt.join(", ")}`
     );
   }
 }

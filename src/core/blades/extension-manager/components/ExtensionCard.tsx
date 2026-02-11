@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { ChevronRight, Trash2 } from "lucide-react";
 import type { ExtensionInfo } from "../../../../extensions/extensionTypes";
-import { ToggleSwitch } from "../../../../extensions/github/components/ToggleSwitch";
-import { PermissionBadge } from "../../../../extensions/github/components/PermissionBadge";
+import { ToggleSwitch } from "../../../components/ui/ToggleSwitch";
+import { PermissionBadge } from "../../../components/ui/PermissionBadge";
 import { useExtensionHost } from "../../../../extensions/ExtensionHost";
 import { useBladeNavigation } from "../../../hooks/useBladeNavigation";
 import { Button } from "../../../components/ui/button";
