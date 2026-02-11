@@ -5,6 +5,7 @@ pub mod clone;
 pub mod commands;
 pub mod commit;
 pub mod config;
+pub mod credentials;
 pub mod conventional;
 pub mod diff;
 pub mod error;

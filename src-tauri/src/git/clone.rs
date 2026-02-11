@@ -8,6 +8,7 @@ use specta::Type;
 use std::path::{Path, PathBuf};
 use tauri::ipc::Channel;
 
+use crate::git::credentials::create_credentials_callback;
 use crate::git::error::GitError;
 
 /// Progress events for clone operations.
@@ -65,42 +66,6 @@ fn extract_repo_name(url: &str) -> Option<String> {
         None
     } else {
         Some(repo_name.to_string())
-    }
-}
-
-/// Create credential callback for git clone operations.
-/// Tries SSH agent first, then credential helper from git config.
-fn create_credentials_callback(
-) -> impl FnMut(&str, Option<&str>, git2::CredentialType) -> Result<git2::Cred, git2::Error> {
-    let mut tried_ssh_key = false;
-    let mut tried_cred_helper = false;
-
-    move |url: &str, username: Option<&str>, allowed_types: git2::CredentialType| {
-        // Try SSH agent first for SSH URLs
-        if allowed_types.contains(git2::CredentialType::SSH_KEY) && !tried_ssh_key {
-            tried_ssh_key = true;
-            let user = username.unwrap_or("git");
-            if let Ok(cred) = git2::Cred::ssh_key_from_agent(user) {
-                return Ok(cred);
-            }
-        }
-
-        // Try credential helper for HTTPS
-        if allowed_types.contains(git2::CredentialType::USER_PASS_PLAINTEXT) && !tried_cred_helper {
-            tried_cred_helper = true;
-            if let Ok(cfg) = git2::Config::open_default() {
-                if let Ok(cred) = git2::Cred::credential_helper(&cfg, url, username) {
-                    return Ok(cred);
-                }
-            }
-        }
-
-        // Try default credentials (for local operations)
-        if allowed_types.contains(git2::CredentialType::DEFAULT) {
-            return git2::Cred::default();
-        }
-
-        Err(git2::Error::from_str("no authentication method available"))
     }
 }
 
