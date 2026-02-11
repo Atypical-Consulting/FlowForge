@@ -9,7 +9,8 @@ use git::{
     RepositoryState, WatcherState,
     branch::{
         batch_delete_branches, checkout_branch, checkout_remote_branch, create_branch,
-        delete_branch, get_recent_checkouts, list_all_branches, list_branches,
+        delete_branch, get_branch_ahead_behind, get_recent_checkouts, list_all_branches,
+        list_branches,
     },
     browse::{list_repo_files, read_repo_file},
     changelog::generate_changelog_cmd,
@@ -102,6 +103,7 @@ pub fn run() {
         checkout_remote_branch,
         batch_delete_branches,
         get_recent_checkouts,
+        get_branch_ahead_behind,
         // Stash commands
         list_stashes,
         stash_save,

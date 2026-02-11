@@ -7,6 +7,16 @@ use tauri::State;
 use crate::git::error::GitError;
 use crate::git::repository::RepositoryState;
 
+/// How many commits a local branch is ahead/behind its upstream.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct AheadBehind {
+    /// Commits on local not yet on upstream
+    pub ahead: u32,
+    /// Commits on upstream not yet on local
+    pub behind: u32,
+}
+
 /// Information about a branch (local or remote).
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
@@ -588,6 +598,56 @@ pub async fn batch_delete_branches(
             results,
             total_deleted,
             total_failed,
+        })
+    })
+    .await
+    .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}
+
+/// Get ahead/behind counts for a local branch relative to its upstream.
+///
+/// Returns `{ ahead: 0, behind: 0 }` when the branch has no upstream tracking branch.
+#[tauri::command]
+#[specta::specta]
+pub async fn get_branch_ahead_behind(
+    branch_name: String,
+    state: State<'_, RepositoryState>,
+) -> Result<AheadBehind, GitError> {
+    let repo_path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+
+    tokio::task::spawn_blocking(move || {
+        let repo = git2::Repository::open(&repo_path)?;
+
+        let local_branch = repo
+            .find_branch(&branch_name, git2::BranchType::Local)
+            .map_err(|_| GitError::BranchNotFound(branch_name.clone()))?;
+
+        let local_oid = local_branch
+            .get()
+            .peel_to_commit()
+            .map(|c| c.id())
+            .map_err(|e| GitError::OperationFailed(e.message().to_string()))?;
+
+        // Try to get the upstream; if none exists, return 0/0
+        let upstream = match local_branch.upstream() {
+            Ok(up) => up,
+            Err(_) => return Ok(AheadBehind { ahead: 0, behind: 0 }),
+        };
+
+        let upstream_oid = upstream
+            .get()
+            .peel_to_commit()
+            .map(|c| c.id())
+            .map_err(|e| GitError::OperationFailed(e.message().to_string()))?;
+
+        let (ahead, behind) = repo.graph_ahead_behind(local_oid, upstream_oid)?;
+
+        Ok(AheadBehind {
+            ahead: ahead as u32,
+            behind: behind as u32,
         })
     })
     .await

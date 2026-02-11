@@ -435,6 +435,19 @@ async getRecentCheckouts(limit: number | null) : Promise<Result<RecentCheckout[]
 }
 },
 /**
+ * Get ahead/behind counts for a local branch relative to its upstream.
+ * 
+ * Returns `{ ahead: 0, behind: 0 }` when the branch has no upstream tracking branch.
+ */
+async getBranchAheadBehind(branchName: string) : Promise<Result<AheadBehind, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_branch_ahead_behind", { branchName }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * List all stash entries in the repository.
  */
 async listStashes() : Promise<Result<StashEntry[], GitError>> {
@@ -1217,6 +1230,18 @@ async githubGetBranchInfoForPr() : Promise<Result<BranchInfoForPr, GitHubError>>
  * Information about active Gitflow workflow.
  */
 export type ActiveFlow = { flowType: FlowType; name: string; sourceBranch: string }
+/**
+ * How many commits a local branch is ahead/behind its upstream.
+ */
+export type AheadBehind = { 
+/**
+ * Commits on local not yet on upstream
+ */
+ahead: number; 
+/**
+ * Commits on upstream not yet on local
+ */
+behind: number }
 /**
  * Result of an authentication check or successful auth flow.
  * NEVER contains the actual token -- only metadata about the

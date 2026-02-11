@@ -1,9 +1,43 @@
 import { Check, GitBranch, GitMerge, Loader2, Pin, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { AheadBehind } from "../../bindings";
+import { commands } from "../../bindings";
 import type { EnrichedBranch } from "../../lib/branchClassifier";
 import { useContextMenuRegistry } from "../../lib/contextMenuRegistry";
 import { cn } from "../../lib/utils";
 import { BranchTypeBadge } from "./BranchTypeBadge";
+
+function AheadBehindBadge({ branchName, isRemote }: { branchName: string; isRemote: boolean }) {
+  const [counts, setCounts] = useState<AheadBehind | null>(null);
+
+  useEffect(() => {
+    if (isRemote) return;
+    let cancelled = false;
+    commands.getBranchAheadBehind(branchName).then((result) => {
+      if (!cancelled && result.status === "ok") {
+        setCounts(result.data);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [branchName, isRemote]);
+
+  if (!counts || (counts.ahead === 0 && counts.behind === 0)) return null;
+
+  return (
+    <span className="flex items-center gap-1 text-xs font-mono shrink-0">
+      {counts.ahead > 0 && (
+        <span className="text-ctp-green" title={`${counts.ahead} commit(s) ahead of upstream`}>
+          ↑{counts.ahead}
+        </span>
+      )}
+      {counts.behind > 0 && (
+        <span className="text-ctp-blue" title={`${counts.behind} commit(s) behind upstream`}>
+          ↓{counts.behind}
+        </span>
+      )}
+    </span>
+  );
+}
 
 interface BranchItemProps {
   branch: EnrichedBranch;
@@ -88,6 +122,7 @@ export function BranchItem({
           </span>
         )}
         <BranchTypeBadge branchType={branch.branchType} />
+        <AheadBehindBadge branchName={branch.name} isRemote={branch.isRemote} />
       </div>
       <div className="flex items-center gap-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity">
         {!branch.isHead && (
