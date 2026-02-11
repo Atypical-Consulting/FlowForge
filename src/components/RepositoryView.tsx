@@ -1,6 +1,5 @@
 import {
   Archive,
-  FolderGit2,
   GitBranch,
   Plus,
   Tag,
@@ -15,11 +14,7 @@ import { CommitForm } from "./commit/CommitForm";
 import { ResizablePanelLayout, ResizablePanel, ResizeHandle } from "./layout";
 import { StashList } from "./stash/StashList";
 import { TagList } from "./tags/TagList";
-import {
-  CreateWorktreeDialog,
-  DeleteWorktreeDialog,
-  WorktreePanel,
-} from "./worktree";
+
 
 // Minimal error boundary for extension panels (react-error-boundary not in deps)
 class ExtensionPanelErrorBoundary extends Component<
@@ -95,8 +90,7 @@ export function RepositoryView() {
   const [showBranchDialog, setShowBranchDialog] = useState(false);
   const [showStashDialog, setShowStashDialog] = useState(false);
   const [showTagDialog, setShowTagDialog] = useState(false);
-  const [showWorktreeDialog, setShowWorktreeDialog] = useState(false);
-  const [worktreeToDelete, setWorktreeToDelete] = useState<string | null>(null);
+
 
   // Listen for create-branch-dialog event from command palette
   useEffect(() => {
@@ -185,30 +179,6 @@ export function RepositoryView() {
                 />
               </details>
 
-              {/* Worktrees section */}
-              <details className="border-b border-ctp-surface0">
-                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
-                  <FolderGit2 className="w-4 h-4" />
-                  <span className="font-semibold text-sm flex-1">
-                    Worktrees
-                  </span>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setShowWorktreeDialog(true);
-                    }}
-                    className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
-                    title="Create new worktree"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </button>
-                </summary>
-                <WorktreePanel
-                  onOpenDeleteDialog={(name) => setWorktreeToDelete(name)}
-                />
-              </details>
-
               {/* Extension-contributed sidebar panels */}
               <DynamicSidebarPanels />
             </div>
@@ -228,15 +198,6 @@ export function RepositoryView() {
         </ResizablePanel>
       </ResizablePanelLayout>
 
-      {/* Worktree Dialogs */}
-      <CreateWorktreeDialog
-        open={showWorktreeDialog}
-        onOpenChange={setShowWorktreeDialog}
-      />
-      <DeleteWorktreeDialog
-        worktreeName={worktreeToDelete}
-        onOpenChange={(open) => !open && setWorktreeToDelete(null)}
-      />
     </>
   );
 }
