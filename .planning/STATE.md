@@ -77,7 +77,7 @@ None active.
 | 38 | explore XState architecture from UX, technical architecture, and expert dev angles with focus on extensibility | 2026-02-11 | b9f910e | [38-explore-xstate-architecture-from-ux-tech](./quick/38-explore-xstate-architecture-from-ux-tech/) |
 | 39 | full XState integration: MachineRegistry + merge/gitflow machines | 2026-02-11 | 400a749 | [39-full-xstate-integration-navigation-machi](./quick/39-full-xstate-integration-navigation-machi/) |
 | 40 | split content viewers extension to 3 extensions | 2026-02-11 | a2c5a51 | [40-split-content-viewers-extension-to-3-ext](./quick/40-split-content-viewers-extension-to-3-ext/) |
-| 41 | create a readme for each extension, define standard file structure, move files accordingly | 2026-02-11 | b6be996 | [41-create-a-readme-for-each-extension-defin](./quick/41-create-a-readme-for-each-extension-defin/) |
+| 41 | create a readme for each extension, define standard file structure, move files accordingly | 2026-02-11 | 56aaeeb | [41-create-a-readme-for-each-extension-defin](./quick/41-create-a-readme-for-each-extension-defin/) |
 
 ### Pending Todos
 

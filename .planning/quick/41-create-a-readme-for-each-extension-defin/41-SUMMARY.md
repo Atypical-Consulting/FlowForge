@@ -33,6 +33,24 @@ Each README documents:
 - Updated barrel export in `components/index.ts`
 - Fixed relative imports in blade (InitRepoForm, InitRepoPreview)
 
+### File Moves (16 files relocated to their extension directories)
+
+**Gitflow extension (8 files):**
+- `src/machines/gitflow/*` (6 files) → `src/extensions/gitflow/machines/`
+- `src/hooks/useGitflowWorkflow.ts` → `src/extensions/gitflow/hooks/`
+
+**Conventional-commits extension (7 files):**
+- `src/stores/conventional.ts` → `src/extensions/conventional-commits/store.ts`
+- `src/hooks/useConventionalCommit.ts` → `src/extensions/conventional-commits/hooks/`
+- `src/hooks/useAmendPrefill.ts` → `src/extensions/conventional-commits/hooks/`
+- `src/lib/conventional-utils.ts` + test → `src/extensions/conventional-commits/lib/`
+- `src/lib/commit-templates.ts` → `src/extensions/conventional-commits/lib/`
+- `src/lib/commit-type-theme.ts` → `src/extensions/conventional-commits/lib/`
+
+**Init-repo extension (2 files):**
+- `src/hooks/useGitignoreTemplates.ts` → `src/extensions/init-repo/hooks/`
+- `src/lib/gitignoreComposer.ts` → `src/extensions/init-repo/lib/`
+
 ## Standard Extension Structure
 ```
 extension-name/
@@ -51,9 +69,9 @@ extension-name/
 ## Verification
 - TypeScript: No new type errors (pre-existing TS2440 in bindings.ts only)
 - Tests: 252 passed, 3 pre-existing Monaco failures unrelated to changes
-- Commit: `b6be996`
+- Commits: `b6be996` (READMEs + manifests), `30dd4fc` (file moves)
 
 ## Files Changed
 - 16 new files (8 README.md + 8 manifest.json)
-- 2 modified files (init-repo/index.ts, init-repo/components/index.ts)
-- 1 moved file (InitRepoBlade.tsx: components/ → blades/)
+- 17 moved/renamed files (gitflow machines, CC store/hooks/lib, init-repo hooks/lib, init-repo blade)
+- 20+ modified files (import path updates across consumers)
