@@ -20,12 +20,17 @@ import {
   createReviewChecklistSlice,
   type ReviewChecklistSlice,
 } from "./review-checklist.slice";
+import {
+  createDiffSlice,
+  type DiffSlice,
+} from "./diff.slice";
 
 export type PreferencesStore = SettingsSlice &
   ThemeSlice &
   NavigationSlice &
   BranchMetadataSlice &
-  ReviewChecklistSlice;
+  ReviewChecklistSlice &
+  DiffSlice;
 
 export const usePreferencesStore = create<PreferencesStore>()(
   devtools(
@@ -35,6 +40,7 @@ export const usePreferencesStore = create<PreferencesStore>()(
       ...createNavigationSlice(...args),
       ...createBranchMetadataSlice(...args),
       ...createReviewChecklistSlice(...args),
+      ...createDiffSlice(...args),
     }),
     { name: "preferences", enabled: import.meta.env.DEV },
   ),
@@ -51,5 +57,6 @@ export async function initAllPreferences(): Promise<void> {
     state.initNavigation(),
     state.initMetadata(),
     state.initChecklist(),
+    state.initDiffPreferences(),
   ]);
 }
