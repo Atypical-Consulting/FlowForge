@@ -569,6 +569,47 @@ async abortMerge() : Promise<Result<null, GitError>> {
 }
 },
 /**
+ * List all conflicted file paths from the git index.
+ * 
+ * Returns an empty Vec if no conflicts exist (not an error).
+ */
+async listConflictFiles() : Promise<Result<string[], GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("list_conflict_files") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Read ours/theirs/base content for a specific conflicted file from index stages.
+ * 
+ * Uses git2 index stages (1=ancestor, 2=ours, 3=theirs) to read clean content
+ * without conflict markers. Returns NotFound if the file is not in the conflict list.
+ */
+async getConflictContent(path: string) : Promise<Result<ConflictContent, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_conflict_content", { path }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Write resolved content to a conflicted file, stage it, and clear the conflict.
+ * 
+ * Writes the resolved content to the working directory file, then stages it
+ * via `index.add_path()` which automatically clears the conflict entry.
+ */
+async resolveConflictFile(path: string, content: string) : Promise<Result<null, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("resolve_conflict_file", { path, content }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * Initialize Gitflow on a repository.
  * 
  * This command:
@@ -1498,6 +1539,34 @@ export type CommitType = "feat" | "fix" | "docs" | "style" | "refactor" | "perf"
  */
 export type Confidence = "high" | "medium" | "low"
 /**
+ * Content from all three sides of a merge conflict.
+ */
+export type ConflictContent = { 
+/**
+ * Path of the conflicted file (relative to repo root)
+ */
+path: string; 
+/**
+ * Content from the "ours" side (current branch / HEAD)
+ */
+ours: string | null; 
+/**
+ * Content from the "theirs" side (incoming branch)
+ */
+theirs: string | null; 
+/**
+ * Content from the common ancestor (base)
+ */
+base: string | null; 
+/**
+ * Label for the "ours" side (e.g., "main" or "HEAD")
+ */
+oursName: string; 
+/**
+ * Label for the "theirs" side (e.g., "feature/xyz")
+ */
+theirsName: string }
+/**
  * Result of creating a pull request.
  */
 export type CreatePullRequestResult = { number: number; htmlUrl: string; title: string; state: string }
@@ -1681,7 +1750,7 @@ export type FlowType = "feature" | "release" | "hotfix"
  * These errors are sent to the frontend as typed objects,
  * allowing proper error handling in TypeScript.
  */
-export type GitError = { type: "NotFound"; message: string } | { type: "NotARepository"; message: string } | { type: "EmptyRepository" } | { type: "StatusError"; message: string } | { type: "OperationFailed"; message: string } | { type: "PathNotFound"; message: string } | { type: "Internal"; message: string } | { type: "NoStagedChanges" } | { type: "SignatureError"; message: string } | { type: "RemoteNotFound"; message: string } | { type: "AuthenticationFailed"; message: string } | { type: "PushRejected"; message: string } | { type: "NetworkError"; message: string } | { type: "BranchNotFound"; message: string } | { type: "CannotDeleteCurrentBranch" } | { type: "BranchNotMerged"; message: string } | { type: "InvalidBranchName"; message: string } | { type: "BranchAlreadyExists"; message: string } | { type: "DirtyWorkingDirectory" } | { type: "StashNotFound"; message: number } | { type: "NothingToStash" } | { type: "TagAlreadyExists"; message: string } | { type: "TagNotFound"; message: string } | { type: "NoMergeInProgress" } | { type: "InvalidUrl"; message: string } | { type: "PathExists"; message: string } | { type: "CloneFailed"; message: string } | { type: "InvalidPath"; message: string }
+export type GitError = { type: "NotFound"; message: string } | { type: "NotARepository"; message: string } | { type: "EmptyRepository" } | { type: "StatusError"; message: string } | { type: "OperationFailed"; message: string } | { type: "PathNotFound"; message: string } | { type: "Internal"; message: string } | { type: "NoStagedChanges" } | { type: "SignatureError"; message: string } | { type: "RemoteNotFound"; message: string } | { type: "AuthenticationFailed"; message: string } | { type: "PushRejected"; message: string } | { type: "NetworkError"; message: string } | { type: "BranchNotFound"; message: string } | { type: "CannotDeleteCurrentBranch" } | { type: "BranchNotMerged"; message: string } | { type: "InvalidBranchName"; message: string } | { type: "BranchAlreadyExists"; message: string } | { type: "DirtyWorkingDirectory" } | { type: "StashNotFound"; message: number } | { type: "NothingToStash" } | { type: "TagAlreadyExists"; message: string } | { type: "TagNotFound"; message: string } | { type: "NoMergeInProgress" } | { type: "FileNotConflicted"; message: string } | { type: "InvalidUrl"; message: string } | { type: "PathExists"; message: string } | { type: "CloneFailed"; message: string } | { type: "InvalidPath"; message: string }
 /**
  * Snapshot of relevant global git configuration values.
  */

@@ -31,6 +31,7 @@ use git::{
     graph::get_commit_graph,
     history::{get_commit_details, get_commit_history, search_commits},
     merge::{abort_merge, get_merge_status, merge_branch},
+    conflict::{get_conflict_content, list_conflict_files, resolve_conflict_file},
     remote::{fetch_from_remote, get_remotes, pull_from_remote, push_to_remote},
     staging::{
         get_staging_status, stage_all, stage_file, stage_files, unstage_all, unstage_file,
@@ -118,6 +119,10 @@ pub fn run() {
         merge_branch,
         get_merge_status,
         abort_merge,
+        // Conflict commands
+        list_conflict_files,
+        get_conflict_content,
+        resolve_conflict_file,
         // Gitflow commands
         init_gitflow,
         start_feature,

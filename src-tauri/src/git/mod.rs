@@ -3,6 +3,7 @@ pub mod browse;
 pub mod changelog;
 pub mod clone;
 pub mod commands;
+pub mod conflict;
 pub mod commit;
 pub mod config;
 pub mod credentials;

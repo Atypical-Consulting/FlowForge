@@ -87,6 +87,10 @@ pub enum GitError {
     #[error("No merge in progress")]
     NoMergeInProgress,
 
+    // Conflict errors
+    #[error("File is not conflicted: {0}")]
+    FileNotConflicted(String),
+
     // Clone errors
     #[error("Invalid URL: {0}")]
     InvalidUrl(String),
