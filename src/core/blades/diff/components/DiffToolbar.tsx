@@ -4,10 +4,20 @@ import {
   Columns,
   Eye,
   FoldVertical,
+  ListPlus,
+  ListMinus,
   UnfoldVertical,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "../../../components/ui/button";
+
+interface StagingActions {
+  staged: boolean;
+  hunkCount: number;
+  onStageAll: () => void;
+  onUnstageAll: () => void;
+  isPending: boolean;
+}
 
 interface DiffToolbarProps {
   inline: boolean;
@@ -18,6 +28,7 @@ interface DiffToolbarProps {
   showPreview?: boolean;
   onTogglePreview?: () => void;
   trailing?: ReactNode;
+  stagingActions?: StagingActions;
 }
 
 export function DiffToolbar({
@@ -29,6 +40,7 @@ export function DiffToolbar({
   showPreview,
   onTogglePreview,
   trailing,
+  stagingActions,
 }: DiffToolbarProps) {
   return (
     <div
@@ -106,6 +118,37 @@ export function DiffToolbar({
               {collapseUnchanged ? "Show all" : "Collapse"}
             </span>
           </Button>
+        </>
+      )}
+
+      {stagingActions && stagingActions.hunkCount > 0 && !showPreview && (
+        <>
+          <div className="w-px h-4 bg-ctp-surface1" />
+          {stagingActions.staged ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={stagingActions.onUnstageAll}
+              disabled={stagingActions.isPending}
+              title={`Unstage all ${stagingActions.hunkCount} hunks`}
+              className="h-7 px-2 text-ctp-peach hover:text-ctp-peach"
+            >
+              <ListMinus className="w-4 h-4" />
+              <span className="text-xs ml-1.5">Unstage All</span>
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={stagingActions.onStageAll}
+              disabled={stagingActions.isPending}
+              title={`Stage all ${stagingActions.hunkCount} hunks`}
+              className="h-7 px-2 text-ctp-green hover:text-ctp-green"
+            >
+              <ListPlus className="w-4 h-4" />
+              <span className="text-xs ml-1.5">Stage All</span>
+            </Button>
+          )}
         </>
       )}
 

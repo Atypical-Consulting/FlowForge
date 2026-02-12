@@ -13,8 +13,14 @@ const mockCommands = vi.hoisted(() => ({
     status: "ok",
     data: { staged: [], unstaged: [], untracked: [] },
   }),
+  getFileDiffHunks: vi.fn().mockResolvedValue({
+    status: "ok",
+    data: [],
+  }),
   stageFile: vi.fn().mockResolvedValue({ status: "ok", data: null }),
   unstageFile: vi.fn().mockResolvedValue({ status: "ok", data: null }),
+  stageHunks: vi.fn().mockResolvedValue({ status: "ok", data: null }),
+  unstageHunks: vi.fn().mockResolvedValue({ status: "ok", data: null }),
 }));
 
 vi.mock("../../../bindings", () => ({
