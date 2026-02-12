@@ -114,7 +114,7 @@
 
 - [x] **Phase 48: Diff Viewer Foundations** — Collapsible regions, word-level highlighting, and preference persistence
 - [x] **Phase 49: Inline Conflict Resolution** — Three-way merge view with one-click resolution and manual editing
-- [ ] **Phase 50: Hunk & Line Staging** — Stage individual hunks and lines from within the diff viewer
+- [x] **Phase 50: Hunk & Line Staging** — Stage individual hunks and lines from within the diff viewer
 - [ ] **Phase 51: Git Insights Dashboard** — Commit activity charts, contributor breakdown, branch health, and author avatars
 - [ ] **Phase 52: Visualization & Welcome Polish** — Commit heat map, node tooltips, pinned repos, health indicators, quick actions
 - [ ] **Phase 53: Workspace Layout Presets** — Named layout presets, focus mode, panel toggles, and persistence
@@ -163,9 +163,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 50-01-PLAN.md — Rust backend: enhanced diff types, hunk/line staging commands, error variants, tests
-- [ ] 50-02-PLAN.md — Frontend hunk staging: StagingDiffEditor, ViewZone action bars, useHunkStaging hook, CSS
-- [ ] 50-03-PLAN.md — Frontend line staging: line selection UI, keyboard shortcuts, partial-stage indicator
+- [x] 50-01-PLAN.md — Rust backend: enhanced diff types, hunk/line staging commands, error variants, tests
+- [x] 50-02-PLAN.md — Frontend hunk staging: StagingDiffEditor, ViewZone action bars, useHunkStaging hook, CSS
+- [x] 50-03-PLAN.md — Frontend line staging: line selection UI, keyboard shortcuts, partial-stage indicator
 
 ### Phase 51: Git Insights Dashboard
 **Goal**: Users gain data-driven visibility into repository activity, contributor patterns, and branch health through a built-in analytics dashboard
@@ -233,10 +233,10 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51 -> 52 -> 53
 | 43-47 | v1.7.0 | 13/13 | Complete | 2026-02-11 |
 | 48. Diff Viewer Foundations | v1.8.0 | 2/2 | Complete | 2026-02-12 |
 | 49. Inline Conflict Resolution | v1.8.0 | 3/3 | Complete | 2026-02-12 |
-| 50. Hunk & Line Staging | v1.8.0 | 0/TBD | Not started | - |
+| 50. Hunk & Line Staging | v1.8.0 | 3/3 | Complete | 2026-02-12 |
 | 51. Git Insights Dashboard | v1.8.0 | 0/TBD | Not started | - |
 | 52. Visualization & Welcome Polish | v1.8.0 | 0/TBD | Not started | - |
 | 53. Workspace Layout Presets | v1.8.0 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-12 -- Phase 49 complete*
+*Last updated: 2026-02-12 -- Phase 50 complete*

@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** v1.8.0 UI/UX Enhancements -- Phase 50: Hunk & Line Staging
+**Current focus:** v1.8.0 UI/UX Enhancements -- Phase 51: Git Insights Dashboard
 
 ## Current Position
 
-Phase: 50 of 53 (Hunk & Line Staging)
+Phase: 51 of 53 (Git Insights Dashboard)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-02-12 -- Phase 49 complete (3/3 plans, 5 requirements delivered)
+Last activity: 2026-02-12 -- Phase 50 complete (3/3 plans, 2 requirements delivered)
 
-Progress: [████░░░░░░] 33% (v1.8.0)
+Progress: [█████░░░░░] 50% (v1.8.0)
 
 ## Milestone History
 
@@ -34,11 +34,11 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 49 complete, 4 planned
-- Total plans: ~235 complete
-- Total requirements validated: 304
+- Total phases: 50 complete, 3 planned
+- Total plans: ~238 complete
+- Total requirements validated: 306
 - Codebase: ~41,705 LOC TypeScript + ~11,145 Rust
-- Tests: 295 (Vitest + jsdom)
+- Tests: 295 (Vitest + jsdom), 74 (Rust)
 - Built-in extensions: 14
 
 ## Accumulated Context
@@ -52,6 +52,7 @@ See `.planning/MILESTONES.md` for full history.
 - Phase 34 human runtime testing pending (6 OAuth flow items)
 - GFEX-06 needs human runtime verification (architecture correct)
 - 13 items pending human runtime verification from v1.7.0
+- Phase 50: 5 items pending human runtime verification (ViewZone visuals, hunk round-trip, line selection, keyboard shortcuts, partial indicator)
 
 ### Key Decisions
 
@@ -59,7 +60,7 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 
 ### Research Flags
 
-- Phase 50 (Hunk Staging): Recommend `/gsd:research-phase` for git2-rs hunk staging implementation
+None active.
 
 ### Blockers/Concerns
 
@@ -72,9 +73,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Phase 49 complete -- Inline conflict resolution blade with Rust backend, extension infrastructure, full UI
+Stopped at: Phase 50 complete -- Hunk & line staging with Rust backend (5 commands, 7 tests), StagingDiffEditor with ViewZone action bars, line selection UI, keyboard shortcuts, partial-stage indicators
 Resume file: None
 
 ---
 *State updated: 2026-02-12*
-*Next: `/gsd:plan-phase 50`*
+*Next: `/gsd:plan-phase 51`*
