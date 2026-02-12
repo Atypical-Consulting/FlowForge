@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useDiffQuery } from "./hooks/useDiffQuery";
 import { useDiffPreferences } from "./hooks/useDiffPreferences";
 import { useHunkStaging } from "./hooks/useHunkStaging";
+import { useLineStaging } from "./hooks/useLineStaging";
 import { DiffContent } from "./components/DiffContent";
 import { DiffToolbar } from "./components/DiffToolbar";
 import { DiffMarkdownPreview } from "./components/DiffMarkdownPreview";
@@ -36,6 +37,12 @@ export function DiffBlade({ source }: DiffBladeProps) {
     filePath: source.filePath,
     staged: isStagingMode ? source.staged : false,
     enabled: isStagingMode,
+  });
+
+  const lineStagingResult = useLineStaging({
+    filePath: source.filePath,
+    staged: isStagingMode ? source.staged : false,
+    hunks,
   });
 
   const handleToggleInline = useCallback(() => {
@@ -134,6 +141,7 @@ export function DiffBlade({ source }: DiffBladeProps) {
                   hunks,
                   isOperationPending,
                   onToggleHunk: toggleHunk,
+                  lineSelection: lineStagingResult,
                 }
               : undefined
           }

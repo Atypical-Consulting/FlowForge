@@ -5,12 +5,23 @@ import { MONACO_COMMON_OPTIONS, MONACO_THEME } from "../../../lib/monacoConfig";
 import "../../../lib/monacoTheme";
 import { StagingDiffEditor } from "./StagingDiffEditor";
 
+interface LineSelection {
+  selectedLines: Set<number>;
+  toggleLine: (lineNumber: number) => void;
+  selectRange: (toLine: number) => void;
+  clearSelection: () => void;
+  stageSelectedLines: () => void;
+  isLineStagingPending: boolean;
+  hasSelection: boolean;
+}
+
 interface StagingSource {
   filePath: string;
   staged: boolean;
   hunks: DiffHunkDetail[];
   isOperationPending: boolean;
   onToggleHunk: (hunkIndex: number) => void;
+  lineSelection?: LineSelection;
 }
 
 interface DiffContentProps {
@@ -80,6 +91,7 @@ export function DiffContent({
         staged={stagingSource.staged}
         isOperationPending={stagingSource.isOperationPending}
         onToggleHunk={stagingSource.onToggleHunk}
+        lineSelection={stagingSource.lineSelection}
       />
     );
   }

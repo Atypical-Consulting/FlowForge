@@ -143,6 +143,64 @@
     background: rgb(250 179 135 / 0.3);
 }
 
+/* Line selection gutter controls */
+.line-stage-checkbox {
+    cursor: pointer;
+}
+.line-stage-checkbox::before {
+    content: "";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid var(--catppuccin-color-overlay1);
+    border-radius: 2px;
+    margin: 2px;
+    transition: border-color 0.15s, background 0.15s;
+}
+.line-stage-checkbox:hover::before {
+    border-color: var(--catppuccin-color-blue);
+    background: rgb(137 180 250 / 0.1);
+}
+
+.line-stage-checkbox-checked {
+    cursor: pointer;
+}
+.line-stage-checkbox-checked::before {
+    content: "";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid var(--catppuccin-color-blue);
+    border-radius: 2px;
+    margin: 2px;
+    background: var(--catppuccin-color-blue);
+}
+
+.line-stage-selected {
+    cursor: pointer;
+}
+.line-stage-selected::before {
+    content: "";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid var(--catppuccin-color-blue);
+    border-radius: 2px;
+    margin: 2px;
+    background: var(--catppuccin-color-blue);
+}
+
+/* Selected line highlight */
+.line-selected-for-staging {
+    background: rgb(137 180 250 / 0.1) !important;
+}
+
 @keyframes fadeOut {
     from {
         opacity: 1;
