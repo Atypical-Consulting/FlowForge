@@ -7,6 +7,38 @@ use tauri::State;
 use crate::git::error::GitError;
 use crate::git::repository::RepositoryState;
 
+/// Origin type of a diff line.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub enum DiffLineOrigin {
+    Context,
+    Addition,
+    Deletion,
+}
+
+/// A single line in a diff hunk with origin and line numbers.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct DiffLine {
+    pub origin: DiffLineOrigin,
+    pub old_lineno: Option<u32>,
+    pub new_lineno: Option<u32>,
+    pub content: String,
+}
+
+/// Enhanced diff hunk with per-line detail for interactive staging.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct DiffHunkDetail {
+    pub index: u32,
+    pub old_start: u32,
+    pub old_lines: u32,
+    pub new_start: u32,
+    pub new_lines: u32,
+    pub header: String,
+    pub lines: Vec<DiffLine>,
+}
+
 /// A single diff hunk with line range information.
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
@@ -28,6 +60,97 @@ pub struct FileDiff {
     pub hunks: Vec<DiffHunk>,
     pub is_binary: bool,
     pub language: String,
+}
+
+/// Extract hunks (and optionally per-line detail) from a git2::Diff.
+///
+/// When `include_lines` is false, returns empty `DiffHunkDetail` vec (backward compat).
+/// When true, populates per-line data using the line callback of `diff.foreach()`.
+pub fn extract_hunks_from_diff(
+    diff: &git2::Diff,
+    include_lines: bool,
+) -> Result<(Vec<DiffHunk>, Vec<DiffHunkDetail>, bool), GitError> {
+    use std::cell::RefCell;
+
+    let is_binary = RefCell::new(false);
+    let hunks = RefCell::new(Vec::new());
+    let detailed_hunks: RefCell<Vec<DiffHunkDetail>> = RefCell::new(Vec::new());
+    let hunk_index = RefCell::new(0u32);
+
+    if include_lines {
+        diff.foreach(
+            &mut |delta, _| {
+                if delta.flags().is_binary() {
+                    *is_binary.borrow_mut() = true;
+                }
+                true
+            },
+            None,
+            Some(&mut |_delta, hunk| {
+                hunks.borrow_mut().push(DiffHunk {
+                    old_start: hunk.old_start(),
+                    old_lines: hunk.old_lines(),
+                    new_start: hunk.new_start(),
+                    new_lines: hunk.new_lines(),
+                    header: String::from_utf8_lossy(hunk.header()).to_string(),
+                });
+                let idx = *hunk_index.borrow();
+                detailed_hunks.borrow_mut().push(DiffHunkDetail {
+                    index: idx,
+                    old_start: hunk.old_start(),
+                    old_lines: hunk.old_lines(),
+                    new_start: hunk.new_start(),
+                    new_lines: hunk.new_lines(),
+                    header: String::from_utf8_lossy(hunk.header()).to_string(),
+                    lines: Vec::new(),
+                });
+                *hunk_index.borrow_mut() = idx + 1;
+                true
+            }),
+            Some(&mut |_delta, _hunk, line| {
+                if let Some(detail) = detailed_hunks.borrow_mut().last_mut() {
+                    detail.lines.push(DiffLine {
+                        origin: match line.origin() {
+                            '+' => DiffLineOrigin::Addition,
+                            '-' => DiffLineOrigin::Deletion,
+                            _ => DiffLineOrigin::Context,
+                        },
+                        old_lineno: line.old_lineno(),
+                        new_lineno: line.new_lineno(),
+                        content: String::from_utf8_lossy(line.content()).to_string(),
+                    });
+                }
+                true
+            }),
+        )?;
+    } else {
+        diff.foreach(
+            &mut |delta, _| {
+                if delta.flags().is_binary() {
+                    *is_binary.borrow_mut() = true;
+                }
+                true
+            },
+            None,
+            Some(&mut |_delta, hunk| {
+                hunks.borrow_mut().push(DiffHunk {
+                    old_start: hunk.old_start(),
+                    old_lines: hunk.old_lines(),
+                    new_start: hunk.new_start(),
+                    new_lines: hunk.new_lines(),
+                    header: String::from_utf8_lossy(hunk.header()).to_string(),
+                });
+                true
+            }),
+            None,
+        )?;
+    }
+
+    Ok((
+        hunks.into_inner(),
+        detailed_hunks.into_inner(),
+        is_binary.into_inner(),
+    ))
 }
 
 /// Detect Monaco language ID from file extension.
@@ -125,6 +248,55 @@ pub async fn get_file_diff(
     .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
 }
 
+/// Get per-line diff detail for a specific file.
+///
+/// Returns enhanced hunk data with individual line information for interactive staging.
+#[tauri::command]
+#[specta::specta]
+pub async fn get_file_diff_hunks(
+    path: String,
+    staged: bool,
+    state: State<'_, RepositoryState>,
+) -> Result<Vec<DiffHunkDetail>, GitError> {
+    let repo_path = state
+        .get_path()
+        .await
+        .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
+
+    let file_path = path.clone();
+
+    tokio::task::spawn_blocking(move || {
+        let repo = git2::Repository::open(&repo_path)?;
+
+        let mut diff_opts = git2::DiffOptions::new();
+        diff_opts.pathspec(&file_path);
+
+        let diff = if staged {
+            // Staged diff: HEAD -> index
+            let head_tree = match repo.head() {
+                Ok(head_ref) => Some(head_ref.peel_to_tree()?),
+                Err(e) if e.code() == git2::ErrorCode::UnbornBranch => None,
+                Err(e) => return Err(GitError::from(e)),
+            };
+            repo.diff_tree_to_index(head_tree.as_ref(), None, Some(&mut diff_opts))?
+        } else {
+            // Unstaged diff: index -> workdir
+            repo.diff_index_to_workdir(None, Some(&mut diff_opts))?
+        };
+
+        let (_hunks, detailed_hunks, is_binary) = extract_hunks_from_diff(&diff, true)?;
+
+        // For binary files, return empty vec
+        if is_binary {
+            return Ok(Vec::new());
+        }
+
+        Ok(detailed_hunks)
+    })
+    .await
+    .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}
+
 /// Get diff for staged changes (HEAD -> index).
 fn get_staged_diff(
     repo: &git2::Repository,
@@ -140,30 +312,7 @@ fn get_staged_diff(
 
     let diff = repo.diff_tree_to_index(head_tree.as_ref(), None, Some(diff_opts))?;
 
-    let mut is_binary = false;
-    let mut hunks = Vec::new();
-
-    // Check if file is binary
-    diff.foreach(
-        &mut |delta, _| {
-            if delta.flags().is_binary() {
-                is_binary = true;
-            }
-            true
-        },
-        None,
-        Some(&mut |_delta, hunk| {
-            hunks.push(DiffHunk {
-                old_start: hunk.old_start(),
-                old_lines: hunk.old_lines(),
-                new_start: hunk.new_start(),
-                new_lines: hunk.new_lines(),
-                header: String::from_utf8_lossy(hunk.header()).to_string(),
-            });
-            true
-        }),
-        None,
-    )?;
+    let (hunks, _detailed, is_binary) = extract_hunks_from_diff(&diff, false)?;
 
     if is_binary {
         return Ok((String::new(), String::new(), hunks, true));
@@ -200,30 +349,7 @@ fn get_unstaged_diff(
 ) -> Result<(String, String, Vec<DiffHunk>, bool), GitError> {
     let diff = repo.diff_index_to_workdir(None, Some(diff_opts))?;
 
-    let mut is_binary = false;
-    let mut hunks = Vec::new();
-
-    // Check if file is binary
-    diff.foreach(
-        &mut |delta, _| {
-            if delta.flags().is_binary() {
-                is_binary = true;
-            }
-            true
-        },
-        None,
-        Some(&mut |_delta, hunk| {
-            hunks.push(DiffHunk {
-                old_start: hunk.old_start(),
-                old_lines: hunk.old_lines(),
-                new_start: hunk.new_start(),
-                new_lines: hunk.new_lines(),
-                header: String::from_utf8_lossy(hunk.header()).to_string(),
-            });
-            true
-        }),
-        None,
-    )?;
+    let (hunks, _detailed, is_binary) = extract_hunks_from_diff(&diff, false)?;
 
     if is_binary {
         return Ok((String::new(), String::new(), hunks, true));
@@ -306,29 +432,7 @@ pub async fn get_commit_file_diff(
             Some(&mut diff_opts),
         )?;
 
-        let mut is_binary = false;
-        let mut hunks = Vec::new();
-
-        diff.foreach(
-            &mut |delta, _| {
-                if delta.flags().is_binary() {
-                    is_binary = true;
-                }
-                true
-            },
-            None,
-            Some(&mut |_delta, hunk| {
-                hunks.push(DiffHunk {
-                    old_start: hunk.old_start(),
-                    old_lines: hunk.old_lines(),
-                    new_start: hunk.new_start(),
-                    new_lines: hunk.new_lines(),
-                    header: String::from_utf8_lossy(hunk.header()).to_string(),
-                });
-                true
-            }),
-            None,
-        )?;
+        let (hunks, _detailed, is_binary) = extract_hunks_from_diff(&diff, false)?;
 
         if is_binary {
             return Ok(FileDiff {

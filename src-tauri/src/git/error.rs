@@ -103,6 +103,16 @@ pub enum GitError {
 
     #[error("Invalid path: {0}")]
     InvalidPath(String),
+
+    // Partial staging errors
+    #[error("Hunk index {0} out of range")]
+    HunkIndexOutOfRange(u32),
+
+    #[error("Line range invalid: {0}")]
+    LineRangeInvalid(String),
+
+    #[error("Cannot partially stage a binary file")]
+    BinaryPartialStaging,
 }
 
 impl From<git2::Error> for GitError {
