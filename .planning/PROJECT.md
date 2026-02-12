@@ -220,6 +220,18 @@ Each layer adds value; each inner layer stands without the outer ones.
 
 ### Active
 
+## Current Milestone: v1.8.0 UI/UX Enhancements
+
+**Goal:** Elevate FlowForge's user experience with enhanced diff viewing, inline conflict resolution, workspace customization, commit visualization, welcome screen polish, and a Git insights dashboard.
+
+**Target features:**
+- Enhanced Diff Viewer (collapsible regions, line-level staging, word-level highlighting, preference persistence)
+- Branch & Commit Visualization (author avatars, commit heat map, node tooltips)
+- Welcome Screen Enhancement (pinned repos, health indicators, quick actions)
+- Inline Conflict Resolution (three-way merge view, one-click resolve, manual editing)
+- Git Insights Dashboard (commit activity, contributor breakdown, branch health, repo stats)
+- Customizable Workspace Layouts (presets, focus mode, panel toggles, persistence)
+
 ### Deferred to v2+
 
 - [ ] MCP server exposing repository state as structured resources
@@ -233,7 +245,7 @@ Each layer adds value; each inner layer stands without the outer ones.
 - Policy configuration file (.gitclient-policy.yml) — v2 alongside MCP; guardrails exist in v1 but aren't user-configurable
 - Interactive rebase drag-and-drop — valuable polish, not core differentiator, v3
 - Smart staging with automatic changeset grouping — underserved not unserved, v3
-- Branch health monitoring (staleness, drift indicators) — ambient UX enhancement, v3
+- Branch health monitoring (staleness, drift indicators) — moved to v1.8.0 as part of Git Insights Dashboard
 - Built-in code editor — scope creep, IDE competition
 - Mercurial/SVN support — Git-only focus
 - CI/CD integration — feature creep (CI status indicators on PRs sufficient)
@@ -343,4 +355,4 @@ Documentation website live on GitHub Pages with extension developer guides and R
 | CORE vs EXTENSION discovery split (v1.7) | _discovery.ts splits EXPECTED_TYPES into core (warn) and extension (debug) for clear architectural boundary | ✓ Good — enforces layering |
 
 ---
-*Last updated: 2026-02-11 after v1.7.0 milestone*
+*Last updated: 2026-02-12 after v1.8.0 milestone start*
