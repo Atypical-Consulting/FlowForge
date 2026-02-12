@@ -14,6 +14,7 @@ interface FileItemProps {
   showFilenameOnly?: boolean;
   checked?: boolean;
   onCheckChange?: (path: string, checked: boolean) => void;
+  isPartiallyStaged?: boolean;
 }
 
 function getStatusDot(status: FileStatus): { color: string; title: string } {
@@ -38,6 +39,7 @@ export function FileItem({
   showFilenameOnly = false,
   checked,
   onCheckChange,
+  isPartiallyStaged = false,
 }: FileItemProps) {
   const queryClient = useQueryClient();
   const { stagingSelectedFile, selectFile } = useStagingStore();
@@ -122,6 +124,30 @@ export function FileItem({
             )}
             title={statusDot.title}
           />
+        )}
+        {isPartiallyStaged && (
+          <span
+            className="absolute -top-0.5 -left-0.5 w-2.5 h-2.5"
+            title="Partially staged"
+            aria-label="File is partially staged"
+          >
+            <svg viewBox="0 0 10 10" className="w-full h-full">
+              <circle
+                cx="5"
+                cy="5"
+                r="4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                className="text-ctp-yellow"
+              />
+              <path
+                d="M5 1 A4 4 0 0 1 5 9"
+                fill="currentColor"
+                className="text-ctp-yellow"
+              />
+            </svg>
+          </span>
         )}
       </div>
       <span className="flex-1 truncate text-sm text-ctp-text">

@@ -160,6 +160,13 @@ export function StagingPanel() {
     };
   }, [rawStatus, showConflictsOnly]);
 
+  // Compute set of partially staged file paths (appear in both staged and unstaged)
+  const partiallyStagedPaths = useMemo(() => {
+    const stagedPaths = new Set(rawStatus.staged.map((f) => f.path));
+    const unstagedPaths = new Set(rawStatus.unstaged.map((f) => f.path));
+    return new Set([...stagedPaths].filter((p) => unstagedPaths.has(p)));
+  }, [rawStatus]);
+
   const hasChanges =
     rawStatus.staged.length > 0 ||
     rawStatus.unstaged.length > 0 ||
@@ -248,8 +255,8 @@ export function StagingPanel() {
                   files={status.staged}
                   section="staged"
                   filter={searchFilter}
-
                   onStageFolder={(paths) => unstageFolderMutation.mutate(paths)}
+                  partiallyStagedPaths={partiallyStagedPaths}
                 />
               </div>
             )}
@@ -275,8 +282,8 @@ export function StagingPanel() {
                   files={status.unstaged}
                   section="unstaged"
                   filter={searchFilter}
-
                   onStageFolder={(paths) => stageFolderMutation.mutate(paths)}
+                  partiallyStagedPaths={partiallyStagedPaths}
                 />
               </div>
             )}
@@ -302,8 +309,8 @@ export function StagingPanel() {
                   files={status.untracked}
                   section="untracked"
                   filter={searchFilter}
-
                   onStageFolder={(paths) => stageFolderMutation.mutate(paths)}
+                  partiallyStagedPaths={partiallyStagedPaths}
                 />
               </div>
             )}
@@ -316,6 +323,7 @@ export function StagingPanel() {
               section="staged"
               onUnstageAll={() => unstageAllMutation.mutate()}
               onBulkUnstage={(paths) => unstageFolderMutation.mutate(paths)}
+              partiallyStagedPaths={partiallyStagedPaths}
             />
             <FileList
               title="Changes"
@@ -323,6 +331,7 @@ export function StagingPanel() {
               section="unstaged"
               onStageAll={() => stageAllMutation.mutate()}
               onBulkStage={(paths) => stageFolderMutation.mutate(paths)}
+              partiallyStagedPaths={partiallyStagedPaths}
             />
             <FileList
               title="Untracked Files"
@@ -330,6 +339,7 @@ export function StagingPanel() {
               section="untracked"
               onStageAll={() => stageAllMutation.mutate()}
               onBulkStage={(paths) => stageFolderMutation.mutate(paths)}
+              partiallyStagedPaths={partiallyStagedPaths}
             />
           </>
         )}

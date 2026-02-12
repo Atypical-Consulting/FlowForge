@@ -28,6 +28,7 @@ interface FileTreeViewProps {
   section: "staged" | "unstaged" | "untracked";
   filter?: string;
   onStageFolder?: (paths: string[]) => void;
+  partiallyStagedPaths?: Set<string>;
 }
 
 export function FileTreeView({
@@ -35,6 +36,7 @@ export function FileTreeView({
   section,
   filter = "",
   onStageFolder,
+  partiallyStagedPaths,
 }: FileTreeViewProps) {
   const filteredFiles = useMemo(() => {
     if (!filter) return files;
@@ -93,6 +95,7 @@ export function FileTreeView({
           section={section}
           depth={0}
           onStageFolder={onStageFolder}
+          partiallyStagedPaths={partiallyStagedPaths}
         />
       ))}
     </div>
@@ -128,6 +131,7 @@ interface TreeNodeProps {
   section: "staged" | "unstaged" | "untracked";
   depth: number;
   onStageFolder?: (paths: string[]) => void;
+  partiallyStagedPaths?: Set<string>;
 }
 
 function TreeNode({
@@ -135,6 +139,7 @@ function TreeNode({
   section,
   depth,
   onStageFolder,
+  partiallyStagedPaths,
 }: TreeNodeProps) {
   const [expanded, setExpanded] = useState(true);
 
@@ -146,6 +151,7 @@ function TreeNode({
         section={section}
         depth={depth}
         showFilenameOnly
+        isPartiallyStaged={partiallyStagedPaths?.has(node.file.path)}
       />
     );
   }
@@ -237,6 +243,7 @@ function TreeNode({
                     section={section}
                     depth={depth + 1}
                     onStageFolder={onStageFolder}
+                    partiallyStagedPaths={partiallyStagedPaths}
                   />
                 ) : child.file ? (
                   <FileItem
@@ -244,6 +251,7 @@ function TreeNode({
                     section={section}
                     depth={0}
                     showFilenameOnly
+                    isPartiallyStaged={partiallyStagedPaths?.has(child.file.path)}
                   />
                 ) : null}
               </ConnectorRow>

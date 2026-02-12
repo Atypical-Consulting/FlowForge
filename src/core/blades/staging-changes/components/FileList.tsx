@@ -12,6 +12,7 @@ interface FileListProps {
   onUnstageAll?: () => void;
   onBulkStage?: (paths: string[]) => void;
   onBulkUnstage?: (paths: string[]) => void;
+  partiallyStagedPaths?: Set<string>;
 }
 
 export function FileList({
@@ -23,6 +24,7 @@ export function FileList({
   onUnstageAll,
   onBulkStage,
   onBulkUnstage,
+  partiallyStagedPaths,
 }: FileListProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set());
@@ -149,6 +151,7 @@ export function FileList({
               section={section}
               checked={selectedPaths.has(file.path)}
               onCheckChange={handleCheckChange}
+              isPartiallyStaged={partiallyStagedPaths?.has(file.path)}
             />
           ))}
         </div>
