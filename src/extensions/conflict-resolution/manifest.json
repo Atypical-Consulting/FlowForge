@@ -1,0 +1,21 @@
+{
+  "id": "conflict-resolution",
+  "name": "Conflict Resolution",
+  "version": "1.0.0",
+  "description": "Provides inline merge conflict resolution with two-pane diff view, one-click hunk resolution, and manual editing.",
+  "apiVersion": "1",
+  "main": "index.ts",
+  "contributes": {
+    "blades": [
+      { "type": "conflict-resolution", "title": "Conflict Resolution", "singleton": false }
+    ],
+    "commands": [
+      { "id": "open-conflict-resolution", "title": "Resolve Merge Conflicts", "category": "Git" }
+    ],
+    "toolbar": [
+      { "id": "conflict-badge", "label": "Merge Conflicts", "group": "status", "priority": 40 }
+    ]
+  },
+  "permissions": null,
+  "trustLevel": "built-in"
+}

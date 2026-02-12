@@ -40,6 +40,7 @@ import { onActivate as viewerNupkgActivate, onDeactivate as viewerNupkgDeactivat
 import { onActivate as viewerPlaintextActivate, onDeactivate as viewerPlaintextDeactivate } from "./extensions/viewer-plaintext";
 import { onActivate as welcomeActivate, onDeactivate as welcomeDeactivate } from "./extensions/welcome-screen";
 import { onActivate as topologyActivate, onDeactivate as topologyDeactivate } from "./extensions/topology";
+import { onActivate as conflictActivate, onDeactivate as conflictDeactivate } from "./extensions/conflict-resolution";
 
 function WelcomeFallback() {
   const { openRepository } = useGitOpsStore();
@@ -248,6 +249,14 @@ function App() {
       version: "1.0.0",
       activate: welcomeActivate,
       deactivate: welcomeDeactivate,
+    });
+
+    registerBuiltIn({
+      id: "conflict-resolution",
+      name: "Conflict Resolution",
+      version: "1.0.0",
+      activate: conflictActivate,
+      deactivate: conflictDeactivate,
     });
   }, [initTheme, initSettings, initNavigation, initMetadata, initChecklist, registerBuiltIn]);
 
