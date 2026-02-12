@@ -77,36 +77,36 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DIFF-01 | — | Pending |
-| DIFF-02 | — | Pending |
-| DIFF-03 | — | Pending |
-| DIFF-04 | — | Pending |
-| DIFF-05 | — | Pending |
-| VIZ-01 | — | Pending |
-| VIZ-02 | — | Pending |
-| VIZ-03 | — | Pending |
-| WELC-01 | — | Pending |
-| WELC-02 | — | Pending |
-| WELC-03 | — | Pending |
-| CONF-01 | — | Pending |
-| CONF-02 | — | Pending |
-| CONF-03 | — | Pending |
-| CONF-04 | — | Pending |
-| CONF-05 | — | Pending |
-| INSI-01 | — | Pending |
-| INSI-02 | — | Pending |
-| INSI-03 | — | Pending |
-| INSI-04 | — | Pending |
-| LYOT-01 | — | Pending |
-| LYOT-02 | — | Pending |
-| LYOT-03 | — | Pending |
-| LYOT-04 | — | Pending |
+| DIFF-01 | Phase 48 | Pending |
+| DIFF-02 | Phase 50 | Pending |
+| DIFF-03 | Phase 50 | Pending |
+| DIFF-04 | Phase 48 | Pending |
+| DIFF-05 | Phase 48 | Pending |
+| VIZ-01 | Phase 51 | Pending |
+| VIZ-02 | Phase 52 | Pending |
+| VIZ-03 | Phase 52 | Pending |
+| WELC-01 | Phase 52 | Pending |
+| WELC-02 | Phase 52 | Pending |
+| WELC-03 | Phase 52 | Pending |
+| CONF-01 | Phase 49 | Pending |
+| CONF-02 | Phase 49 | Pending |
+| CONF-03 | Phase 49 | Pending |
+| CONF-04 | Phase 49 | Pending |
+| CONF-05 | Phase 49 | Pending |
+| INSI-01 | Phase 51 | Pending |
+| INSI-02 | Phase 51 | Pending |
+| INSI-03 | Phase 51 | Pending |
+| INSI-04 | Phase 51 | Pending |
+| LYOT-01 | Phase 53 | Pending |
+| LYOT-02 | Phase 53 | Pending |
+| LYOT-03 | Phase 53 | Pending |
+| LYOT-04 | Phase 53 | Pending |
 
 **Coverage:**
 - v1.8.0 requirements: 23 total
-- Mapped to phases: 0
-- Unmapped: 23 ⚠️
+- Mapped to phases: 23
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-12*
-*Last updated: 2026-02-12 after initial definition*
+*Last updated: 2026-02-12 after roadmap creation*
