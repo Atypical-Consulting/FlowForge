@@ -1,439 +1,421 @@
-# Domain Pitfalls: Extracting Topology, Worktrees, and Init Repo into Extensions
+# Domain Pitfalls: UI/UX Enhancement Features for FlowForge v1.8.0
 
-**Domain:** Extension extraction for Topology Graph, Worktree Management, Init Repo; Zustand registry migration
-**Project:** FlowForge v1.7.0 (subsequent milestone after v1.6.0 extension platform)
-**Researched:** 2026-02-11
-**Overall confidence:** HIGH (based on deep codebase analysis and v1.6.0 extraction lessons)
+**Domain:** Git client UI/UX enhancements (enhanced diff viewer, inline conflict resolution, git insights dashboard, customizable workspace layouts, welcome screen, branch/commit visualization)
+**Project:** FlowForge v1.8.0 (subsequent milestone after v1.7.0 Extensions Everywhere)
+**Researched:** 2026-02-12
+**Overall confidence:** HIGH (based on deep codebase analysis, Monaco/git2-rs issue trackers, and Tauri IPC documentation)
 
 ---
 
 ## Critical Pitfalls
 
-Mistakes that cause rewrites, broken core workflows, or multi-week recovery.
+Mistakes that cause rewrites, data loss, or major architectural problems.
 
 ---
 
-### Pitfall 1: Topology Is a Navigation Process Root, Not Just a Blade
+### Pitfall 1: Monaco Editor Has No Native Three-Way Merge Support
 
-**What goes wrong:** Topology is not merely a blade registered in the blade registry -- it is one of two fundamental "process types" that define the entire navigation system. The XState navigation machine (`navigationMachine.ts`) has a hardcoded `ProcessType = "staging" | "topology"` enum. The `rootBladeForProcess()` function in `actions.ts` returns the `"topology-graph"` blade type when the process is `"topology"`. The `ProcessNavigation` component hardcodes two process tabs (Staging and Topology). When a developer extracts topology to an extension and the extension is disabled, the entire right side of the navigation breaks: users can still click the "Topology" tab, but the blade stack initializes with a blade type that has no registration, rendering nothing or throwing.
+**What goes wrong:** Developers assume Monaco's `DiffEditor` can be extended to show three-way merge (base, ours, theirs) with a result pane, similar to VS Code's merge editor. Monaco Editor does NOT expose the three-way merge editor that VS Code uses internally. The `DiffEditor` is strictly a two-way comparison widget. Attempting to build three-way merge by placing three Monaco editors side-by-side leads to synchronization nightmares, duplicated language worker instances, and memory bloat.
 
-**Why it happens:** In v1.6.0, the extracted features (Gitflow, CC, Content Viewers) were all "leaf" features -- they contributed sidebar panels, blades, and commands, but none of them were structural to the navigation architecture. Topology is fundamentally different: it is a process root. The developer treats it like any other blade extraction and misses that it underpins the navigation state machine itself.
+**Why it happens:** VS Code is built on Monaco, so people assume all VS Code features are available in the Monaco Editor npm package. They are not. The merge editor is part of VS Code's workbench layer, not the standalone Monaco editor.
 
 **Consequences:**
-- Clicking "Topology" tab renders a blank panel or crashes because `BladeRenderer` looks up `"topology-graph"` and gets `undefined`
-- The `Enter` keyboard shortcut (which opens commit details from selected topology commit) throws because `topologySelectedCommit` state no longer exists in the store
-- The `defaultTab: "topology"` user setting in `GeneralSettings` sends `SWITCH_PROCESS` to the navigation actor on startup, which initializes the blade stack with a missing blade type
-- Auto-refresh in `App.tsx` (lines 132-135) calls `topologyState.loadGraph()` which references a slice that was extracted
+- Building a custom three-panel sync system takes 2-4x longer than expected
+- Each additional Monaco instance adds ~30-50MB memory and worker thread overhead
+- Scroll synchronization across three editors is fragile (scroll events fire asynchronously, causing jitter)
+- Completion providers, decorations, and language workers are shared globally -- duplicated suggestions appear across instances
+- FlowForge already has DiffEditor in `DiffBlade.tsx` and `InlineDiffViewer.tsx` -- adding a third editor per conflict file triples memory pressure
 
 **Prevention:**
-1. Topology MUST remain a core blade registration, even when extracted. Use `coreOverride: true` (like Gitflow cheatsheet and CC blade already do) so the blade type stays `"topology-graph"` not `"ext:topology:topology-graph"`. This preserves compatibility with the navigation machine.
-2. The `TopologySlice` in `GitOpsStore` cannot simply be removed. It must remain as a thin facade or the extension must provide a replacement that the navigation machine can reference. Either: (a) keep the slice in core with the extension providing the UI, or (b) refactor `ProcessType` to be dynamic.
-3. Do NOT make `ProcessType` dynamic in this milestone -- that is a navigation machine rewrite. Instead, keep topology as a "core-guaranteed" blade type where the extension provides the component but the blade registration always exists.
-4. Add a fallback blade that renders "Topology extension is disabled. Enable it in Extension Manager." if the topology extension is deactivated but the user navigates to the process.
+- Use a TWO-pane approach instead: show the merged result with inline conflict markers, let users toggle between "ours" and "theirs" overlays using Monaco decorations and ViewZones
+- Use Monaco's `hideUnchangedRegions` option (already available in the DiffEditor API) to collapse non-conflicting sections
+- Extract all three versions (ancestor, ours, theirs) from git2-rs via `index.conflicts()` iterator on the Rust side, but render them as decoration overlays on a single editor instance, not as three separate editors
+- If full three-pane is absolutely required, consider a lightweight read-only renderer (syntax-highlighted `<pre>` blocks) for the base and incoming panes, with only the result pane using Monaco
+- Reference VS Code's merge editor UX pattern: branches on top (read-only), result below (editable) -- but implement the read-only panes as simple HTML, not full Monaco instances
 
-**Detection:** Disable the topology extension. Click the "Topology" tab. If the app crashes or shows blank content, the extraction broke the navigation root.
+**Detection:** Warning signs include: more than 2 Monaco editor instances per view, scroll synchronization code exceeding 50 lines, or user reports of typing lag after opening conflict resolution.
 
-**Warning signs:** Any PR that removes `"topology-graph"` from `BladePropsMap` in `bladeTypes.ts`, or removes `TopologySlice` from `GitOpsStore` without providing a navigation-safe fallback.
-
-**Phase:** Address first. This is the single most dangerous pitfall because topology is the most-used view and it is structural, not just feature-level.
+**Confidence:** HIGH -- based on Monaco Editor GitHub issues [#1295](https://github.com/microsoft/monaco-editor/issues/1295), [#3268](https://github.com/microsoft/monaco-editor/issues/3268), and [#1529](https://github.com/microsoft/monaco-editor/issues/1529), confirmed no native three-way support exists.
 
 ---
 
-### Pitfall 2: TopologySlice Cross-Store Access From App.tsx File Watcher
+### Pitfall 2: git2-rs / libgit2 Does Not Support Hunk-Level Staging Natively
 
-**What goes wrong:** `App.tsx` lines 130-136 contain a file watcher listener that directly accesses `useTopologyStore.getState()` to check if nodes are loaded and auto-refresh the graph:
+**What goes wrong:** Implementing "stage this hunk" or "stage these lines" features by looking for a built-in git2-rs API, finding nothing, then either abandoning the feature or building an incorrect manual implementation that corrupts the index.
 
-```typescript
-const topologyState = useTopologyStore.getState();
-if (topologyState.nodes.length > 0) {
-  topologyState.loadGraph();
-}
-```
+**Why it happens:** libgit2 (and by extension git2-rs 0.20) provides diff/patch APIs for *reading* hunks but has no `stage_hunk()` or `stage_lines()` function. Git CLI's `git add -p` works by constructing synthetic patches and applying them to the index -- this logic lives in Git's Perl/C scripts, not in libgit2.
 
-This runs in core code, not in the topology extension. If `TopologySlice` is extracted from `GitOpsStore`, this code either (a) references a removed slice causing a runtime error, or (b) references a stale store that no longer holds topology state. Either way, the auto-refresh on file system changes -- which keeps the commit graph current when the user makes commits -- silently breaks.
-
-**Why it happens:** The topology auto-refresh was added as a core concern (react to repository-changed Tauri events) rather than as a topology-internal concern. When extracting, the developer focuses on moving the blade and its components but does not audit App.tsx for cross-cutting references.
-
-**Consequences:** The topology graph goes stale after commits, pushes, pulls. Users see outdated commit history until they manually navigate away and back. This is subtle -- no error, no crash, just incorrect data.
+**Consequences:**
+- Incorrect patch construction can silently corrupt the index (wrong line offsets after applying partial hunks)
+- Off-by-one errors in hunk headers (`@@ -start,count +start,count @@`) cause Git to reject the patch or apply it to the wrong location
+- Binary files or files with CRLF line endings break manual patch construction
+- Concurrent hunk staging while the user is also staging full files via the existing `stage_file` command creates race conditions on the index lock
 
 **Prevention:**
-1. The topology extension's `onActivate()` must set up its own file watcher subscription using `api.onDispose()` for cleanup. The core `App.tsx` file watcher should NOT reference topology state.
-2. Before extraction, audit ALL references to topology state outside the topology blade directory. Search for: `useTopologyStore`, `topologySelectedCommit`, `loadGraph`, `topologyState`.
-3. The `useKeyboardShortcuts.ts` (line 224-231) also directly accesses `useTopologyStore.getState().topologySelectedCommit` for the Enter key handler. This must become extension-contributed (register a command that the Enter key invokes).
-4. Use `gitHookBus` or the Tauri event listener pattern from the GitHub extension (`listen("repository-changed", ...)`) within the topology extension itself.
+- Implement hunk staging by: (1) reading the full diff with `DiffOptions`, (2) constructing a filtered diff containing only the selected hunks, (3) applying it to the index using `git2::Repository::apply()` with `ApplyLocation::Index`
+- The `git2::Repository::apply()` method accepts a `Diff` object -- construct a filtered diff containing only the desired hunks
+- Always serialize index-modifying operations: the existing `RepositoryState` should be extended with a `Mutex<()>` for index operations to prevent concurrent `index.write()` calls from `stage_file`, `unstage_file`, and new `stage_hunk` commands
+- Test extensively with: CRLF files, files with no trailing newline, renamed files, binary files adjacent to text changes, and files with overlapping hunks
+- FlowForge's current `staging.rs` uses `index.add_path()` for whole files -- hunk staging must use a completely different code path through `repo.apply()`
+- Reference how gitui (Rust-based Git TUI, also uses git2-rs) implements hunk staging for a proven pattern
 
-**Detection:** After extraction, make a commit while viewing the topology. If the graph does not auto-refresh within 2 seconds, the watcher hookup is broken.
+**Detection:** Warning signs include: manually constructing patch strings with `format!`, not using `repo.apply()`, or any code that modifies `DiffHunk` header line numbers manually.
 
-**Warning signs:** `App.tsx` still importing `useTopologyStore` after extraction. Any core file referencing topology store state.
-
-**Phase:** Address in the same phase as Pitfall 1 (topology extraction). These are inseparable.
+**Confidence:** HIGH -- confirmed via libgit2 issues [#5577](https://github.com/libgit2/libgit2/issues/5577) and [#195](https://github.com/libgit2/libgit2sharp/issues/195), plus git2-rs docs showing `apply()` exists but no `stage_hunk()`.
 
 ---
 
-### Pitfall 3: Worktree switchToWorktree() Calls openRepository() -- Store Entanglement
+### Pitfall 3: Monaco DiffEditor Memory Leaks on Repeated Mount/Unmount
 
-**What goes wrong:** The `worktrees.slice.ts` contains `switchToWorktree()` which calls `get().openRepository(path)`. `openRepository` is a method from `RepositorySlice` -- a different slice in the same `GitOpsStore`. This is the exact same cross-slice coupling pattern that made the v1.6.0 Gitflow extraction dangerous (ADR-2 lesson). When the worktree slice is extracted to a standalone store or extension, the `get().openRepository()` call breaks because the extracted store no longer has access to `RepositorySlice`.
+**What goes wrong:** Navigating between files in the diff view (which FlowForge already does via `StagingDiffNavigation`) creates and destroys DiffEditor instances. Each mount creates new editor models, workers, and event listeners. Without explicit disposal, memory grows unbounded -- 1GB+ after extended use is documented.
 
-**Why it happens:** `switchToWorktree` needs to change the active repository to the worktree's path. In the monolithic `GitOpsStore`, this is trivial -- just call another slice's method via `get()`. After extraction, this implicit coupling surfaces.
+**Why it happens:** `@monaco-editor/react`'s `DiffEditor` component creates new `ITextModel` instances for `original` and `modified` on each prop change. Old models are not automatically disposed. Language workers accumulate across mounts. The `InlineDiffViewer.tsx` already has `editorRef` cleanup in `useEffect`, but `DiffBlade.tsx` does NOT call `editor.dispose()` or clean up models.
 
-**Consequences:** The "Switch to Worktree" action silently fails. Users click it, nothing happens, no error shown. The worktree panel appears to work (list, create, delete all work) but the critical workflow of switching to a worktree is broken.
+**Consequences:**
+- Memory usage grows linearly with each file viewed (200-500KB per diff pair for typical source files)
+- After viewing 50-100 diffs, Tauri's WebView process can consume 1GB+, causing OS memory pressure and potential OOM kills
+- Duplicate `onDidScrollChange` listeners fire on stale editor references
+- TypeScript/JavaScript language workers pile up, causing CPU spikes during diff computation
 
 **Prevention:**
-1. `switchToWorktree` should NOT call `openRepository` directly. Instead, it should emit a navigation/application event: `gitHookBus.emit("after", "worktree-switch", { path })` and the core `RepositorySlice` (or `App.tsx`) subscribes to handle the repository switch.
-2. Alternatively, the worktree extension can import `useGitOpsStore` directly for this one call (built-in extensions CAN import core stores -- the GitHub extension does this). But this must be a deliberate decision, not an accidental coupling.
-3. The `openInExplorer` method uses `import("@tauri-apps/plugin-opener")` which is fine for an extension. But ensure the dynamic import is preserved, not converted to a static import that would increase bundle coupling.
+- Always call `editor.dispose()` in the component's cleanup -- fix `DiffBlade.tsx` which currently lacks this
+- Reuse a single DiffEditor instance and update models via `editor.getModel().original.setValue()` / `editor.getModel().modified.setValue()` instead of remounting the component
+- Track and dispose `ITextModel` instances explicitly using `monaco.editor.getModels()` to find orphans
+- Set `keepCurrentOriginalModel` and `keepCurrentModifiedModel` to `false` (default) to let the DiffEditor dispose models automatically
+- Implement a model cache with an LRU eviction policy (max 10-20 cached diffs) rather than unlimited creation
+- The 150ms debounce in `InlineDiffViewer.tsx` helps reduce rapid queries but does not prevent the underlying model leak
 
-**Detection:** After extraction, click "Switch to Worktree" on a worktree in the sidebar. If the repository does not switch, the cross-slice call broke.
+**Detection:** Warning signs include: `performance.memory.usedJSHeapSize` growing monotonically during file navigation, or `monaco.editor.getModels().length` exceeding 20-30 in the browser console.
 
-**Warning signs:** The extracted worktree store containing `get().openRepository` or `get().refreshRepoStatus` calls. Any `get()` call that references methods from other slices.
-
-**Phase:** Address during worktree extraction. Must be resolved before the worktree sidebar panel can be contributed via extension.
+**Confidence:** HIGH -- documented in Monaco issues [#110](https://github.com/react-monaco-editor/react-monaco-editor/issues/110), [#132](https://github.com/react-monaco-editor/react-monaco-editor/issues/132), [#1693](https://github.com/microsoft/monaco-editor/issues/1693), and [#398](https://github.com/suren-atoyan/monaco-react/issues/398).
 
 ---
 
-### Pitfall 4: Worktree Sidebar Is Hardcoded With Dialog State Management in RepositoryView
+### Pitfall 4: Tauri IPC Serialization Bottleneck for Large Commit History Data
 
-**What goes wrong:** `RepositoryView.tsx` hardcodes the Worktree section (lines 188-209) with direct JSX rendering `<WorktreePanel onOpenDeleteDialog={...} />`. But critically, the worktree section has TWO associated dialogs (`CreateWorktreeDialog`, `DeleteWorktreeDialog`) whose open/close state is managed by `useState` hooks in `RepositoryView` itself (line 98-99: `showWorktreeDialog`, `worktreeToDelete`). When extracting worktrees to an extension sidebar panel, these dialog state hooks cannot stay in `RepositoryView` -- they must move to the extension. But the dialog rendering happens OUTSIDE the sidebar section (lines 231-239), as portal-like elements at the RepositoryView root.
+**What goes wrong:** Fetching thousands of commits for activity charts, heat maps, or extended graph views sends large JSON payloads across the Tauri IPC boundary. The serialization/deserialization overhead can freeze the UI for seconds.
 
-**Why it happens:** Dialog state lives in the parent component (RepositoryView) that coordinates between the sidebar panel (WorktreePanel) and the dialogs (CreateWorktreeDialog, DeleteWorktreeDialog). In v1.6.0, the Gitflow extraction was simpler because Gitflow's dialogs were self-contained within GitflowPanel. Worktree's architecture splits state between the panel and the parent.
+**Why it happens:** Tauri serializes all IPC data as JSON strings. FlowForge's current `get_commit_graph` caps at 500 nodes (see `graph.rs` line 126: `limit.unwrap_or(100).min(500)`), but insights dashboards need aggregate data across thousands of commits. A repo with 10,000 commits generates ~2-5MB of JSON when including timestamps, authors, and file stats. Tauri discussion #7146 documents 3-4 seconds for 400K datapoints.
 
-**Consequences:** If you naively move WorktreePanel into an extension sidebar contribution, the dialog triggers (`setShowWorktreeDialog`, `setWorktreeToDelete`) become undefined because they were callback props from RepositoryView. The create/delete worktree buttons in the sidebar either crash or do nothing.
+**Consequences:**
+- UI freezes during data transfer (`JSON.parse` on 5MB blocks main thread for 50-200ms)
+- Users on repos with 50K+ commits (Linux kernel, Chromium) experience multi-second hangs
+- Multiple concurrent IPC calls (graph + insights + history) can saturate the channel
+- Memory spikes from holding both serialized and deserialized copies simultaneously
 
 **Prevention:**
-1. Before extraction, refactor WorktreePanel to be self-contained: move `CreateWorktreeDialog` and `DeleteWorktreeDialog` INSIDE the WorktreePanel component (or a wrapper). Manage `showCreate`/`pendingDelete` state within the panel itself.
-2. The "+" button in the sidebar section header (currently rendered by RepositoryView's `<details><summary>` block) must become part of the panel's `renderAction` callback in the `SidebarPanelConfig`.
-3. Test the self-contained refactoring BEFORE the extension extraction. This is a safe, zero-risk refactoring that can be a separate commit.
+- **Compute aggregates on the Rust side:** instead of sending raw commit data, send pre-aggregated insights (e.g., `HashMap<date_string, u32>` for daily commit counts, `HashMap<author, u32>` for contributor stats). This reduces payloads from 2-5MB to 1-5KB.
+- Create dedicated Rust commands: `get_commit_activity_stats`, `get_contributor_stats`, `get_file_change_heatmap` that walk the revwalk once and return only aggregated numbers
+- Use pagination aggressively: never send more than 200 raw commits in a single IPC call
+- Use `staleTime` in React Query (FlowForge already does this for commit diffs with `staleTime: 60000`) with a generous value (5-10 minutes) for insights data
+- For real-time updates, use Tauri events to stream incremental results rather than synchronous command responses
+- Consider Tauri v2's raw byte transfer for truly large payloads where JSON overhead matters
 
-**Detection:** After extraction, click the "+" button in the Worktrees sidebar section. If the Create Worktree dialog does not appear, the state management broke.
+**Detection:** Warning signs include: IPC commands returning arrays with 1000+ items, `JSON.parse` appearing in DevTools performance profiles, or visible UI jank when switching to the insights tab.
 
-**Warning signs:** A PR that contributes worktrees as a sidebar panel but still has `showWorktreeDialog` state or `<CreateWorktreeDialog>` rendering in `RepositoryView.tsx`.
-
-**Phase:** Address as a pre-extraction refactoring step. This should be done BEFORE the actual extension work begins.
+**Confidence:** HIGH -- confirmed via Tauri discussions [#7146](https://github.com/tauri-apps/tauri/discussions/7146) and [#7127](https://github.com/tauri-apps/tauri/issues/7127).
 
 ---
 
-### Pitfall 5: Init Repo Used In Two Contexts -- Blade AND Standalone Component in WelcomeView
+### Pitfall 5: Conflict Data Extraction Missing Three Stages for Some Conflict Types
 
-**What goes wrong:** `InitRepoBlade` is used in TWO completely different rendering contexts:
-1. As a registered blade (via `registration.ts`) rendered within the blade container when a repo is open
-2. As a direct component import in `WelcomeView.tsx` (line 117-131) rendered standalone when NO repository is open and the user selects a non-git directory
+**What goes wrong:** Using `index.conflicts()` to extract ancestor/ours/theirs content, but encountering `None` values for one or more stages. The code panics or silently skips conflicts that don't have all three entries.
 
-Context 2 is the critical one. `WelcomeView.tsx` directly imports `InitRepoBlade` from `../blades/init-repo` and renders it with `onCancel` and `onComplete` callbacks. If Init Repo becomes an extension blade, this direct import in WelcomeView breaks because: (a) the component moves to `src/extensions/init-repo/`, (b) the extension may not be activated yet (extensions activate after repo open, but WelcomeView shows BEFORE repo open).
+**Why it happens:** Not all conflicts have all three stages. Add/add conflicts have no ancestor. Delete/modify conflicts may have `ours = None` or `theirs = None`. The current `merge.rs` (lines 139-151) already handles this partially by checking each stage independently, but it only extracts file paths -- not blob content for display in the conflict resolver.
 
-**Why it happens:** Init Repo serves a dual purpose -- it is both a blade for in-app use AND the first-run experience for new directories. The first-run context operates outside the extension lifecycle because extensions discover and activate after a repository is opened (see `App.tsx` lines 96-112).
-
-**Consequences:** New users selecting a non-git directory see a broken or empty init screen. The first-run experience -- one of the most critical UX moments -- fails silently. The `onComplete` callback (which calls `openRepository` + `addRecentRepo`) never fires, leaving users stuck on the welcome screen.
+**Consequences:**
+- Panic on `.unwrap()` when accessing a `None` stage entry's OID for blob lookup
+- UI shows empty panes for legitimate conflicts, confusing users
+- "Accept ours" / "Accept theirs" buttons don't work correctly when one side is a deletion
+- Renamed file conflicts produce unexpected paths (ours and theirs may reference different filenames)
 
 **Prevention:**
-1. Init Repo should NOT be a toggleable extension. It should either remain core or be a "non-disableable" built-in extension. The WelcomeView use case cannot degrade gracefully -- there is no meaningful fallback for "initialize a repository."
-2. If extracting anyway, the Init Repo extension must be activated during app startup (before repo open), not during the normal extension discovery/activation cycle. This requires a separate activation path: `registerBuiltIn` already runs on mount in `App.tsx` (lines 62-93), which IS before repo open.
-3. The WelcomeView should NOT import the component directly. Instead, it should use the blade registry to look up `"init-repo"` and render it. This way, the component source (core or extension) is transparent.
-4. However, the blade registry lookup requires the extension to be registered. Since `registerBuiltIn` runs on mount and `onActivate` is called immediately for built-in extensions, this should work -- but ONLY if Init Repo is registered in the initial `registerBuiltIn` batch, not deferred to `activateAll()`.
+- Enumerate all conflict types explicitly: modify/modify, add/add, delete/modify, modify/delete, rename/rename, rename/delete
+- For each conflict entry, check all three `Option<IndexEntry>` values before attempting `repo.find_blob()` lookup
+- For delete-side conflicts, show a clear UI indicator ("file deleted in this branch") instead of an empty editor pane
+- For rename conflicts, show both old and new paths in the UI
+- Extend `MergeResult.conflicted_files` from `Vec<String>` to `Vec<ConflictInfo>` with conflict type metadata:
+  ```rust
+  struct ConflictInfo {
+      path: String,
+      conflict_type: ConflictType, // ModifyModify, AddAdd, DeleteModify, etc.
+      ancestor_oid: Option<String>,
+      ours_oid: Option<String>,
+      theirs_oid: Option<String>,
+  }
+  ```
+- Test with deliberately crafted merge scenarios covering all 6+ conflict types
+- Use libgit2's `git_index_conflict_get` pattern: check for ancestor, our, their independently
 
-**Detection:** Open FlowForge with no repo. Select a non-git directory. If the init repo form does not appear, the extraction broke the first-run flow.
+**Detection:** Warning signs include: `.unwrap()` calls on conflict stage entries, or conflict resolution UI that only handles the "both sides modified" case.
 
-**Warning signs:** The Init Repo extension's `onActivate` being called inside `activateAll()` (which runs after repo open) instead of `registerBuiltIn()` (which runs on mount). Or: `WelcomeView.tsx` still having a direct import from the old location after extraction.
-
-**Phase:** Address last among the three extractions. Init Repo has the most nuanced lifecycle requirements.
+**Confidence:** HIGH -- based on libgit2 [merge.h header](https://github.com/libgit2/libgit2/blob/main/include/git2/merge.h) documentation and the existing FlowForge merge.rs code structure.
 
 ---
 
 ## Moderate Pitfalls
 
-Issues that cause multi-day delays or significant rework but not full rewrites.
+Issues that cause significant rework or degraded experience but are recoverable.
 
 ---
 
-### Pitfall 6: commandRegistry and previewRegistry Migration to Zustand Breaks Non-Reactive Consumers
+### Pitfall 6: SVG Rendering Performance Collapse for Large Commit Graphs and Charts
 
-**What goes wrong:** `commandRegistry.ts` and `previewRegistry.ts` are currently plain module-scoped Maps/arrays with imperative `registerCommand()`/`registerPreview()` functions. They are NOT Zustand stores. When migrating them to Zustand for reactive behavior (matching `bladeRegistry`, `toolbarRegistry`, `sidebarPanelRegistry`, `statusBarRegistry` which ARE Zustand stores), all consumers that call `getCommands()` or `getPreviewForFile()` imperatively (not in React render) will continue to work, BUT consumers that need reactivity (like the CommandPalette) may behave differently.
+**What goes wrong:** The current topology view renders ALL commit nodes and edges as individual SVG elements (see `TopologyPanel.tsx` lines 112-170 -- `laneLines.map`, `edges.map`, `nodes.map`). This works for the current 100-500 node limit but collapses at 1000+ nodes needed for insights dashboards and extended graph views.
 
-The specific danger: `commandRegistry.ts` uses a module-scoped `const commands = new Map<string, Command>()` (line 31). Multiple files import `registerCommand` at module load time during the side-effect import chain (`./commands` in `App.tsx` line 4). If the registry becomes a Zustand store, the registration calls must happen AFTER the store is initialized. With the module-scoped Map, initialization order does not matter because the Map exists at module parse time. With a Zustand store, if `create()` hasn't run yet when `registerCommand()` is called, the store does not exist.
+**Why it happens:** SVG uses a retained-mode rendering model -- every element is a DOM node tracked by the browser. At 1000 nodes with edges and badges, this means 3000-5000 DOM nodes in the SVG tree alone, plus the DOM overlay commit badges. Browser layout/paint cycles scale linearly with DOM node count. Per Apache ECharts benchmarks, SVG performance degrades above ~1000 elements.
 
-**Why it happens:** The developer changes `const commands = new Map()` to `const useCommandRegistry = create(...)` but does not realize that side-effect imports execute in dependency order, not declaration order. The Zustand store may not be initialized when early side-effect imports run.
-
-**Consequences:** Commands registered during module load (`./commands/toolbar-actions.ts`, `./commands/context-menu-items.ts`, `./commands/extensions.ts`) silently fail to register. The command palette shows zero commands. Or worse, some commands register and others don't, depending on bundler import order.
+**Consequences:**
+- Frame drops below 30fps when scrolling the topology view with 500+ visible nodes
+- Activity charts with daily data points for a year (365 bars) plus heat maps (365 cells) add 700+ SVG elements per chart
+- DOM node count in the thousands causes the entire app to feel sluggish (affects panel resizing, blade transitions, etc.)
 
 **Prevention:**
-1. Keep backward-compatible function exports (`registerCommand()`, `getCommands()`, etc.) that delegate to the Zustand store, exactly as `bladeRegistry.ts` already does (lines 96-136). The external API does not change; only the internal storage becomes reactive.
-2. Zustand's `create()` is synchronous and the store exists immediately when the module is loaded. As long as `commandRegistry.ts` is imported (not dynamically loaded), the store will be ready. Verify this by checking that `commandRegistry.ts` is in the static import chain, not lazy-loaded.
-3. Run a dev-mode assertion after all side-effect imports complete (in `App.tsx` or a setup file): `if (getCommands().length === 0) console.error("No commands registered")`.
-4. Migrate one registry at a time (command first, preview second). Do not migrate both simultaneously.
+- **For the topology graph:** implement virtual scrolling -- only render nodes within the viewport + 200px buffer. The current implementation renders ALL nodes (`nodes.map(...)` with no visibility filtering). Use `IntersectionObserver` or a scroll-position-based calculation to determine visible range.
+- **For activity charts and heat maps:** use Canvas 2D instead of SVG -- Canvas handles 10K+ data points at 60fps because it is immediate-mode (no DOM nodes). Use a lightweight charting library that supports Canvas: Recharts (SVG-based, fine for <500 points), or ECharts/Chart.js (Canvas-based, better for large datasets).
+- **Hybrid approach for topology:** Canvas for the graph rail/edges (potentially thousands), DOM overlays for interactive commit badges (only visible ones). This matches the current architecture's intent (SVG layer + DOM overlay layer) but replaces SVG with Canvas.
+- Profile before optimizing: the current implementation may be fine for FlowForge's target repos (most have <10K commits)
+- **Never render all graph nodes at once** -- the existing "Load More" button pagination is good but the rendered batch should also be windowed
 
-**Detection:** After migration, open the command palette. If it is empty or missing commands, the migration broke registration ordering.
+**Detection:** Warning signs include: frame drops below 30fps when scrolling the topology view, `document.querySelectorAll('svg *').length` exceeding 1000, or DevTools "Rendering" tab showing high paint times.
 
-**Warning signs:** The new Zustand-based registry using `export const useCommandRegistry = create(...)` without providing backward-compatible function wrappers that match the existing API signatures.
-
-**Phase:** Address as a tech debt cleanup phase, before or independently of the feature extractions.
+**Confidence:** MEDIUM -- based on general SVG vs Canvas performance characteristics ([Apache ECharts comparison](https://apache.github.io/echarts-handbook/en/best-practices/canvas-vs-svg/)) and the existing FlowForge SVG implementation pattern.
 
 ---
 
-### Pitfall 7: previewRegistry Migration Breaks Staging Preview Cascade
+### Pitfall 7: Avatar Fetching Exposes User Privacy and Causes Request Storms
 
-**What goes wrong:** `previewRegistry.ts` is a plain array (`const registry: PreviewRegistration[] = []`) with a `registerPreview()` that pushes and sorts by priority. The staging blade calls `getPreviewForFile()` to determine how to render file previews. If this becomes a Zustand store, the staging blade must subscribe to the store to get reactive updates when new previews are registered (e.g., when a content viewer extension activates late).
+**What goes wrong:** Fetching Gravatar/GitHub avatars for every commit author in the graph view fires hundreds of HTTP requests on first load, hits rate limits, and leaks user email hashes to third-party services without consent.
 
-The current code uses `registry.find()` on every render, which always reads the latest array. With Zustand, the selector-based subscription model means the staging blade must use the store correctly to avoid stale closures.
+**Why it happens:** Git commits contain author email addresses. The naive approach is to hash each email and fetch `gravatar.com/avatar/{hash}`. For a page of 100 commits with 20 unique authors, this fires 20 requests immediately. For repos with 100+ contributors, it becomes 100+ requests. Gravatar's avatar endpoint technically has no strict rate limit, but fetching from the WebView means requests are visible to network monitors and leak email hash information.
 
-But the bigger risk: `previewRegistrations.ts` (imported by the staging blade) uses `import.meta.glob` to eagerly load all preview registration files. This is a core module. After content viewers were extracted to an extension in v1.6.0, the preview registrations for markdown, code, and 3D viewers were removed from the core glob and re-registered via the extension's `onActivate`. If the previewRegistry becomes Zustand-based, the reactive subscription in the staging blade must handle: (1) initial core registrations available immediately, (2) extension registrations arriving asynchronously after extension activation. The staging blade might render before extensions activate, showing all files as "text diff" for a flash before the correct viewer kicks in.
-
-**Why it happens:** Module-scoped array: reads are always latest. Zustand store with selector: reads are snapshot-based. The developer migrates storage but does not add a `registrationTick` counter (like `toolbarRegistry.visibilityTick`) to force re-renders when new registrations arrive.
-
-**Consequences:** Flash of incorrect content. Images briefly show as text diff. Markdown files briefly show as plaintext. The staging blade "flickers" on first load as extension previews register late.
+**Consequences:**
+- Request storms on large repos (20+ authors per page, multiple pages loaded)
+- Gravatar avatars reveal email address existence (hashes are reversible for known email lists via rainbow tables)
+- GDPR/privacy concerns: fetching external resources without user consent may violate privacy regulations in EU jurisdictions
+- Avatar requests fail silently in air-gapped/offline environments, leaving broken image placeholders
+- FlowForge's current `UserAvatar.tsx` has `onError` fallback but no caching, no batching, and no consent mechanism
 
 **Prevention:**
-1. Add a `registrationTick` counter to the preview registry store, incremented on every `registerPreview()` call. The staging blade subscribes to this tick to force re-evaluation.
-2. Alternatively, keep previewRegistry as a plain module-scoped array (non-reactive). The reactivity benefit is minimal since preview registrations only change during extension activation/deactivation, not during normal usage. The existing v1.6.0 pattern works fine without Zustand here.
-3. If migrating anyway, ensure the staging blade's preview resolution runs in a `useMemo` that depends on the registration tick.
+- **Make avatar fetching OPT-IN** with a user preference in settings (disabled by default for privacy). Add to `Settings.general`: `showAvatars: boolean`
+- Route all avatar fetches through the Rust backend via a dedicated Tauri command (`fetch_avatar`) that implements:
+  - **Disk-based cache** with 7-day expiry (store in Tauri's app data directory using `tauri::path::app_data_dir`)
+  - **Request deduplication** (one in-flight request per email hash using a `HashMap<String, JoinHandle>`)
+  - **Batch debouncing** (collect unique emails over 200ms, then fetch in parallel with a concurrency limit of 5)
+  - **Graceful degradation** to initials fallback (already implemented in `UserAvatar.tsx`)
+- For GitHub-authenticated users, use the GitHub API to fetch avatars by username (FlowForge already stores `avatarUrl` in `githubStore.ts`) -- extend this to resolve commit author emails to GitHub usernames
+- **Never send Gravatar requests from the frontend WebView directly** -- always proxy through Rust backend
+- Store a mapping of `email_hash -> avatar_bytes` in a SQLite or flat-file cache per app installation
 
-**Detection:** Open the staging blade immediately after app launch. If file previews flash from "text diff" to the correct viewer, the async registration timing is visible.
+**Detection:** Warning signs include: `<img>` tags with `gravatar.com` URLs rendered in the WebView, network tab showing 50+ simultaneous avatar requests, or avatar fetch code that runs without checking user consent.
 
-**Warning signs:** previewRegistry becoming a Zustand store without a corresponding subscription in the staging blade, or without a `registrationTick` mechanism.
-
-**Phase:** Address alongside or after commandRegistry migration. Consider deferring entirely -- the existing pattern works.
+**Confidence:** HIGH -- confirmed via Gravatar privacy documentation, [Bleeping Computer report on email enumeration](https://www.bleepingcomputer.com/news/security/online-avatar-service-gravatar-allows-mass-collection-of-user-info/), and [Privytar privacy proxy project](https://sr.ht/~jamesponddotco/privytar/).
 
 ---
 
-### Pitfall 8: Topology's branchClassifier Dependency Creates Shared Code Ownership Ambiguity
+### Pitfall 8: Layout Persistence Breaks Across Screen Sizes and Panel Configuration Changes
 
-**What goes wrong:** `TopologyPanel.tsx` imports `classifyBranch` and `GitflowBranchType` from `../../lib/branchClassifier`. The topology extension uses this to colorize commit lanes by branch type (main=blue, feature=mauve, etc.). The `branchClassifier` module is also imported by 8 other files across the codebase: `BranchItem.tsx`, `BranchTypeBadge.tsx`, `BulkDeleteDialog.tsx`, `useBranches.ts`, `branchScopes.ts`, and 3 Gitflow extension files.
+**What goes wrong:** Persisting panel sizes (via react-resizable-panels v4 localStorage) causes layouts to restore incorrectly when the user moves to a different monitor, changes screen resolution, or when the app adds/removes panels in an update.
 
-After topology extraction, `branchClassifier.ts` is consumed by both core (BranchItem, BranchTypeBadge) and two extensions (Gitflow, Topology). The question becomes: who owns `branchClassifier`? If it stays in `src/lib/` (core), that is fine for built-in extensions that can import core. But it sets a precedent where extensions depend on specific core utility modules, making those modules harder to refactor.
+**Why it happens:** FlowForge uses `react-resizable-panels` v4 with `autoSaveId` on `ResizablePanelLayout.tsx` (line 17: `<Group id={autoSaveId}>`). The library stores panel sizes and restores them on mount. But if a new feature adds a panel (e.g., an insights sidebar), or makes panels conditionally visible, the persisted layout no longer matches the panel structure, causing panels to collapse to minimum size or overflow.
 
-The real pitfall: if someone later refactors `branchClassifier` (e.g., making branch type configurable, adding new types), both the Gitflow AND Topology extensions break if they import directly from core. With two extension consumers, the blast radius of core utility changes doubles.
-
-**Why it happens:** Shared utilities are the most common coupling vector in monolith-to-plugin extractions. The utility is "too small to duplicate, too shared to own."
-
-**Consequences:** Not immediate breakage, but accumulated tech debt. Each core utility change requires updating multiple extensions. Over time, extensions accumulate undeclared dependencies on core internals.
+**Consequences:**
+- Users upgrading to a new version see broken layouts (panels at 0% or 100% width)
+- Moving from a 4K monitor to a laptop makes some panels too small to use (percentage-based sizes that were fine at 2560px are too narrow at 1280px)
+- Adding/removing optional panels (insights, conflict resolver) invalidates persisted layouts
+- Layout shift on initial render: localStorage read completes after React renders default sizes, causing a visible jump
+- The existing `ResizablePanel` component (line 41-44) converts to percentage strings, which means pixel-based sizes are never restored correctly if the conversion logic changes
 
 **Prevention:**
-1. Keep `branchClassifier.ts` in core (`src/lib/`). This is the right call. It is a pure utility with no side effects, no state, and no React components. Built-in extensions importing pure core utilities is acceptable and even expected (the existing GitHub extension imports `openBlade`, `queryClient`, etc.).
-2. Document it as a "stable core API" -- changes to its interface must be treated as breaking. Add a JSDoc `@stable` annotation.
-3. Do NOT duplicate the classifier into each extension. The v1.6.0 lessons explicitly warned against this (Pitfall 10: shim accumulation).
-4. If the classifier becomes more complex in the future (user-configurable branch types), expose it through `ExtensionAPI.utils.classifyBranch()` which core provides and extensions consume through the API facade.
+- **Use versioned layout keys:** include a layout schema version in the `autoSaveId` (e.g., `flowforge-main-layout-v2`), increment when adding/removing panels. When the version changes, discard old persisted layout and use defaults.
+- **Define minimum viable sizes with care:** the current `minSize={10}` (10%) is fine for wide screens but means the minimum panel width on a 1280px screen is only 128px -- too narrow for most content. Consider absolute minimums via CSS `min-width` in addition to percentage constraints.
+- **Implement layout validation on restore:** if the persisted panel count doesn't match the current panel count, discard and use defaults gracefully.
+- **Separate "layout structure" (which panels are visible) from "layout sizes" (percentage splits):** persist both independently. Use Zustand for panel visibility, react-resizable-panels for sizes.
+- For optional panels (insights sidebar, conflict viewer), store their visibility separately in the Zustand preferences store, and only include them in the resize group when visible.
+- Add a **"Reset Layout" button** accessible from settings or a keyboard shortcut (Ctrl+Shift+R or similar).
+- Replicate the existing `settings.slice.ts` pattern (with `mergeSettings` for safe defaults with migration) for layout persistence.
 
-**Detection:** Run `madge --orphans src/lib/branchClassifier.ts` to see all dependents. If the count exceeds 10, consider whether the module should become a formal API surface.
+**Detection:** Warning signs include: layout persistence using a single flat key for all panels, no version migration logic, or users reporting "all my panels disappeared after update."
 
-**Warning signs:** A developer duplicating `classifyBranch` into the topology extension "to avoid the dependency." Or a PR changing `branchClassifier` without checking extension consumers.
-
-**Phase:** Acknowledge during topology extraction. No action needed beyond documentation.
+**Confidence:** MEDIUM -- based on react-resizable-panels [issue #41](https://github.com/bvaughn/react-resizable-panels/issues/41) and documented pixel-vs-percentage storage bugs in the library's changelog.
 
 ---
 
-### Pitfall 9: _discovery.ts Exhaustiveness Check Does Not Know About Extension-Provided Core Blade Types
+### Pitfall 9: Accessibility Failures in Data Visualization Components
 
-**What goes wrong:** After v1.6.0, `_discovery.ts` has an `EXPECTED_TYPES` array listing 12 blade types. Extensions using `coreOverride: true` register blade types that LOOK like core types (`"gitflow-cheatsheet"`, `"conventional-commit"`, `"changelog"`, `"viewer-markdown"`, `"viewer-code"`, `"viewer-3d"`). These are in `EXPECTED_TYPES` but their `registration.ts` files no longer exist in `src/blades/`. The exhaustiveness check already handles this because the check runs AFTER extension activation.
+**What goes wrong:** Activity charts, heat maps, and commit frequency graphs are built as pure visual elements (SVG/Canvas) with no text alternatives, keyboard navigation, or screen reader support. This violates WCAG 2.1 Level AA requirements specified in FlowForge's global coding guidelines.
 
-But when adding `"topology-graph"`, `"init-repo"`, and potentially worktree-related blade types to the extraction, the developer must update `EXPECTED_TYPES` in `_discovery.ts`. If `"topology-graph"` is removed from `EXPECTED_TYPES` but the extension's `coreOverride: true` registration happens before the check runs, there is no warning. But if the extension activation order changes (e.g., topology extension fails to activate), `"topology-graph"` silently disappears from the registry with no dev warning.
+**Why it happens:** Developers focus on visual aesthetics for charts and forget that screen readers cannot interpret SVG paths or Canvas pixels. The existing topology graph (`TopologyPanel.tsx`) uses SVG circles with `onClick` but no `role`, `aria-label`, `tabIndex`, or keyboard focus handling.
 
-**Why it happens:** The exhaustiveness check was designed for a world where all blade types were registered synchronously via `import.meta.glob`. With `coreOverride` extensions, some "core" types are registered asynchronously during extension activation. The check may run at the wrong time.
-
-**Consequences:** Dev-mode warning fatigue or missed warnings. A developer removes `"topology-graph"` from `EXPECTED_TYPES`, the topology extension fails to activate in some edge case, and nobody notices the blade is unregistered because the check was updated to not expect it.
+**Consequences:**
+- Screen reader users cannot access any insights data
+- Keyboard-only users cannot navigate chart elements (no `tabIndex`, no key handlers)
+- Color-only encoding in heat maps excludes colorblind users (8% of males have some form of color vision deficiency)
+- Fails WCAG 2.1 SC 1.1.1 (Non-text Content), SC 1.4.1 (Use of Color), SC 1.4.11 (Non-text Contrast), and SC 2.1.1 (Keyboard)
+- FlowForge's CLAUDE.md explicitly requires WCAG 2.1 Level AA compliance
 
 **Prevention:**
-1. Split `EXPECTED_TYPES` into `EXPECTED_CORE_TYPES` (registered by `src/blades/*/registration.ts` glob) and `EXPECTED_EXTENSION_TYPES` (registered by built-in extensions with `coreOverride`).
-2. Run the extension type check AFTER `activateAll()` completes, not during module load. This ensures extension-provided core types are present.
-3. Add `"topology-graph"` to `EXPECTED_EXTENSION_TYPES` when it moves to an extension. Keep it in `EXPECTED_CORE_TYPES` if it remains a core blade with extension-enhanced rendering.
+- **Provide a text summary for every chart:** "32 commits this week, 15% increase from last week, top contributor: Alice (12 commits)" -- render this as a visible summary above/below the chart and as `aria-label` on the chart container
+- **Add an accessible data table alternative** that screen readers can navigate. Render as a `<table>` with proper `<th>` headers, hidden visually with `sr-only` class but available to assistive tech
+- Use `role="img"` and `aria-label` on SVG/Canvas container elements with descriptive text
+- For heat maps: use **discrete color bins** (not continuous gradients) with a **3:1 contrast ratio** between adjacent bins per WCAG SC 1.4.11, and supplement color with text labels or patterns (numbers in cells, not just color intensity)
+- **Implement keyboard navigation** for interactive charts: Tab to enter chart, arrow keys to move between data points, Enter/Space to drill down, Escape to exit
+- Use `aria-live="polite"` regions to announce data point details on keyboard focus
+- For the existing topology SVG: add `role="button"`, `tabIndex={0}`, and `onKeyDown` handlers to commit circle `<circle>` elements; add `aria-label` with commit message, author, and date
+- Test with VoiceOver (macOS) since FlowForge targets macOS as primary platform
 
-**Detection:** In dev mode, intentionally break the topology extension's `onActivate` (throw error). Check if the dev console warns about the missing `"topology-graph"` blade type.
+**Detection:** Warning signs include: SVG or Canvas elements without any ARIA attributes, charts that only communicate information via color, or no `onKeyDown` event handlers on interactive chart elements.
 
-**Warning signs:** `EXPECTED_TYPES` being modified without updating the corresponding check timing logic.
-
-**Phase:** Address during topology extraction as a small sub-task.
+**Confidence:** HIGH -- based on WCAG 2.1 requirements, [Highcharts accessibility guidelines](https://www.highcharts.com/blog/tutorials/10-guidelines-for-dataviz-accessibility/), and [Smashing Magazine's accessibility-first chart design](https://www.smashingmagazine.com/2022/07/accessibility-first-approach-chart-visual-design/).
 
 ---
 
-### Pitfall 10: Init Repo's useGitignoreTemplates Hook Uses react-query Keys That May Conflict
+### Pitfall 10: Conflict Resolution State Machine Complexity and Data Loss
 
-**What goes wrong:** `InitRepoBlade.tsx` uses `useProjectDetection(directoryPath)` from `hooks/useGitignoreTemplates`. This hook uses `@tanstack/react-query` with query keys like `["projectDetection", directoryPath]`. After extraction to an extension, the queryClient instance is shared (it is global, provided in `main.tsx`). If the extension is deactivated and reactivated, stale react-query cache entries from the previous activation persist, potentially showing outdated project detection results for a directory that changed.
+**What goes wrong:** Building inline conflict resolution as a simple "click to accept" UI without properly modeling the multi-step state machine. Users can partially resolve conflicts, switch to another file, come back, and expect their partial resolutions to be preserved. Without proper state management, changes are lost.
 
-More importantly, the `commands.getGitignoreTemplate(name)` call in `InitRepoBlade.tsx` (line 63-66) runs inside a `useEffect` without react-query, directly calling Tauri commands. This is a side-effect pattern that cannot be easily cleaned up on extension deactivation -- pending promises from `commands.getGitignoreTemplate` may resolve after the extension is deactivated, calling `setTemplateContent` on a store that has been reset.
+**Why it happens:** Conflict resolution is inherently stateful: each conflict region independently transitions through unresolved -> choosing -> resolved states. The file-level state is "all conflicts resolved" only when every region is resolved. The current `merge.rs` tracks `conflicted_files: Vec<String>` but has no per-region resolution tracking.
 
-**Why it happens:** The init-repo store uses `createBladeStore` (which auto-resets on blade unmount), but the `useEffect` for template fetching can outlive the component if the extension is deactivated while the effect is running.
-
-**Consequences:** Console errors about state updates on unmounted components. Stale template data appearing in re-activated init-repo. Minor UX issues, not crashes.
+**Consequences:**
+- Users lose partial conflict resolutions when navigating between files (state was in component `useState`)
+- "Mark as resolved" button enabled when not all conflicts are actually resolved, leading to broken merge commits that include conflict markers
+- No undo/redo for conflict resolution choices -- accepting the wrong side requires starting over
+- Conflicting state between the Monaco editor content (which the user may edit manually) and the backend's index state
+- Race condition: user resolves conflicts in the UI, but the backend's index still contains the unresolved entries
 
 **Prevention:**
-1. The `useEffect` for template fetching should use an abort controller or a `mounted` flag to prevent state updates after unmount.
-2. When extracting, ensure the init-repo store's `reset()` is called during `onDeactivate()`, not just on blade unmount.
-3. The react-query keys are fine as long as the queryClient is global. No namespacing needed for built-in extensions.
+- Model conflict resolution as a state machine per file:
+  ```typescript
+  interface ConflictResolutionState {
+    regions: Map<regionId, {
+      status: 'unresolved' | 'ours' | 'theirs' | 'custom';
+      content: string;
+      originalOurs: string;
+      originalTheirs: string;
+    }>;
+    isDirty: boolean;
+  }
+  ```
+- **Store resolution state in a dedicated Zustand store** (not ephemeral component state) so it survives navigation between files
+- **Validate that ALL regions are resolved** before enabling the "stage resolved file" / "commit merge" action
+- Implement an **undo stack** per conflict file (record each resolution choice, allow Ctrl+Z to revert)
+- **Sync resolution state TO the editor content** (apply accepted changes to the merged output) rather than parsing editor content back to resolution state -- the state machine is the source of truth, the editor is the view
+- Consider using **XState** (already in the project for the gitflow machine in `gitflowMachine.ts`) for the per-file conflict resolution state machine -- states and transitions are well-defined
+- The existing `staging.slice.ts` pattern of tracking `selectedFile` can be extended for conflict resolution file tracking
+- Write resolved content to the workdir, then stage the file using the existing `stage_file` command -- do NOT write directly to the index
 
-**Detection:** Open init-repo, select a directory, quickly disable the init-repo extension. Check console for "state update on unmounted component" warnings.
+**Detection:** Warning signs include: resolution state stored only in `useState` hooks, no validation before merge commit, or inability to undo a conflict resolution choice.
 
-**Warning signs:** `useEffect` callbacks that call `set()` on Zustand stores without checking if the component/extension is still active.
+**Confidence:** MEDIUM -- based on VS Code merge editor UX research [issue #146091](https://github.com/microsoft/vscode/issues/146091) and patterns from GitKraken/SmartGit conflict resolvers.
 
-**Phase:** Minor. Address during init-repo extraction as a quality improvement.
+---
+
+### Pitfall 11: Collapsible Diff Regions via Custom Folding Desyncs from Monaco's Internal Diff
+
+**What goes wrong:** Implementing collapsible/expandable unchanged regions in the diff viewer by building custom folding ranges based on git2-rs hunk data, but the collapsed regions don't align with what Monaco's DiffEditor shows. Users expand a region expecting to see context lines, but get the wrong lines or misaligned content.
+
+**Why it happens:** Monaco's DiffEditor computes its own diff internally using the `original` and `modified` text. It may identify different "unchanged regions" than what git2-rs reports as diff hunks because they use different diff algorithms and context line counts. FlowForge currently passes `context_lines: 3` to git2-rs, but Monaco does its own diff independently, ignoring those hunk boundaries.
+
+**Prevention:**
+- **Use Monaco's built-in `hideUnchangedRegions` option** rather than building custom folding. It already works with the DiffEditor and handles synchronization correctly. Configure it via:
+  ```typescript
+  hideUnchangedRegions: {
+    enabled: true,
+    minimumLineCount: 3,
+    contextLineCount: 3,
+    revealLineCount: 20,
+  }
+  ```
+- This option is available in the `IDiffEditorBaseOptions` interface and has been part of Monaco since at least v0.40
+- Do NOT try to manually create folding ranges based on git2-rs hunk data and inject them into Monaco -- let Monaco handle this natively
+- If custom collapsible regions are needed beyond what `hideUnchangedRegions` provides, use Monaco's `FoldingRangeProvider` API, but be aware it **cannot update ranges for already-collapsed regions** (documented limitation in Monaco issue [#1907](https://github.com/microsoft/monaco-editor/issues/1907))
+- FlowForge currently passes full `oldContent`/`newContent` to Monaco (see `DiffBlade.tsx` lines 268-279) which is correct -- Monaco needs the full files to compute its own diff
+
+**Detection:** Warning signs include: custom diff computation in TypeScript to determine collapse regions, manually calling `editor.trigger('fold')` with hunk-derived line numbers, or users reporting misaligned regions after expanding collapsed sections.
+
+**Confidence:** HIGH -- based on Monaco API docs for [`hideUnchangedRegions`](https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IDiffEditorBaseOptions.html) and issue [#4196](https://github.com/microsoft/monaco-editor/issues/4196).
 
 ---
 
 ## Minor Pitfalls
 
-Issues that cause hours of debugging or minor UX problems.
+Issues that cause friction or minor bugs but are easily fixed.
 
 ---
 
-### Pitfall 11: defaultTab "topology" Setting Breaks If Topology Extension Is Disabled
+### Pitfall 12: Insights Dashboard Recomputes on Every Tab Switch
 
-**What goes wrong:** `GeneralSettings.tsx` offers three default tab options: "changes", "history", "topology". `App.tsx` reads this setting on startup (lines 51-56) and sends `SWITCH_PROCESS` to the navigation actor if `defaultTab === "topology"`. If the user has `"topology"` selected but later disables the topology extension, the app attempts to switch to the topology process on every startup, initializing the blade stack with a potentially unregistered blade type.
-
-**Why it happens:** The user preference persists in the Tauri store independently of extension state. The settings UI does not know which extensions are enabled.
-
-**Consequences:** The app starts with a blank main panel every time until the user manually changes the default tab setting. Confusing for users who may not connect the topology extension being disabled with their default tab preference.
+**What goes wrong:** Switching to the insights/dashboard tab triggers a full data fetch and recomputation, causing a loading spinner every time the user navigates away and back.
 
 **Prevention:**
-1. When the topology extension deactivates, check if `defaultTab === "topology"` and, if so, reset it to `"changes"` with a toast notification: "Default tab reset to Changes because Topology extension was disabled."
-2. Alternatively, in `App.tsx`, verify the blade type exists in the registry before sending `SWITCH_PROCESS`. If not registered, fall back to `"staging"` and log a warning.
-3. The GeneralSettings UI should conditionally show the "topology" option only when the topology extension is active.
+- Use React Query's `staleTime` with a generous value for insights data. Set `staleTime: 300000` (5 minutes) and `refetchOnWindowFocus: false` -- insights data changes slowly.
+- Pre-fetch insights data in the background when the repository is first opened (using `queryClient.prefetchQuery()`), not on-demand when the user clicks the tab.
+- Cache computed chart data in a Zustand store to survive component unmount/remount. The store should be registered with the reset registry so it clears on repo switch.
+- Follow the existing pattern from `get_commit_graph` which uses `staleTime: 60000` on commit history queries.
 
-**Detection:** Set default tab to "topology". Disable topology extension. Restart app. Verify the app falls back to "changes" gracefully.
-
-**Warning signs:** `App.tsx` SWITCH_PROCESS logic not checking blade registry before switching.
-
-**Phase:** Address during topology extraction.
+**Confidence:** HIGH -- standard React Query pattern, directly applicable to existing FlowForge architecture.
 
 ---
 
-### Pitfall 12: Worktree CreateWorktreeDialog Imports BranchSlice Directly
+### Pitfall 13: Welcome Screen Enhancements Blocking First-Time User Flow
 
-**What goes wrong:** `CreateWorktreeDialog.tsx` imports `useBranchStore` from `stores/domain/git-ops` to load and display the branch list in the branch selector dropdown (line 4, 25). If the worktree extension tries to be "pure" and avoid core store imports, this branch list access breaks. But branches are a core concept -- the worktree dialog genuinely needs them.
-
-**Why it happens:** Worktrees are inherently cross-cutting: creating a worktree requires selecting a branch (BranchSlice), the worktree filesystem path (Tauri dialog), and worktree operations (WorktreeSlice). This is not a coupling mistake; it is a genuine domain dependency.
-
-**Consequences:** If the developer tries to decouple the worktree extension from BranchSlice, they either duplicate branch loading logic (maintenance burden) or add a complex indirection layer (over-engineering).
+**What goes wrong:** Adding too many features to the welcome screen (tips carousel, recent repos grid, getting started wizard, daily tips, keyboard shortcuts reference) that obscure the primary action: opening or cloning a repository. New users get lost in an information-dense welcome page.
 
 **Prevention:**
-1. Accept that built-in extensions can and should import core stores directly. The Gitflow extension already imports `useGitOpsStore` (via `useRepositoryStore`) in its `index.ts`. The GitHub extension imports from `stores/repository`. This is the established pattern.
-2. Do NOT create a `api.getBranches()` method just for this one dialog. That adds API surface for a single consumer.
-3. The import should be `useGitOpsStore` for `loadBranches` and `branchList`, which remains in core after worktree slice extraction.
+- Maintain a clear visual hierarchy: primary CTA (Open/Clone) at top, secondary information below
+- Use progressive disclosure: show tips and advanced features only after the user has opened their first repository at least once (persist "hasCompletedOnboarding" in Tauri store)
+- Keep the welcome screen to a single viewport height (no scrolling required for primary actions)
+- Test with first-time users: 5-second test -- can they find the "Open Repository" action?
+- The existing welcome screen extension (`welcome-screen/index.ts`) is already extension-based, so enhancements should follow the same pattern
 
-**Detection:** After extraction, open the Create Worktree dialog. If the branch dropdown is empty, the branch data access broke.
-
-**Warning signs:** An indirection layer or adapter being built solely to avoid importing core stores in the worktree extension.
-
-**Phase:** Acknowledge during worktree extraction. No special action needed -- follow the established pattern.
+**Confidence:** MEDIUM -- UX best practice, not specific to FlowForge's tech stack.
 
 ---
 
-### Pitfall 13: Init Repo createBladeStore Pattern May Conflict With Extension Lifecycle
+### Pitfall 14: Extension Boundary Confusion for New Features
 
-**What goes wrong:** `useInitRepoStore` is created with `createBladeStore("init-repo", ...)`. The `createBladeStore` utility (defined in `stores/createBladeStore.ts`) creates a Zustand store that auto-resets when the blade unmounts. After extraction, the store lives inside the extension module. If the extension is deactivated while the init-repo blade is mounted (unlikely but possible via command palette), the store reset happens but the extension's cleanup runs after, potentially causing double-reset or orphaned subscriptions.
+**What goes wrong:** Putting features like conflict resolution or hunk staging into the extension system when they should be core, or vice versa. This leads to broken dependency chains when extensions need to access core internals (index state, merge state, Monaco editor instances).
 
-**Why it happens:** `createBladeStore` ties store lifecycle to React component lifecycle (via `useEffect` cleanup). Extension lifecycle is managed by `ExtensionHost.deactivateExtension()`. These are two different lifecycle systems that can race.
-
-**Consequences:** Minor: potential console warnings about double-reset. The existing blade lifecycle cleanup (blade unmount on deactivation) should handle most cases because the blade is removed from the registry first.
+**Why it happens:** FlowForge has a well-defined extension system (`ExtensionAPI.ts`, `ExtensionHost.ts`, `SandboxBridge.ts`) with trust levels and sandboxing. The temptation is to build everything as extensions for modularity. But features that need deep access to Monaco editor instances, Git index write operations, or merge state don't work well through the extension API boundary.
 
 **Prevention:**
-1. Ensure that extension deactivation first removes the blade from the registry (which triggers unmount of any rendered blade, including its store cleanup), THEN calls `onDeactivate()`. This is already the order in `ExtensionAPI.cleanup()`.
-2. Add an `onDeactivate` callback in the init-repo extension that explicitly calls `useInitRepoStore.getState().reset()` as a safety net.
-3. This is a minor risk. The existing cleanup order handles it correctly in practice.
+- **Core features** (should NOT be extensions): conflict resolution (needs index write access + Monaco editor control), hunk staging (needs index write access), enhanced diff viewer (modifies existing DiffBlade behavior)
+- **Extension candidates** (CAN be extensions): insights dashboard (read-only data visualization), welcome screen enhancements (self-contained UI), avatar display (additive UI), branch visualization enhancements (read-only SVG/Canvas rendering)
+- The decision criterion: **if the feature needs to modify existing core component behavior or requires write access to Git state, it is core. If it is additive read-only UI, it can be an extension.**
+- Workspace layout customization straddles both: the layout engine is core, but specific layout presets can be extension-contributed via the extension API
 
-**Detection:** Mount init-repo blade, deactivate the init-repo extension via command palette. Check for console errors.
+**Detection:** Warning signs include: extensions importing from core internals beyond the `ExtensionAPI` surface, or the extension API needing new write methods that break the sandboxed extension security model.
 
-**Warning signs:** N/A. This is theoretical and low-risk.
-
-**Phase:** Acknowledge. No special action needed.
+**Confidence:** HIGH -- based on FlowForge's existing extension architecture in `extensionTypes.ts` and `ExtensionAPI.ts`.
 
 ---
 
-### Pitfall 14: Topology layoutUtils.ts Imports branchClassifier At Module Level
+### Pitfall 15: CRLF and Encoding Issues in Conflict Content Display
 
-**What goes wrong:** `layoutUtils.ts` imports `classifyBranch` and `BRANCH_HEX_COLORS` from `../../../lib/branchClassifier` at the top of the file. When this file moves into the topology extension, the import path changes to `../../../../lib/branchClassifier`. The deep relative path is fragile. More importantly, if the project ever introduces path aliases or moves the topology extension to a different directory structure, these deep relative imports break.
-
-**Why it happens:** Extensions in `src/extensions/` are deeply nested. Importing from `src/lib/` requires traversing up 3-4 directories. Every extraction increases relative import depth.
-
-**Consequences:** Build failures from incorrect relative paths. Developer spends time adjusting imports after moving files.
+**What goes wrong:** Three-way merge content extracted from git2-rs uses `String::from_utf8_lossy` (as seen in `diff.rs` line 186 and `get_blob_content` at line 450), which replaces invalid UTF-8 with the Unicode replacement character. Files with mixed encodings or CRLF line endings display incorrectly in the conflict resolver, and resolved content written back has different line endings than the original.
 
 **Prevention:**
-1. Use TypeScript path aliases. The `tsconfig.json` likely already has `"paths"` configured (or should have). Add `"@core/*": ["./src/*"]` so extension files import as `import { classifyBranch } from "@core/lib/branchClassifier"`.
-2. If path aliases are not feasible, verify all import paths in moved files during extraction. Use `tsc --noEmit` after every file move.
-3. Establish a convention: extensions import core utilities via `../../lib/` (from `src/extensions/{ext}/`) not via `../../../lib/` (from nested component directories within extensions).
+- Detect and preserve original line ending style per file before display (check for `\r\n` in the raw blob content)
+- Handle the BOM (byte order mark) at the start of UTF-8/UTF-16 files -- don't strip it during extraction
+- For non-UTF-8 files (legacy codebases with Latin-1, Shift-JIS, etc.), detect encoding and display a warning banner ("This file may not display correctly -- encoding: [detected]") rather than silently corrupting content
+- When writing resolved conflict content back to the workdir, match the line ending style of the original file (check `.gitattributes` for `eol` and `text` settings via `git2::Repository::blob_content`)
+- Test with: CRLF-only files, mixed CRLF/LF files, files without trailing newline, UTF-8 BOM files, and repos with `.gitattributes` specifying `* text=auto`
 
-**Detection:** `tsc --noEmit` after file moves.
-
-**Warning signs:** Import paths with more than 3 `../` segments.
-
-**Phase:** Address as a one-time project configuration update before extractions.
+**Confidence:** MEDIUM -- based on git2-rs `from_utf8_lossy` usage throughout FlowForge's diff.rs and common Git client bug reports about line ending corruption.
 
 ---
 
-## Integration Pitfalls: Registry Migration to Zustand
+### Pitfall 16: React Query Key Collisions for New Insights Queries
 
----
-
-### Integration Pitfall A: commandRegistry Migration Breaks Module-Load-Time Registrations
-
-**What goes wrong:** Commands are registered via side-effect imports in `App.tsx`:
-```typescript
-import "./commands";                    // loads src/commands/index.ts
-import "./commands/toolbar-actions";    // registers toolbar actions
-import "./commands/context-menu-items"; // registers context menu items
-```
-
-Each file calls `registerCommand()` at module load time. If `commandRegistry` becomes a Zustand store, the `registerCommand()` wrapper function must delegate to `useCommandRegistry.getState().register()`. This works IF `useCommandRegistry` has been created (via `create()`) before these side-effect imports execute.
-
-In the current import order: `App.tsx` imports `./commands` BEFORE importing any stores. If the commandRegistry store module is imported by `./commands`, the Zustand `create()` runs when the module loads, which is fine. But if a circular dependency prevents the module from loading, the store does not exist.
-
-**Why it happens:** Zustand's `create()` is synchronous and runs at module load. The risk is not Zustand timing -- it is circular imports. If `commandRegistry.ts` imports from a module that imports back into commands, you get a circular reference that causes the store to be `undefined` when first accessed.
-
-**Consequences:** Silent failure: `useCommandRegistry.getState()` returns the initial state with an empty Map, commands registered "successfully" but the store reference has since been replaced. Or: runtime error `Cannot read property 'getState' of undefined`.
+**What goes wrong:** New query keys for insights data (e.g., `["commitActivity"]`, `["heatMap"]`, `["contributorStats"]`) don't include the repository path, causing stale data from the previous repo to display when switching repos.
 
 **Prevention:**
-1. Run `madge --circular src/lib/commandRegistry.ts` before and after migration. Zero circular references is required.
-2. The migration should be a 1:1 replacement of the internal data structure. The external API (`registerCommand`, `getCommands`, `getCommandById`, etc.) stays identical. Consumers should not know the storage changed.
-3. Follow the exact pattern used in `bladeRegistry.ts` (lines 36-94 for Zustand store, lines 96-136 for backward-compatible function wrappers). This is proven.
-4. Add `devtools` middleware for debugging, matching the pattern in `toolbarRegistry.ts`.
+- Prefix ALL new query keys with the repository path, following the existing pattern. Verify how the current `DiffBlade.tsx` and `TopologyPanel.tsx` handle this.
+- Use `queryClient.removeQueries({ predicate: (query) => query.queryKey[0] === 'insights' })` on repo switch
+- Consider a namespace pattern: `["insights", repoPath, "commitActivity"]` instead of flat keys
+- Register any new insights-related Zustand stores with the existing reset registry (`registry.ts`) so they clear on repo switch
 
-**Detection:** After migration, verify `getCommands().length` in the browser console. Should match the pre-migration count (test with both numbers to confirm).
-
-**Warning signs:** The migration changing the function signatures of `registerCommand`, `getCommands`, etc. These MUST remain backward-compatible.
-
-**Phase:** Address as a standalone tech debt task, independent of feature extractions.
-
----
-
-### Integration Pitfall B: Zustand Registry Map Equality Breaks React.memo Consumers
-
-**What goes wrong:** When registries use `Map<string, T>` as the primary storage (as all existing Zustand registries do), every registration creates a new Map reference (`new Map(get().actions)`). Components that subscribe to the registry with a selector like `(s) => s.actions` will re-render on every registration, even if the specific items they care about did not change.
-
-For the command palette (which consumes commandRegistry), this means: every extension activation (which registers commands) triggers a command palette re-render, even though the palette is closed. If 4 extensions register 20 commands total during activation, the palette component tree re-renders 20 times for no visible effect.
-
-**Why it happens:** Zustand uses shallow comparison by default. A new Map is always !== the old Map, even if the entries are identical. Selectors that return the entire Map will always trigger re-renders.
-
-**Consequences:** Performance degradation during extension activation. Noticeable on slower machines. Not a correctness issue, but a wasted render issue.
-
-**Prevention:**
-1. Consumers should use derived selectors, not raw Map access. Instead of `(s) => s.commands`, use `(s) => s.getFilteredCommands(query)` where the result is a new array only when the content actually changes.
-2. Use `registrationTick` counter pattern for consumers that need to know "something changed" without subscribing to the full Map. The command palette can subscribe to `(s) => s.registrationTick` and re-derive its command list only when the tick changes.
-3. For the commandRegistry migration specifically: the existing `getCommands()` function creates a new array on every call. Consumers already handle this. The migration to Zustand does not make this worse -- it just makes the re-render trigger explicit (Map reference change) rather than implicit (function call).
-
-**Detection:** Use React DevTools Profiler. Enable "Record why each component rendered." Register an extension. Check if CommandPalette re-renders. It should only re-render when opened, not during extension activation.
-
-**Warning signs:** Components subscribing to `(s) => s.commands` or `(s) => s.blades` directly instead of through filtered accessors.
-
-**Phase:** Address alongside the commandRegistry migration.
-
----
-
-### Integration Pitfall C: previewRegistry Lacks Source Tagging for Extension Cleanup
-
-**What goes wrong:** The current `previewRegistry.ts` (a plain array) has no `source` field on `PreviewRegistration`. When content viewer extensions register previews, there is no way to remove them by source during extension deactivation. The existing code has `registerPreview()` but NO `unregisterPreview()` or `unregisterBySource()`.
-
-In v1.6.0, this was handled by the content-viewers extension using `coreOverride: true` blade registrations, not preview registrations. But if a future extension wants to add a new file preview type (e.g., a PDF viewer extension), it needs `registerPreview()` with proper cleanup.
-
-**Why it happens:** `previewRegistry.ts` was written before the extension system existed. It has no concept of sources or cleanup.
-
-**Consequences:** Disabling a viewer extension leaves phantom preview registrations. File previews use the old viewer's matcher even though the component is gone. This causes React errors when the staging blade tries to render a preview component from a deactivated extension.
-
-**Prevention:**
-1. Add `source?: string` to `PreviewRegistration`.
-2. Add `unregisterBySource(source: string)` that removes all entries matching the source.
-3. Call `unregisterBySource` in `ExtensionAPI.cleanup()` alongside the other registry cleanups.
-4. If migrating to Zustand, this comes free with the standard pattern. If keeping as plain array, add these two methods manually.
-
-**Detection:** Register a preview via an extension, deactivate the extension, open a file that matched the extension's preview. If the staging blade crashes, cleanup is missing.
-
-**Warning signs:** `ExtensionAPI.cleanup()` not having a previewRegistry cleanup step.
-
-**Phase:** Address alongside registry migration or during content viewer tech debt cleanup.
+**Confidence:** HIGH -- based on existing FlowForge React Query patterns and the documented store reset mechanism.
 
 ---
 
@@ -441,101 +423,107 @@ In v1.6.0, this was handled by the content-viewers extension using `coreOverride
 
 | Phase Topic | Likely Pitfall | Severity | Mitigation |
 |-------------|---------------|----------|------------|
-| Topology extraction | Navigation process root breakage (#1) | CRITICAL | coreOverride + fallback blade, keep TopologySlice facade |
-| Topology extraction | App.tsx file watcher cross-store access (#2) | CRITICAL | Move auto-refresh into extension, audit all topology refs in core |
-| Topology extraction | defaultTab "topology" persistence (#11) | MINOR | Fallback to "changes" if blade type missing |
-| Topology extraction | branchClassifier shared ownership (#8) | MODERATE | Keep in core, document as stable API |
-| Topology extraction | _discovery.ts expected types (#9) | MODERATE | Split into CORE and EXTENSION expected types |
-| Worktree extraction | switchToWorktree cross-slice call (#3) | CRITICAL | Use gitHookBus or direct store import |
-| Worktree extraction | Dialog state split across RepositoryView (#4) | CRITICAL | Self-contain dialogs in panel BEFORE extraction |
-| Worktree extraction | BranchSlice import in CreateWorktreeDialog (#12) | MINOR | Accept built-in extension can import core stores |
-| Init Repo extraction | Dual context blade + WelcomeView (#5) | CRITICAL | Non-disableable extension, early activation path |
-| Init Repo extraction | createBladeStore lifecycle race (#13) | MINOR | Explicit reset in onDeactivate |
-| Init Repo extraction | react-query cache + pending promises (#10) | MODERATE | Abort controller, mounted flag |
-| Registry migration: command | Module-load registration timing (#6) | MODERATE | Follow bladeRegistry pattern, check circular imports |
-| Registry migration: command | Map equality re-render storm (Int-B) | MODERATE | Derived selectors, registrationTick |
-| Registry migration: preview | No source tagging or cleanup (Int-C) | MODERATE | Add source field, unregisterBySource |
-| Registry migration: preview | Staging preview cascade flash (#7) | MODERATE | registrationTick or keep plain array |
-| All phases | Deep relative import paths (#14) | MINOR | TypeScript path aliases |
+| Enhanced Diff Viewer (collapsible regions) | #11: Desync between custom folding and Monaco's internal diff | Moderate | Use `hideUnchangedRegions` built-in option exclusively |
+| Enhanced Diff Viewer (Monaco memory) | #3: Memory leaks on mount/unmount | Critical | Add `editor.dispose()` to DiffBlade, implement model reuse |
+| Three-Way Merge / Conflict Resolution | #1: No native three-way in Monaco | Critical | Two-pane approach with decoration overlays |
+| Three-Way Merge / Conflict Resolution | #5: Missing conflict stages for some types | Critical | Handle all 6+ conflict type combinations |
+| Three-Way Merge / Conflict Resolution | #10: State machine complexity | Moderate | Zustand store + XState for per-file resolution state |
+| Three-Way Merge / Conflict Resolution | #15: CRLF/encoding corruption | Minor | Preserve original encoding and line endings |
+| Hunk-Level Staging | #2: No native hunk staging in libgit2 | Critical | Use `repo.apply()` with filtered diff patches |
+| Hunk-Level Staging | I-3: Concurrent index access | Critical | Mutex on Rust side for index operations |
+| Git Insights Dashboard | #4: IPC serialization bottleneck | Critical | Aggregate data on Rust side, send summaries not raw commits |
+| Git Insights Dashboard | #12: Recomputes on tab switch | Minor | Generous `staleTime` + Zustand cache |
+| Git Insights Dashboard | #16: Query key collisions | Minor | Prefix with repo path |
+| Commit Charts / Heat Maps | #6: SVG performance collapse | Moderate | Canvas for charts, virtual scrolling for graph |
+| Commit Charts / Heat Maps | #9: Accessibility failures | Moderate | Text alternatives, keyboard nav, ARIA, contrast ratios |
+| Avatar Integration | #7: Privacy exposure and request storms | Moderate | Opt-in, Rust-side proxy with disk cache |
+| Workspace Layout Customization | #8: Persistence breaks across screens | Moderate | Versioned layout keys, validation, reset button |
+| Welcome Screen Enhancements | #13: Blocking first-time user flow | Minor | Clear CTA hierarchy, progressive disclosure |
+| Core vs Extension Decisions | #14: Boundary confusion | Minor | Core = write access needs; Extension = additive read-only |
 
 ---
 
-## Extraction Difficulty Ranking
+## Integration Pitfalls (Cross-Cutting)
 
-Based on analysis of coupling depth, consumer count, and architectural entanglement:
+### I-1: Zustand Store Proliferation Without Reset Registration
 
-| Feature | Difficulty | Why | Recommended Order |
-|---------|-----------|-----|-------------------|
-| **Worktrees** | MEDIUM | Sidebar panel + two dialogs with split state management. Cross-slice call to openRepository. But limited scope -- 4 component files + 1 slice. | 1st |
-| **Init Repo** | LOW-MEDIUM | Self-contained blade store, few external consumers. But dual-context usage (blade + WelcomeView) requires careful lifecycle handling. | 2nd |
-| **Topology** | HIGH | Navigation process root. 18+ consumers across core. File watcher integration. Keyboard shortcut integration. Settings integration. branchClassifier shared dependency. | 3rd |
+**What goes wrong:** Adding new stores for insights, conflict resolution, layout state, and avatar cache without connecting them to the existing store reset mechanism in `registry.ts`. When users switch repositories, stale data from the previous repo contaminates the new one.
 
-**Recommended extraction order:** Worktrees (simplest cross-slice decoupling, good warmup) -> Init Repo (self-contained but lifecycle nuance) -> Topology (hardest, requires navigation system awareness).
+**Prevention:** Register ALL new domain stores with the existing `registry.ts` reset mechanism. The current stores in `domain/git-ops/` and `domain/ui-state/` are properly registered -- follow the same pattern. Test that switching repos clears all insights/conflict/layout state. Use a checklist: every new `create()` call should have a corresponding `registerStoreForReset()`.
 
 ---
 
-## "Looks Done But Isn't" Checklist for This Milestone
+### I-2: Concurrent Index Access from Multiple Features
 
-### Topology extraction completeness
-- [ ] Navigation machine still works with topology extension disabled (fallback blade)
-- [ ] `App.tsx` file watcher no longer references TopologySlice directly
-- [ ] `useKeyboardShortcuts.ts` Enter key handler works via extension-contributed command
-- [ ] `GeneralSettings.tsx` "topology" default tab option conditionally available
-- [ ] `ProcessNavigation.tsx` handles disabled topology gracefully (greyed out or hidden)
-- [ ] branchClassifier import path documented as stable core API
-- [ ] _discovery.ts EXPECTED_TYPES updated
+**What goes wrong:** Hunk staging, full-file staging, and conflict resolution all write to the Git index. If a user stages a hunk while the conflict resolver is also modifying the index, one operation silently overwrites the other because `git2::Index` does not provide internal locking.
 
-### Worktree extraction completeness
-- [ ] WorktreePanel is self-contained with dialogs INSIDE (pre-extraction refactoring done)
-- [ ] switchToWorktree uses indirect mechanism (event or direct store import), not cross-slice get()
-- [ ] RepositoryView no longer has worktree-specific useState hooks or dialog rendering
-- [ ] "+" button works via SidebarPanelConfig.renderAction
-- [ ] Create and Delete dialogs accessible from the panel
+**Prevention:** Implement a mutex/queue for index-modifying operations on the Rust side. All commands that call `repo.index()` followed by `index.write()` should go through a single serialized channel. Extend the existing `RepositoryState` with an `Arc<Mutex<()>>` for index operations:
+```rust
+pub struct RepositoryState {
+    path: Arc<RwLock<Option<PathBuf>>>,
+    index_lock: Arc<Mutex<()>>,  // NEW: serialize index writes
+}
+```
+Acquire `index_lock` before any index-modifying operation (`stage_file`, `unstage_file`, `stage_hunk`, `resolve_conflict`).
 
-### Init Repo extraction completeness
-- [ ] WelcomeView renders init-repo via blade registry lookup, not direct import
-- [ ] Extension activates during registerBuiltIn (before repo open), not activateAll
-- [ ] Template fetching has abort/mounted guard
-- [ ] Init-repo store reset called in onDeactivate
-- [ ] First-run experience works identically to pre-extraction
+---
 
-### Registry migration completeness
-- [ ] commandRegistry has Zustand store with backward-compatible function wrappers
-- [ ] previewRegistry has source tagging and unregisterBySource
-- [ ] No circular imports introduced (run madge --circular)
-- [ ] All existing consumers work without modification
-- [ ] Dev-mode assertion verifies registration count after startup
+### I-3: Multiple Monaco Features Competing for Editor Decorations
+
+**What goes wrong:** Hunk staging gutter buttons, conflict resolution markers, and the existing diff decorations all want to add decorations to Monaco editors. Without a decoration management system, they overwrite each other's decorations on each update.
+
+**Prevention:** Use Monaco's `deltaDecorations` pattern correctly: each feature should maintain its own decoration ID collection (returned by `editor.deltaDecorations(oldIds, newDecorations)`) and only update its own decorations. Never pass an empty array as `oldIds` unless intentionally clearing all decorations -- this is a common source of decoration loss. Consider a decoration manager utility that namespaces decorations by feature.
 
 ---
 
 ## Sources
 
-### Internal Codebase (PRIMARY -- HIGH confidence)
-- `src/machines/navigation/types.ts` -- ProcessType = "staging" | "topology" (hardcoded)
-- `src/machines/navigation/actions.ts` -- rootBladeForProcess returns topology-graph blade
-- `src/machines/navigation/navigationMachine.ts` -- XState FSM with SWITCH_PROCESS handling
-- `src/blades/_shared/ProcessNavigation.tsx` -- Hardcoded PROCESSES array with staging + topology
-- `src/stores/domain/git-ops/topology.slice.ts` -- TopologySlice in GitOpsStore (9-slice composite)
-- `src/stores/domain/git-ops/worktrees.slice.ts` -- switchToWorktree calls get().openRepository()
-- `src/stores/domain/git-ops/index.ts` -- GitOpsStore composition (critical for extraction planning)
-- `src/components/RepositoryView.tsx` -- Hardcoded worktree sidebar with dialog state in parent
-- `src/components/WelcomeView.tsx` -- Direct InitRepoBlade import for first-run context
-- `src/blades/init-repo/store.ts` -- createBladeStore pattern for init-repo
-- `src/hooks/useCommitGraph.ts` -- Topology hook consuming TopologySlice
-- `src/hooks/useKeyboardShortcuts.ts` -- Enter key directly accesses topologySelectedCommit
-- `src/App.tsx` -- File watcher directly accesses topology store; extension activation lifecycle
-- `src/lib/commandRegistry.ts` -- Module-scoped Map, side-effect registration pattern
-- `src/lib/previewRegistry.ts` -- Plain array, no source tagging, no cleanup
-- `src/lib/bladeRegistry.ts` -- Reference pattern for Zustand migration (proven)
-- `src/extensions/ExtensionAPI.ts` -- coreOverride pattern, cleanup() method
-- `src/extensions/gitflow/index.ts` -- Reference: how v1.6.0 extraction used coreOverride
-- `src/blades/_discovery.ts` -- EXPECTED_TYPES exhaustiveness check
+### Monaco Editor
+- [Three-way merge request - Issue #1295](https://github.com/microsoft/monaco-editor/issues/1295) -- Confirmed no native three-way support
+- [Three-way merge editor request - Issue #3268](https://github.com/microsoft/monaco-editor/issues/3268) -- Feature still requested, not implemented
+- [Merge conflict highlighting - Issue #1529](https://github.com/microsoft/monaco-editor/issues/1529) -- VS Code merge highlighting not in standalone Monaco
+- [hideUnchangedRegions bug - Issue #4196](https://github.com/microsoft/monaco-editor/issues/4196) -- Feature exists but had initial bugs
+- [Custom folding ranges - Issue #1907](https://github.com/microsoft/monaco-editor/issues/1907) -- Cannot update ranges for collapsed regions
+- [Memory leaks with DiffEditor - Issue #110](https://github.com/react-monaco-editor/react-monaco-editor/issues/110)
+- [Memory usage - Issue #132](https://github.com/react-monaco-editor/react-monaco-editor/issues/132) -- 1GB+ documented
+- [Memory leakage on disposal - Issue #1693](https://github.com/microsoft/monaco-editor/issues/1693)
+- [Editor slowdown over time - Issue #398](https://github.com/suren-atoyan/monaco-react/issues/398) -- Workers accumulate
+- [Multiple instances performance - Issue #1319](https://github.com/microsoft/monaco-editor/issues/1319) -- 20ms per keypress per instance
+- [IDiffEditorBaseOptions API](https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IDiffEditorBaseOptions.html) -- hideUnchangedRegions documentation
+- [Custom gutter decorations - Issue #322](https://github.com/microsoft/monaco-editor/issues/322) -- CSS class only, no content control
 
-### v1.6.0 Lessons Learned (HIGH confidence)
-- `.planning/research/v1.6.0-PITFALLS.md` -- Extraction pitfalls from Gitflow/CC/Viewers
-- `.planning/research/v1.6.0-ARCHITECTURE.md` -- Extension system architecture and patterns
+### git2-rs / libgit2
+- [Stage/apply lines - Issue #5577](https://github.com/libgit2/libgit2/issues/5577) -- No native hunk staging
+- [Partial staging support - Issue #195](https://github.com/libgit2/libgit2sharp/issues/195) -- Confirmed not in libgit2
+- [libgit2 merge.h header](https://github.com/libgit2/libgit2/blob/main/include/git2/merge.h) -- Conflict entry structure
+- [git2-rs documentation](https://docs.rs/git2/latest/git2/) -- `Repository::apply()` API
 
-### Zustand Documentation (HIGH confidence)
-- Zustand create() is synchronous module-level initialization
-- Zustand shallow comparison for selector-based subscriptions
-- Zustand slices pattern and cross-slice access via get()
+### Tauri IPC
+- [IPC high-rate data transfer - Discussion #7146](https://github.com/tauri-apps/tauri/discussions/7146) -- 3-4s for 400K datapoints
+- [Raw binary IPC - Issue #7127](https://github.com/tauri-apps/tauri/issues/7127) -- JSON serialization overhead
+- [IPC improvements - Discussion #5690](https://github.com/tauri-apps/tauri/discussions/5690) -- Serialization-free IPC in v2
+
+### Avatars and Privacy
+- [Gravatar mass enumeration risk - Bleeping Computer](https://www.bleepingcomputer.com/news/security/online-avatar-service-gravatar-allows-mass-collection-of-user-info/)
+- [Gravatar API specifications](https://docs.gravatar.com/rest/api-data-specifications/)
+- [Gravatar privacy FAQ](https://support.gravatar.com/privacy-and-security/data-privacy/)
+- [Privytar - privacy proxy for Gravatar](https://sr.ht/~jamesponddotco/privytar/)
+
+### Accessibility
+- [Highcharts 10 Guidelines for DataViz Accessibility](https://www.highcharts.com/blog/tutorials/10-guidelines-for-dataviz-accessibility/)
+- [Smashing Magazine - Accessibility-First Chart Design](https://www.smashingmagazine.com/2022/07/accessibility-first-approach-chart-visual-design/)
+- [WCAG 2.1 Data Visualization Guidance - MN.gov](https://mn.gov/mnit/media/blog/?id=38-607342)
+
+### Layout Persistence
+- [react-resizable-panels external persistence - Issue #41](https://github.com/bvaughn/react-resizable-panels/issues/41)
+- [react-resizable-panels documentation](https://github.com/bvaughn/react-resizable-panels)
+
+### Conflict Resolution UX
+- [VS Code merge editor UX exploration - Issue #146091](https://github.com/microsoft/vscode/issues/146091)
+- [GitHub Desktop conflict resolution UX - Issue #1627](https://github.com/desktop/desktop/issues/1627)
+- [GitKraken merge conflict resolution](https://www.gitkraken.com/features/merge-conflict-resolution-tool)
+- [SmartGit conflict resolver](https://www.smartgit.dev/features/conflict-resolution/)
+
+### Rendering Performance
+- [SVG vs Canvas best practices - Apache ECharts](https://apache.github.io/echarts-handbook/en/best-practices/canvas-vs-svg/)
+- [SVG vs Canvas vs WebGL comparison](https://dev3lop.com/svg-vs-canvas-vs-webgl-rendering-choice-for-data-visualization/)
