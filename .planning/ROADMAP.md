@@ -160,11 +160,12 @@ Plans:
   1. User can stage or unstage individual hunks from within the diff viewer via gutter controls, with hunk headers providing clear "Stage hunk" / "Unstage hunk" actions
   2. User can stage or unstage individual lines within a hunk via clickable line controls, with keyboard shortcut support
   3. Staging or unstaging hunks and lines is immediately reflected in the staging panel without requiring a manual refresh
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 50-01: TBD
-- [ ] 50-02: TBD
+- [ ] 50-01-PLAN.md — Rust backend: enhanced diff types, hunk/line staging commands, error variants, tests
+- [ ] 50-02-PLAN.md — Frontend hunk staging: StagingDiffEditor, ViewZone action bars, useHunkStaging hook, CSS
+- [ ] 50-03-PLAN.md — Frontend line staging: line selection UI, keyboard shortcuts, partial-stage indicator
 
 ### Phase 51: Git Insights Dashboard
 **Goal**: Users gain data-driven visibility into repository activity, contributor patterns, and branch health through a built-in analytics dashboard
