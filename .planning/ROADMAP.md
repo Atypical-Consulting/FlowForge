@@ -112,7 +112,7 @@
 
 **Milestone Goal:** Elevate FlowForge's user experience with enhanced diff viewing, inline conflict resolution, workspace customization, commit visualization, welcome screen polish, and a Git insights dashboard.
 
-- [ ] **Phase 48: Diff Viewer Foundations** — Collapsible regions, word-level highlighting, and preference persistence
+- [x] **Phase 48: Diff Viewer Foundations** — Collapsible regions, word-level highlighting, and preference persistence
 - [ ] **Phase 49: Inline Conflict Resolution** — Three-way merge view with one-click resolution and manual editing
 - [ ] **Phase 50: Hunk & Line Staging** — Stage individual hunks and lines from within the diff viewer
 - [ ] **Phase 51: Git Insights Dashboard** — Commit activity charts, contributor breakdown, branch health, and author avatars
@@ -132,8 +132,8 @@
 **Plans**: 2 plans
 
 Plans:
-- [ ] 48-01-PLAN.md — Refactor DiffBlade into composable components + diff preferences slice
-- [ ] 48-02-PLAN.md — Collapsible regions, word-level highlighting, and theme tuning
+- [x] 48-01-PLAN.md — Refactor DiffBlade into composable components + diff preferences slice
+- [x] 48-02-PLAN.md — Collapsible regions, word-level highlighting, and theme tuning
 
 ### Phase 49: Inline Conflict Resolution
 **Goal**: Users can resolve merge conflicts entirely within FlowForge instead of using external merge tools or manually editing conflict markers
@@ -230,7 +230,7 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51 -> 52 -> 53
 | 31-36 | v1.5.0 | 16/16 | Complete | 2026-02-10 |
 | 37-42 | v1.6.0 | 16/16 | Complete | 2026-02-11 |
 | 43-47 | v1.7.0 | 13/13 | Complete | 2026-02-11 |
-| 48. Diff Viewer Foundations | v1.8.0 | 0/TBD | Not started | - |
+| 48. Diff Viewer Foundations | v1.8.0 | 2/2 | Complete | 2026-02-12 |
 | 49. Inline Conflict Resolution | v1.8.0 | 0/TBD | Not started | - |
 | 50. Hunk & Line Staging | v1.8.0 | 0/TBD | Not started | - |
 | 51. Git Insights Dashboard | v1.8.0 | 0/TBD | Not started | - |
@@ -238,4 +238,4 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51 -> 52 -> 53
 | 53. Workspace Layout Presets | v1.8.0 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-12 -- v1.8.0 UI/UX Enhancements roadmap created*
+*Last updated: 2026-02-12 -- Phase 48 complete*
