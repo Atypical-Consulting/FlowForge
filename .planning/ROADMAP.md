@@ -129,11 +129,11 @@
   1. User opens a diff and sees unchanged code regions collapsed by default, with a "Show N unchanged lines" expander that reveals hidden lines without losing scroll position
   2. User can see word-level (character-level) diff highlighting within changed lines, with distinct colors for additions and deletions in both split and unified view modes
   3. User switches between split and unified diff view modes and that preference persists across app restarts without any additional configuration
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 48-01: TBD
-- [ ] 48-02: TBD
+- [ ] 48-01-PLAN.md — Refactor DiffBlade into composable components + diff preferences slice
+- [ ] 48-02-PLAN.md — Collapsible regions, word-level highlighting, and theme tuning
 
 ### Phase 49: Inline Conflict Resolution
 **Goal**: Users can resolve merge conflicts entirely within FlowForge instead of using external merge tools or manually editing conflict markers
