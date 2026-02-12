@@ -30,6 +30,15 @@ const INLINE_DIFF_OPTIONS = {
   glyphMargin: false,
   lineDecorationsWidth: 0,
   lineNumbersMinChars: 3,
+  diffAlgorithm: "advanced" as const,
+  renderIndicators: true,
+  renderMarginRevertIcon: false,
+  hideUnchangedRegions: {
+    enabled: true,
+    contextLineCount: 3,
+    minimumLineCount: 3,
+    revealLineCount: 20,
+  },
 };
 
 export function InlineDiffViewer({

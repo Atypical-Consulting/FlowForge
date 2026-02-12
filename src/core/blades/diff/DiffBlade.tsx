@@ -13,7 +13,7 @@ interface DiffBladeProps {
 }
 
 export function DiffBlade({ source }: DiffBladeProps) {
-  const { viewMode, setDiffViewMode } = useDiffPreferences();
+  const { viewMode, collapseUnchanged, setDiffViewMode, setDiffCollapseUnchanged } = useDiffPreferences();
   const inline = viewMode === "inline";
 
   const [showPreview, setShowPreview] = useState(false);
@@ -26,6 +26,10 @@ export function DiffBlade({ source }: DiffBladeProps) {
   const handleToggleInline = useCallback(() => {
     setDiffViewMode(inline ? "side-by-side" : "inline");
   }, [inline, setDiffViewMode]);
+
+  const handleToggleCollapse = useCallback(() => {
+    setDiffCollapseUnchanged(!collapseUnchanged);
+  }, [collapseUnchanged, setDiffCollapseUnchanged]);
 
   if (isLoading) {
     return (
@@ -60,6 +64,8 @@ export function DiffBlade({ source }: DiffBladeProps) {
       <DiffToolbar
         inline={inline}
         onToggleInline={handleToggleInline}
+        collapseUnchanged={collapseUnchanged}
+        onToggleCollapse={handleToggleCollapse}
         isMarkdown={isMarkdown}
         showPreview={showPreview}
         onTogglePreview={() => setShowPreview((v) => !v)}
@@ -80,6 +86,7 @@ export function DiffBlade({ source }: DiffBladeProps) {
           modified={diff.newContent}
           language={diff.language}
           inline={inline}
+          collapseUnchanged={collapseUnchanged}
         />
       )}
     </div>

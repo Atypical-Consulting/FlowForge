@@ -3,6 +3,8 @@ import {
   Code,
   Columns,
   Eye,
+  FoldVertical,
+  UnfoldVertical,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "../../../components/ui/button";
@@ -10,6 +12,8 @@ import { Button } from "../../../components/ui/button";
 interface DiffToolbarProps {
   inline: boolean;
   onToggleInline: () => void;
+  collapseUnchanged: boolean;
+  onToggleCollapse: () => void;
   isMarkdown?: boolean;
   showPreview?: boolean;
   onTogglePreview?: () => void;
@@ -19,6 +23,8 @@ interface DiffToolbarProps {
 export function DiffToolbar({
   inline,
   onToggleInline,
+  collapseUnchanged,
+  onToggleCollapse,
   isMarkdown,
   showPreview,
   onTogglePreview,
@@ -66,22 +72,41 @@ export function DiffToolbar({
       )}
 
       {!showPreview && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onToggleInline}
-          title={inline ? "Switch to side-by-side" : "Switch to inline"}
-          className="h-7 px-2"
-        >
-          {inline ? (
-            <Columns className="w-4 h-4" />
-          ) : (
-            <AlignJustify className="w-4 h-4" />
-          )}
-          <span className="text-xs ml-1.5">
-            {inline ? "Side-by-side" : "Inline"}
-          </span>
-        </Button>
+        <>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onToggleInline}
+            title={inline ? "Switch to side-by-side" : "Switch to inline"}
+            className="h-7 px-2"
+          >
+            {inline ? (
+              <Columns className="w-4 h-4" />
+            ) : (
+              <AlignJustify className="w-4 h-4" />
+            )}
+            <span className="text-xs ml-1.5">
+              {inline ? "Side-by-side" : "Inline"}
+            </span>
+          </Button>
+          <div className="w-px h-4 bg-ctp-surface1" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onToggleCollapse}
+            title={collapseUnchanged ? "Show all lines" : "Collapse unchanged regions"}
+            className="h-7 px-2"
+          >
+            {collapseUnchanged ? (
+              <UnfoldVertical className="w-4 h-4" />
+            ) : (
+              <FoldVertical className="w-4 h-4" />
+            )}
+            <span className="text-xs ml-1.5">
+              {collapseUnchanged ? "Show all" : "Collapse"}
+            </span>
+          </Button>
+        </>
       )}
 
       <div className="flex-1" />

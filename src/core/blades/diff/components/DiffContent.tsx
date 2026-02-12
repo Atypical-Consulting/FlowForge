@@ -39,8 +39,20 @@ export function DiffContent({
       renderSideBySide: !inline,
       originalEditable: false,
       glyphMargin: true,
+      diffAlgorithm: "advanced" as const,
+      diffWordWrap: "on" as const,
+      renderIndicators: true,
+      renderMarginRevertIcon: false,
+      useInlineViewWhenSpaceIsLimited: true,
+      renderSideBySideInlineBreakpoint: 600,
+      hideUnchangedRegions: {
+        enabled: collapseUnchanged ?? true,
+        contextLineCount: contextLines ?? 3,
+        minimumLineCount: 3,
+        revealLineCount: 20,
+      },
     }),
-    [inline],
+    [inline, collapseUnchanged, contextLines],
   );
 
   return (

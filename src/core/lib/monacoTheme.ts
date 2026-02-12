@@ -33,12 +33,19 @@ const FLOWFORGE_THEME: monaco.editor.IStandaloneThemeData = {
     "editorIndentGuide.background": "#45475a", // ctp-surface1
     "editorIndentGuide.activeBackground": "#585b70", // ctp-surface2
     "editor.wordHighlightBackground": "#89b4fa20", // ctp-blue with transparency
-    "diffEditor.insertedTextBackground": "#a6e3a120", // ctp-green with transparency
-    "diffEditor.removedTextBackground": "#f38ba820", // ctp-red with transparency
-    "diffEditor.insertedLineBackground": "#a6e3a115", // ctp-green with less transparency
-    "diffEditor.removedLineBackground": "#f38ba815", // ctp-red with less transparency
+    // Word-level: 25% opacity for clear change boundaries
+    "diffEditor.insertedTextBackground": "#a6e3a140", // ctp-green word-level additions
+    "diffEditor.removedTextBackground": "#f38ba840", // ctp-red word-level deletions
+    // Line-level: 6% opacity as subtle background wash
+    "diffEditor.insertedLineBackground": "#a6e3a110", // ctp-green line background
+    "diffEditor.removedLineBackground": "#f38ba810", // ctp-red line background
+    // Gutter: 18% opacity
     "diffEditorGutter.insertedLineBackground": "#a6e3a130", // ctp-green gutter
     "diffEditorGutter.removedLineBackground": "#f38ba830", // ctp-red gutter
+    // Collapsed unchanged regions
+    "diffEditor.unchangedRegionBackground": "#181825", // ctp-mantle
+    "diffEditor.unchangedRegionForeground": "#6c7086", // ctp-overlay0
+    "diffEditor.unchangedCodeBackground": "#181825", // ctp-mantle
     "scrollbarSlider.background": "#58587050", // ctp-surface2 with transparency
     "scrollbarSlider.hoverBackground": "#6c708670", // ctp-overlay0 with transparency
     "scrollbarSlider.activeBackground": "#9399b280", // ctp-overlay2 with transparency
