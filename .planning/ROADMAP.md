@@ -113,7 +113,7 @@
 **Milestone Goal:** Elevate FlowForge's user experience with enhanced diff viewing, inline conflict resolution, workspace customization, commit visualization, welcome screen polish, and a Git insights dashboard.
 
 - [x] **Phase 48: Diff Viewer Foundations** — Collapsible regions, word-level highlighting, and preference persistence
-- [ ] **Phase 49: Inline Conflict Resolution** — Three-way merge view with one-click resolution and manual editing
+- [x] **Phase 49: Inline Conflict Resolution** — Three-way merge view with one-click resolution and manual editing
 - [ ] **Phase 50: Hunk & Line Staging** — Stage individual hunks and lines from within the diff viewer
 - [ ] **Phase 51: Git Insights Dashboard** — Commit activity charts, contributor breakdown, branch health, and author avatars
 - [ ] **Phase 52: Visualization & Welcome Polish** — Commit heat map, node tooltips, pinned repos, health indicators, quick actions
@@ -148,9 +148,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 49-01-PLAN.md — Rust backend: conflict.rs with list/read/resolve Tauri commands
-- [ ] 49-02-PLAN.md — Extension infrastructure: types, store, parser, manifest, App.tsx registration
-- [ ] 49-03-PLAN.md — Blade UI: ConflictResolutionBlade with diff view, hunk actions, result editor
+- [x] 49-01-PLAN.md — Rust backend: conflict.rs with list/read/resolve Tauri commands
+- [x] 49-02-PLAN.md — Extension infrastructure: types, store, parser, manifest, App.tsx registration
+- [x] 49-03-PLAN.md — Blade UI: ConflictResolutionBlade with diff view, hunk actions, result editor
 
 ### Phase 50: Hunk & Line Staging
 **Goal**: Users can craft precise commits by staging individual hunks or lines from the diff viewer, replacing the need for command-line `git add -p`
@@ -231,11 +231,11 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51 -> 52 -> 53
 | 37-42 | v1.6.0 | 16/16 | Complete | 2026-02-11 |
 | 43-47 | v1.7.0 | 13/13 | Complete | 2026-02-11 |
 | 48. Diff Viewer Foundations | v1.8.0 | 2/2 | Complete | 2026-02-12 |
-| 49. Inline Conflict Resolution | v1.8.0 | 0/TBD | Not started | - |
+| 49. Inline Conflict Resolution | v1.8.0 | 3/3 | Complete | 2026-02-12 |
 | 50. Hunk & Line Staging | v1.8.0 | 0/TBD | Not started | - |
 | 51. Git Insights Dashboard | v1.8.0 | 0/TBD | Not started | - |
 | 52. Visualization & Welcome Polish | v1.8.0 | 0/TBD | Not started | - |
 | 53. Workspace Layout Presets | v1.8.0 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-12 -- Phase 48 complete*
+*Last updated: 2026-02-12 -- Phase 49 complete*

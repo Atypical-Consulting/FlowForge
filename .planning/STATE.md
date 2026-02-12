@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** v1.8.0 UI/UX Enhancements -- Phase 49: Inline Conflict Resolution
+**Current focus:** v1.8.0 UI/UX Enhancements -- Phase 50: Hunk & Line Staging
 
 ## Current Position
 
-Phase: 49 of 53 (Inline Conflict Resolution)
+Phase: 50 of 53 (Hunk & Line Staging)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-02-12 -- Phase 48 complete (2/2 plans, 3 requirements delivered)
+Last activity: 2026-02-12 -- Phase 49 complete (3/3 plans, 5 requirements delivered)
 
-Progress: [██░░░░░░░░] 17% (v1.8.0)
+Progress: [████░░░░░░] 33% (v1.8.0)
 
 ## Milestone History
 
@@ -34,12 +34,12 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 48 complete, 5 planned
-- Total plans: ~232 complete
-- Total requirements validated: 299
+- Total phases: 49 complete, 4 planned
+- Total plans: ~235 complete
+- Total requirements validated: 304
 - Codebase: ~41,705 LOC TypeScript + ~11,145 Rust
 - Tests: 295 (Vitest + jsdom)
-- Built-in extensions: 13
+- Built-in extensions: 14
 
 ## Accumulated Context
 
@@ -59,7 +59,6 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 
 ### Research Flags
 
-- Phase 49 (Conflict Resolution): Recommend `/gsd:research-phase` for conflict resolution state machine design
 - Phase 50 (Hunk Staging): Recommend `/gsd:research-phase` for git2-rs hunk staging implementation
 
 ### Blockers/Concerns
@@ -73,9 +72,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Phase 48 complete -- DiffBlade refactored, collapsible regions + word-level highlighting delivered
+Stopped at: Phase 49 complete -- Inline conflict resolution blade with Rust backend, extension infrastructure, full UI
 Resume file: None
 
 ---
 *State updated: 2026-02-12*
-*Next: `/gsd:plan-phase 49`*
+*Next: `/gsd:plan-phase 50`*
