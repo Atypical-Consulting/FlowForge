@@ -168,8 +168,68 @@ async getFileDiff(path: string, staged: boolean, contextLines: number) : Promise
 }
 },
 /**
+ * Get detailed per-line diff hunks for a file.
+ * Returns enriched hunk data with individual line origins for interactive staging.
+ */
+async getFileDiffHunks(path: string, staged: boolean) : Promise<Result<DiffHunkDetail[], GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_file_diff_hunks", { path, staged }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Stage specific hunks of a file.
+ * Uses Repository::apply() with hunk_callback to selectively stage hunks.
+ */
+async stageHunks(path: string, hunkIndices: number[]) : Promise<Result<null, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("stage_hunks", { path, hunkIndices }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Unstage specific hunks of a file.
+ * Reverse-applies staged hunks by reconstructing content from HEAD.
+ */
+async unstageHunks(path: string, hunkIndices: number[]) : Promise<Result<null, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("unstage_hunks", { path, hunkIndices }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Stage specific lines within a hunk.
+ * Uses index.add_frombuffer() to construct partial staging content.
+ */
+async stageLines(path: string, hunkIndex: number, lineRanges: LineRange[]) : Promise<Result<null, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("stage_lines", { path, hunkIndex, lineRanges }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Unstage specific lines within a hunk.
+ * Reverse of stage_lines: reverts selected lines back to HEAD state.
+ */
+async unstageLines(path: string, hunkIndex: number, lineRanges: LineRange[]) : Promise<Result<null, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("unstage_lines", { path, hunkIndex, lineRanges }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * Get the diff for a specific file at a given commit.
- * 
+ *
  * Shows the changes introduced by the commit (parent -> commit).
  */
 async getCommitFileDiff(oid: string, path: string, contextLines: number) : Promise<Result<FileDiff, GitError>> {
@@ -1601,6 +1661,22 @@ export type DeviceFlowResponse = { deviceCode: string; userCode: string; verific
  * A single diff hunk with line range information.
  */
 export type DiffHunk = { oldStart: number; oldLines: number; newStart: number; newLines: number; header: string }
+/**
+ * Origin type of a diff line.
+ */
+export type DiffLineOrigin = "context" | "addition" | "deletion"
+/**
+ * A single line in a diff hunk with origin and line numbers.
+ */
+export type DiffLine = { origin: DiffLineOrigin; oldLineno: number | null; newLineno: number | null; content: string }
+/**
+ * Enhanced diff hunk with per-line detail for interactive staging.
+ */
+export type DiffHunkDetail = { index: number; oldStart: number; oldLines: number; newStart: number; newLines: number; header: string; lines: DiffLine[] }
+/**
+ * A contiguous range of lines for partial staging operations.
+ */
+export type LineRange = { start: number; end: number }
 /**
  * A blade type contributed by an extension.
  */
