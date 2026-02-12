@@ -12,6 +12,7 @@
         "Cascadia Code", "Consolas", monospace;
     --animate-dirty-pulse: dirty-pulse 2s ease-in-out infinite;
     --animate-gentle-pulse: gentle-pulse 3s ease-in-out infinite;
+    --animate-stage-flash: stage-flash 0.3s ease-out;
 }
 
 /*
@@ -88,6 +89,58 @@
     50% {
         opacity: 0.6;
     }
+}
+
+@keyframes stage-flash {
+    0% {
+        background-color: rgb(166 227 161 / 0.3);
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+/* Hunk staging gutter controls */
+.hunk-stage-glyph {
+    cursor: pointer;
+}
+.hunk-stage-glyph::before {
+    content: "+";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--catppuccin-color-green);
+    background: rgb(166 227 161 / 0.15);
+    transition: background 0.15s;
+}
+.hunk-stage-glyph:hover::before {
+    background: rgb(166 227 161 / 0.3);
+}
+
+.hunk-unstage-glyph {
+    cursor: pointer;
+}
+.hunk-unstage-glyph::before {
+    content: "\2212";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--catppuccin-color-peach);
+    background: rgb(250 179 135 / 0.15);
+    transition: background 0.15s;
+}
+.hunk-unstage-glyph:hover::before {
+    background: rgb(250 179 135 / 0.3);
 }
 
 @keyframes fadeOut {
