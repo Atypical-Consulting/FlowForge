@@ -22,7 +22,7 @@ use git::{
         get_scope_suggestions, infer_scope_from_staged, suggest_commit_type,
         validate_conventional_commit,
     },
-    diff::{get_commit_file_base64, get_commit_file_diff, get_file_base64, get_file_diff},
+    diff::{get_commit_file_base64, get_commit_file_diff, get_file_base64, get_file_diff, get_file_diff_hunks},
     gitignore::{
         detect_project_type, get_gitignore_template, list_gitignore_templates, write_init_files,
     },
@@ -34,8 +34,8 @@ use git::{
     conflict::{get_conflict_content, list_conflict_files, resolve_conflict_file},
     remote::{fetch_from_remote, get_remotes, pull_from_remote, push_to_remote},
     staging::{
-        get_staging_status, stage_all, stage_file, stage_files, unstage_all, unstage_file,
-        unstage_files,
+        get_staging_status, stage_all, stage_file, stage_files, stage_hunks, stage_lines,
+        unstage_all, unstage_file, unstage_files, unstage_hunks, unstage_lines,
     },
     stash::{list_stashes, stash_apply, stash_drop, stash_pop, stash_save},
     tag::{create_tag, delete_tag, list_tags},
@@ -81,6 +81,12 @@ pub fn run() {
         get_commit_file_diff,
         get_file_base64,
         get_commit_file_base64,
+        get_file_diff_hunks,
+        // Hunk/line staging commands
+        stage_hunks,
+        unstage_hunks,
+        stage_lines,
+        unstage_lines,
         // Commit commands
         create_commit,
         get_last_commit_message,
