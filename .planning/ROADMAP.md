@@ -145,12 +145,12 @@ Plans:
   3. User can accept "ours", "theirs", or "both" with one click per conflict hunk, and undo any resolution action
   4. User can manually edit the merged result with syntax highlighting and reset to the original conflicted state at any time
   5. User can mark a file as resolved, which stages the file, removes the conflict indicator, and shows a toast confirmation
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 49-01: TBD
-- [ ] 49-02: TBD
-- [ ] 49-03: TBD
+- [ ] 49-01-PLAN.md — Rust backend: conflict.rs with list/read/resolve Tauri commands
+- [ ] 49-02-PLAN.md — Extension infrastructure: types, store, parser, manifest, App.tsx registration
+- [ ] 49-03-PLAN.md — Blade UI: ConflictResolutionBlade with diff view, hunk actions, result editor
 
 ### Phase 50: Hunk & Line Staging
 **Goal**: Users can craft precise commits by staging individual hunks or lines from the diff viewer, replacing the need for command-line `git add -p`
