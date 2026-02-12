@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, X } from "lucide-react";
+import { AlertTriangle, Check, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import type { FileChange, FileStatus } from "../../../../bindings";
 import { commands } from "../../../../bindings";
@@ -23,6 +23,8 @@ function getStatusDot(status: FileStatus): { color: string; title: string } {
     return { color: "bg-ctp-yellow", title: "Modified" };
   if (status === "untracked")
     return { color: "bg-ctp-blue", title: "Untracked" };
+  if (status === "conflicted")
+    return { color: "bg-ctp-red", title: "Conflicted" };
   if (typeof status === "object" && "renamed" in status) {
     return { color: "bg-ctp-mauve", title: "Renamed" };
   }
@@ -106,13 +108,21 @@ export function FileItem({
       )}
       <div className="relative shrink-0">
         <FileTypeIcon path={file.path} className="w-4 h-4" />
-        <span
-          className={cn(
-            "absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-ctp-mantle",
-            statusDot.color,
-          )}
-          title={statusDot.title}
-        />
+        {file.status === "conflicted" ? (
+          <span title="Conflicted">
+            <AlertTriangle
+              className="absolute -bottom-0.5 -right-1 w-3 h-3 text-ctp-red"
+            />
+          </span>
+        ) : (
+          <span
+            className={cn(
+              "absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-ctp-mantle",
+              statusDot.color,
+            )}
+            title={statusDot.title}
+          />
+        )}
       </div>
       <span className="flex-1 truncate text-sm text-ctp-text">
         {displayName}

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileCheck, FolderTree, List } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { AlertTriangle, FileCheck, FolderTree, List } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { FileChange } from "../../../../bindings";
 import { commands } from "../../../../bindings";
 import { formatShortcut } from "../../../hooks/useKeyboardShortcuts";
@@ -17,6 +17,7 @@ export function StagingPanel() {
   const queryClient = useQueryClient();
   const { stagingViewMode: viewMode, setStagingViewMode: setViewMode, stagingSelectedFile: selectedFile, selectFile, stagingFileListScrollTop: fileListScrollTop, setStagingFileListScrollTop: setFileListScrollTop } = useStagingStore();
   const [searchFilter, setSearchFilter] = useState("");
+  const [showConflictsOnly, setShowConflictsOnly] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -139,11 +140,30 @@ export function StagingPanel() {
     );
   }
 
-  const status = result.data;
+  const rawStatus = result.data;
+
+  // Count conflicted files across all sections
+  const conflictCount = useMemo(() => {
+    return (
+      rawStatus.staged.filter((f) => f.status === "conflicted").length +
+      rawStatus.unstaged.filter((f) => f.status === "conflicted").length
+    );
+  }, [rawStatus]);
+
+  // Apply conflicts filter
+  const status = useMemo(() => {
+    if (!showConflictsOnly) return rawStatus;
+    return {
+      staged: rawStatus.staged.filter((f) => f.status === "conflicted"),
+      unstaged: rawStatus.unstaged.filter((f) => f.status === "conflicted"),
+      untracked: [] as FileChange[],
+    };
+  }, [rawStatus, showConflictsOnly]);
+
   const hasChanges =
-    status.staged.length > 0 ||
-    status.unstaged.length > 0 ||
-    status.untracked.length > 0;
+    rawStatus.staged.length > 0 ||
+    rawStatus.unstaged.length > 0 ||
+    rawStatus.untracked.length > 0;
 
   if (!hasChanges) {
     return (
@@ -164,25 +184,42 @@ export function StagingPanel() {
           onChange={setSearchFilter}
           placeholder="Filter files..."
         />
-        <div className="flex items-center gap-1 bg-ctp-surface0 rounded p-0.5">
-          <Button
-            variant={viewMode === "tree" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setViewMode("tree")}
-            title="Tree view"
-            className={cn("h-6 w-6 p-0")}
-          >
-            <FolderTree className="w-3.5 h-3.5" />
-          </Button>
-          <Button
-            variant={viewMode === "flat" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setViewMode("flat")}
-            title="Flat list"
-            className={cn("h-6 w-6 p-0")}
-          >
-            <List className="w-3.5 h-3.5" />
-          </Button>
+        <div className="flex items-center gap-1.5">
+          {conflictCount > 0 && (
+            <Button
+              variant={showConflictsOnly ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setShowConflictsOnly(!showConflictsOnly)}
+              title={showConflictsOnly ? "Show all files" : "Show only conflicts"}
+              className={cn(
+                "h-6 px-1.5 gap-1 text-xs",
+                showConflictsOnly && "text-ctp-red",
+              )}
+            >
+              <AlertTriangle className="w-3 h-3" />
+              {conflictCount}
+            </Button>
+          )}
+          <div className="flex items-center gap-1 bg-ctp-surface0 rounded p-0.5">
+            <Button
+              variant={viewMode === "tree" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("tree")}
+              title="Tree view"
+              className={cn("h-6 w-6 p-0")}
+            >
+              <FolderTree className="w-3.5 h-3.5" />
+            </Button>
+            <Button
+              variant={viewMode === "flat" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("flat")}
+              title="Flat list"
+              className={cn("h-6 w-6 p-0")}
+            >
+              <List className="w-3.5 h-3.5" />
+            </Button>
+          </div>
         </div>
       </div>
 
