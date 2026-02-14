@@ -7,7 +7,8 @@ import { Virtuoso } from "react-virtuoso";
 import { type CommitSummary, commands } from "../../../bindings";
 import { useContextMenuRegistry } from "../../lib/contextMenuRegistry";
 import { cn } from "../../lib/utils";
-import { CommitTypeIcon } from "../icons/CommitTypeIcon";
+import { GravatarAvatar } from "../../../extensions/git-insights/components/GravatarAvatar";
+import { useInsightsStore } from "../../../extensions/git-insights/insightsStore";
 import { AuthorFilter } from "./AuthorFilter";
 import { CommitSearch } from "./CommitSearch";
 
@@ -27,6 +28,7 @@ export function CommitHistory({
 }: CommitHistoryProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [authorFilter, setAuthorFilter] = useState("");
+  const externalContributor = useInsightsStore((s) => s.selectedContributor);
 
   // Regular paginated history (when not searching)
   const historyQuery = useInfiniteQuery({
@@ -75,11 +77,29 @@ export function CommitHistory({
     : historyQuery.isLoading;
   const error = isSearching ? searchQueryResult.error : historyQuery.error;
 
+  // Sync external contributor selection from insights dashboard
+  useEffect(() => {
+    if (externalContributor) {
+      const match = allCommits.find(
+        (c) => c.authorEmail === externalContributor,
+      );
+      if (match) {
+        setAuthorFilter(`${match.authorName} <${match.authorEmail}>`);
+      } else {
+        setAuthorFilter(externalContributor);
+      }
+    } else {
+      setAuthorFilter("");
+    }
+  }, [externalContributor, allCommits]);
+
   // Apply author filter
   const commits = useMemo(() => {
     if (!authorFilter) return allCommits;
     return allCommits.filter(
-      (c) => `${c.authorName} <${c.authorEmail}>` === authorFilter,
+      (c) =>
+        `${c.authorName} <${c.authorEmail}>` === authorFilter ||
+        c.authorEmail === authorFilter,
     );
   }, [allCommits, authorFilter]);
 
@@ -186,8 +206,10 @@ export function CommitHistory({
                 )}
               >
                 <div className="flex items-start gap-2">
-                  <CommitTypeIcon
-                    message={commit.messageSubject}
+                  <GravatarAvatar
+                    email={commit.authorEmail}
+                    name={commit.authorName}
+                    size="sm"
                     className="mt-0.5"
                   />
                   <div className="flex-1 min-w-0">
