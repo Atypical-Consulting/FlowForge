@@ -1,14 +1,14 @@
-import { Clock, Folder, X } from "lucide-react";
+import { Clock, Pin } from "lucide-react";
 import { type RecentRepo, useRecentRepos } from "../../../core/hooks/useRecentRepos";
 import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";
-import { Button } from "../../../core/components/ui/button";
+import { RepoCard } from "./RepoCard";
 
 interface RecentReposProps {
   onRepoOpened?: () => void;
 }
 
 export function RecentRepos({ onRepoOpened }: RecentReposProps) {
-  const { recentRepos, isLoading, removeRecentRepo, addRecentRepo } =
+  const { recentRepos, isLoading, removeRecentRepo, addRecentRepo, togglePin } =
     useRecentRepos();
   const { openRepository } = useRepositoryStore();
 
@@ -34,66 +34,33 @@ export function RecentRepos({ onRepoOpened }: RecentReposProps) {
     }
   };
 
-  const formatTime = (timestamp: number): string => {
-    const diff = Date.now() - timestamp;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (minutes < 1) return "Just now";
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-    return new Date(timestamp).toLocaleDateString();
-  };
-
-  const truncatePath = (path: string, maxLength = 50): string => {
-    if (path.length <= maxLength) return path;
-    const parts = path.split(/[/\\]/);
-    if (parts.length <= 3) return path;
-    return `${parts[0]}/.../${parts.slice(-2).join("/")}`;
-  };
+  const pinnedCount = recentRepos.filter((r) => r.isPinned).length;
+  const hasBothGroups = pinnedCount > 0 && pinnedCount < recentRepos.length;
 
   return (
     <div className="space-y-3">
       <h2 className="text-sm font-medium text-ctp-overlay1 flex items-center gap-2">
         <Clock className="w-4 h-4" />
         Recent Repositories
+        {pinnedCount > 0 && (
+          <span className="inline-flex items-center gap-1 text-xs text-ctp-peach">
+            <Pin className="w-3 h-3 rotate-45" />
+            {pinnedCount}
+          </span>
+        )}
       </h2>
       <div className="space-y-1">
-        {recentRepos.map((repo) => (
-          <div
-            key={repo.path}
-            className="group flex items-center gap-3 p-3 rounded-lg hover:bg-ctp-surface0/50 cursor-pointer transition-colors"
-            onClick={() => handleOpen(repo)}
-            onKeyDown={(e) => e.key === "Enter" && handleOpen(repo)}
-            role="button"
-            tabIndex={0}
-          >
-            <Folder className="w-5 h-5 text-ctp-blue shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-ctp-text truncate">
-                {repo.name}
-              </div>
-              <div className="text-xs text-ctp-overlay0 truncate">
-                {truncatePath(repo.path)}
-              </div>
-            </div>
-            <div className="text-xs text-ctp-overlay0 shrink-0">
-              {formatTime(repo.lastOpened)}
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="opacity-0 group-hover:opacity-100 h-7 w-7 transition-opacity"
-              onClick={(e) => {
-                e.stopPropagation();
-                removeRecentRepo(repo.path);
-              }}
-              aria-label={`Remove ${repo.name} from recent`}
-            >
-              <X className="w-4 h-4 text-ctp-overlay0 hover:text-ctp-red" />
-            </Button>
+        {recentRepos.map((repo, index) => (
+          <div key={repo.path}>
+            {hasBothGroups && index === pinnedCount && (
+              <hr className="border-ctp-surface0/50 my-1" />
+            )}
+            <RepoCard
+              repo={repo}
+              onOpen={handleOpen}
+              onRemove={removeRecentRepo}
+              onTogglePin={togglePin}
+            />
           </div>
         ))}
       </div>
