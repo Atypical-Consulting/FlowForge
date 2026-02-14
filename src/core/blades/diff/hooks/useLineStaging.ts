@@ -49,11 +49,13 @@ export function useLineStaging({ filePath, staged, hunks }: UseLineStagingOption
   }, []);
 
   const stageLinesMutation = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const hunkIndex = findHunkForLineFromSelection(selectedLines, hunks);
-      if (hunkIndex < 0) return Promise.reject(new Error("No hunk found for selection"));
+      if (hunkIndex < 0) throw new Error("No hunk found for selection");
       const ranges = linesToRanges(selectedLines);
-      return commands.stageLines(filePath, hunkIndex, ranges);
+      const result = await commands.stageLines(filePath, hunkIndex, ranges);
+      if (result.status === "error") throw new Error(String(result.error));
+      return result.data;
     },
     onSuccess: () => {
       clearSelection();
@@ -62,11 +64,13 @@ export function useLineStaging({ filePath, staged, hunks }: UseLineStagingOption
   });
 
   const unstageLinesMutation = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const hunkIndex = findHunkForLineFromSelection(selectedLines, hunks);
-      if (hunkIndex < 0) return Promise.reject(new Error("No hunk found for selection"));
+      if (hunkIndex < 0) throw new Error("No hunk found for selection");
       const ranges = linesToRanges(selectedLines);
-      return commands.unstageLines(filePath, hunkIndex, ranges);
+      const result = await commands.unstageLines(filePath, hunkIndex, ranges);
+      if (result.status === "error") throw new Error(String(result.error));
+      return result.data;
     },
     onSuccess: () => {
       clearSelection();

@@ -44,16 +44,24 @@ export function DiffContent({
   stagingSource,
 }: DiffContentProps) {
   const editorRef = useRef<Parameters<DiffOnMount>[0] | null>(null);
+  const modelsRef = useRef<ReturnType<Parameters<DiffOnMount>[0]["getModel"]>>(null);
 
+  // Dispose models on unmount. keepCurrentOriginalModel/keepCurrentModifiedModel
+  // tell @monaco-editor/react to skip model disposal in its own cleanup so the
+  // editor is disposed first (correct order). This parent useEffect cleanup then
+  // runs after the child's, safely disposing the now-detached models.
   useEffect(() => {
     return () => {
-      editorRef.current?.dispose();
+      modelsRef.current?.original?.dispose();
+      modelsRef.current?.modified?.dispose();
+      modelsRef.current = null;
       editorRef.current = null;
     };
   }, []);
 
   const handleMount: DiffOnMount = (editor) => {
     editorRef.current = editor;
+    modelsRef.current = editor.getModel();
   };
 
   const options = useMemo(
@@ -105,6 +113,8 @@ export function DiffContent({
         theme={MONACO_THEME}
         options={options}
         onMount={handleMount}
+        keepCurrentOriginalModel
+        keepCurrentModifiedModel
       />
     </div>
   );

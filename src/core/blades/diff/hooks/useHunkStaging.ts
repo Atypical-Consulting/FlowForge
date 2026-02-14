@@ -30,14 +30,20 @@ export function useHunkStaging({
   }, [queryClient, filePath]);
 
   const stageHunksMutation = useMutation({
-    mutationFn: (hunkIndices: number[]) =>
-      commands.stageHunks(filePath, hunkIndices),
+    mutationFn: async (hunkIndices: number[]) => {
+      const result = await commands.stageHunks(filePath, hunkIndices);
+      if (result.status === "error") throw new Error(String(result.error));
+      return result.data;
+    },
     onSuccess: invalidateAll,
   });
 
   const unstageHunksMutation = useMutation({
-    mutationFn: (hunkIndices: number[]) =>
-      commands.unstageHunks(filePath, hunkIndices),
+    mutationFn: async (hunkIndices: number[]) => {
+      const result = await commands.unstageHunks(filePath, hunkIndices);
+      if (result.status === "error") throw new Error(String(result.error));
+      return result.data;
+    },
     onSuccess: invalidateAll,
   });
 

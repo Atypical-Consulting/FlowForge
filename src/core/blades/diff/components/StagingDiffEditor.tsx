@@ -46,6 +46,7 @@ export function StagingDiffEditor({
   lineSelection,
 }: StagingDiffEditorProps) {
   const editorRef = useRef<Parameters<DiffOnMount>[0] | null>(null);
+  const modelsRef = useRef<ReturnType<Parameters<DiffOnMount>[0]["getModel"]>>(null);
   const viewZoneIdsRef = useRef<string[]>([]);
   const hunkDecorationRef = useRef<ReturnType<
     Parameters<DiffOnMount>[0]["getModifiedEditor"]
@@ -207,6 +208,11 @@ export function StagingDiffEditor({
         }
 
         const hunkIndex = hunk.index;
+        // Stop mousedown propagation so Monaco doesn't capture the event
+        // and prevent the click from firing on the button
+        button.addEventListener("mousedown", (e) => {
+          e.stopPropagation();
+        });
         button.addEventListener("click", () => {
           if (isOperationPendingRef.current) return;
           const ls = lineSelectionRef.current;
@@ -516,25 +522,23 @@ export function StagingDiffEditor({
 
   const handleMount: DiffOnMount = (editor) => {
     editorRef.current = editor;
+    modelsRef.current = editor.getModel();
     updateViewZonesAndDecorations();
     updateLineDecorations();
   };
 
-  // Cleanup on unmount
+  // Dispose models on unmount. keepCurrentOriginalModel/keepCurrentModifiedModel
+  // tell @monaco-editor/react to skip model disposal in its own cleanup so the
+  // editor is disposed first (correct order). This parent useEffect cleanup then
+  // runs after the child's, safely disposing the now-detached models.
   useEffect(() => {
     return () => {
-      if (editorRef.current) {
-        const modifiedEditor = editorRef.current.getModifiedEditor();
-        modifiedEditor.changeViewZones((accessor) => {
-          for (const id of viewZoneIdsRef.current) {
-            accessor.removeZone(id);
-          }
-        });
-        viewZoneIdsRef.current = [];
-      }
+      modelsRef.current?.original?.dispose();
+      modelsRef.current?.modified?.dispose();
+      modelsRef.current = null;
+      viewZoneIdsRef.current = [];
       hunkDecorationRef.current = null;
       lineDecorationRef.current = null;
-      editorRef.current?.dispose();
       editorRef.current = null;
     };
   }, []);
@@ -548,6 +552,8 @@ export function StagingDiffEditor({
         theme={MONACO_THEME}
         options={options}
         onMount={handleMount}
+        keepCurrentOriginalModel
+        keepCurrentModifiedModel
       />
       {/* Screen reader announcement for staging operations */}
       <div

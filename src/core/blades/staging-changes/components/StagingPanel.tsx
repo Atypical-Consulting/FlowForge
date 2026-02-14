@@ -108,6 +108,36 @@ export function StagingPanel() {
     };
   }, [setFileListScrollTop]);
 
+  const rawStatus = result?.status === "ok" ? result.data : null;
+
+  // Count conflicted files across all sections
+  const conflictCount = useMemo(() => {
+    if (!rawStatus) return 0;
+    return (
+      rawStatus.staged.filter((f) => f.status === "conflicted").length +
+      rawStatus.unstaged.filter((f) => f.status === "conflicted").length
+    );
+  }, [rawStatus]);
+
+  // Apply conflicts filter
+  const filteredStatus = useMemo(() => {
+    if (!rawStatus) return null;
+    if (!showConflictsOnly) return rawStatus;
+    return {
+      staged: rawStatus.staged.filter((f) => f.status === "conflicted"),
+      unstaged: rawStatus.unstaged.filter((f) => f.status === "conflicted"),
+      untracked: [] as FileChange[],
+    };
+  }, [rawStatus, showConflictsOnly]);
+
+  // Compute set of partially staged file paths (appear in both staged and unstaged)
+  const partiallyStagedPaths = useMemo(() => {
+    if (!rawStatus) return new Set<string>();
+    const stagedPaths = new Set(rawStatus.staged.map((f) => f.path));
+    const unstagedPaths = new Set(rawStatus.unstaged.map((f) => f.path));
+    return new Set([...stagedPaths].filter((p) => unstagedPaths.has(p)));
+  }, [rawStatus]);
+
   if (isLoading) {
     return (
       <div className="p-3 space-y-3">
@@ -132,7 +162,7 @@ export function StagingPanel() {
     );
   }
 
-  if (!result || result.status === "error") {
+  if (!rawStatus || !filteredStatus) {
     return (
       <div className="p-4 text-ctp-red text-sm">
         {result?.status === "error" ? String(result.error) : "No data"}
@@ -140,32 +170,7 @@ export function StagingPanel() {
     );
   }
 
-  const rawStatus = result.data;
-
-  // Count conflicted files across all sections
-  const conflictCount = useMemo(() => {
-    return (
-      rawStatus.staged.filter((f) => f.status === "conflicted").length +
-      rawStatus.unstaged.filter((f) => f.status === "conflicted").length
-    );
-  }, [rawStatus]);
-
-  // Apply conflicts filter
-  const status = useMemo(() => {
-    if (!showConflictsOnly) return rawStatus;
-    return {
-      staged: rawStatus.staged.filter((f) => f.status === "conflicted"),
-      unstaged: rawStatus.unstaged.filter((f) => f.status === "conflicted"),
-      untracked: [] as FileChange[],
-    };
-  }, [rawStatus, showConflictsOnly]);
-
-  // Compute set of partially staged file paths (appear in both staged and unstaged)
-  const partiallyStagedPaths = useMemo(() => {
-    const stagedPaths = new Set(rawStatus.staged.map((f) => f.path));
-    const unstagedPaths = new Set(rawStatus.unstaged.map((f) => f.path));
-    return new Set([...stagedPaths].filter((p) => unstagedPaths.has(p)));
-  }, [rawStatus]);
+  const status = filteredStatus;
 
   const hasChanges =
     rawStatus.staged.length > 0 ||
