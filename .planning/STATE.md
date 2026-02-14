@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** v1.8.0 UI/UX Enhancements -- Phase 51: Git Insights Dashboard
+**Current focus:** v1.8.0 UI/UX Enhancements -- Phase 52: Visualization & Welcome Polish
 
 ## Current Position
 
-Phase: 51 of 53 (Git Insights Dashboard)
+Phase: 52 of 53 (Visualization & Welcome Polish)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-02-12 -- Phase 50 complete (3/3 plans, 2 requirements delivered)
+Last activity: 2026-02-14 -- Phase 51 complete (4/4 plans, 3/5 criteria verified, 2 gaps)
 
-Progress: [█████░░░░░] 50% (v1.8.0)
+Progress: [██████░░░░] 67% (v1.8.0)
 
 ## Milestone History
 
@@ -34,12 +34,12 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 50 complete, 3 planned
-- Total plans: ~238 complete
+- Total phases: 51 complete, 2 planned
+- Total plans: ~242 complete
 - Total requirements validated: 306
-- Codebase: ~41,705 LOC TypeScript + ~11,145 Rust
+- Codebase: ~42,200 LOC TypeScript + ~11,400 Rust
 - Tests: 295 (Vitest + jsdom), 74 (Rust)
-- Built-in extensions: 14
+- Built-in extensions: 15
 
 ## Accumulated Context
 
@@ -53,6 +53,7 @@ See `.planning/MILESTONES.md` for full history.
 - GFEX-06 needs human runtime verification (architecture correct)
 - 13 items pending human runtime verification from v1.7.0
 - Phase 50: 5 items pending human runtime verification (ViewZone visuals, hunk round-trip, line selection, keyboard shortcuts, partial indicator)
+- Phase 51 gaps: contributor filter not wired to CommitHistory, GravatarAvatar not integrated in history views
 
 ### Key Decisions
 
@@ -72,10 +73,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-12
-Stopped at: Phase 50 complete -- Hunk & line staging with Rust backend (5 commands, 7 tests), StagingDiffEditor with ViewZone action bars, line selection UI, keyboard shortcuts, partial-stage indicators
+Last session: 2026-02-14
+Stopped at: Phase 51 complete -- Git Insights Dashboard with Rust backend (2 commands, insights.rs), visx charts, Zustand store, extension scaffold, 4 dashboard components (CommitActivityChart, ContributorBreakdown, BranchHealthOverview, RepoStatsCards). 2 gaps: history avatar integration, contributor filter bridge.
 Resume file: None
 
 ---
-*State updated: 2026-02-12*
-*Next: `/gsd:plan-phase 51`*
+*State updated: 2026-02-14*
+*Next: `/gsd:plan-phase 51 --gaps` or `/gsd:plan-phase 52`*

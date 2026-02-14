@@ -115,7 +115,7 @@
 - [x] **Phase 48: Diff Viewer Foundations** — Collapsible regions, word-level highlighting, and preference persistence
 - [x] **Phase 49: Inline Conflict Resolution** — Three-way merge view with one-click resolution and manual editing
 - [x] **Phase 50: Hunk & Line Staging** — Stage individual hunks and lines from within the diff viewer
-- [ ] **Phase 51: Git Insights Dashboard** — Commit activity charts, contributor breakdown, branch health, and author avatars
+- [x] **Phase 51: Git Insights Dashboard** — Commit activity charts, contributor breakdown, branch health, and author avatars (gaps: history avatar integration, contributor filter bridge)
 - [ ] **Phase 52: Visualization & Welcome Polish** — Commit heat map, node tooltips, pinned repos, health indicators, quick actions
 - [ ] **Phase 53: Workspace Layout Presets** — Named layout presets, focus mode, panel toggles, and persistence
 
@@ -180,10 +180,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 51-01-PLAN.md — Rust backend: insights.rs with analytics aggregation commands (get_repo_insights, get_branch_health)
-- [ ] 51-02-PLAN.md — Frontend foundation: visx install, types, gravatar lib, chart theme, GravatarAvatar, TimeRangeSelector
-- [ ] 51-03-PLAN.md — Extension scaffold: manifest, index.ts, insightsStore, data hook, dashboard blade, App.tsx registration
-- [ ] 51-04-PLAN.md — Dashboard components: CommitActivityChart, ContributorBreakdown, BranchHealthOverview, RepoStatsCards
+- [x] 51-01-PLAN.md — Rust backend: insights.rs with analytics aggregation commands (get_repo_insights, get_branch_health)
+- [x] 51-02-PLAN.md — Frontend foundation: visx install, types, gravatar lib, chart theme, GravatarAvatar, TimeRangeSelector
+- [x] 51-03-PLAN.md — Extension scaffold: manifest, index.ts, insightsStore, data hook, dashboard blade, App.tsx registration
+- [x] 51-04-PLAN.md — Dashboard components: CommitActivityChart, ContributorBreakdown, BranchHealthOverview, RepoStatsCards
 
 ### Phase 52: Visualization & Welcome Polish
 **Goal**: Users see a polished, information-rich experience across the topology graph and welcome screen with visual cues for recency, quick access to repositories, and at-a-glance health status
@@ -235,9 +235,9 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51 -> 52 -> 53
 | 48. Diff Viewer Foundations | v1.8.0 | 2/2 | Complete | 2026-02-12 |
 | 49. Inline Conflict Resolution | v1.8.0 | 3/3 | Complete | 2026-02-12 |
 | 50. Hunk & Line Staging | v1.8.0 | 3/3 | Complete | 2026-02-12 |
-| 51. Git Insights Dashboard | v1.8.0 | 0/TBD | Not started | - |
+| 51. Git Insights Dashboard | v1.8.0 | 4/4 | Complete (gaps) | 2026-02-14 |
 | 52. Visualization & Welcome Polish | v1.8.0 | 0/TBD | Not started | - |
 | 53. Workspace Layout Presets | v1.8.0 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-12 -- Phase 50 complete*
+*Last updated: 2026-02-14 -- Phase 51 complete (2 gaps: history avatar integration, contributor filter bridge)*
