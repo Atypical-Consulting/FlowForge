@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** v1.8.0 UI/UX Enhancements -- Phase 52: Visualization & Welcome Polish
+**Current focus:** v1.8.0 UI/UX Enhancements -- Phase 53: Workspace Layout Presets
 
 ## Current Position
 
-Phase: 52 of 53 (Visualization & Welcome Polish)
-Plan: 3 of 3 in current phase (PHASE COMPLETE)
-Status: Phase 52 Complete
-Last activity: 2026-02-14 -- Completed 52-03 (health dots, quick actions, repo health Rust commands)
+Phase: 53 of 53 (Workspace Layout Presets)
+Plan: 1 of 2 in current phase
+Status: Executing Phase 53
+Last activity: 2026-02-14 -- Completed 53-01 (layout data foundation: presets, slice, commands, menu)
 
-Progress: [████████░░] 80% (v1.8.0)
+Progress: [█████████░] 90% (v1.8.0)
 
 ## Milestone History
 
@@ -34,8 +34,8 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 51 complete, 2 planned
-- Total plans: ~242 complete
+- Total phases: 52 complete, 1 in progress
+- Total plans: ~243 complete
 - Total requirements validated: 306
 - Codebase: ~42,200 LOC TypeScript + ~11,400 Rust
 - Tests: 295 (Vitest + jsdom), 74 (Rust)
@@ -66,6 +66,9 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 - Phase 52-03: Temporary repo handle pattern for health checks avoids state conflicts with active repository
 - Phase 52-03: 500ms debounce on health checks to prevent rapid re-fetches
 - Phase 52-03: Health dot between folder icon and repo name for left-side visual indicator
+- Phase 53-01: Focus mode state (focusedPanel) is transient, not persisted to Tauri Store
+- Phase 53-01: Manual resize sets activePreset to "custom" for non-preset state detection
+- Phase 53-01: Panel IDs as open-ended strings for forward compatibility with future panels
 
 ### Research Flags
 
@@ -82,9 +85,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-14
-Stopped at: Completed 52-03-PLAN.md (health dots + quick actions). Phase 52 fully complete.
+Stopped at: Completed 53-01-PLAN.md (layout data foundation). Phase 53 plan 1 of 2 done.
 Resume file: None
 
 ---
 *State updated: 2026-02-14*
-*Next: Phase 53 or milestone completion*
+*Next: 53-02-PLAN.md (panel wiring and UI integration)*
