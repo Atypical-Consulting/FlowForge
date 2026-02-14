@@ -1,0 +1,14 @@
+{
+  "id": "git-insights",
+  "name": "Git Insights Dashboard",
+  "version": "1.0.0",
+  "description": "Data-driven repository analytics with commit activity charts, contributor breakdown, branch health, and author avatars.",
+  "apiVersion": "1",
+  "main": "index.ts",
+  "contributes": {
+    "blades": [{ "type": "insights-dashboard", "title": "Insights" }],
+    "commands": [{ "id": "show-insights", "title": "Show Insights", "category": "Navigation" }],
+    "toolbar": [{ "id": "insights", "label": "Insights", "group": "views", "priority": 40 }]
+  },
+  "trustLevel": "built-in"
+}

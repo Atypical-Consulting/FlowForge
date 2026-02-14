@@ -41,6 +41,7 @@ import { onActivate as viewerPlaintextActivate, onDeactivate as viewerPlaintextD
 import { onActivate as welcomeActivate, onDeactivate as welcomeDeactivate } from "./extensions/welcome-screen";
 import { onActivate as topologyActivate, onDeactivate as topologyDeactivate } from "./extensions/topology";
 import { onActivate as conflictActivate, onDeactivate as conflictDeactivate } from "./extensions/conflict-resolution";
+import { onActivate as insightsActivate, onDeactivate as insightsDeactivate } from "./extensions/git-insights";
 
 function WelcomeFallback() {
   const { openRepository } = useGitOpsStore();
@@ -257,6 +258,14 @@ function App() {
       version: "1.0.0",
       activate: conflictActivate,
       deactivate: conflictDeactivate,
+    });
+
+    registerBuiltIn({
+      id: "git-insights",
+      name: "Git Insights Dashboard",
+      version: "1.0.0",
+      activate: insightsActivate,
+      deactivate: insightsDeactivate,
     });
   }, [initTheme, initSettings, initNavigation, initMetadata, initChecklist, registerBuiltIn]);
 
