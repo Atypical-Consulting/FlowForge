@@ -1039,6 +1039,28 @@ async readRepoFile(filePath: string) : Promise<Result<RepoFileContent, GitError>
 }
 },
 /**
+ * Get aggregated repository insights for a given time period.
+ */
+async getRepoInsights(days: number) : Promise<Result<RepoInsights, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_repo_insights", { days }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Get branch health information for all branches.
+ */
+async getBranchHealth(staleDays: number) : Promise<Result<BranchHealthInfo[], GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_branch_health", { staleDays }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * Read the user's global git configuration.
  * 
  * Returns None for any value that is not set. Never errors —
@@ -1391,6 +1413,50 @@ deleted: boolean;
  */
 error: string | null }
 /**
+ * Branch health information for the insights dashboard.
+ */
+export type BranchHealthInfo = { 
+/**
+ * Branch name
+ */
+name: string; 
+/**
+ * Whether this is the current HEAD branch
+ */
+isHead: boolean; 
+/**
+ * Whether this is a remote tracking branch
+ */
+isRemote: boolean; 
+/**
+ * Date of last commit in YYYY-MM-DD format
+ */
+lastCommitDate: string; 
+/**
+ * Timestamp of last commit in milliseconds
+ */
+lastCommitTimestampMs: number; 
+/**
+ * Summary of the last commit message
+ */
+lastCommitMessage: string; 
+/**
+ * Commits ahead of HEAD
+ */
+ahead: number; 
+/**
+ * Commits behind HEAD
+ */
+behind: number; 
+/**
+ * Whether the branch is stale (no commits within stale_days)
+ */
+isStale: boolean; 
+/**
+ * Whether the branch is merged into HEAD (None if IS head)
+ */
+isMerged: boolean | null }
+/**
  * Information about a branch (local or remote).
  */
 export type BranchInfo = { 
@@ -1636,6 +1702,34 @@ oursName: string;
  */
 theirsName: string }
 /**
+ * Contributor statistics aggregated from commit history.
+ */
+export type ContributorStats = { 
+/**
+ * Author name
+ */
+name: string; 
+/**
+ * Author email
+ */
+email: string; 
+/**
+ * Total number of commits by this contributor
+ */
+commitCount: number; 
+/**
+ * Percentage of total commits
+ */
+percentage: number; 
+/**
+ * Timestamp of first commit in milliseconds
+ */
+firstCommitMs: number; 
+/**
+ * Timestamp of last commit in milliseconds
+ */
+lastCommitMs: number }
+/**
  * Result of creating a pull request.
  */
 export type CreatePullRequestResult = { number: number; htmlUrl: string; title: string; state: string }
@@ -1659,6 +1753,18 @@ branch: string | null;
  * If true and branch is Some, create a new branch with that name
  */
 createBranch: boolean }
+/**
+ * Daily commit count for a specific date.
+ */
+export type DailyCommitCount = { 
+/**
+ * Date in YYYY-MM-DD format
+ */
+date: string; 
+/**
+ * Number of commits on this date
+ */
+count: number }
 export type DetectedProject = { projectType: string; markerFile: string; recommendedTemplates: string[] }
 /**
  * Response from GitHub's device code endpoint.
@@ -2233,6 +2339,34 @@ export type RepoFileContent = { content: string; isBinary: boolean; size: number
  * A single entry in a repository directory listing.
  */
 export type RepoFileEntry = { name: string; path: string; isDir: boolean; size: number }
+/**
+ * Aggregated repository insights over a time period.
+ */
+export type RepoInsights = { 
+/**
+ * Total number of commits in the time period
+ */
+totalCommits: number; 
+/**
+ * Number of active branches (local + remote)
+ */
+activeBranches: number; 
+/**
+ * Number of unique contributors
+ */
+contributorCount: number; 
+/**
+ * Timestamp of the earliest commit seen (milliseconds)
+ */
+firstCommitMs: number; 
+/**
+ * Daily commit counts sorted by date ascending
+ */
+dailyCommits: DailyCommitCount[]; 
+/**
+ * Contributor statistics sorted by commit count descending
+ */
+contributors: ContributorStats[] }
 /**
  * Repository status information sent to frontend.
  * 

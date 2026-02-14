@@ -26,6 +26,7 @@ use git::{
     gitignore::{
         detect_project_type, get_gitignore_template, list_gitignore_templates, write_init_files,
     },
+    insights::{get_repo_insights, get_branch_health},
     nuget::fetch_nuget_info,
     init::git_init,
     graph::get_commit_graph,
@@ -166,6 +167,9 @@ pub fn run() {
         // Browse commands
         list_repo_files,
         read_repo_file,
+        // Insights commands
+        get_repo_insights,
+        get_branch_health,
         // Config commands
         get_git_global_config,
         set_git_global_config,

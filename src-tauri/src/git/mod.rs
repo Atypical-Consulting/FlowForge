@@ -14,6 +14,7 @@ pub mod gitignore;
 pub mod graph;
 pub mod nuget;
 pub mod history;
+pub mod insights;
 pub mod init;
 pub mod merge;
 pub mod remote;
