@@ -24,13 +24,18 @@ import {
   createDiffSlice,
   type DiffSlice,
 } from "./diff.slice";
+import {
+  createLayoutSlice,
+  type LayoutSlice,
+} from "./layout.slice";
 
 export type PreferencesStore = SettingsSlice &
   ThemeSlice &
   NavigationSlice &
   BranchMetadataSlice &
   ReviewChecklistSlice &
-  DiffSlice;
+  DiffSlice &
+  LayoutSlice;
 
 export const usePreferencesStore = create<PreferencesStore>()(
   devtools(
@@ -41,6 +46,7 @@ export const usePreferencesStore = create<PreferencesStore>()(
       ...createBranchMetadataSlice(...args),
       ...createReviewChecklistSlice(...args),
       ...createDiffSlice(...args),
+      ...createLayoutSlice(...args),
     }),
     { name: "preferences", enabled: import.meta.env.DEV },
   ),
@@ -58,5 +64,6 @@ export async function initAllPreferences(): Promise<void> {
     state.initMetadata(),
     state.initChecklist(),
     state.initDiffPreferences(),
+    state.initLayout(),
   ]);
 }
