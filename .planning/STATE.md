@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 ## Current Position
 
 Phase: 52 of 53 (Visualization & Welcome Polish)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-14 -- Phase 51 fully complete (5/5 plans, 5/5 criteria verified, all gaps closed)
+Plan: 2 of 3 in current phase
+Status: Executing
+Last activity: 2026-02-14 -- Completed 52-02 (pinned repos with persistent state, RepoCard extraction)
 
-Progress: [██████░░░░] 67% (v1.8.0)
+Progress: [███████░░░] 70% (v1.8.0)
 
 ## Milestone History
 
@@ -58,6 +58,8 @@ See `.planning/MILESTONES.md` for full history.
 ### Key Decisions
 
 All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
+- Phase 52-02: isPinned optional field for backward compat with existing stored data
+- Phase 52-02: Pin state preserved when re-opening repo via existingEntry lookup
 
 ### Research Flags
 
@@ -74,9 +76,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-14
-Stopped at: Phase 51 fully complete -- all 5 plans executed, 5/5 success criteria verified, gaps closed (GravatarAvatar in CommitHistory, contributor filter bridged from insightsStore). Ready for Phase 52.
+Stopped at: Completed 52-02-PLAN.md (pinned repos). 52-01 also complete. Ready for 52-03.
 Resume file: None
 
 ---
 *State updated: 2026-02-14*
-*Next: `/gsd:plan-phase 52`*
+*Next: Execute 52-03-PLAN.md*
