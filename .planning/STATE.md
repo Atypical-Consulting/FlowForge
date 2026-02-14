@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 ## Current Position
 
 Phase: 53 of 53 (Workspace Layout Presets)
-Plan: 1 of 2 in current phase
-Status: Executing Phase 53
-Last activity: 2026-02-14 -- Completed 53-01 (layout data foundation: presets, slice, commands, menu)
+Plan: 2 of 2 in current phase
+Status: Phase 53 Complete
+Last activity: 2026-02-14 -- Completed 53-02 (panel wiring: imperative API, focus mode, sidebar toggle, keyboard shortcuts)
 
-Progress: [█████████░] 90% (v1.8.0)
+Progress: [██████████] 100% (v1.8.0)
 
 ## Milestone History
 
@@ -34,8 +34,8 @@ See `.planning/MILESTONES.md` for full history.
 ## Performance Metrics
 
 **Cumulative:**
-- Total phases: 52 complete, 1 in progress
-- Total plans: ~243 complete
+- Total phases: 53 complete
+- Total plans: ~245 complete
 - Total requirements validated: 306
 - Codebase: ~42,200 LOC TypeScript + ~11,400 Rust
 - Tests: 295 (Vitest + jsdom), 74 (Rust)
@@ -69,6 +69,9 @@ All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
 - Phase 53-01: Focus mode state (focusedPanel) is transient, not persisted to Tauri Store
 - Phase 53-01: Manual resize sets activePreset to "custom" for non-preset state detection
 - Phase 53-01: Panel IDs as open-ended strings for forward compatibility with future panels
+- Phase 53-02: isApplyingPreset ref guard prevents onLayoutChanged from marking programmatic preset switches as custom
+- Phase 53-02: queueMicrotask used to reset guard after imperative setLayout synchronous side effects
+- Phase 53-02: Focus hint positioned conditionally with ml-auto for correct layout with/without trailing elements
 
 ### Research Flags
 
@@ -85,9 +88,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-14
-Stopped at: Completed 53-01-PLAN.md (layout data foundation). Phase 53 plan 1 of 2 done.
+Stopped at: Completed 53-02-PLAN.md (panel wiring and UI integration). Phase 53 complete (2/2 plans done).
 Resume file: None
 
 ---
 *State updated: 2026-02-14*
-*Next: 53-02-PLAN.md (panel wiring and UI integration)*
+*Phase 53 (Workspace Layout Presets) complete. v1.8.0 milestone ready for final verification.*
