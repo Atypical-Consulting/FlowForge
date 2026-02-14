@@ -15,7 +15,10 @@ use git::{
     browse::{list_repo_files, read_repo_file},
     changelog::generate_changelog_cmd,
     clone::clone_repository,
-    commands::{close_repository, get_repository_status, is_git_repository, open_repository},
+    commands::{
+        close_repository, get_repo_health_quick, get_repository_status, is_git_repository,
+        open_in_terminal, open_repository,
+    },
     config::{get_git_global_config, set_git_global_config},
     commit::{create_commit, get_last_commit_message},
     conventional::{
@@ -195,6 +198,9 @@ pub fn run() {
         github_merge_pull_request,
         github_create_pull_request,
         github_get_branch_info_for_pr,
+        // Welcome screen commands
+        get_repo_health_quick,
+        open_in_terminal,
     ]);
 
     #[cfg(debug_assertions)]

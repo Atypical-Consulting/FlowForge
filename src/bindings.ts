@@ -1345,6 +1345,31 @@ async githubGetBranchInfoForPr() : Promise<Result<BranchInfoForPr, GitHubError>>
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+/**
+ * Quick health check for a repository by path.
+ * Opens a temporary repo handle — does NOT affect the active repository.
+ * Returns status (clean/dirty/ahead/behind/diverged/unknown), branch name, and ahead/behind counts.
+ */
+async getRepoHealthQuick(path: string) : Promise<Result<RepoHealth, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_repo_health_quick", { path }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Open the user's configured terminal at the given path.
+ * Spawns the terminal application with platform-specific handling.
+ */
+async openInTerminal(path: string, terminal: string) : Promise<Result<null, GitError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("open_in_terminal", { path, terminal }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -2339,6 +2364,11 @@ export type RepoFileContent = { content: string; isBinary: boolean; size: number
  * A single entry in a repository directory listing.
  */
 export type RepoFileEntry = { name: string; path: string; isDir: boolean; size: number }
+/**
+ * Quick health check result for a repository.
+ * Used by the welcome screen to show status dots without affecting the active repo.
+ */
+export type RepoHealth = { status: string; branchName: string; ahead: number; behind: number; isDirty: boolean }
 /**
  * Aggregated repository insights over a time period.
  */
