@@ -177,12 +177,13 @@ Plans:
   3. User can view a branch health overview listing all branches with last commit date, ahead/behind counts, staleness flags, and quick actions (checkout, delete)
   4. User can view repository stats cards showing total commits, active branches, contributors, and repo age in a responsive grid
   5. User can see author avatars next to commits in history views, fetched from Gravatar with initials fallback and local caching
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 51-01: TBD
-- [ ] 51-02: TBD
-- [ ] 51-03: TBD
+- [ ] 51-01-PLAN.md — Rust backend: insights.rs with analytics aggregation commands (get_repo_insights, get_branch_health)
+- [ ] 51-02-PLAN.md — Frontend foundation: visx install, types, gravatar lib, chart theme, GravatarAvatar, TimeRangeSelector
+- [ ] 51-03-PLAN.md — Extension scaffold: manifest, index.ts, insightsStore, data hook, dashboard blade, App.tsx registration
+- [ ] 51-04-PLAN.md — Dashboard components: CommitActivityChart, ContributorBreakdown, BranchHealthOverview, RepoStatsCards
 
 ### Phase 52: Visualization & Welcome Polish
 **Goal**: Users see a polished, information-rich experience across the topology graph and welcome screen with visual cues for recency, quick access to repositories, and at-a-glance health status
