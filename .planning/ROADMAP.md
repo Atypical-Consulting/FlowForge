@@ -212,11 +212,11 @@ Plans:
   2. User can maximize a single panel to fullscreen via double-click on the panel header, and press Esc to exit focus mode
   3. User can toggle individual panels on/off via a "Panels" menu, with remaining panels redistributing space automatically
   4. User's panel sizes persist across sessions and restore correctly on app launch, with a "Reset to default" option available
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 53-01: TBD
-- [ ] 53-02: TBD
+- [ ] 53-01-PLAN.md — Layout preset definitions, Zustand layout slice, command registrations, View menu entries
+- [ ] 53-02-PLAN.md — Wire imperative panel API, focus mode (double-click + Esc), sidebar toggle, persistence
 
 ## Progress
 
