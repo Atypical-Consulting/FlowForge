@@ -117,7 +117,7 @@
 - [x] **Phase 50: Hunk & Line Staging** — Stage individual hunks and lines from within the diff viewer
 - [x] **Phase 51: Git Insights Dashboard** — Commit activity charts, contributor breakdown, branch health, author avatars, and cross-extension contributor filtering
 - [x] **Phase 52: Visualization & Welcome Polish** — Commit heat map, node tooltips, pinned repos, health indicators, quick actions
-- [ ] **Phase 53: Workspace Layout Presets** — Named layout presets, focus mode, panel toggles, and persistence
+- [x] **Phase 53: Workspace Layout Presets** — Named layout presets, focus mode, panel toggles, and persistence
 
 ## Phase Details
 
@@ -215,8 +215,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 53-01-PLAN.md — Layout preset definitions, Zustand layout slice, command registrations, View menu entries
-- [ ] 53-02-PLAN.md — Wire imperative panel API, focus mode (double-click + Esc), sidebar toggle, persistence
+- [x] 53-01-PLAN.md — Layout preset definitions, Zustand layout slice, command registrations, View menu entries
+- [x] 53-02-PLAN.md — Wire imperative panel API, focus mode (double-click + Esc), sidebar toggle, persistence
 
 ## Progress
 
@@ -238,7 +238,7 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51 -> 52 -> 53
 | 50. Hunk & Line Staging | v1.8.0 | 3/3 | Complete | 2026-02-12 |
 | 51. Git Insights Dashboard | v1.8.0 | 5/5 | Complete | 2026-02-14 |
 | 52. Visualization & Welcome Polish | v1.8.0 | 3/3 | Complete | 2026-02-14 |
-| 53. Workspace Layout Presets | v1.8.0 | 0/TBD | Not started | - |
+| 53. Workspace Layout Presets | v1.8.0 | 2/2 | Complete | 2026-02-14 |
 
 ---
-*Last updated: 2026-02-14 -- Phase 52 complete (5/5 criteria verified)*
+*Last updated: 2026-02-14 -- Phase 53 complete (4/4 criteria verified, 6/6 must-haves passed)*
