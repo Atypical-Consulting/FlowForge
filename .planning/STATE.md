@@ -58,6 +58,9 @@ See `.planning/MILESTONES.md` for full history.
 ### Key Decisions
 
 All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
+- Phase 52-01: Two-segment interpolation (green->yellow->red) for clearer visual distinction at gradient extremes
+- Phase 52-01: 100ms anti-flicker delay on tooltip hide to prevent flash between adjacent nodes
+- Phase 52-01: Legend as absolute overlay at bottom-left to avoid layout shifts
 - Phase 52-02: isPinned optional field for backward compat with existing stored data
 - Phase 52-02: Pin state preserved when re-opening repo via existingEntry lookup
 
@@ -76,7 +79,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-14
-Stopped at: Completed 52-02-PLAN.md (pinned repos). 52-01 also complete. Ready for 52-03.
+Stopped at: Completed 52-01-PLAN.md (heat map + tooltips) and 52-02-PLAN.md (pinned repos). Ready for 52-03.
 Resume file: None
 
 ---
