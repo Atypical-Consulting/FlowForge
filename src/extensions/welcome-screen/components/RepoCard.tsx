@@ -1,12 +1,16 @@
-import { Folder, Pin, X } from "lucide-react";
+import { Folder, FolderOpen, Pin, Terminal, X } from "lucide-react";
 import type { RecentRepo } from "../../../core/hooks/useRecentRepos";
 import { Button } from "../../../core/components/ui/button";
+import { HealthDot } from "./HealthDot";
+import type { RepoHealthStatus } from "../hooks/useRepoHealth";
 
 interface RepoCardProps {
   repo: RecentRepo;
+  health?: RepoHealthStatus;
   onOpen: (repo: RecentRepo) => void;
   onRemove: (path: string) => void;
   onTogglePin: (path: string) => void;
+  onOpenInTerminal?: (path: string) => void;
 }
 
 function formatTime(timestamp: number): string {
@@ -29,10 +33,17 @@ function truncatePath(path: string, maxLength = 50): string {
   return `${parts[0]}/.../${parts.slice(-2).join("/")}`;
 }
 
-export function RepoCard({ repo, onOpen, onRemove, onTogglePin }: RepoCardProps) {
+export function RepoCard({
+  repo,
+  health,
+  onOpen,
+  onRemove,
+  onTogglePin,
+  onOpenInTerminal,
+}: RepoCardProps) {
   return (
     <div
-      className={`group flex items-center gap-3 p-3 rounded-lg hover:bg-ctp-surface0/50 cursor-pointer transition-colors ${
+      className={`group flex items-center gap-3 p-3 rounded-lg hover:bg-ctp-surface0/50 cursor-pointer transition-colors min-h-[52px] ${
         repo.isPinned ? "border-l-2 border-ctp-peach" : ""
       }`}
       onClick={() => onOpen(repo)}
@@ -41,6 +52,7 @@ export function RepoCard({ repo, onOpen, onRemove, onTogglePin }: RepoCardProps)
       tabIndex={0}
     >
       <Folder className="w-5 h-5 text-ctp-blue shrink-0" />
+      {health && <HealthDot status={health} />}
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium text-ctp-text truncate">
           {repo.name}
@@ -52,6 +64,7 @@ export function RepoCard({ repo, onOpen, onRemove, onTogglePin }: RepoCardProps)
       <div className="text-xs text-ctp-overlay0 shrink-0">
         {formatTime(repo.lastOpened)}
       </div>
+      {/* Pin button */}
       <Button
         variant="ghost"
         size="icon"
@@ -70,6 +83,35 @@ export function RepoCard({ repo, onOpen, onRemove, onTogglePin }: RepoCardProps)
           className={`w-4 h-4 ${repo.isPinned ? "rotate-45" : ""}`}
         />
       </Button>
+      {/* Open button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="opacity-0 group-hover:opacity-100 h-7 w-7 transition-opacity"
+        onClick={(e) => {
+          e.stopPropagation();
+          onOpen(repo);
+        }}
+        aria-label="Open repository"
+      >
+        <FolderOpen className="w-4 h-4 text-ctp-overlay0 hover:text-ctp-blue" />
+      </Button>
+      {/* Open in terminal button */}
+      {onOpenInTerminal && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="opacity-0 group-hover:opacity-100 h-7 w-7 transition-opacity"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenInTerminal(repo.path);
+          }}
+          aria-label="Open in terminal"
+        >
+          <Terminal className="w-4 h-4 text-ctp-overlay0 hover:text-ctp-teal" />
+        </Button>
+      )}
+      {/* Remove button */}
       <Button
         variant="ghost"
         size="icon"
