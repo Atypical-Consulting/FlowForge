@@ -4,10 +4,14 @@ import {
   Plus,
   Tag,
 } from "lucide-react";
-import { Component, useEffect, useMemo, useState } from "react";
+import { Component, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ErrorInfo, ReactNode } from "react";
+import { useGroupRef, usePanelRef } from "react-resizable-panels";
+import type { Layout } from "react-resizable-panels";
 import { useSidebarPanelRegistry } from "../lib/sidebarPanelRegistry";
+import { getPresetById } from "../lib/layoutPresets";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
+import { usePreferencesStore } from "../stores/domain/preferences";
 import { BladeContainer } from "../blades/_shared";
 import { BranchList } from "./branches/BranchList";
 import { CommitForm } from "./commit/CommitForm";
@@ -91,6 +95,90 @@ export function RepositoryView() {
   const [showStashDialog, setShowStashDialog] = useState(false);
   const [showTagDialog, setShowTagDialog] = useState(false);
 
+  // Imperative refs for programmatic layout control
+  const groupRef = useGroupRef();
+  const sidebarRef = usePanelRef();
+
+  // Layout store subscriptions
+  const layoutState = usePreferencesStore((s) => s.layoutState);
+  const setPanelSizes = usePreferencesStore((s) => s.setPanelSizes);
+
+  // Guard to prevent onLayoutChanged from marking preset changes as "custom"
+  const isApplyingPreset = useRef(false);
+
+  // Apply preset changes via imperative API
+  useEffect(() => {
+    if (layoutState.activePreset === "custom") return;
+    const preset = getPresetById(layoutState.activePreset);
+    if (!preset || !groupRef.current) return;
+
+    isApplyingPreset.current = true;
+    groupRef.current.setLayout(preset.layout);
+
+    // Handle sidebar collapse/expand for focus preset
+    if (!preset.visiblePanels.includes("sidebar")) {
+      sidebarRef.current?.collapse();
+    } else if (sidebarRef.current?.isCollapsed()) {
+      sidebarRef.current?.expand();
+    }
+
+    queueMicrotask(() => {
+      isApplyingPreset.current = false;
+    });
+  }, [layoutState.activePreset, groupRef, sidebarRef]);
+
+  // Handle focus mode
+  useEffect(() => {
+    if (layoutState.focusedPanel === "blades") {
+      // Maximize blades: collapse sidebar
+      isApplyingPreset.current = true;
+      sidebarRef.current?.collapse();
+      groupRef.current?.setLayout({ sidebar: 0, blades: 100 });
+      queueMicrotask(() => {
+        isApplyingPreset.current = false;
+      });
+    } else if (layoutState.focusedPanel === null) {
+      // Restore to active preset's layout
+      const preset = getPresetById(layoutState.activePreset);
+      isApplyingPreset.current = true;
+      if (preset && groupRef.current) {
+        groupRef.current.setLayout(preset.layout);
+        if (preset.visiblePanels.includes("sidebar")) {
+          sidebarRef.current?.expand();
+        }
+      } else {
+        // custom: restore saved sizes
+        groupRef.current?.setLayout(layoutState.panelSizes);
+        if (!layoutState.hiddenPanels.includes("sidebar")) {
+          sidebarRef.current?.expand();
+        }
+      }
+      queueMicrotask(() => {
+        isApplyingPreset.current = false;
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [layoutState.focusedPanel]);
+
+  // Handle sidebar toggle via hiddenPanels
+  useEffect(() => {
+    const sidebarHidden = layoutState.hiddenPanels.includes("sidebar");
+    if (sidebarHidden) {
+      sidebarRef.current?.collapse();
+    } else if (sidebarRef.current?.isCollapsed()) {
+      sidebarRef.current?.expand();
+    }
+  }, [layoutState.hiddenPanels, sidebarRef]);
+
+  // Persist manual resize via onLayoutChanged
+  const handleLayoutChanged = useCallback(
+    (layout: Layout) => {
+      // Don't mark as "custom" when we're programmatically applying a preset
+      if (isApplyingPreset.current) return;
+      setPanelSizes(layout as Record<string, number>);
+    },
+    [setPanelSizes],
+  );
 
   // Listen for create-branch-dialog event from command palette
   useEffect(() => {
@@ -103,9 +191,22 @@ export function RepositoryView() {
 
   return (
     <>
-      <ResizablePanelLayout autoSaveId="repo-layout" direction="horizontal">
+      <ResizablePanelLayout
+        autoSaveId="repo-layout"
+        direction="horizontal"
+        groupRef={groupRef}
+        onLayoutChanged={handleLayoutChanged}
+      >
         {/* Left sidebar - Branches, Stash, Tags */}
-        <ResizablePanel id="sidebar" defaultSize={20} minSize={15} maxSize={30}>
+        <ResizablePanel
+          id="sidebar"
+          defaultSize={20}
+          minSize={15}
+          maxSize={30}
+          panelRef={sidebarRef}
+          collapsible
+          collapsedSize={0}
+        >
           <div className="h-full border-r border-ctp-surface0 bg-ctp-base flex flex-col">
             {/* Scrollable sections container */}
             <div className="flex-1 overflow-y-auto">
