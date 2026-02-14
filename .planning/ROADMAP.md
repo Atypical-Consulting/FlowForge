@@ -116,7 +116,7 @@
 - [x] **Phase 49: Inline Conflict Resolution** — Three-way merge view with one-click resolution and manual editing
 - [x] **Phase 50: Hunk & Line Staging** — Stage individual hunks and lines from within the diff viewer
 - [x] **Phase 51: Git Insights Dashboard** — Commit activity charts, contributor breakdown, branch health, author avatars, and cross-extension contributor filtering
-- [ ] **Phase 52: Visualization & Welcome Polish** — Commit heat map, node tooltips, pinned repos, health indicators, quick actions
+- [x] **Phase 52: Visualization & Welcome Polish** — Commit heat map, node tooltips, pinned repos, health indicators, quick actions
 - [ ] **Phase 53: Workspace Layout Presets** — Named layout presets, focus mode, panel toggles, and persistence
 
 ## Phase Details
@@ -199,9 +199,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 52-01-PLAN.md — Topology heat map coloring by recency + hover tooltips with commit metadata
-- [ ] 52-02-PLAN.md — Pinned repositories on welcome screen with persistent pin state
-- [ ] 52-03-PLAN.md — Repo health indicators + quick actions (open, terminal, remove) with Rust backend
+- [x] 52-01-PLAN.md — Topology heat map coloring by recency + hover tooltips with commit metadata
+- [x] 52-02-PLAN.md — Pinned repositories on welcome screen with persistent pin state
+- [x] 52-03-PLAN.md — Repo health indicators + quick actions (open, terminal, remove) with Rust backend
 
 ### Phase 53: Workspace Layout Presets
 **Goal**: Users can instantly switch between purpose-built workspace configurations and have their panel arrangements persist across sessions
@@ -237,8 +237,8 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51 -> 52 -> 53
 | 49. Inline Conflict Resolution | v1.8.0 | 3/3 | Complete | 2026-02-12 |
 | 50. Hunk & Line Staging | v1.8.0 | 3/3 | Complete | 2026-02-12 |
 | 51. Git Insights Dashboard | v1.8.0 | 5/5 | Complete | 2026-02-14 |
-| 52. Visualization & Welcome Polish | v1.8.0 | 0/TBD | Not started | - |
+| 52. Visualization & Welcome Polish | v1.8.0 | 3/3 | Complete | 2026-02-14 |
 | 53. Workspace Layout Presets | v1.8.0 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-14 -- Phase 51 fully complete (5/5 criteria, all gaps closed)*
+*Last updated: 2026-02-14 -- Phase 52 complete (5/5 criteria verified)*
