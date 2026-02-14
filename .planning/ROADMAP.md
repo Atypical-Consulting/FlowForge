@@ -196,12 +196,12 @@ Plans:
   3. User can pin repositories to the top of the welcome screen, with pin state persisting across restarts
   4. User can see repository health indicators on welcome screen cards showing sync status (clean/dirty/behind/ahead) via colored status dots with tooltips
   5. User can perform quick actions on welcome screen repo cards (open, open in terminal, remove from recents) via hover-revealed action buttons
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 52-01: TBD
-- [ ] 52-02: TBD
-- [ ] 52-03: TBD
+- [ ] 52-01-PLAN.md — Topology heat map coloring by recency + hover tooltips with commit metadata
+- [ ] 52-02-PLAN.md — Pinned repositories on welcome screen with persistent pin state
+- [ ] 52-03-PLAN.md — Repo health indicators + quick actions (open, terminal, remove) with Rust backend
 
 ### Phase 53: Workspace Layout Presets
 **Goal**: Users can instantly switch between purpose-built workspace configurations and have their panel arrangements persist across sessions
