@@ -115,7 +115,7 @@
 - [x] **Phase 48: Diff Viewer Foundations** — Collapsible regions, word-level highlighting, and preference persistence
 - [x] **Phase 49: Inline Conflict Resolution** — Three-way merge view with one-click resolution and manual editing
 - [x] **Phase 50: Hunk & Line Staging** — Stage individual hunks and lines from within the diff viewer
-- [x] **Phase 51: Git Insights Dashboard** — Commit activity charts, contributor breakdown, branch health, and author avatars (gaps: history avatar integration, contributor filter bridge)
+- [x] **Phase 51: Git Insights Dashboard** — Commit activity charts, contributor breakdown, branch health, author avatars, and cross-extension contributor filtering
 - [ ] **Phase 52: Visualization & Welcome Polish** — Commit heat map, node tooltips, pinned repos, health indicators, quick actions
 - [ ] **Phase 53: Workspace Layout Presets** — Named layout presets, focus mode, panel toggles, and persistence
 
@@ -184,7 +184,7 @@ Plans:
 - [x] 51-02-PLAN.md — Frontend foundation: visx install, types, gravatar lib, chart theme, GravatarAvatar, TimeRangeSelector
 - [x] 51-03-PLAN.md — Extension scaffold: manifest, index.ts, insightsStore, data hook, dashboard blade, App.tsx registration
 - [x] 51-04-PLAN.md — Dashboard components: CommitActivityChart, ContributorBreakdown, BranchHealthOverview, RepoStatsCards
-- [ ] 51-05-PLAN.md — Gap closure: wire contributor filter and avatars to CommitHistory
+- [x] 51-05-PLAN.md — Gap closure: wire contributor filter and avatars to CommitHistory
 
 ### Phase 52: Visualization & Welcome Polish
 **Goal**: Users see a polished, information-rich experience across the topology graph and welcome screen with visual cues for recency, quick access to repositories, and at-a-glance health status
@@ -236,9 +236,9 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51 -> 52 -> 53
 | 48. Diff Viewer Foundations | v1.8.0 | 2/2 | Complete | 2026-02-12 |
 | 49. Inline Conflict Resolution | v1.8.0 | 3/3 | Complete | 2026-02-12 |
 | 50. Hunk & Line Staging | v1.8.0 | 3/3 | Complete | 2026-02-12 |
-| 51. Git Insights Dashboard | v1.8.0 | 4/4 | Complete (gaps) | 2026-02-14 |
+| 51. Git Insights Dashboard | v1.8.0 | 5/5 | Complete | 2026-02-14 |
 | 52. Visualization & Welcome Polish | v1.8.0 | 0/TBD | Not started | - |
 | 53. Workspace Layout Presets | v1.8.0 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-14 -- Phase 51 complete (2 gaps: history avatar integration, contributor filter bridge)*
+*Last updated: 2026-02-14 -- Phase 51 fully complete (5/5 criteria, all gaps closed)*
