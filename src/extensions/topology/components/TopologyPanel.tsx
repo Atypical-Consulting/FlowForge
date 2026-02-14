@@ -1,10 +1,12 @@
-import { useCallback, useMemo, useRef } from "react";
-import { Loader2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Flame, Loader2 } from "lucide-react";
 import { useCommitGraph } from "../../../core/hooks/useCommitGraph";
 import { classifyBranch } from "../../../core/lib/branchClassifier";
 import type { GitflowBranchType } from "../../../core/lib/branchClassifier";
 import { LaneHeader } from "./LaneHeader";
 import { CommitBadge } from "./CommitBadge";
+import { CommitTooltip } from "./CommitTooltip";
+import { HeatMapLegend } from "./HeatMapLegend";
 import { TopologyEmptyState } from "./TopologyEmptyState";
 import {
   BADGE_HEIGHT,
@@ -14,6 +16,7 @@ import {
   type PositionedNode,
   computeLayout,
 } from "../lib/layoutUtils";
+import { getHeatColor } from "../lib/heatMapUtils";
 
 interface TopologyPanelProps {
   onCommitSelect?: (oid: string) => void;
@@ -32,6 +35,20 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
   } = useCommitGraph();
 
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Heat map and tooltip state
+  const [heatMapEnabled, setHeatMapEnabled] = useState(false);
+  const [hoveredNode, setHoveredNode] = useState<PositionedNode | null>(null);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clean up hide timer on unmount
+  useEffect(() => {
+    return () => {
+      if (hideTimerRef.current) {
+        clearTimeout(hideTimerRef.current);
+      }
+    };
+  }, []);
 
   // Compute layout
   const { nodes, edges, laneLines, totalHeight, totalWidth } = useMemo(
@@ -61,6 +78,20 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
       }
     }
     return Array.from(seen.values());
+  }, [graphNodes]);
+
+  // Compute timestamp range for heat map coloring
+  const { minTs, maxTs } = useMemo(() => {
+    let min = Infinity;
+    let max = -Infinity;
+    for (const n of graphNodes) {
+      if (n.timestampMs < min) min = n.timestampMs;
+      if (n.timestampMs > max) max = n.timestampMs;
+    }
+    return {
+      minTs: min === Infinity ? 0 : min,
+      maxTs: max === -Infinity ? 0 : max,
+    };
   }, [graphNodes]);
 
   const handleNodeClick = useCallback(
@@ -96,7 +127,23 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
 
   return (
     <div className="h-full w-full relative bg-ctp-mantle flex flex-col">
-      <LaneHeader lanes={laneInfo} />
+      <div className="flex items-center">
+        <div className="flex-1">
+          <LaneHeader lanes={laneInfo} />
+        </div>
+        <button
+          onClick={() => setHeatMapEnabled((prev) => !prev)}
+          aria-label="Toggle heat map"
+          aria-pressed={heatMapEnabled}
+          className={`mr-3 p-1.5 rounded-md transition-colors ${
+            heatMapEnabled
+              ? "bg-ctp-surface1 text-ctp-peach"
+              : "text-ctp-overlay0 hover:text-ctp-text"
+          }`}
+        >
+          <Flame className="w-4 h-4" />
+        </button>
+      </div>
       <div className="flex-1 min-h-0 overflow-auto" ref={containerRef}>
         <div
           className="relative"
@@ -133,21 +180,41 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
               />
             ))}
             {/* Node circles */}
-            {nodes.map((pn: PositionedNode) => (
-              <circle
-                key={pn.node.oid}
-                cx={pn.cx}
-                cy={pn.cy}
-                r={pn.r}
-                fill={pn.color}
-                fillOpacity={0.9}
-                stroke={pn.node.oid === selectedCommit ? "#ffffff" : pn.color}
-                strokeWidth={pn.node.oid === selectedCommit ? 3 : 1.5}
-                strokeOpacity={pn.node.oid === selectedCommit ? 1 : 0.6}
-                className="cursor-pointer pointer-events-auto"
-                onClick={() => handleNodeClick(pn.node.oid)}
-              />
-            ))}
+            {nodes.map((pn: PositionedNode) => {
+              const nodeFill = heatMapEnabled
+                ? getHeatColor(pn.node.timestampMs, minTs, maxTs)
+                : pn.color;
+              return (
+                <circle
+                  key={pn.node.oid}
+                  cx={pn.cx}
+                  cy={pn.cy}
+                  r={pn.r}
+                  fill={nodeFill}
+                  fillOpacity={0.9}
+                  stroke={
+                    pn.node.oid === selectedCommit ? "#ffffff" : nodeFill
+                  }
+                  strokeWidth={pn.node.oid === selectedCommit ? 3 : 1.5}
+                  strokeOpacity={pn.node.oid === selectedCommit ? 1 : 0.6}
+                  className="cursor-pointer pointer-events-auto"
+                  onClick={() => handleNodeClick(pn.node.oid)}
+                  onMouseEnter={() => {
+                    if (hideTimerRef.current) {
+                      clearTimeout(hideTimerRef.current);
+                      hideTimerRef.current = null;
+                    }
+                    setHoveredNode(pn);
+                  }}
+                  onMouseLeave={() => {
+                    hideTimerRef.current = setTimeout(() => {
+                      setHoveredNode(null);
+                      hideTimerRef.current = null;
+                    }, 100);
+                  }}
+                />
+              );
+            })}
           </svg>
 
           {/* DOM layer: commit badges */}
@@ -169,6 +236,19 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
               />
             </div>
           ))}
+
+          {/* Hover tooltip for commit nodes */}
+          {hoveredNode && (
+            <div
+              className="absolute z-50 pointer-events-none"
+              style={{
+                left: hoveredNode.cx + hoveredNode.r + 16,
+                top: hoveredNode.cy - 20,
+              }}
+            >
+              <CommitTooltip node={hoveredNode.node} />
+            </div>
+          )}
         </div>
 
         {hasMore && (
@@ -183,6 +263,16 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
           </div>
         )}
       </div>
+
+      {/* Heat map legend overlay */}
+      {heatMapEnabled && (
+        <div className="absolute bottom-3 left-3 z-40">
+          <HeatMapLegend
+            minDate={new Date(minTs)}
+            maxDate={new Date(maxTs)}
+          />
+        </div>
+      )}
     </div>
   );
 }
