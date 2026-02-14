@@ -9,6 +9,7 @@ import { getNavigationActor } from "../machines/navigation/context";
 import { useUIStore as useCommandPaletteStore } from "../stores/domain/ui-state";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { useGitOpsStore as useTopologyStore } from "../stores/domain/git-ops";
+import { usePreferencesStore } from "../stores/domain/preferences";
 import { toast } from "../stores/toast";
 
 /**
@@ -24,6 +25,8 @@ import { toast } from "../stores/toast";
  * - Cmd/Ctrl+Shift+L: Pull (L for "pull Latest")
  * - Cmd/Ctrl+Shift+F: Fetch
  * - Cmd/Ctrl+Shift+M: Toggle amend commit
+ * - Cmd/Ctrl+\: Toggle sidebar visibility
+ * - Escape: Exit focus mode (if active), else pop blade
  * - Backspace: Pop blade (navigate back)
  */
 export function useKeyboardShortcuts() {
@@ -197,12 +200,21 @@ export function useKeyboardShortcuts() {
     { preventDefault: true },
   );
 
-  // Escape - close current blade (pop blade stack)
+  // Escape - exit focus mode or close current blade (pop blade stack)
   useHotkeys(
     "escape",
     () => {
-      // Don't pop blade if command palette is open (palette handles its own Escape)
+      // Priority 1: Don't pop blade if command palette is open
       if (useCommandPaletteStore.getState().paletteIsOpen) return;
+
+      // Priority 2: Exit focus mode if active
+      const { layoutState, exitFocusMode } = usePreferencesStore.getState();
+      if (layoutState.focusedPanel) {
+        exitFocusMode();
+        return;
+      }
+
+      // Priority 3: Pop blade stack
       getNavigationActor().send({ type: "POP_BLADE" });
     },
     { enableOnFormTags: false },
@@ -236,6 +248,18 @@ export function useKeyboardShortcuts() {
       executeCommand("clone-repository");
     },
     { preventDefault: true },
+  );
+
+  // Toggle sidebar visibility
+  useHotkeys(
+    "mod+\\",
+    (e) => {
+      e.preventDefault();
+      if (status) {
+        usePreferencesStore.getState().togglePanel("sidebar");
+      }
+    },
+    { preventDefault: true, enabled: !!status },
   );
 
   // Show Changes (staging) shortcut
