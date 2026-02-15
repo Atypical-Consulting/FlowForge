@@ -1,947 +1,603 @@
-# Architecture Patterns: v1.8.0 UI/UX Enhancement Features
+# Architecture Patterns: Monorepo Extraction & Framework Packaging
 
-**Domain:** Desktop Git client UI/UX enhancements (diff viewer, conflict resolution, insights, layouts, welcome screen, branch visualization)
-**Researched:** 2026-02-12
-**Overall confidence:** HIGH (based on direct codebase analysis + verified external sources)
+**Domain:** Monorepo conversion for Tauri desktop app framework extraction
+**Researched:** 2026-02-15
 
----
+## Recommended Architecture
 
-## Table of Contents
+### Target Monorepo Structure
 
-1. [Existing Architecture Summary](#existing-architecture-summary)
-2. [Question 1: Where Do New Rust Commands Go?](#question-1-where-do-new-rust-commands-go)
-3. [Question 2: How Do New Blades Fit the Blade Registry?](#question-2-how-do-new-blades-fit-the-blade-registry)
-4. [Question 3: How Does Line-Level Staging Interact with GitOps Store?](#question-3-how-does-line-level-staging-interact-with-gitops-store)
-5. [Question 4: How Do Workspace Layout Presets Integrate with Preferences?](#question-4-how-do-workspace-layout-presets-integrate-with-preferences)
-6. [Question 5: Should Insights Dashboard Be Extension or Core?](#question-5-should-insights-dashboard-be-extension-or-core)
-7. [Question 6: How Does Three-Way Merge Work with Monaco Editor?](#question-6-how-does-three-way-merge-work-with-monaco-editor)
-8. [Question 7: What New Data Flows for Avatars and Heat Maps?](#question-7-what-new-data-flows-for-avatars-and-heat-maps)
-9. [Component Inventory: New vs Modified](#component-inventory-new-vs-modified)
-10. [Recommended Build Order](#recommended-build-order)
-
----
-
-## Existing Architecture Summary
-
-Before diving into integration points, here is the relevant architecture:
-
-### Rust Backend (`src-tauri/src/git/`)
-- **Module-per-domain:** `diff.rs`, `merge.rs`, `staging.rs`, `history.rs`, `graph.rs`, etc.
-- Each module exports `#[tauri::command]` + `#[specta::specta]` functions
-- All commands registered in `lib.rs` via `collect_commands![]`
-- Specta auto-generates TypeScript bindings to `src/bindings.ts`
-- All commands receive `State<'_, RepositoryState>` for repo access
-- Heavy operations use `tokio::task::spawn_blocking` for git2 calls
-
-### Frontend Architecture
-- **Navigation:** XState v5 `navigationMachine` with `ProcessType = "staging" | "topology"` and blade stack (push/pop/replace/reset)
-- **Blades:** 9 core blades + 13 extension blades, registered via `registerBlade()` in `registration.ts` files or `ExtensionAPI.registerBlade()`
-- **Stores:** 3 domain stores (`useGitOpsStore`, `useUIStore`, `usePreferencesStore`) composed of slices
-- **Data fetching:** `@tanstack/react-query` for all Tauri command calls, with query key invalidation on `repository-changed` events
-- **Extensions:** 13 built-in extensions registered in `App.tsx` via `registerBuiltIn()`, each with `onActivate(api)` / `onDeactivate()` lifecycle
-
-### Key Patterns
-- Core blades register in `src/core/blades/{name}/registration.ts` (auto-discovered by `_discovery.ts` via `import.meta.glob`)
-- Extension blades register with `coreOverride: true` to use bare type names (no `ext:` prefix)
-- Monaco `DiffEditor` used for all diff viewing (inline + side-by-side toggle)
-- `SplitPaneLayout` wraps `react-resizable-panels` with `autoSaveId` for persistence
-- Preferences persist via `tauri-plugin-store` to `settings.json`
-
----
-
-## Question 1: Where Do New Rust Commands Go?
-
-### Conflict Resolution Commands
-
-**Location:** `src-tauri/src/git/merge.rs` (extend existing module)
-
-The existing `merge.rs` already has `merge_branch`, `get_merge_status`, and `abort_merge`. New conflict resolution commands belong here because they are part of the merge workflow.
-
-**New commands to add to `merge.rs`:**
-
-```rust
-/// Get the three-way content (base, ours, theirs) for a conflicted file.
-/// Uses git2 IndexConflicts iterator to access conflict entries,
-/// then reads blob content for each stage.
-#[tauri::command]
-#[specta::specta]
-pub async fn get_conflict_file(
-    path: String,
-    state: State<'_, RepositoryState>,
-) -> Result<ConflictFile, GitError> { ... }
-
-/// Resolve a conflict by writing chosen content to the working tree
-/// and marking it as resolved in the index.
-#[tauri::command]
-#[specta::specta]
-pub async fn resolve_conflict(
-    path: String,
-    resolution: ConflictResolution, // enum: Ours | Theirs | Custom(String)
-    state: State<'_, RepositoryState>,
-) -> Result<(), GitError> { ... }
-
-/// Complete the merge after all conflicts are resolved.
-/// Creates the merge commit.
-#[tauri::command]
-#[specta::specta]
-pub async fn complete_merge(
-    message: String,
-    state: State<'_, RepositoryState>,
-) -> Result<MergeResult, GitError> { ... }
+```
+flowforge/                              # Root workspace
+├── Cargo.toml                          # Cargo workspace (members: crates/*, apps/*/src-tauri)
+├── package.json                        # pnpm workspace root
+├── pnpm-workspace.yaml                 # workspace: ["packages/*", "apps/*"]
+├── turbo.json                          # Turborepo task pipeline
+├── tsconfig.base.json                  # Shared TS config (paths, compiler options)
+│
+├── packages/                           # Shared TypeScript packages
+│   ├── core/                           # @flowforge/core — meta-package re-exporting all below
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── src/index.ts
+│   ├── extension-system/               # @flowforge/extension-system
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── src/                        # ExtensionHost, ExtensionAPI, registries, buses
+│   ├── layout/                         # @flowforge/layout
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── src/                        # Blades, panels, navigation machine, sidebar
+│   ├── command-palette/                # @flowforge/command-palette
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── src/                        # Registry, UI, fuzzy search, shortcuts
+│   ├── stores/                         # @flowforge/stores
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── src/                        # Toast, persistence adapters, blade store, registry
+│   └── theme/                          # @flowforge/theme
+│       ├── package.json
+│       ├── tsconfig.json
+│       └── src/                        # CSS tokens, animations, theme provider
+│
+├── crates/                             # Shared Rust crates (deferred)
+│   └── flowforge-git/                  # Git domain operations (extracted from src-tauri)
+│       ├── Cargo.toml
+│       └── src/
+│
+├── apps/                               # Application shells
+│   └── flowforge/                      # The Git client app
+│       ├── package.json                # Depends on @flowforge/* packages
+│       ├── tsconfig.json               # Extends tsconfig.base.json
+│       ├── vite.config.ts
+│       ├── index.html
+│       ├── src/
+│       │   ├── App.tsx
+│       │   ├── main.tsx
+│       │   ├── bindings.ts             # tauri-specta generated
+│       │   ├── domain/                 # Git-specific stores, blades, commands
+│       │   └── extensions/             # Git-specific extensions (22 built-in)
+│       └── src-tauri/                  # Tauri shell for this app
+│           ├── Cargo.toml              # Depends on flowforge-git crate
+│           ├── tauri.conf.json
+│           ├── src/
+│           └── icons/
+│
+└── docs/                               # VitePress documentation (stays at root)
 ```
 
-**New types for `merge.rs`:**
+### Why This Structure
 
-```rust
-#[derive(Debug, Clone, Serialize, Deserialize, Type)]
-#[serde(rename_all = "camelCase")]
-pub struct ConflictFile {
-    pub path: String,
-    pub base_content: String,     // ancestor
-    pub ours_content: String,     // current branch
-    pub theirs_content: String,   // incoming branch
-    pub language: String,
-    pub is_binary: bool,
+**Confidence: HIGH** (based on existing REUSABILITY-PROPOSAL.md analysis, current codebase inspection, Tauri monorepo community patterns)
+
+1. **Phase 1 is already complete.** The `src/framework/` directory already exists with clean separation into `extension-system/`, `layout/`, `command-palette/`, `stores/`, `theme/`. The extraction to workspace packages is Phase 2 of the original REUSABILITY-PROPOSAL.md -- the hard boundary work is done.
+
+2. **pnpm + Turborepo** is the right tooling choice (not Nx). Nx is overkill for 5-6 packages and adds a steep learning curve. Turborepo provides task caching and pipeline ordering with minimal configuration. pnpm workspaces handle package linking natively.
+
+3. **Cargo workspace at root** allows shared Rust crates without restructuring Tauri's expectations. Tauri v2 is flexible about directory naming -- it only requires `tauri.conf.json` next to the app's `Cargo.toml`.
+
+4. **No build step for internal packages** during development. Use TypeScript path aliases pointing to package source directories. Only build packages when publishing or for CI validation.
+
+---
+
+## Component Boundaries
+
+### Package Dependency Graph
+
+```
+@flowforge/core (meta-package)
+  ├── re-exports @flowforge/extension-system
+  ├── re-exports @flowforge/layout
+  ├── re-exports @flowforge/command-palette
+  ├── re-exports @flowforge/stores
+  └── re-exports @flowforge/theme
+
+@flowforge/extension-system
+  ├── depends on @flowforge/stores (createRegistry, toast)
+  ├── depends on @flowforge/layout (bladeRegistry, sidebarPanelRegistry)
+  └── depends on @flowforge/command-palette (commandRegistry)
+
+@flowforge/layout
+  ├── depends on @flowforge/stores (createRegistry, createBladeStore)
+  └── depends on @flowforge/theme (animations)
+
+@flowforge/command-palette
+  └── depends on @flowforge/stores (createRegistry)
+
+@flowforge/stores
+  └── depends on nothing (leaf package)
+
+@flowforge/theme
+  └── depends on nothing (leaf package)
+```
+
+**Critical observation:** `extension-system` depends on both `layout` and `command-palette` because `ExtensionAPI` directly calls `registerBlade()`, `registerCommand()`, `useSidebarPanelRegistry`, etc. This is the tightest coupling point and it flows in ONE direction (extension-system depends on layout/command-palette, never the reverse). This is safe and intentional.
+
+### Component Responsibilities
+
+| Package | Responsibility | Key Exports | Communicates With |
+|---------|---------------|-------------|-------------------|
+| `@flowforge/stores` | State management primitives | `createRegistry`, `createBladeStore`, `toast`, `OperationBus`, `PersistenceAdapter` | None (leaf) |
+| `@flowforge/theme` | Theming and animations | CSS tokens, `animations`, theme provider | None (leaf) |
+| `@flowforge/command-palette` | Command registry and palette UI | `CommandPalette`, `registerCommand`, `fuzzySearch` | `stores` |
+| `@flowforge/layout` | Blade navigation, panels, sidebar | `BladeRenderer`, `BladeContainer`, `navigationMachine`, `bladeRegistry`, `sidebarPanelRegistry`, `workflowRegistry` | `stores`, `theme` |
+| `@flowforge/extension-system` | Extension lifecycle, API facade | `ExtensionHost`, `ExtensionAPI`, `configureExtensionHost` | `stores`, `layout`, `command-palette` |
+| `@flowforge/core` | Convenience re-export | Everything above | All packages |
+
+### Rust Crate Boundaries
+
+| Crate | Responsibility | Dependencies |
+|-------|---------------|-------------|
+| `flowforge-git` (future) | Pure git2-rs operations, no Tauri coupling | `git2`, `serde`, `chrono`, `git-conventional` |
+| `flowforge` (app crate) | Tauri commands, state management, file watcher | `tauri`, `tauri-specta`, `flowforge-git` |
+
+---
+
+## Integration Points (New vs Modified Code)
+
+### New Code Required
+
+| What | Where | Purpose |
+|------|-------|---------|
+| `pnpm-workspace.yaml` | Root | Define workspace packages and apps |
+| `turbo.json` | Root | Build/test/lint pipeline with caching |
+| `tsconfig.base.json` | Root | Shared compiler options, path aliases to package sources |
+| `packages/*/package.json` | Each package | Package metadata, peer deps, exports field |
+| `packages/*/tsconfig.json` | Each package | Extends base, may define project references |
+| `packages/stores/src/persistence/adapter.ts` | stores package | `PersistenceAdapter` interface (abstracts Tauri away) |
+| `packages/stores/src/persistence/memory.ts` | stores package | In-memory adapter for testing/non-Tauri apps |
+| `apps/flowforge/src/persistence/tauri-adapter.ts` | App | Tauri persistence implementation (moved from framework) |
+
+### Modified Code (Moved + Rewired)
+
+| Current Location | New Location | Changes Required |
+|-----------------|-------------|-----------------|
+| `src/framework/extension-system/` | `packages/extension-system/src/` | Update import paths from `@/framework/` to `@flowforge/*` |
+| `src/framework/layout/` | `packages/layout/src/` | Same |
+| `src/framework/command-palette/` | `packages/command-palette/src/` | Same |
+| `src/framework/stores/` | `packages/stores/src/` | Extract `persistence/tauri.ts` to app code, replace with adapter interface |
+| `src/framework/theme/` | `packages/theme/src/` | Same |
+| `src/framework/lib/utils.ts` | `packages/stores/src/utils.ts` or `packages/theme/src/utils.ts` | Evaluate placement (clsx/tailwind-merge utility) |
+| `src/core/` | `apps/flowforge/src/domain/` | Update imports to use `@flowforge/*` packages |
+| `src/extensions/` | `apps/flowforge/src/extensions/` | Update imports |
+| `src/App.tsx` | `apps/flowforge/src/App.tsx` | Update imports |
+| `src/main.tsx` | `apps/flowforge/src/main.tsx` | Add persistence adapter injection |
+| `src/bindings.ts` | `apps/flowforge/src/bindings.ts` | No changes (app-specific, auto-generated) |
+| `src/index.css` | `apps/flowforge/src/index.css` | No changes (app-specific theme) |
+| `src-tauri/` | `apps/flowforge/src-tauri/` | Update Cargo workspace path |
+| `Cargo.toml` (root) | Same | Update `members` to include `apps/flowforge/src-tauri` |
+
+### Key Integration Points in Detail
+
+#### 1. Persistence Adapter (Critical Coupling Break)
+
+**Current state:** `src/framework/stores/persistence/tauri.ts` directly imports `@tauri-apps/plugin-store`. This couples the framework to Tauri.
+
+**Required change:** Extract a `PersistenceAdapter` interface into `@flowforge/stores`. The Tauri implementation stays in the app:
+
+```typescript
+// packages/stores/src/persistence/adapter.ts (NEW)
+export interface PersistenceAdapter {
+  get<T>(key: string): Promise<T | null>;
+  set<T>(key: string, value: T): Promise<void>;
+  save(): Promise<void>;
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Type)]
-#[serde(rename_all = "camelCase")]
-pub enum ConflictResolution {
-    Ours,
-    Theirs,
-    Custom { content: String },
-}
-```
+let adapter: PersistenceAdapter | null = null;
 
-**Implementation detail (HIGH confidence):** git2-rs exposes `Index::conflicts()` which returns an `IndexConflicts` iterator yielding `IndexConflict { ancestor, our, their }` entries. Each entry contains an `IndexEntry` with an `id` (Oid) that can be used with `Repository::find_blob()` to get the blob content. This is how the three-way content is extracted.
-
-### Git Insights Commands
-
-**Location:** New file `src-tauri/src/git/insights.rs`
-
-Insights data (author stats, commit frequency, file heat maps) is a distinct domain from existing modules. Creating a new module follows the established pattern.
-
-**New commands for `insights.rs`:**
-
-```rust
-/// Get commit frequency over time (commits per day/week/month).
-#[tauri::command]
-#[specta::specta]
-pub async fn get_commit_frequency(
-    period: FrequencyPeriod, // Day | Week | Month
-    limit: u32,              // how many periods back
-    state: State<'_, RepositoryState>,
-) -> Result<Vec<FrequencyPoint>, GitError> { ... }
-
-/// Get author contribution statistics.
-#[tauri::command]
-#[specta::specta]
-pub async fn get_author_stats(
-    limit: u32,
-    state: State<'_, RepositoryState>,
-) -> Result<Vec<AuthorStats>, GitError> { ... }
-
-/// Get file change frequency (heat map data).
-#[tauri::command]
-#[specta::specta]
-pub async fn get_file_heat_map(
-    limit: u32,
-    state: State<'_, RepositoryState>,
-) -> Result<Vec<FileHeatEntry>, GitError> { ... }
-```
-
-**Registration in `lib.rs`:** Add the new commands to `collect_commands![]` and the new `use` imports at the top. Follow the existing section-based organization with a comment like `// Insights commands`.
-
-### Line-Level Staging Commands
-
-**Location:** `src-tauri/src/git/staging.rs` (extend existing module)
-
-**New command:**
-
-```rust
-/// Stage specific hunks from a file's diff.
-/// Applies selected hunks to the index without staging the entire file.
-#[tauri::command]
-#[specta::specta]
-pub async fn stage_hunks(
-    path: String,
-    hunk_indices: Vec<u32>, // which hunks (0-indexed) to stage
-    state: State<'_, RepositoryState>,
-) -> Result<(), GitError> { ... }
-```
-
-**Implementation approach:** Use `git2::Repository::apply()` with a diff containing only selected hunks, applied to the index. This is the same approach used by `git add -p` under the hood. Alternatively, construct a patch from selected hunks and use `git2::Diff::from_buffer()` + `Repository::apply_to_tree()`.
-
----
-
-## Question 2: How Do New Blades Fit the Blade Registry?
-
-### Merge Conflict View Blade
-
-**Type:** Core blade (not extension) -- conflict resolution is fundamental Git functionality.
-
-**Registration:** Create `src/core/blades/merge-conflict/registration.ts`:
-
-```typescript
-import { lazy } from "react";
-import { registerBlade } from "../../lib/bladeRegistry";
-
-const MergeConflictBlade = lazy(() =>
-  import("./MergeConflictBlade").then((m) => ({ default: m.MergeConflictBlade }))
-);
-
-registerBlade<{ sourceBranch: string }>({
-  type: "merge-conflict",
-  defaultTitle: "Merge Conflicts",
-  component: MergeConflictBlade,
-  lazy: true,
-  wrapInPanel: false, // full-width layout like staging-changes
-  showBack: true,
-});
-```
-
-**Add to `BladePropsMap`:**
-```typescript
-"merge-conflict": { sourceBranch: string };
-```
-
-**Add to `_discovery.ts` CORE_BLADE_TYPES array:**
-```typescript
-"merge-conflict"
-```
-
-**Navigation flow:** When `merge_branch` returns `has_conflicts: true`, the staging blade (or a merge trigger) navigates:
-```typescript
-getNavigationActor().send({
-  type: "PUSH_BLADE",
-  bladeType: "merge-conflict",
-  title: `Merge Conflicts (${sourceBranch})`,
-  props: { sourceBranch },
-});
-```
-
-### Insights Dashboard Blade
-
-**Type:** Extension blade (see Question 5 for rationale).
-
-**Registration:** Via `ExtensionAPI.registerBlade()` in `src/extensions/insights/index.ts`:
-
-```typescript
-api.registerBlade({
-  type: "insights-dashboard",
-  title: "Insights",
-  component: InsightsDashboardBlade,
-  singleton: true,
-  lazy: true,
-  wrapInPanel: false,
-  coreOverride: true, // uses bare type name since it's a built-in extension
-});
-```
-
-**Add to `BladePropsMap`:**
-```typescript
-"insights-dashboard": Record<string, never>;
-```
-
-**Add to `_discovery.ts` EXTENSION_BLADE_TYPES array:**
-```typescript
-"insights-dashboard"
-```
-
-### Conflict Detail Blade (single file)
-
-**Type:** Core blade -- pushed from the merge conflict list when user selects a file.
-
-```typescript
-"conflict-detail": { path: string; sourceBranch: string };
-```
-
-This blade shows the three-way merge editor for a single file. It is pushed from the merge-conflict blade:
-```typescript
-pushBlade({
-  type: "conflict-detail",
-  title: fileName,
-  props: { path: file.path, sourceBranch },
-});
-```
-
-**Registration:** Create `src/core/blades/conflict-detail/registration.ts`:
-
-```typescript
-import { lazy } from "react";
-import { registerBlade } from "../../lib/bladeRegistry";
-import { renderPathBreadcrumb } from "../../lib/bladeUtils";
-
-const ConflictDetailBlade = lazy(() =>
-  import("./ConflictDetailBlade").then((m) => ({ default: m.ConflictDetailBlade }))
-);
-
-registerBlade<{ path: string; sourceBranch: string }>({
-  type: "conflict-detail",
-  defaultTitle: "Resolve Conflict",
-  component: ConflictDetailBlade,
-  lazy: true,
-  renderTitleContent: (props) => renderPathBreadcrumb(props.path),
-});
-```
-
----
-
-## Question 3: How Does Line-Level Staging Interact with GitOps Store?
-
-### Current Flow
-
-1. `StagingChangesBlade` uses `react-query` with `["stagingStatus"]` key to call `commands.getStagingStatus()`
-2. User clicks stage/unstage -> calls `commands.stageFile()` / `commands.unstageFile()`
-3. Query invalidation triggers re-fetch of staging status
-4. Diff preview uses `["fileDiff", path, staged, contextLines]` query key
-
-### Line-Level (Hunk) Staging Integration
-
-**No new Zustand state needed.** The hunk staging interaction is entirely within the diff viewer component and the Tauri commands.
-
-**Data flow for hunk staging:**
-
-```
-User sees diff in InlineDiffViewer or DiffBlade
-  -> Hunks rendered with per-hunk stage/unstage checkboxes
-  -> User toggles hunk(s)
-  -> Frontend calls commands.stageHunks(path, [hunkIndex1, hunkIndex2])
-  -> Invalidate ["stagingStatus"] and ["fileDiff", path, ...] queries
-  -> UI refreshes automatically via react-query
-```
-
-**UI integration point:** The `InlineDiffViewer` component (in `staging-changes/components/`) already receives `filePath` and `staged` props and renders a `DiffEditor`. The enhancement adds gutter decorations (checkboxes or stage/unstage buttons) beside each hunk header.
-
-**Monaco Editor integration for hunk actions:**
-- Use `editor.deltaDecorations()` to add gutter glyphs at hunk start lines
-- Or use an overlay widget positioned at each `DiffHunk.newStart` line
-- The existing `DiffHunk` data (from `FileDiff.hunks`) already provides `oldStart`, `oldLines`, `newStart`, `newLines` -- sufficient for identifying hunks
-
-**The UIStore StagingSlice does NOT need changes** because hunk selection state is ephemeral (lives in React component state, not in Zustand). The staging status query provides the source of truth.
-
----
-
-## Question 4: How Do Workspace Layout Presets Integrate with Preferences?
-
-### Current Layout Architecture
-
-The app uses `react-resizable-panels` with `autoSaveId` for persistence. The `SplitPaneLayout` component wraps this:
-
-```typescript
-<ResizablePanelLayout autoSaveId="staging-split" direction="horizontal">
-```
-
-Panel sizes are auto-persisted to localStorage keyed by `autoSaveId`.
-
-### Workspace Layout Presets: New Preferences Slice
-
-**Add a new `workspace.slice.ts` to the Preferences store:**
-
-File: `src/core/stores/domain/preferences/workspace.slice.ts`
-
-```typescript
-export type WorkspacePreset = "default" | "wide-diff" | "compact" | "review" | "custom";
-
-export interface WorkspaceLayout {
-  sidebarWidth: number;       // percentage
-  primaryPanelSize: number;   // percentage for split panes
-  showSidebar: boolean;
-  sidebarCollapsedPanels: string[];
+export function configurePersistence(a: PersistenceAdapter): void {
+  adapter = a;
 }
 
-export interface WorkspaceSlice {
-  workspaceActivePreset: WorkspacePreset;
-  workspaceLayouts: Record<WorkspacePreset, WorkspaceLayout>;
-  workspaceCustomLayouts: Record<string, WorkspaceLayout>; // user-created
-  setWorkspacePreset: (preset: WorkspacePreset) => Promise<void>;
-  saveCustomLayout: (name: string, layout: WorkspaceLayout) => Promise<void>;
-  deleteCustomLayout: (name: string) => Promise<void>;
-  initWorkspace: () => Promise<void>;
-}
-```
-
-**Add to PreferencesStore composition:**
-
-```typescript
-// In src/core/stores/domain/preferences/index.ts
-export type PreferencesStore = SettingsSlice &
-  ThemeSlice &
-  NavigationSlice &
-  BranchMetadataSlice &
-  ReviewChecklistSlice &
-  WorkspaceSlice; // NEW
-```
-
-**Integration with react-resizable-panels:**
-
-The `ResizablePanelLayout` component currently uses `autoSaveId` which persists to localStorage. To support presets:
-
-1. Create a `useWorkspaceLayout` hook that reads `workspaceActivePreset` from the Preferences store
-2. When preset changes, imperatively call `PanelGroup.setLayout()` (react-resizable-panels exposes this via imperative handle)
-3. The `autoSaveId` mechanism stays for per-session persistence; presets override it on activation
-
-**Preset application flow:**
-```
-User selects preset (toolbar or command palette)
-  -> usePreferencesStore.setWorkspacePreset("wide-diff")
-  -> Persists to tauri-plugin-store
-  -> Triggers re-render of layout components
-  -> PanelGroup refs receive new sizes via imperative API
-  -> localStorage auto-save picks up the new sizes
-```
-
-**This does NOT require changes to react-resizable-panels itself.** The library's imperative API (`PanelGroupOnLayout` callback + ref-based `setLayout()`) supports programmatic resizing.
-
----
-
-## Question 5: Should Insights Dashboard Be Extension or Core?
-
-### Decision: Built-in Extension
-
-**Rationale:**
-
-| Factor | Extension | Core | Winner |
-|--------|-----------|------|--------|
-| User can disable it | Yes | No | Extension |
-| Depends on Git operations | Uses existing commands | Would use same | Neutral |
-| Needs new Rust commands | Yes (insights.rs) | Same | Neutral |
-| Affects navigation machine | No new ProcessType needed | Would need ProcessType | Extension |
-| Follows existing pattern | Like topology, gitflow, github | Like staging-changes | Extension |
-| Impact if removed | Dashboard gone, app works | N/A | Extension |
-| Complexity | registerBlade + sidebar panel | Blade + ProcessType + nav changes | Extension is simpler |
-
-**The topology extension is the exact precedent.** It registers a blade with `coreOverride: true`, contributes a sidebar panel, adds commands, and uses data from the GitOps store. The insights dashboard follows the same pattern.
-
-**Implementation pattern (following topology extension):**
-
-```
-src/extensions/insights/
-  index.ts              # onActivate / onDeactivate
-  blades/
-    InsightsDashboardBlade.tsx
-    components/
-      CommitFrequencyChart.tsx
-      AuthorContributions.tsx
-      FileHeatMap.tsx
-  hooks/
-    useInsightsData.ts  # react-query hooks for insights commands
-```
-
-**Registration in `App.tsx`:**
-```typescript
-registerBuiltIn({
-  id: "insights",
-  name: "Git Insights",
-  version: "1.0.0",
-  activate: insightsActivate,
-  deactivate: insightsDeactivate,
-});
-```
-
-**Navigation access:** Via command palette command + optional sidebar panel + optional toolbar action. The extension registers these through `ExtensionAPI`:
-- `api.registerCommand({ id: "show-insights", ... })`
-- `api.contributeSidebarPanel({ id: "insights-summary", ... })`
-- `api.contributeToolbar({ id: "insights-btn", ... })`
-
-**The insights dashboard does NOT need a new ProcessType.** It can be pushed as a blade from any process:
-```typescript
-getNavigationActor().send({
-  type: "PUSH_BLADE",
-  bladeType: "insights-dashboard",
-  title: "Insights",
-  props: {},
-});
-```
-
----
-
-## Question 6: How Does Three-Way Merge View Work with Monaco Editor?
-
-### The Problem
-
-Monaco Editor does NOT expose a three-way merge editor API (HIGH confidence). VS Code's three-column merge editor is internal to VS Code and not available through Monaco's public API. This has been a requested feature since 2022 (GitHub Issue #3268) and remains unimplemented as of 2026.
-
-### Recommended Architecture: Custom Two-Pane + Result Layout with Monaco
-
-**Do NOT try to use a single Monaco instance for three-way merge.** Instead, build a custom layout with multiple Monaco editors.
-
-**Recommended approach (two-pane diff + editable result):**
-
-```
-+------------------------------------------------------------------+
-|  [Accept Ours | Accept Theirs | Manual Edit | Done]              |
-+------------------------------------------------------------------+
-|  DiffEditor: ours (left, original) vs theirs (right, modified)   |
-|  (read-only -- shows what's different between the two sides)     |
-+------------------------------------------------------------------+
-|  Result Editor (editable) -- starts with ours content            |
-|  User can manually edit, or accept ours/theirs wholesale         |
-+------------------------------------------------------------------+
-```
-
-This approach uses 2 Monaco instances (one DiffEditor + one regular Editor) instead of 4 separate editors, reducing memory pressure significantly. It is the approach used by GitKraken, Sublime Merge, and other desktop Git clients.
-
-**Implementation using existing components:**
-
-```typescript
-// ConflictDetailBlade.tsx
-function ConflictDetailBlade({ path, sourceBranch }: Props) {
-  const { data } = useQuery({
-    queryKey: ["conflictFile", path],
-    queryFn: () => commands.getConflictFile(path),
-  });
-
-  const [resultContent, setResultContent] = useState(data?.oursContent ?? "");
-
-  return (
-    <div className="flex flex-col h-full">
-      <ConflictToolbar
-        onAcceptOurs={() => setResultContent(data.oursContent)}
-        onAcceptTheirs={() => setResultContent(data.theirsContent)}
-        onResolve={() =>
-          commands.resolveConflict(path, { Custom: { content: resultContent } })
-        }
-      />
-
-      <ResizablePanelLayout autoSaveId="conflict-editor" direction="vertical">
-        {/* Top: read-only diff showing ours vs theirs */}
-        <ResizablePanel id="conflict-diff" defaultSize={50} minSize={20}>
-          <DiffEditor
-            original={data.oursContent}
-            modified={data.theirsContent}
-            language={data.language}
-            theme={MONACO_THEME}
-            options={{
-              ...MONACO_COMMON_OPTIONS,
-              readOnly: true,
-              originalEditable: false,
-              renderSideBySide: true,
-            }}
-          />
-        </ResizablePanel>
-        <ResizeHandle />
-        {/* Bottom: editable result */}
-        <ResizablePanel id="conflict-result" defaultSize={50} minSize={20}>
-          <div className="flex flex-col h-full">
-            <div className="px-3 py-1 border-b border-ctp-surface0 bg-ctp-crust text-xs text-ctp-subtext0">
-              Result (editable)
-            </div>
-            <Editor
-              value={resultContent}
-              onChange={(v) => setResultContent(v ?? "")}
-              language={data.language}
-              theme={MONACO_THEME}
-              options={MONACO_COMMON_OPTIONS}
-            />
-          </div>
-        </ResizablePanel>
-      </ResizablePanelLayout>
-    </div>
+export function getPersistence(): PersistenceAdapter {
+  if (!adapter) throw new Error(
+    "Persistence not configured. Call configurePersistence() at app init."
   );
+  return adapter;
+}
+
+// apps/flowforge/src/persistence/tauri-adapter.ts (MOVED from framework)
+import { Store } from "@tauri-apps/plugin-store";
+import type { PersistenceAdapter } from "@flowforge/stores";
+
+export function createTauriAdapter(filename: string): PersistenceAdapter {
+  let store: Store | null = null;
+  const getStore = async () => {
+    if (!store) store = await Store.load(filename);
+    return store;
+  };
+  return {
+    get: async (key) => { const s = await getStore(); return s.get(key) ?? null; },
+    set: async (key, value) => { const s = await getStore(); await s.set(key, value); },
+    save: async () => { const s = await getStore(); await s.save(); },
+  };
 }
 ```
 
-**Optional full three-pane view (advanced, not MVP):** If the full base/ours/theirs view is desired, add a collapsible "Base" pane above the diff:
+**Impact:** `ExtensionHost` (for `persistDisabledExtensions`/`loadDisabledExtensions`), `ExtensionSettings`, and all preference stores currently import `getStore()` from `@/framework/stores/persistence/tauri`. They must be changed to use `getPersistence()` from the adapter interface. This is the single most important coupling break.
 
-```
-+------------------------------------------------------------------+
-|  [Show Base | Accept Ours | Accept Theirs | Done]                |
-+------------------------------------------------------------------+
-|  [Base content - collapsible, read-only]                         |
-+------------------------------------------------------------------+
-|  DiffEditor: ours (left) vs theirs (right) -- read-only         |
-+------------------------------------------------------------------+
-|  Result Editor (editable)                                        |
-+------------------------------------------------------------------+
-```
+#### 2. Module Augmentation for Blade Types
 
-### Per-Hunk Accept in Merge View
+**Current state:** `src/core/stores/bladeTypes.ts` augments `@/framework/layout/bladeTypes` with app-specific blade types using TypeScript's `declare module` syntax. This is already a clean integration point.
 
-To support accepting individual hunks from ours/theirs:
-1. Parse the diff hunks from the DiffEditor or use the `DiffHunk` data from the Rust backend
-2. Add inline "Accept" buttons as Monaco glyph margin decorations or overlay widgets
-3. On click, splice the selected hunk's content into the result editor at the corresponding line position
-
----
-
-## Question 7: What New Data Flows for Avatars and Heat Maps?
-
-### Author Avatars via Gravatar
-
-**Architecture:** Frontend-only, no Rust changes needed.
-
-**Data flow:**
-```
-CommitSummary.authorEmail (from existing Rust commands)
-  -> SHA256 hash of trimmed, lowercased email
-  -> Construct URL: https://gravatar.com/avatar/${hash}?d=identicon&s=32
-  -> <img> tag with fallback to identicon
-```
-
-**Implementation as a shared component:**
+**After extraction:** The augmentation target changes from `@/framework/layout/bladeTypes` to `@flowforge/layout/bladeTypes` (or wherever the `BladePropsMap` interface lives). The pattern remains identical:
 
 ```typescript
-// src/core/components/ui/AuthorAvatar.tsx
-
-interface AuthorAvatarProps {
-  email: string;
-  size?: number;
-  className?: string;
-}
-
-export function AuthorAvatar({ email, size = 32, className }: AuthorAvatarProps) {
-  const url = useGravatarUrl(email, size);
-  return <img src={url} alt="" className={className} loading="lazy" />;
-}
-
-// Hook with memoized SHA-256 hash computation
-function useGravatarUrl(email: string, size: number): string {
-  const [url, setUrl] = useState(fallbackUrl(size));
-
-  useEffect(() => {
-    const normalized = email.trim().toLowerCase();
-    crypto.subtle.digest("SHA-256", new TextEncoder().encode(normalized))
-      .then(buf => {
-        const hash = Array.from(new Uint8Array(buf))
-          .map(b => b.toString(16).padStart(2, "0"))
-          .join("");
-        setUrl(`https://gravatar.com/avatar/${hash}?d=identicon&s=${size}`);
-      });
-  }, [email, size]);
-
-  return url;
+// apps/flowforge/src/domain/bladeTypes.ts
+declare module "@flowforge/layout" {
+  interface BladePropsMap {
+    "staging-changes": Record<string, never>;
+    "topology-graph": Record<string, never>;
+    "commit-details": { oid: string };
+    // ... all 18+ app-specific blade types
+  }
 }
 ```
 
-**Gravatar URL generation (HIGH confidence):** Per Gravatar docs, the process is:
-1. Trim whitespace, lowercase the email
-2. SHA-256 hash the email string
-3. URL: `https://gravatar.com/avatar/${hash}?d=identicon&s=${size}`
+**No structural change needed** -- TypeScript module augmentation works across package boundaries in a monorepo. The augmented interface is visible wherever the package is imported.
 
-**Important:** Gravatar uses SHA-256 (not MD5). The `SubtleCrypto` API available in the Tauri webview handles this.
+#### 3. Extension System DI (Already Partially Done)
 
-**Caching strategy:** Browser image cache handles this automatically. The `loading="lazy"` attribute prevents loading avatars for off-screen commits. No react-query needed -- just an `<img>` tag.
+**Current state:** `configureExtensionHost()` already accepts a `discoverExtensions` dependency. `ExtensionAPI.setOperationBus()` injects the git hook bus. These patterns survive extraction unchanged.
 
-**Places to integrate `AuthorAvatar`:**
-- `CommitDetailsBlade` (author info section)
-- Topology graph commit nodes (small avatar circle)
-- Insights dashboard author stats
-- Commit list items (optional, may be too dense)
+**Additional DI needed after extraction:**
+- `ExtensionSettings` currently uses `getStore()` from Tauri persistence -- needs to use `getPersistence()` instead
+- `ExtensionHost` persistence functions (`persistDisabledExtensions`, `loadDisabledExtensions`) -- same change
 
-### Commit Heat Maps
+#### 4. `import.meta.env.DEV` References
 
-**Data flow:**
+**Current state:** Multiple files use `import.meta.env.DEV` for Zustand devtools enable/disable. This is Vite-specific.
+
+**After extraction:** Package source is consumed directly via path aliases (not bundled separately). Vite processes it as part of the app build, so `import.meta.env.DEV` continues to work. **No change needed** for the source-level consumption strategy.
+
+#### 5. Tauri-Specta Bindings
+
+**Current state:** `src/bindings.ts` is auto-generated by tauri-specta. It stays entirely in the app.
+
+**After extraction:** No change. The app imports `commands` from its own `bindings.ts`. Extensions that call Tauri commands import them from the app's bindings, not from framework packages. This is already the case -- extensions use relative imports to reach `../../core/stores/` for Tauri-backed stores.
+
+#### 6. CSS Theme Tokens
+
+**Current state:** `src/index.css` contains the Tailwind v4 `@theme {}` block with `--ctp-*` Catppuccin tokens. Framework layout components reference these tokens via Tailwind classes (`bg-ctp-base`, `text-ctp-text`).
+
+**Integration decision:** For now, framework components keep using `--ctp-*` tokens. The app provides these tokens. This works because:
+- Internal monorepo -- all apps use the same Catppuccin theme system
+- No publishing to npm -- no need for theme-agnostic CSS vars yet
+- Refactoring to semantic vars (`--ff-surface`, `--ff-text`) can happen later as a non-blocking enhancement
+
+#### 7. Peer Dependencies for React Ecosystem
+
+Framework packages declare these as `peerDependencies`:
+- `react` (^19)
+- `react-dom` (^19)
+- `zustand` (^5)
+- `xstate` (^5) -- only `@flowforge/layout` (navigation machine)
+- `@xstate/react` (^6) -- only `@flowforge/layout`
+- `framer-motion` (^12) -- only packages using animations
+- `react-hotkeys-hook` (^5) -- only `@flowforge/command-palette`
+- `lucide-react` -- used in ExtensionAPI types, command-palette
+- `react-resizable-panels` (^4) -- only `@flowforge/layout`
+
+The app's `package.json` provides concrete versions. This prevents duplicate React instances in the bundle.
+
+---
+
+## Data Flow Changes
+
+### Current Data Flow
+
 ```
-Rust: get_file_heat_map(limit)
-  -> walks recent N commits
-  -> counts file change frequency
-  -> returns Vec<FileHeatEntry { path, change_count, last_changed_ms }>
-
-Frontend: InsightsDashboardBlade
-  -> useQuery(["fileHeatMap", limit], () => commands.getFileHeatMap(limit))
-  -> Render as treemap or heatmap grid
+src/App.tsx
+  └── imports from @/framework/* (direct file imports via Vite path alias)
+  └── imports from @/core/* (direct file imports via Vite path alias)
+  └── imports from @/extensions/* (direct file imports)
+  └── Zustand stores are module-level singletons (created at import time)
+  └── Tauri IPC via src/bindings.ts (tauri-specta generated)
+  └── Persistence via getStore() (directly imports @tauri-apps/plugin-store)
 ```
 
-**Visualization component:** Use a simple CSS grid or SVG-based treemap. No heavy charting library needed. Cells colored by change frequency using Catppuccin palette colors:
+### Post-Extraction Data Flow
+
+```
+apps/flowforge/src/App.tsx
+  └── imports from @flowforge/* (via Vite aliases to package src/)
+  └── imports from ./domain/* (app-specific code)
+  └── imports from ./extensions/* (app-specific extensions)
+  └── Zustand stores remain module-level singletons (no change)
+  └── Tauri IPC via ./bindings.ts (unchanged)
+  └── PersistenceAdapter injected at app startup via configurePersistence()
+```
+
+**The only meaningful data flow change is persistence injection.** Zustand stores, registries, the OperationBus, the EventBus, and the navigation machine all work identically as module-level singletons regardless of package boundaries.
+
+---
+
+## Patterns to Follow
+
+### Pattern 1: Source-Level Package Consumption (No Build Step)
+
+**What:** During development, apps consume package source directly through TypeScript path aliases. Packages have no build step.
+
+**When:** Internal monorepo where all consumers use the same bundler (Vite).
+
+**Why:** Eliminates build step complexity, provides instant HMR, no need for watch mode on packages.
+
+**Configuration:**
+
+```json
+// tsconfig.base.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@flowforge/core": ["./packages/core/src"],
+      "@flowforge/core/*": ["./packages/core/src/*"],
+      "@flowforge/extension-system": ["./packages/extension-system/src"],
+      "@flowforge/extension-system/*": ["./packages/extension-system/src/*"],
+      "@flowforge/layout": ["./packages/layout/src"],
+      "@flowforge/layout/*": ["./packages/layout/src/*"],
+      "@flowforge/command-palette": ["./packages/command-palette/src"],
+      "@flowforge/command-palette/*": ["./packages/command-palette/src/*"],
+      "@flowforge/stores": ["./packages/stores/src"],
+      "@flowforge/stores/*": ["./packages/stores/src/*"],
+      "@flowforge/theme": ["./packages/theme/src"],
+      "@flowforge/theme/*": ["./packages/theme/src/*"]
+    }
+  }
+}
+```
 
 ```typescript
-function getHeatColor(intensity: number): string {
-  // intensity is 0-1, maps to catppuccin colors
-  if (intensity > 0.8) return "var(--ctp-red)";
-  if (intensity > 0.6) return "var(--ctp-peach)";
-  if (intensity > 0.4) return "var(--ctp-yellow)";
-  if (intensity > 0.2) return "var(--ctp-green)";
-  return "var(--ctp-overlay0)";
-}
+// apps/flowforge/vite.config.ts
+import { resolve } from "path";
+
+const root = resolve(__dirname, "../..");
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      "@flowforge/core": resolve(root, "packages/core/src"),
+      "@flowforge/extension-system": resolve(root, "packages/extension-system/src"),
+      "@flowforge/layout": resolve(root, "packages/layout/src"),
+      "@flowforge/command-palette": resolve(root, "packages/command-palette/src"),
+      "@flowforge/stores": resolve(root, "packages/stores/src"),
+      "@flowforge/theme": resolve(root, "packages/theme/src"),
+      // App-local alias
+      "@": resolve(__dirname, "src"),
+    },
+  },
+});
 ```
 
-### Commit Frequency Chart
+### Pattern 2: Dependency Injection for Platform Coupling
 
-**Data flow:**
-```
-Rust: get_commit_frequency(period, limit)
-  -> walks commits, buckets by time period
-  -> returns Vec<FrequencyPoint { timestamp_ms, count }>
+**What:** Any framework code that touches platform APIs (Tauri, filesystem, OS) receives its implementation via DI setter.
 
-Frontend: CommitFrequencyChart component
-  -> useQuery(["commitFrequency", period, limit], ...)
-  -> Render as SVG sparkline or bar chart
-```
+**When:** Always, for any platform-specific behavior in framework packages.
 
-**No charting library recommendation.** For the simple bar/sparkline charts needed, custom SVG is preferable to adding a dependency like recharts or chart.js. The data is simple (timestamp + count pairs) and the visualization is straightforward.
+**Why:** Allows framework packages to work in non-Tauri environments (browser tests, Electron, etc.).
 
----
+**Current DI patterns already in the codebase:**
+- `configureExtensionHost({ discoverExtensions })` -- injects Tauri discovery
+- `ExtensionAPI.setOperationBus(gitHookBus)` -- injects the git operation bus
 
-## Component Inventory: New vs Modified
+**New DI patterns needed:**
+- `configurePersistence(adapter)` -- injects storage backend
+- `convertFileSrc` in ExtensionHost (used for loading external extension JS) -- can be injected as part of `configureExtensionHost`
 
-### NEW Components
+### Pattern 3: Registry-Based Extension Points
 
-| Component | Location | Type | Purpose |
-|-----------|----------|------|---------|
-| `MergeConflictBlade` | `src/core/blades/merge-conflict/` | Core blade | List conflicted files, trigger resolution |
-| `ConflictDetailBlade` | `src/core/blades/conflict-detail/` | Core blade | Two-pane diff + editable result for single file |
-| `ConflictToolbar` | `src/core/blades/conflict-detail/components/` | Component | Accept ours/theirs/manual actions |
-| `AuthorAvatar` | `src/core/components/ui/` | Shared | Gravatar avatar display |
-| `InsightsDashboardBlade` | `src/extensions/insights/blades/` | Extension blade | Dashboard with charts and stats |
-| `CommitFrequencyChart` | `src/extensions/insights/blades/components/` | Component | SVG bar chart |
-| `AuthorContributions` | `src/extensions/insights/blades/components/` | Component | Author stats table with avatars |
-| `FileHeatMap` | `src/extensions/insights/blades/components/` | Component | Treemap of file changes |
-| `workspace.slice.ts` | `src/core/stores/domain/preferences/` | Store slice | Layout preset state |
-| `insights.rs` | `src-tauri/src/git/` | Rust module | Insights data commands |
+**What:** All extension contribution points use the `createRegistry()` factory from `@flowforge/stores`.
 
-### MODIFIED Components
+**Current registries (already using createRegistry):**
+- `bladeRegistry` (layout)
+- `sidebarPanelRegistry` (layout)
+- `commandRegistry` (command-palette)
+- `toolbarRegistry` (extension-system)
+- `contextMenuRegistry` (extension-system)
+- `statusBarRegistry` (extension-system)
+- `machineRegistry` (extension-system)
 
-| Component | Location | Change |
-|-----------|----------|--------|
-| `merge.rs` | `src-tauri/src/git/` | Add `get_conflict_file`, `resolve_conflict`, `complete_merge` |
-| `staging.rs` | `src-tauri/src/git/` | Add `stage_hunks` command |
-| `lib.rs` | `src-tauri/src/` | Register new commands in `collect_commands![]` |
-| `bladeTypes.ts` | `src/core/stores/` | Add `merge-conflict`, `conflict-detail`, `insights-dashboard` to `BladePropsMap` |
-| `_discovery.ts` | `src/core/blades/` | Add new types to CORE_BLADE_TYPES / EXTENSION_BLADE_TYPES arrays |
-| `App.tsx` | `src/` | Register insights built-in extension |
-| `PreferencesStore` | `src/core/stores/domain/preferences/` | Compose new `WorkspaceSlice` |
-| `InlineDiffViewer` | `src/core/blades/staging-changes/components/` | Add hunk-level stage/unstage actions |
-| `DiffBlade` | `src/core/blades/diff/` | Add hunk-level actions for non-staging diffs |
-| `StagingChangesBlade` | `src/core/blades/staging-changes/` | Detect merge state, show merge conflict entry point |
-| `WelcomeBlade` | `src/extensions/welcome-screen/blades/` | Add any welcome screen enhancements |
-| `settings.slice.ts` | `src/core/stores/domain/preferences/` | Add `"workspace"` to `SettingsCategory` if workspace settings go in Settings blade |
+**Why this pattern works for extraction:** Each registry is a Zustand store created by the same factory. They can live in different packages as long as the factory (`createRegistry`) is importable.
 
-### NEW Rust Types (auto-generated to bindings.ts)
+### Pattern 4: Module Augmentation for Type Extension
 
-| Type | Module |
-|------|--------|
-| `ConflictFile` | `merge.rs` |
-| `ConflictResolution` | `merge.rs` |
-| `FrequencyPeriod` | `insights.rs` |
-| `FrequencyPoint` | `insights.rs` |
-| `AuthorStats` | `insights.rs` |
-| `FileHeatEntry` | `insights.rs` |
+**What:** Apps extend framework types via TypeScript `declare module` without modifying framework source.
 
----
+**When:** For any type that needs app-specific entries (blade types, command categories, extension points).
 
-## Recommended Build Order
-
-Dependencies determine the build order. Each phase should be independently shippable.
-
-### Phase 1: Foundation -- Conflict Resolution Backend + Merge View
-
-**Why first:** The three-way merge view requires new Rust commands that other features do not depend on. It is the most complex feature and should be tackled first while the architecture is fresh.
-
-**Build sequence:**
-1. `merge.rs` -- Add `ConflictFile`, `ConflictResolution` types + `get_conflict_file`, `resolve_conflict`, `complete_merge` commands
-2. `lib.rs` -- Register new commands
-3. `bladeTypes.ts` -- Add `merge-conflict` and `conflict-detail`
-4. `merge-conflict/registration.ts` + `MergeConflictBlade.tsx` -- List view of conflicted files
-5. `conflict-detail/registration.ts` + `ConflictDetailBlade.tsx` -- Two-pane merge editor
-6. Wire `StagingChangesBlade` to detect merge state and offer entry to merge-conflict blade
-
-**Dependencies satisfied:** `merge.rs` (existing) -> new types -> new blades -> StagingChangesBlade integration
-
-### Phase 2: Enhanced Diff Viewer + Line-Level Staging
-
-**Why second:** Builds on existing diff infrastructure. Hunk staging is the highest-value UX improvement and uses the same Monaco DiffEditor patterns as the merge view.
-
-**Build sequence:**
-1. `staging.rs` -- Add `stage_hunks` command
-2. `lib.rs` -- Register command
-3. Enhance `InlineDiffViewer` with hunk action buttons (gutter decorations or overlay widgets)
-4. Enhance `DiffBlade` with hunk action buttons
-5. Wire up query invalidation for hunk staging
-
-**Dependencies satisfied:** existing `staging.rs` -> new command -> existing `InlineDiffViewer` enhancement
-
-### Phase 3: Git Insights Dashboard Extension
-
-**Why third:** Independent of other features. New Rust module + new extension. No dependencies on Phase 1 or 2.
-
-**Build sequence:**
-1. `insights.rs` -- All three commands (`get_commit_frequency`, `get_author_stats`, `get_file_heat_map`)
-2. `lib.rs` -- Register commands
-3. `AuthorAvatar` shared component (used by insights and later by other views)
-4. `src/extensions/insights/` -- Extension skeleton with `onActivate`/`onDeactivate`
-5. `InsightsDashboardBlade` with sub-components
-6. Register in `App.tsx`
-
-**Dependencies satisfied:** none (self-contained module)
-
-### Phase 4: Workspace Layout Presets
-
-**Why fourth:** Pure frontend, no Rust changes. Builds on existing react-resizable-panels infrastructure.
-
-**Build sequence:**
-1. `workspace.slice.ts` -- Preferences slice
-2. Add to `PreferencesStore` composition + `initAllPreferences`
-3. `useWorkspaceLayout` hook
-4. Integrate with `SplitPaneLayout` and `ResizablePanelLayout` (imperative `setLayout()` calls)
-5. Add preset selector UI (toolbar action or settings blade section)
-
-**Dependencies satisfied:** existing `PreferencesStore` -> new slice -> existing layout components
-
-### Phase 5: Welcome Screen + Branch Visualization Enhancements
-
-**Why last:** These are polish features that enhance existing views without structural changes.
-
-**Build sequence:**
-1. Welcome screen enhancements (existing extension blade modification)
-2. Branch visualization improvements in topology graph (existing extension)
-3. Avatar integration in commit list and topology nodes
-
-**Dependencies satisfied:** Phase 3 (AuthorAvatar component) must be complete for avatar integration
-
----
-
-## Architecture Diagrams
-
-### Data Flow: Conflict Resolution
-
-```
-                    +-----------------+
-                    |  merge_branch() |
-                    +--------+--------+
-                             |
-                    has_conflicts: true
-                             |
-                    +--------v--------+
-                    | MergeConflictBlade|
-                    | (lists files)    |
-                    +--------+--------+
-                             |
-                    user selects file
-                             |
-                    +--------v-----------+
-                    | ConflictDetailBlade  |
-                    | (diff + result)     |
-                    +---+--------+-------+
-                        |        |
-        get_conflict_file()      |
-                        |        |
-           DiffEditor (read-only)
-           ours (left) vs theirs (right)
-                        |
-           Editor (editable: result)
-                        |
-           resolve_conflict(path, Custom{content})
-                        |
-           invalidate ["mergeStatus"] + ["stagingStatus"]
-                        |
-           all resolved? -> complete_merge(message)
-```
-
-### Data Flow: Insights Dashboard
-
-```
-                    +------------------+
-                    | insights.rs      |
-                    | (new Rust module)|
-                    +------------------+
-                    | get_commit_frequency()  --> Vec<FrequencyPoint>
-                    | get_author_stats()      --> Vec<AuthorStats>
-                    | get_file_heat_map()     --> Vec<FileHeatEntry>
-                    +------------------+
-                             |
-                    Tauri IPC (specta bindings)
-                             |
-                    +------------------+
-                    | react-query hooks|
-                    | in extension     |
-                    +--------+---------+
-                             |
-              +--------------+--------------+
-              |              |              |
-    CommitFrequencyChart  AuthorContribs  FileHeatMap
-         (SVG bars)     (table+avatars)  (CSS treemap)
-```
-
-### Store Composition After Changes
-
-```
-useGitOpsStore (resets on repo close)
-  |- RepositorySlice    (existing)
-  |- BranchSlice        (existing)
-  |- TagSlice           (existing)
-  |- StashSlice         (existing)
-  |- WorktreeSlice      (existing)
-  |- GitflowSlice       (existing)
-  |- UndoSlice          (existing)
-  |- TopologySlice      (existing)
-  |- CloneSlice         (existing)
-  (NO new slices -- merge state comes from react-query, not store)
-
-useUIStore (resets on repo close)
-  |- StagingSlice       (existing, unchanged)
-  |- CommandPaletteSlice (existing)
-  (NO new slices -- merge conflict UI state is blade-local)
-
-usePreferencesStore (survives repo switches)
-  |- SettingsSlice       (existing, minor SettingsCategory addition)
-  |- ThemeSlice          (existing)
-  |- NavigationSlice     (existing)
-  |- BranchMetadataSlice (existing)
-  |- ReviewChecklistSlice (existing)
-  |- WorkspaceSlice      (NEW -- layout presets)
-```
-
-**Design principle:** New merge/conflict state does NOT go into GitOpsStore. It is fetched on-demand via react-query (`["mergeStatus"]`, `["conflictFile", path]`). This follows the existing pattern where diff data and staging status are query-based, not store-based. Only the topology graph (which needs to accumulate paginated data) uses the store.
+**Why:** Already proven in the codebase. `BladePropsMap` is empty in the framework and augmented by the app.
 
 ---
 
 ## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: Putting Conflict State in Zustand
-**What:** Adding `mergeConflicts`, `selectedConflict`, `conflictResolutions` to GitOpsStore.
-**Why bad:** Duplicates react-query cache, creates stale state bugs, bloats store reset logic.
-**Instead:** Use react-query for all conflict data. The merge status is polled, conflict file content is fetched on-demand.
+### Anti-Pattern 1: Building Packages as Separate Bundles
 
-### Anti-Pattern 2: Making Insights a Core Process Type
-**What:** Adding `"insights"` to `ProcessType = "staging" | "topology" | "insights"`.
-**Why bad:** Forces navigation machine changes, sidebar restructure, URL-like routing changes. Disproportionate complexity for a dashboard view.
-**Instead:** Push insights blade from any process. It is a leaf blade, not a root process.
+**What:** Creating separate Vite/Rollup/esbuild builds for each package, producing `dist/` with JS files.
 
-### Anti-Pattern 3: Single Monaco Instance for Three-Way Merge
-**What:** Trying to use one Monaco editor with custom rendering for base/ours/theirs.
-**Why bad:** Monaco's API does not support three-way diff. Hacking around it with decorations is fragile and unmaintainable.
-**Instead:** Use the DiffEditor (ours vs theirs) + a separate editable Editor (result) in a `ResizablePanelLayout`.
+**Why bad:** Adds build complexity, slower iteration, potential duplicate React instances, CSS extraction headaches with Tailwind v4. Internal packages that are never published to npm do not need to be bundled.
 
-### Anti-Pattern 4: Charting Library for Simple Visualizations
-**What:** Adding recharts, chart.js, or d3 for the insights dashboard.
-**Why bad:** Adds 50-200KB to bundle for what amounts to bar charts and treemaps. Creates version conflicts and maintenance burden.
-**Instead:** Custom SVG components using Catppuccin theme colors. The data shapes are simple (array of {label, value} pairs).
+**Instead:** Use source-level consumption via path aliases. Only add a build step if/when packages are published publicly.
 
-### Anti-Pattern 5: Storing Layout Presets in localStorage Directly
-**What:** Bypassing the Preferences store and writing preset data to localStorage.
-**Why bad:** Inconsistent with the rest of the settings system (tauri-plugin-store). Won't survive app data migration. Can't be backed up or synced.
-**Instead:** Use the same `getStore()` + `store.set()`/`store.save()` pattern used by all other preferences slices.
+### Anti-Pattern 2: Circular Dependencies Between Packages
 
-### Anti-Pattern 6: New Zustand Slice Per Feature
-**What:** Adding a MergeSlice to GitOpsStore for conflict state, an InsightsSlice for dashboard data, etc.
-**Why bad:** The GitOpsStore already has 9 slices. Adding more for data that is better served by react-query creates unnecessary coupling. The store should hold persistent state, not server state.
-**Instead:** Use react-query for all data that comes from Tauri commands. Only add to Zustand if the data needs to persist across blade navigations or be shared between distant components without prop drilling.
+**What:** `extension-system` imports from `layout`, and `layout` imports from `extension-system`.
+
+**Why bad:** Breaks build ordering, causes subtle import-time bugs, makes packages impossible to extract independently.
+
+**Current risk:** `ExtensionAPI.ts` directly imports `registerBlade` from layout and `registerCommand` from command-palette. These are one-directional and safe. The reverse direction must **never** exist.
+
+**Prevention rule:** `layout` and `command-palette` must never import from `extension-system`. If layout needs extension awareness (e.g., `source` field on `BladeRegistration`), it defines the interface and extension-system implements it. This is already the case -- `RegistryItem.source` is defined in `stores`, not in `extension-system`.
+
+### Anti-Pattern 3: Moving Tauri Dependencies into Framework Packages
+
+**What:** Having `@tauri-apps/*` as a dependency of any `@flowforge/*` package.
+
+**Why bad:** Couples the framework to Tauri. A browser-based or Electron app cannot use the framework.
+
+**Instead:** All Tauri imports stay in app code. Framework receives platform capabilities via DI adapters.
+
+### Anti-Pattern 4: Premature Abstraction of Theme Tokens
+
+**What:** Replacing all `--ctp-*` tokens with semantic `--ff-*` tokens before the extraction is complete.
+
+**Why bad:** Adds a large refactoring step that blocks extraction progress. Semantic tokens are a nice-to-have, not a prerequisite.
+
+**Instead:** Extract first with Catppuccin tokens intact. Refactor to semantic tokens as a follow-up enhancement.
+
+### Anti-Pattern 5: Publishing Packages to npm Before a Second App Exists
+
+**What:** Setting up npm publishing, semantic versioning, changesets, etc. before proving the framework works for another app.
+
+**Why bad:** Premature infrastructure. Publishing adds maintenance overhead (changelogs, version bumps, breaking change policies) without providing value until external consumers exist.
+
+**Instead:** Keep everything as internal workspace packages. When (and if) a second team needs the packages, add publishing then.
+
+---
+
+## Suggested Build Order for Extraction
+
+The extraction should happen in dependency order (leaves first). Each phase should leave the app fully functional and passing all tests.
+
+### Phase 1: Workspace Scaffolding (Foundation)
+
+**What:** Create monorepo infrastructure without moving any code yet.
+
+1. Initialize pnpm workspace (`pnpm-workspace.yaml` defining `packages/*` and `apps/*`)
+2. Create `turbo.json` with build/test/lint/typecheck pipeline
+3. Create `tsconfig.base.json` with shared compiler options
+4. Create empty package directories with `package.json` files (name, version, main, types, peerDependencies)
+5. Create `apps/flowforge/` with its own `package.json` depending on `@flowforge/*`
+6. Configure Vite aliases in `apps/flowforge/vite.config.ts`
+7. Update root `Cargo.toml` workspace members for new app location
+8. Verify existing app still builds and tests pass from new location
+
+**Dependencies:** None
+**Risk:** Low -- structural changes only, no code moves
+**Validation:** `pnpm install && pnpm turbo build` succeeds; `pnpm turbo test` passes all 295 tests
+
+### Phase 2: Leaf Packages (`stores` + `theme`)
+
+**What:** Move the two packages with zero internal dependencies.
+
+1. Move `src/framework/stores/*.ts` to `packages/stores/src/`
+2. Move `src/framework/theme/*.ts` to `packages/theme/src/`
+3. Extract `PersistenceAdapter` interface into `packages/stores/src/persistence/`
+4. Create `createTauriAdapter()` in app code
+5. Add `configurePersistence()` call in `apps/flowforge/src/main.tsx`
+6. Update all `getStore()` calls in framework code to use `getPersistence()`
+7. Update all imports throughout `src/framework/` and `src/core/` to use `@flowforge/stores` and `@flowforge/theme`
+8. Verify build and tests pass
+
+**Dependencies:** Phase 1
+**Risk:** MEDIUM -- persistence adapter extraction requires careful DI wiring. Every store that persists data must be updated.
+
+### Phase 3: Middle Packages (`command-palette` + `layout`)
+
+**What:** Extract packages that depend on `stores` and `theme`.
+
+1. Move `src/framework/command-palette/` to `packages/command-palette/src/`
+2. Move `src/framework/layout/` to `packages/layout/src/`
+3. Update all internal imports to use `@flowforge/stores`, `@flowforge/theme`
+4. Update all consumer imports in `src/core/` and `src/extensions/` to use `@flowforge/layout` and `@flowforge/command-palette`
+5. Verify build and tests pass (navigation machine tests, registry tests)
+
+**Dependencies:** Phase 2 (both packages import from `stores`)
+**Risk:** MEDIUM -- `layout` is the largest single piece (~50 files). The XState navigation machine tests must pass.
+
+### Phase 4: Top Package (`extension-system` + `core`)
+
+**What:** Extract the package that depends on everything else.
+
+1. Move `src/framework/extension-system/` to `packages/extension-system/src/`
+2. Update imports in `ExtensionAPI.ts` to use `@flowforge/layout`, `@flowforge/command-palette`, `@flowforge/stores`
+3. Update `configureExtensionHost` to also accept `convertFileSrc` via DI (currently imports from `@tauri-apps/api/core`)
+4. Create `packages/core/src/index.ts` that re-exports all packages
+5. Delete `src/framework/` (now empty)
+6. Verify build and tests pass
+
+**Dependencies:** Phase 3
+**Risk:** LOW -- mostly import path changes, since `extension-system` already uses the DI pattern
+
+### Phase 5: App Relocation
+
+**What:** Move app code from `src/` to `apps/flowforge/src/`.
+
+1. Move `src/core/` to `apps/flowforge/src/domain/`
+2. Move `src/extensions/` to `apps/flowforge/src/extensions/`
+3. Move `src/App.tsx`, `src/main.tsx`, `src/bindings.ts`, `src/index.css`, `src/vite-env.d.ts` to `apps/flowforge/src/`
+4. Move `src-tauri/` to `apps/flowforge/src-tauri/`
+5. Move `index.html` to `apps/flowforge/`
+6. Move `vite.config.ts`, `vitest.config.ts`, `biome.json` to `apps/flowforge/`
+7. Update `tauri.conf.json` paths (devUrl, beforeDevCommand, beforeBuildCommand)
+8. Update Cargo workspace to point to `apps/flowforge/src-tauri`
+9. Update all remaining `@/core/` and `@/extensions/` import aliases to relative or app-local `@/domain/` aliases
+10. Verify FULL build chain: TypeScript + Rust + Tauri + tests
+
+**Dependencies:** Phase 4
+**Risk:** HIGH -- largest number of file moves, config changes, and path updates. Most breakage-prone phase. Should be done as a single atomic step with immediate verification.
+
+### Phase 6: Rust Crate Extraction (Deferred)
+
+**What:** Extract `flowforge-git` crate from `apps/flowforge/src-tauri/src/git/`.
+
+1. Create `crates/flowforge-git/` with pure git2-rs operations (no Tauri state, no `#[tauri::command]`)
+2. Keep Tauri command wrappers in `apps/flowforge/src-tauri/src/`
+3. Update `Cargo.toml` dependencies
+
+**Dependencies:** Phase 5
+**Risk:** LOW -- Rust crate extraction is straightforward with Cargo workspaces
+**Defer rationale:** Only relevant when a second Tauri app needs git operations. For a non-git second app, skip entirely.
+
+---
+
+## File Mapping: Current to Target
+
+This table provides the complete mapping for every `src/framework/` directory:
+
+| Current | Target Package | Notes |
+|---------|---------------|-------|
+| `src/framework/stores/createRegistry.ts` | `packages/stores/src/createRegistry.ts` | Foundation for all registries |
+| `src/framework/stores/createBladeStore.ts` | `packages/stores/src/createBladeStore.ts` | Blade-scoped Zustand factory |
+| `src/framework/stores/registry.ts` | `packages/stores/src/registry.ts` | Store reset coordination |
+| `src/framework/stores/toast.ts` | `packages/stores/src/toast.ts` | Toast notification system |
+| `src/framework/stores/persistence/tauri.ts` | `apps/flowforge/src/persistence/tauri-adapter.ts` | **Moved to app** (platform-specific) |
+| `src/framework/stores/persistence/index.ts` | `packages/stores/src/persistence/index.ts` | Adapter interface + configure/get |
+| `src/framework/theme/animations.ts` | `packages/theme/src/animations.ts` | Motion presets |
+| `src/framework/theme/index.ts` | `packages/theme/src/index.ts` | Theme exports |
+| `src/framework/command-palette/*` | `packages/command-palette/src/*` | All 8 files move as-is |
+| `src/framework/layout/*` | `packages/layout/src/*` | All ~20 files move as-is |
+| `src/framework/layout/navigation/*` | `packages/layout/src/navigation/*` | XState machine + context + guards |
+| `src/framework/extension-system/*` | `packages/extension-system/src/*` | All ~12 files move |
+| `src/framework/lib/utils.ts` | `packages/theme/src/utils.ts` | `cn()` utility (clsx + tailwind-merge) |
 
 ---
 
 ## Scalability Considerations
 
-| Concern | Small repos (<1K commits) | Medium repos (10K commits) | Large repos (100K+ commits) |
-|---------|--------------------------|---------------------------|----------------------------|
-| Insights computation | <100ms | 500ms-2s | 5-30s, needs pagination/caching |
-| Conflict file loading | Instant | Instant | Instant (per-file) |
-| Avatar loading | All visible | Lazy load | Lazy load + LRU cache |
-| Heat map data | Full scan | Sample recent 1K | Sample recent 1K |
-| Hunk staging | <50ms | <50ms | <100ms (per-file operation) |
-| Workspace preset switching | Instant (CSS-only) | Instant | Instant |
-
-**Mitigation for large repos:** The `get_commit_frequency` and `get_author_stats` commands should accept a `limit` parameter (already specified above) and walk only the most recent N commits. The Rust backend handles pagination efficiently via `revwalk.take(limit)`.
+| Concern | Current (1 app) | 2 Apps | 5+ Apps |
+|---------|-----------------|--------|---------|
+| Build time | ~30s full | ~45s (Turborepo caches shared packages) | Turborepo parallelizes, <60s |
+| Dependency conflicts | N/A | pnpm strict mode prevents phantom deps | Peer deps enforce alignment |
+| Type safety across packages | Path aliases (instant) | Same, add `tsc --build` for CI | TypeScript project references |
+| Extension compatibility | N/A | Shared ExtensionAPI contract | Version via `apiVersion` field (already exists) |
+| CSS conflicts | N/A | Semantic CSS vars per app (enhancement) | Theme package provides base, apps customize |
+| Tauri config | N/A | Each app has own `tauri.conf.json` + icons | Shared Cargo workspace, separate app crates |
 
 ---
 
 ## Sources
 
-### Verified Sources (HIGH confidence)
-- [Monaco Editor 3-way merge request (Issue #3268)](https://github.com/microsoft/monaco-editor/issues/3268) -- confirms 3-way merge editor is not available in Monaco public API
-- [Monaco Editor merge conflict highlighting (Issue #1529)](https://github.com/microsoft/monaco-editor/issues/1529) -- community workarounds documented
-- [git2-rs Index API (docs.rs)](https://docs.rs/git2/latest/git2/struct.Index.html) -- `Index::conflicts()` returns `IndexConflicts` iterator with `ancestor`/`our`/`their` entries
-- [git2-rs merge.rs source](https://github.com/rust-lang/git2-rs/blob/master/src/merge.rs) -- `MergeFileResult` with `content()` and `is_automergeable()`
-- [Gravatar API hash documentation](https://docs.gravatar.com/api/avatars/hash/) -- SHA-256 hash, trimmed lowercase email
-- [react-resizable-panels README](https://github.com/bvaughn/react-resizable-panels) -- `autoSaveId` persistence, imperative `setLayout()` API
-- Direct codebase analysis of FlowForge (41K+ LOC TypeScript, 11K+ Rust) -- all integration points verified against actual code
+- [Tauri v2 monorepo discussion (GitHub #13941)](https://github.com/orgs/tauri-apps/discussions/13941) - MEDIUM confidence (community patterns, not official guide)
+- [Turborepo + pnpm monorepo configuration (Nhost)](https://nhost.io/blog/how-we-configured-pnpm-and-turborepo-for-our-monorepo) - MEDIUM confidence
+- [Vite TypeScript monorepo RFC](https://github.com/vitejs/vite-ts-monorepo-rfc) - HIGH confidence (official Vite RFC)
+- [Monorepo architecture guide 2025](https://feature-sliced.design/blog/frontend-monorepo-explained) - MEDIUM confidence (general best practices)
+- [Live types in TypeScript monorepo](https://colinhacks.com/essays/live-types-typescript-monorepo) - MEDIUM confidence (path alias strategy)
+- FlowForge `REUSABILITY-PROPOSAL.md` - HIGH confidence (first-party analysis, already validated by Phase 1 completion)
+- Direct codebase analysis of FlowForge `src/framework/` - HIGH confidence (46,958 LOC TS + 13,059 Rust inspected)
