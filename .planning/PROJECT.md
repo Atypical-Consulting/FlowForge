@@ -244,7 +244,19 @@ Each layer adds value; each inner layer stands without the outer ones.
 
 ### Active
 
-(No active milestone — run `/gsd:new-milestone` to start next)
+## Current Milestone: v1.9.0 Architecture Extraction & Monorepo
+
+**Goal:** Extract FlowForge's reusable foundation (blade navigation, extension platform, store patterns, theming) into shared packages within an internal monorepo, enabling future dev tools to build on the same framework.
+
+**Target features:**
+- Internal monorepo structure with shared packages (turborepo/nx style)
+- Core framework package: blade navigation + XState FSM, registry pattern, toolbar system, theming, domain store patterns
+- Extension platform package: ExtensionHost, manifest system, lifecycle, sandbox, ExtensionAPI facade
+- FlowForge app consuming shared packages (zero regression)
+- Second app skeleton proving the framework works
+- Extension API gap closure (unclassified sandbox methods, improvements)
+- Architecture cleanup and tech debt resolution
+- Code organization and coupling reduction
 
 ### Deferred to v2+
 
@@ -380,4 +392,4 @@ Documentation website live on GitHub Pages with extension developer guides.
 | Temporary repo handle for health checks (v1.8) | Avoids state conflicts with active repository when checking welcome screen health | ✓ Good — safe isolation |
 
 ---
-*Last updated: 2026-02-15 after v1.8.0 milestone completion*
+*Last updated: 2026-02-15 after v1.9.0 milestone start*
