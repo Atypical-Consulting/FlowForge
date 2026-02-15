@@ -1,6 +1,6 @@
 import type { BranchType } from "../../../bindings";
 import { BRANCH_BADGE_STYLES } from "../lib/layoutUtils";
-import { cn } from "../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 
 interface Lane {
   column: number;

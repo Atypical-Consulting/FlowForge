@@ -1,6 +1,6 @@
 import { Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { cn } from "../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 
 interface CommitSearchProps {
   value: string;

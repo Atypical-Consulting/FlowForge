@@ -1,6 +1,6 @@
 import { GitBranch, GitMerge, Layers } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { cn } from "../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 
 export type MergeMethod = "merge" | "squash" | "rebase";
 

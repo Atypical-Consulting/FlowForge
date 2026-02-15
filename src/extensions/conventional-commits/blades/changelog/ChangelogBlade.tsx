@@ -1,4 +1,4 @@
-import { cn } from "../../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 import { useChangelogStore } from "./store";
 import { useBladeNavigation } from "../../../../core/hooks/useBladeNavigation";
 import { ChangelogPreview } from "./components/ChangelogPreview";

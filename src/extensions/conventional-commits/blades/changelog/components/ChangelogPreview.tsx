@@ -1,7 +1,7 @@
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 import type { ConventionalCommitType } from "../../../lib/commit-type-theme";
-import { cn } from "../../../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 import type { ChangelogOutput } from "../store";
 import { CommitTypeIcon } from "../../../../commits/components/CommitTypeIcon";
 
