@@ -1,9 +1,9 @@
 import type { LucideIcon } from "lucide-react";
 import {
   FolderSearch,
-  GitCommitHorizontal,
   LayoutGrid,
   Maximize2,
+  SquarePen,
 } from "lucide-react";
 
 export interface LayoutPreset {
@@ -17,7 +17,7 @@ export interface LayoutPreset {
   visiblePanels: string[];
 }
 
-export type PresetId = "review" | "commit" | "explore" | "focus";
+export type PresetId = "review" | "compose" | "explore" | "focus";
 
 export const DEFAULT_PRESET_ID: PresetId = "review";
 
@@ -31,10 +31,10 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     visiblePanels: ["sidebar", "blades"],
   },
   {
-    id: "commit",
-    label: "Commit",
-    icon: GitCommitHorizontal,
-    description: "Emphasize staging area for committing",
+    id: "compose",
+    label: "Compose",
+    icon: SquarePen,
+    description: "Emphasize sidebar for focused composition",
     layout: { sidebar: 30, blades: 70 },
     visiblePanels: ["sidebar", "blades"],
   },
