@@ -5,6 +5,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-02-15
+
+### Added
+
+- **Enhanced Diff Viewer**
+  - Collapsible unchanged code regions with "Show N unchanged lines" expander
+  - Word-level (character-level) diff highlighting within changed lines
+  - Persistent diff view mode preference (split/unified) across sessions
+
+- **Inline Conflict Resolution**
+  - Two-pane diff view (ours vs theirs) with editable result panel
+  - One-click hunk resolution: accept ours, theirs, or both with undo support
+  - Manual merged result editing with syntax highlighting and reset
+  - Mark file as resolved with auto-staging and toast confirmation
+  - Conflict count badge in toolbar
+
+- **Hunk & Line Staging**
+  - Stage/unstage individual hunks from diff viewer via gutter controls
+  - Stage/unstage individual lines with clickable glyph margin checkboxes
+  - Keyboard shortcuts (Shift+click range, Ctrl+Shift+S/U)
+  - Partial-stage indicator (yellow half-circle) in staging panel
+
+- **Git Insights Dashboard** (new extension)
+  - Commit activity chart with configurable time ranges (7/30/90 days)
+  - Contributor breakdown with commit counts and click-to-filter
+  - Branch health overview with staleness flags and quick actions
+  - Repository stats cards (total commits, branches, contributors, repo age)
+  - Gravatar avatars in commit history views with initials fallback
+
+- **Visualization & Welcome Polish**
+  - Commit heat map on topology graph colored by recency with legend
+  - Hover tooltips on commit nodes (hash, author, date, subject)
+  - Pinned repositories on welcome screen with persistent pin state
+  - Repository health indicators (clean/dirty/ahead/behind/diverged) on welcome cards
+  - Quick actions on repo cards (open, open in terminal, remove from recents)
+
+- **Workspace Layout Presets**
+  - Four presets: Review, Commit, Explore, Focus via toolbar View menu
+  - Focus mode via double-click on panel header, Esc to exit
+  - Panel toggle via Panels menu with Cmd+\ sidebar shortcut
+  - Panel sizes persist across sessions with "Reset to default" option
+
 ## [1.0.0] - 2026-02-04
 
 ### Added
