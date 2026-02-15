@@ -4,7 +4,6 @@ import { useSelector } from "@xstate/react";
 import { Suspense, useCallback, useEffect } from "react";
 import "./core/commands";
 import "./core/commands/toolbar-actions";
-import "./core/commands/context-menu-items";
 import "./core/blades/_discovery";
 import { CommandPalette } from "@/framework/command-palette/components";
 import { Header } from "./core/components/Header";
@@ -43,6 +42,11 @@ import { onActivate as welcomeActivate, onDeactivate as welcomeDeactivate } from
 import { onActivate as topologyActivate, onDeactivate as topologyDeactivate } from "./extensions/topology";
 import { onActivate as conflictActivate, onDeactivate as conflictDeactivate } from "./extensions/conflict-resolution";
 import { onActivate as insightsActivate, onDeactivate as insightsDeactivate } from "./extensions/git-insights";
+import { onActivate as repositoryExtActivate, onDeactivate as repositoryExtDeactivate } from "./extensions/repository";
+import { onActivate as branchesExtActivate, onDeactivate as branchesExtDeactivate } from "./extensions/branches";
+import { onActivate as syncExtActivate, onDeactivate as syncExtDeactivate } from "./extensions/sync";
+import { onActivate as diffExtActivate, onDeactivate as diffExtDeactivate } from "./extensions/diff";
+import { onActivate as commitsExtActivate, onDeactivate as commitsExtDeactivate } from "./extensions/commits";
 
 // Configure ExtensionHost with Tauri-specific discovery
 configureExtensionHost({
@@ -275,6 +279,46 @@ function App() {
       version: "1.0.0",
       activate: insightsActivate,
       deactivate: insightsDeactivate,
+    });
+
+    registerBuiltIn({
+      id: "repository",
+      name: "Repository",
+      version: "1.0.0",
+      activate: repositoryExtActivate,
+      deactivate: repositoryExtDeactivate,
+    });
+
+    registerBuiltIn({
+      id: "branches",
+      name: "Branches",
+      version: "1.0.0",
+      activate: branchesExtActivate,
+      deactivate: branchesExtDeactivate,
+    });
+
+    registerBuiltIn({
+      id: "sync",
+      name: "Sync",
+      version: "1.0.0",
+      activate: syncExtActivate,
+      deactivate: syncExtDeactivate,
+    });
+
+    registerBuiltIn({
+      id: "diff",
+      name: "Diff",
+      version: "1.0.0",
+      activate: diffExtActivate,
+      deactivate: diffExtDeactivate,
+    });
+
+    registerBuiltIn({
+      id: "commits",
+      name: "Commits",
+      version: "1.0.0",
+      activate: commitsExtActivate,
+      deactivate: commitsExtDeactivate,
     });
   }, [initTheme, initSettings, initNavigation, initMetadata, initChecklist, registerBuiltIn]);
 

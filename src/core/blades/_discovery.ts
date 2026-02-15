@@ -16,12 +16,12 @@ if (import.meta.env.DEV && !import.meta.hot?.data?.isUpdate) {
   const registered = new Set(getAllBladeTypes());
 
   const CORE_BLADE_TYPES: string[] = [
-    "staging-changes", "commit-list-fallback", "commit-details", "diff",
-    "branch-manager", "repo-browser", "settings",
+    "staging-changes", "commit-list-fallback", "settings",
     "extension-manager", "extension-detail",
   ];
 
   const EXTENSION_BLADE_TYPES: string[] = [
+    "repo-browser", "branch-manager", "diff", "commit-details",
     "topology-graph", "init-repo",
     "conventional-commit", "changelog",
     "gitflow-cheatsheet",
