@@ -1,7 +1,9 @@
 export {
   type BladeRenderContext,
   type BladeRegistration,
-  type BladeRegistryState,
+  getRegistration,
+  getAllTypes,
+  isSingleton,
   useBladeRegistry,
   registerBlade,
   unregisterBlade,
@@ -14,8 +16,8 @@ export {
 
 export {
   type SidebarPanelConfig,
-  type SidebarPanelRegistryState,
   useSidebarPanelRegistry,
+  getVisiblePanels,
 } from "./sidebarPanelRegistry";
 
 export {

@@ -51,7 +51,7 @@ describe("gitflow extension", () => {
   it("registers gitflow sidebar panel on activation", async () => {
     await onActivate(api);
 
-    const panels = useSidebarPanelRegistry.getState().panels;
+    const panels = useSidebarPanelRegistry.getState().items;
     expect(panels.has("ext:gitflow:gitflow-panel")).toBe(true);
 
     api.cleanup();
@@ -60,7 +60,7 @@ describe("gitflow extension", () => {
   it("sidebar panel has priority 65 and defaultOpen false", async () => {
     await onActivate(api);
 
-    const panel = useSidebarPanelRegistry.getState().panels.get("ext:gitflow:gitflow-panel");
+    const panel = useSidebarPanelRegistry.getState().items.get("ext:gitflow:gitflow-panel");
     expect(panel?.priority).toBe(65);
     expect(panel?.defaultOpen).toBe(false);
 
@@ -70,7 +70,7 @@ describe("gitflow extension", () => {
   it("registers toolbar action on activation", async () => {
     await onActivate(api);
 
-    const actions = useToolbarRegistry.getState().actions;
+    const actions = useToolbarRegistry.getState().items;
     expect(actions.has("ext:gitflow:gitflow-guide")).toBe(true);
 
     api.cleanup();
@@ -81,8 +81,8 @@ describe("gitflow extension", () => {
     api.cleanup();
 
     expect(getBladeRegistration("gitflow-cheatsheet")).toBeUndefined();
-    expect(useSidebarPanelRegistry.getState().panels.has("ext:gitflow:gitflow-panel")).toBe(false);
-    expect(useToolbarRegistry.getState().actions.has("ext:gitflow:gitflow-guide")).toBe(false);
+    expect(useSidebarPanelRegistry.getState().items.has("ext:gitflow:gitflow-panel")).toBe(false);
+    expect(useToolbarRegistry.getState().items.has("ext:gitflow:gitflow-guide")).toBe(false);
   });
 
   it("onDeactivate is a no-op (cleanup handled by ExtensionAPI)", () => {

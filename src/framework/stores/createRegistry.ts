@@ -1,11 +1,12 @@
-import { create, type StoreApi } from "zustand";
+import { create } from "zustand";
 import { devtools } from "zustand/middleware";
+import type { UseBoundStore, StoreApi } from "zustand";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-/** Minimum shape for a registry item – must have a source tag for cleanup. */
+/** Minimum shape for a registry item -- must have a source tag for cleanup. */
 export interface RegistryItem {
   source?: string;
 }
@@ -47,7 +48,21 @@ export interface CreateRegistryOptions<TItem extends RegistryItem> {
 }
 
 // ---------------------------------------------------------------------------
-// Factory
+// Factory overloads
+// ---------------------------------------------------------------------------
+
+/** With visibility tick enabled. */
+export function createRegistry<TItem extends RegistryItem>(
+  options: CreateRegistryOptions<TItem> & { withVisibilityTick: true },
+): UseBoundStore<StoreApi<BaseRegistryState<TItem> & VisibilityMixin>>;
+
+/** Without visibility tick (default). */
+export function createRegistry<TItem extends RegistryItem>(
+  options: CreateRegistryOptions<TItem>,
+): UseBoundStore<StoreApi<BaseRegistryState<TItem>>>;
+
+// ---------------------------------------------------------------------------
+// Implementation
 // ---------------------------------------------------------------------------
 
 /**
@@ -62,8 +77,7 @@ export interface CreateRegistryOptions<TItem extends RegistryItem> {
  */
 export function createRegistry<TItem extends RegistryItem>(
   options: CreateRegistryOptions<TItem>,
-): StoreApi<BaseRegistryState<TItem> & (typeof options.withVisibilityTick extends true ? VisibilityMixin : {})> &
-  { getState: () => BaseRegistryState<TItem> & (typeof options.withVisibilityTick extends true ? VisibilityMixin : {}) } {
+): UseBoundStore<StoreApi<BaseRegistryState<TItem> & Partial<VisibilityMixin>>> {
   const {
     name,
     getKey = (item: TItem) => (item as TItem & { id: string }).id,

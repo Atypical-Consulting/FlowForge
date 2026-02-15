@@ -1,6 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { create } from "zustand";
-import { devtools } from "zustand/middleware";
+import { createRegistry } from "../stores/createRegistry";
 
 /** Core command categories with known ordering */
 export type CoreCommandCategory =
@@ -44,94 +43,58 @@ const CORE_ORDER: CoreCommandCategory[] = [
 
 // --- Store ---
 
-export interface CommandRegistryState {
-  commands: Map<string, Command>;
-  register: (cmd: Command) => void;
-  unregister: (id: string) => boolean;
-  unregisterBySource: (source: string) => void;
-  getAll: () => Command[];
-  getEnabled: () => Command[];
-  getById: (id: string) => Command | undefined;
-  getOrderedCategories: () => CommandCategory[];
+const _useCommandRegistry = createRegistry<Command>({
+  name: "command-registry",
+});
+
+// Wrap register to default source to "core"
+const originalRegister = _useCommandRegistry.getState().register;
+const wrappedRegister = (cmd: Command) => {
+  originalRegister({ ...cmd, source: cmd.source ?? "core" });
+};
+
+// Patch the store's register function
+_useCommandRegistry.setState({ register: wrappedRegister } as any);
+
+export const useCommandRegistry = _useCommandRegistry;
+
+// --- Standalone query functions ---
+
+export function getEnabled(): Command[] {
+  return Array.from(useCommandRegistry.getState().items.values()).filter((cmd) =>
+    cmd.enabled ? cmd.enabled() : true,
+  );
 }
 
-export const useCommandRegistry = create<CommandRegistryState>()(
-  devtools(
-    (set, get) => ({
-      commands: new Map<string, Command>(),
+export function getOrderedCategories(): CommandCategory[] {
+  const cmds = useCommandRegistry.getState().items;
+  const allCategories = new Set<CommandCategory>();
+  for (const cmd of cmds.values()) {
+    allCategories.add(cmd.category);
+  }
 
-      register: (cmd) => {
-        const next = new Map(get().commands);
-        next.set(cmd.id, { ...cmd, source: cmd.source ?? "core" });
-        set({ commands: next }, false, "command-registry/register");
-      },
+  const coreSet = new Set<string>(CORE_ORDER);
+  const ordered: CommandCategory[] = [];
 
-      unregister: (id) => {
-        const prev = get().commands;
-        if (!prev.has(id)) return false;
-        const next = new Map(prev);
-        next.delete(id);
-        set({ commands: next }, false, "command-registry/unregister");
-        return true;
-      },
+  // Core categories in canonical order (only those that have commands)
+  for (const cat of CORE_ORDER) {
+    if (allCategories.has(cat)) {
+      ordered.push(cat);
+    }
+  }
 
-      unregisterBySource: (source) => {
-        const next = new Map(get().commands);
-        for (const [id, cmd] of next) {
-          if (cmd.source === source) {
-            next.delete(id);
-          }
-        }
-        set(
-          { commands: next },
-          false,
-          "command-registry/unregisterBySource",
-        );
-      },
+  // Extension categories alphabetically
+  const extensionCats = Array.from(allCategories)
+    .filter((cat) => !coreSet.has(cat))
+    .sort();
+  ordered.push(...extensionCats);
 
-      getAll: () => {
-        return Array.from(get().commands.values());
-      },
+  return ordered;
+}
 
-      getEnabled: () => {
-        return Array.from(get().commands.values()).filter((cmd) =>
-          cmd.enabled ? cmd.enabled() : true,
-        );
-      },
-
-      getById: (id) => {
-        return get().commands.get(id);
-      },
-
-      getOrderedCategories: () => {
-        const cmds = get().commands;
-        const allCategories = new Set<CommandCategory>();
-        for (const cmd of cmds.values()) {
-          allCategories.add(cmd.category);
-        }
-
-        const coreSet = new Set<string>(CORE_ORDER);
-        const ordered: CommandCategory[] = [];
-
-        // Core categories in canonical order (only those that have commands)
-        for (const cat of CORE_ORDER) {
-          if (allCategories.has(cat)) {
-            ordered.push(cat);
-          }
-        }
-
-        // Extension categories alphabetically
-        const extensionCats = Array.from(allCategories)
-          .filter((cat) => !coreSet.has(cat))
-          .sort();
-        ordered.push(...extensionCats);
-
-        return ordered;
-      },
-    }),
-    { name: "command-registry", enabled: import.meta.env.DEV },
-  ),
-);
+export function getById(id: string): Command | undefined {
+  return useCommandRegistry.getState().get(id);
+}
 
 // --- Backward-compatible function exports ---
 
@@ -154,11 +117,11 @@ export function getCommands(): Command[] {
 }
 
 export function getEnabledCommands(): Command[] {
-  return useCommandRegistry.getState().getEnabled();
+  return getEnabled();
 }
 
 export function getCommandById(id: string): Command | undefined {
-  return useCommandRegistry.getState().getById(id);
+  return useCommandRegistry.getState().get(id);
 }
 
 export function executeCommand(id: string): void {
@@ -172,6 +135,4 @@ export function executeCommand(id: string): void {
  * Returns ordered categories: core categories first (in canonical order, filtered
  * to only those with registered commands), then extension categories alphabetically.
  */
-export function getOrderedCategories(): CommandCategory[] {
-  return useCommandRegistry.getState().getOrderedCategories();
-}
+export { getOrderedCategories as getOrderedCommandCategories };

@@ -117,10 +117,10 @@ describe("ExtensionHost", () => {
     });
 
     await useExtensionHost.getState().registerBuiltIn(config);
-    expect(useToolbarRegistry.getState().actions.has("ext:test-ext:test-action")).toBe(true);
+    expect(useToolbarRegistry.getState().items.has("ext:test-ext:test-action")).toBe(true);
 
     await useExtensionHost.getState().deactivateExtension("test-ext");
-    expect(useToolbarRegistry.getState().actions.has("ext:test-ext:test-action")).toBe(false);
+    expect(useToolbarRegistry.getState().items.has("ext:test-ext:test-action")).toBe(false);
   });
 
   it("deactivateExtension calls onDeactivate callback", async () => {
@@ -177,7 +177,7 @@ describe("ExtensionHost", () => {
     expect(ext!.error).toBe("activation boom");
 
     // Partial toolbar registration should be cleaned up
-    expect(useToolbarRegistry.getState().actions.has("ext:test-ext:partial-action")).toBe(false);
+    expect(useToolbarRegistry.getState().items.has("ext:test-ext:partial-action")).toBe(false);
 
     errorSpy.mockRestore();
   });

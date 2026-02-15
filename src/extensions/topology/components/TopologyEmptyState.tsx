@@ -3,7 +3,7 @@ import { getNavigationActor } from "@/framework/layout/navigation/context";
 
 export function TopologyEmptyState() {
   const handleGoToChanges = () => {
-    getNavigationActor().send({ type: "SWITCH_PROCESS", process: "staging" });
+    getNavigationActor().send({ type: "SWITCH_WORKFLOW", workflow: "staging" });
   };
 
   return (

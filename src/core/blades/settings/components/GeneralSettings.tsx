@@ -9,7 +9,7 @@ const tabOptions = [
 
 export function GeneralSettings() {
   const { settingsData: settings, updateSetting } = useSettingsStore();
-  const blades = useBladeRegistry((s) => s.blades);
+  const blades = useBladeRegistry((s) => s.items);
   const topologyAvailable = blades.has("topology-graph");
 
   return (

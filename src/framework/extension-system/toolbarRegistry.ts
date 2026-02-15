@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
-import { create } from "zustand";
-import { devtools } from "zustand/middleware";
+import { createRegistry } from "../stores/createRegistry";
 
 // --- Types ---
 
@@ -57,89 +56,35 @@ export interface ToolbarAction {
 
 // --- Store ---
 
-export interface ToolbarRegistryState {
-  actions: Map<string, ToolbarAction>;
-  /** Monotonic counter that extensions increment to signal when() re-evaluation */
-  visibilityTick: number;
-  register: (action: ToolbarAction) => void;
-  registerMany: (actions: ToolbarAction[]) => void;
-  unregister: (id: string) => void;
-  unregisterBySource: (source: string) => void;
-  /** Increment to force toolbar re-evaluation of when() conditions */
-  refreshVisibility: () => void;
-  getGrouped: () => Record<ToolbarGroup, ToolbarAction[]>;
+export const useToolbarRegistry = createRegistry<ToolbarAction>({
+  name: "toolbar-registry",
+  withVisibilityTick: true,
+});
+
+// --- Standalone query functions ---
+
+export function getGroupedToolbarActions(): Record<ToolbarGroup, ToolbarAction[]> {
+  const { items } = useToolbarRegistry.getState();
+  const grouped: Record<ToolbarGroup, ToolbarAction[]> = {
+    navigation: [],
+    "git-actions": [],
+    views: [],
+    app: [],
+  };
+
+  for (const action of items.values()) {
+    // Skip actions whose visibility condition returns false
+    if (action.when?.() === false) continue;
+    grouped[action.group].push(action);
+  }
+
+  // Sort each group by priority descending (higher priority first)
+  for (const group of TOOLBAR_GROUP_ORDER) {
+    grouped[group].sort((a, b) => b.priority - a.priority);
+  }
+
+  return grouped;
 }
-
-export const useToolbarRegistry = create<ToolbarRegistryState>()(
-  devtools(
-    (set, get) => ({
-      actions: new Map<string, ToolbarAction>(),
-      visibilityTick: 0,
-
-      register: (action) => {
-        const next = new Map(get().actions);
-        next.set(action.id, action);
-        set({ actions: next }, false, "toolbar-registry/register");
-      },
-
-      registerMany: (actions) => {
-        const next = new Map(get().actions);
-        for (const action of actions) {
-          next.set(action.id, action);
-        }
-        set({ actions: next }, false, "toolbar-registry/registerMany");
-      },
-
-      unregister: (id) => {
-        const next = new Map(get().actions);
-        next.delete(id);
-        set({ actions: next }, false, "toolbar-registry/unregister");
-      },
-
-      refreshVisibility: () => {
-        set(
-          { visibilityTick: get().visibilityTick + 1 },
-          false,
-          "toolbar-registry/refreshVisibility",
-        );
-      },
-
-      unregisterBySource: (source) => {
-        const next = new Map(get().actions);
-        for (const [id, action] of next) {
-          if (action.source === source) {
-            next.delete(id);
-          }
-        }
-        set({ actions: next }, false, "toolbar-registry/unregisterBySource");
-      },
-
-      getGrouped: () => {
-        const { actions } = get();
-        const grouped: Record<ToolbarGroup, ToolbarAction[]> = {
-          navigation: [],
-          "git-actions": [],
-          views: [],
-          app: [],
-        };
-
-        for (const action of actions.values()) {
-          // Skip actions whose visibility condition returns false
-          if (action.when?.() === false) continue;
-          grouped[action.group].push(action);
-        }
-
-        // Sort each group by priority descending (higher priority first)
-        for (const group of TOOLBAR_GROUP_ORDER) {
-          grouped[group].sort((a, b) => b.priority - a.priority);
-        }
-
-        return grouped;
-      },
-    }),
-    { name: "toolbar-registry", enabled: import.meta.env.DEV },
-  ),
-);
 
 // NOTE: Toolbar registry is NOT registered for reset — toolbar actions survive repo switches.
 // Repo-specific actions use when() conditions to hide themselves, not deregistration.

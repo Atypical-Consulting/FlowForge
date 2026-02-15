@@ -52,9 +52,9 @@ const TRUST_STYLES: Record<TrustLevel, { label: string; className: string }> = {
 export function ExtensionDetailBlade({ extensionId }: ExtensionDetailBladeProps) {
   const [isToggling, setIsToggling] = useState(false);
   const { extensions, activateExtension, deactivateExtension } = useExtensionHost();
-  const toolbarActions = useToolbarRegistry((s) => s.actions);
+  const toolbarActions = useToolbarRegistry((s) => s.items);
   const contextMenuItems = useContextMenuRegistry((s) => s.items);
-  const sidebarPanels = useSidebarPanelRegistry((s) => s.panels);
+  const sidebarPanels = useSidebarPanelRegistry((s) => s.items);
   const statusBarItems = useStatusBarRegistry((s) => s.items);
 
   const extension = extensions.get(extensionId);

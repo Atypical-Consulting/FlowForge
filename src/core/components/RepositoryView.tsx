@@ -8,7 +8,7 @@ import { Component, useCallback, useEffect, useMemo, useRef, useState } from "re
 import type { ErrorInfo, ReactNode } from "react";
 import { useGroupRef, usePanelRef } from "react-resizable-panels";
 import type { Layout } from "react-resizable-panels";
-import { useSidebarPanelRegistry } from "@/framework/layout/sidebarPanelRegistry";
+import { useSidebarPanelRegistry, getVisiblePanels } from "@/framework/layout/sidebarPanelRegistry";
 import { getPresetById } from "@/framework/layout/layoutPresets";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { usePreferencesStore } from "../stores/domain/preferences";
@@ -48,11 +48,11 @@ class ExtensionPanelErrorBoundary extends Component<
 }
 
 function DynamicSidebarPanels() {
-  const panels = useSidebarPanelRegistry((s) => s.panels);
+  const panels = useSidebarPanelRegistry((s) => s.items);
   const visibilityTick = useSidebarPanelRegistry((s) => s.visibilityTick);
 
   const visiblePanels = useMemo(
-    () => useSidebarPanelRegistry.getState().getVisiblePanels(),
+    () => getVisiblePanels(),
     [panels, visibilityTick],
   );
 

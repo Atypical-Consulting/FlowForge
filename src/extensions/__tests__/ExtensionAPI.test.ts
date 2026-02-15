@@ -20,9 +20,9 @@ describe("ExtensionAPI", () => {
 
     // Reset Zustand stores
     useContextMenuRegistry.setState({ items: new Map(), activeMenu: null });
-    useSidebarPanelRegistry.setState({ panels: new Map(), visibilityTick: 0 });
+    useSidebarPanelRegistry.setState({ items: new Map(), visibilityTick: 0 });
     useStatusBarRegistry.setState({ items: new Map(), visibilityTick: 0 });
-    useToolbarRegistry.setState({ actions: new Map(), visibilityTick: 0 });
+    useToolbarRegistry.setState({ items: new Map(), visibilityTick: 0 });
 
     // Reset gitHookBus by replacing internal handler maps via removeBySource
     // We use a fresh bus instance indirectly by clearing everything
@@ -55,8 +55,8 @@ describe("ExtensionAPI", () => {
       priority: 100,
     });
 
-    expect(useSidebarPanelRegistry.getState().panels.has("ext:test-ext:panel-high")).toBe(true);
-    expect(useSidebarPanelRegistry.getState().panels.get("ext:test-ext:panel-high")!.priority).toBe(69);
+    expect(useSidebarPanelRegistry.getState().items.has("ext:test-ext:panel-high")).toBe(true);
+    expect(useSidebarPanelRegistry.getState().items.get("ext:test-ext:panel-high")!.priority).toBe(69);
 
     // Priority 0 should clamp to 1
     api.contributeSidebarPanel({
@@ -67,7 +67,7 @@ describe("ExtensionAPI", () => {
       priority: 0,
     });
 
-    expect(useSidebarPanelRegistry.getState().panels.get("ext:test-ext:panel-low")!.priority).toBe(1);
+    expect(useSidebarPanelRegistry.getState().items.get("ext:test-ext:panel-low")!.priority).toBe(1);
 
     // Default priority (undefined) should become 50
     api.contributeSidebarPanel({
@@ -77,7 +77,7 @@ describe("ExtensionAPI", () => {
       component: () => null,
     });
 
-    expect(useSidebarPanelRegistry.getState().panels.get("ext:test-ext:panel-default")!.priority).toBe(50);
+    expect(useSidebarPanelRegistry.getState().items.get("ext:test-ext:panel-default")!.priority).toBe(50);
   });
 
   // Test 3
@@ -179,7 +179,7 @@ describe("ExtensionAPI", () => {
 
     // Verify registrations exist
     expect(useContextMenuRegistry.getState().items.size).toBe(1);
-    expect(useSidebarPanelRegistry.getState().panels.size).toBe(1);
+    expect(useSidebarPanelRegistry.getState().items.size).toBe(1);
     expect(useStatusBarRegistry.getState().items.size).toBe(1);
 
     // Cleanup
@@ -187,7 +187,7 @@ describe("ExtensionAPI", () => {
 
     // Verify all registries are empty
     expect(useContextMenuRegistry.getState().items.size).toBe(0);
-    expect(useSidebarPanelRegistry.getState().panels.size).toBe(0);
+    expect(useSidebarPanelRegistry.getState().items.size).toBe(0);
     expect(useStatusBarRegistry.getState().items.size).toBe(0);
 
     // Verify git hook handler no longer fires

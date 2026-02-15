@@ -48,8 +48,8 @@ export {
   useToolbarRegistry,
   type ToolbarAction,
   type ToolbarGroup,
-  type ToolbarRegistryState,
   TOOLBAR_GROUP_ORDER,
+  getGroupedToolbarActions,
 } from "./toolbarRegistry";
 export {
   useContextMenuRegistry,
@@ -63,7 +63,8 @@ export {
   useStatusBarRegistry,
   type StatusBarItem,
   type StatusBarAlignment,
-  type StatusBarRegistryState,
+  getLeftItems,
+  getRightItems,
 } from "./statusBarRegistry";
 export {
   OperationBus,
