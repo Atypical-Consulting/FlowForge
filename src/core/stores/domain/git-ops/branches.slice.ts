@@ -2,7 +2,7 @@ import type { StateCreator } from "zustand";
 import type { BranchInfo } from "../../../../bindings";
 import { commands } from "../../../../bindings";
 import { getErrorMessage } from "../../../lib/errors";
-import { gitHookBus } from "@/framework/extension-system/operationBus";
+import { gitHookBus } from "@/core/services/gitHookBus";
 import type { GitOpsMiddleware } from "./types";
 import type { GitOpsStore } from "./index";
 

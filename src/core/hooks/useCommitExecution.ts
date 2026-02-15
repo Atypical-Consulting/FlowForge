@@ -2,7 +2,7 @@ import { Channel } from "@tauri-apps/api/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type SyncProgress, commands } from "../../bindings";
 import { getErrorMessage } from "../lib/errors";
-import { gitHookBus } from "@/framework/extension-system/operationBus";
+import { gitHookBus } from "@/core/services/gitHookBus";
 import { toast } from "@/framework/stores/toast";
 
 interface UseCommitExecutionOptions {

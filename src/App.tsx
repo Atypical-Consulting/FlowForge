@@ -2,6 +2,7 @@ import { listen } from "@tauri-apps/api/event";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "@xstate/react";
 import { Suspense, useCallback, useEffect } from "react";
+import "./core/workflows";
 import "./core/commands";
 import "./core/commands/toolbar-actions";
 import "./core/blades/_discovery";
@@ -26,6 +27,8 @@ import { useGitOpsStore as useUndoStore } from "./core/stores/domain/git-ops";
 import { useBladeRegistry } from "@/framework/layout/bladeRegistry";
 import { modKeyLabel } from "./core/lib/platform";
 import { useExtensionHost, configureExtensionHost } from "./extensions";
+import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
+import { gitHookBus } from "@/core/services/gitHookBus";
 import { commands as tauriCommands } from "./bindings";
 import { onActivate as viewerCodeActivate, onDeactivate as viewerCodeDeactivate } from "./extensions/viewer-code";
 import { onActivate as viewerMarkdownActivate, onDeactivate as viewerMarkdownDeactivate } from "./extensions/viewer-markdown";
@@ -57,6 +60,9 @@ configureExtensionHost({
     return result;
   },
 });
+
+// Inject Git operation bus so extension hooks work
+ExtensionAPI.setOperationBus(gitHookBus);
 
 function WelcomeFallback() {
   const { openRepository } = useGitOpsStore();

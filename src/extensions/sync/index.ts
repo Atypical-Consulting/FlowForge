@@ -12,7 +12,7 @@ import { commands as tauriCommands } from "../../bindings";
 import { getErrorMessage } from "../../core/lib/errors";
 import { queryClient } from "../../core/lib/queryClient";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
-import { gitHookBus } from "@/framework/extension-system/operationBus";
+import { gitHookBus } from "@/core/services/gitHookBus";
 import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
 import { toast } from "@/framework/stores/toast";
 

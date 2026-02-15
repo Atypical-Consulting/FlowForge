@@ -1,7 +1,8 @@
 import { REQUIRES_TRUST_METHODS } from "./sandbox-api-surface";
 import type { RequiresTrustMethod } from "./sandbox-api-surface";
 import type { ExtensionAPI, BladeNavigationEvent } from "@/framework/extension-system/ExtensionAPI";
-import type { GitOperation, GitHookContext, DidHandler, WillHandler } from "@/framework/extension-system/operationBus";
+import type { GitOperation, GitHookContext } from "@/core/services/gitHookBus";
+import type { DidHandler, WillHandler } from "@/framework/extension-system/operationBus";
 import type { Disposable } from "@/framework/extension-system/ExtensionAPI";
 
 /**

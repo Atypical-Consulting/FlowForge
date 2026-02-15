@@ -4,7 +4,7 @@ import type { AheadBehind } from "../../../bindings";
 import { commands } from "../../../bindings";
 import type { EnrichedBranch } from "../../../core/lib/branchClassifier";
 import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
-import { gitHookBus } from "@/framework/extension-system/operationBus";
+import { gitHookBus } from "@/core/services/gitHookBus";
 import { cn } from "@/framework/lib/utils";
 import { BranchTypeBadge } from "./BranchTypeBadge";
 

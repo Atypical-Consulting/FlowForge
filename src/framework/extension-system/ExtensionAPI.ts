@@ -28,9 +28,7 @@ import {
   type StatusBarAlignment,
 } from "./statusBarRegistry";
 import {
-  gitHookBus,
-  type GitOperation,
-  type GitHookContext,
+  OperationBus,
   type DidHandler,
   type WillHandler,
 } from "./operationBus";
@@ -127,8 +125,8 @@ export interface ExtensionStatusBarConfig {
 }
 
 export interface ExtensionGitHookConfig {
-  operation: GitOperation;
-  handler: (context: GitHookContext) => void | Promise<void>;
+  operation: string;
+  handler: (context: any) => void | Promise<void>;
 }
 
 export interface ExtensionMachineConfig {
@@ -153,6 +151,18 @@ export type Disposable =
  * and tracked for atomic cleanup on deactivation.
  */
 export class ExtensionAPI {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private static operationBus: OperationBus<any, any> | null = null;
+
+  /**
+   * Inject an operation bus to be used for git hook methods.
+   * Call this once at app initialization before any extensions are activated.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static setOperationBus(bus: OperationBus<any, any>): void {
+    ExtensionAPI.operationBus = bus;
+  }
+
   private extensionId: string;
   private registeredBlades: string[] = [];
   private registeredCommands: string[] = [];
@@ -160,7 +170,7 @@ export class ExtensionAPI {
   private registeredContextMenuItems: string[] = [];
   private registeredSidebarPanels: string[] = [];
   private registeredStatusBarItems: string[] = [];
-  private gitHookUnsubscribes: (() => void)[] = [];
+  private operationBusUnsubscribes: (() => void)[] = [];
   private navigationUnsubscribes: (() => void)[] = [];
   private registeredMachines: Array<{ id: string; actor: AnyActorRef }> = [];
   private machineSubscriptions: Subscription[] = [];
@@ -278,29 +288,33 @@ export class ExtensionAPI {
   /**
    * Register a handler for post-operation git events.
    * The handler fires after the git operation completes.
-   * @sandboxSafety sandbox-safe - Handler receives serializable GitHookContext. No DOM access needed.
+   * Requires `ExtensionAPI.setOperationBus()` to have been called at app init.
+   * @sandboxSafety sandbox-safe - Handler receives serializable context. No DOM access needed.
    */
-  onDidGit(operation: GitOperation, handler: DidHandler<GitHookContext>): void {
-    const unsub = gitHookBus.onDid(
+  onDidGit(operation: string, handler: DidHandler<any>): void {
+    if (!ExtensionAPI.operationBus) return;
+    const unsub = ExtensionAPI.operationBus.onDid(
       operation,
       handler,
       `ext:${this.extensionId}`,
     );
-    this.gitHookUnsubscribes.push(unsub);
+    this.operationBusUnsubscribes.push(unsub);
   }
 
   /**
    * Register a handler for pre-operation git events.
    * The handler fires before the git operation and can cancel it.
-   * @sandboxSafety sandbox-safe - Handler receives/returns serializable data. Can validate git operations.
+   * Requires `ExtensionAPI.setOperationBus()` to have been called at app init.
+   * @sandboxSafety sandbox-safe - Handler receives/returns serializable data.
    */
-  onWillGit(operation: GitOperation, handler: WillHandler<GitHookContext>): void {
-    const unsub = gitHookBus.onWill(
+  onWillGit(operation: string, handler: WillHandler<any>): void {
+    if (!ExtensionAPI.operationBus) return;
+    const unsub = ExtensionAPI.operationBus.onWill(
       operation,
       handler,
       `ext:${this.extensionId}`,
     );
-    this.gitHookUnsubscribes.push(unsub);
+    this.operationBusUnsubscribes.push(unsub);
   }
 
   /**
@@ -503,14 +517,14 @@ export class ExtensionAPI {
       }
     }
 
-    // 6. Git hooks
-    gitHookBus.removeBySource(`ext:${this.extensionId}`);
-    for (const unsub of this.gitHookUnsubscribes) {
+    // 6. Operation bus hooks (git hooks, etc.)
+    ExtensionAPI.operationBus?.removeBySource(`ext:${this.extensionId}`);
+    for (const unsub of this.operationBusUnsubscribes) {
       try {
         unsub();
       } catch (err) {
         console.error(
-          `[ExtensionAPI] Error unsubscribing git hook for "${this.extensionId}":`,
+          `[ExtensionAPI] Error unsubscribing operation hook for "${this.extensionId}":`,
           err,
         );
       }
@@ -540,7 +554,7 @@ export class ExtensionAPI {
     this.registeredContextMenuItems = [];
     this.registeredSidebarPanels = [];
     this.registeredStatusBarItems = [];
-    this.gitHookUnsubscribes = [];
+    this.operationBusUnsubscribes = [];
     this.navigationUnsubscribes = [];
     this.registeredMachines = [];
     this.machineSubscriptions = [];

@@ -4,7 +4,8 @@ import { useContextMenuRegistry } from "@/framework/extension-system/contextMenu
 import { useSidebarPanelRegistry } from "@/framework/layout/sidebarPanelRegistry";
 import { useStatusBarRegistry } from "@/framework/extension-system/statusBarRegistry";
 import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
-import { gitHookBus } from "@/framework/extension-system/operationBus";
+import { gitHookBus } from "@/core/services/gitHookBus";
+import { ExtensionAPI as ExtensionAPIClass } from "@/framework/extension-system/ExtensionAPI";
 import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
 import type { ContextMenuContext } from "@/framework/extension-system/contextMenuRegistry";
 import type { LucideIcon } from "lucide-react";
@@ -16,6 +17,9 @@ describe("ExtensionAPI", () => {
   let api: ExtensionAPI;
 
   beforeEach(() => {
+    // Inject gitHookBus so onDidGit/onWillGit work
+    ExtensionAPIClass.setOperationBus(gitHookBus);
+
     api = new ExtensionAPI("test-ext");
 
     // Reset Zustand stores
