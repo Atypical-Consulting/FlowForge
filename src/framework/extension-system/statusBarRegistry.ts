@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
-import { create } from "zustand";
-import { devtools } from "zustand/middleware";
+import { createRegistry } from "../stores/createRegistry";
 
 // --- Types ---
 
@@ -19,85 +18,37 @@ export interface StatusBarItem {
 
 // --- Store ---
 
-export interface StatusBarRegistryState {
-  items: Map<string, StatusBarItem>;
-  visibilityTick: number;
-  register: (item: StatusBarItem) => void;
-  unregister: (id: string) => void;
-  unregisterBySource: (source: string) => void;
-  refreshVisibility: () => void;
-  getLeftItems: () => StatusBarItem[];
-  getRightItems: () => StatusBarItem[];
+export const useStatusBarRegistry = createRegistry<StatusBarItem>({
+  name: "status-bar-registry",
+  withVisibilityTick: true,
+});
+
+// --- Standalone query functions ---
+
+export function getLeftItems(): StatusBarItem[] {
+  const { items } = useStatusBarRegistry.getState();
+  const left: StatusBarItem[] = [];
+
+  for (const item of items.values()) {
+    if (item.alignment !== "left") continue;
+    if (item.when !== undefined && !item.when()) continue;
+    left.push(item);
+  }
+
+  left.sort((a, b) => b.priority - a.priority);
+  return left;
 }
 
-export const useStatusBarRegistry = create<StatusBarRegistryState>()(
-  devtools(
-    (set, get) => ({
-      items: new Map<string, StatusBarItem>(),
-      visibilityTick: 0,
+export function getRightItems(): StatusBarItem[] {
+  const { items } = useStatusBarRegistry.getState();
+  const right: StatusBarItem[] = [];
 
-      register: (item) => {
-        const next = new Map(get().items);
-        next.set(item.id, item);
-        set({ items: next }, false, "status-bar-registry/register");
-      },
+  for (const item of items.values()) {
+    if (item.alignment !== "right") continue;
+    if (item.when !== undefined && !item.when()) continue;
+    right.push(item);
+  }
 
-      unregister: (id) => {
-        const next = new Map(get().items);
-        next.delete(id);
-        set({ items: next }, false, "status-bar-registry/unregister");
-      },
-
-      unregisterBySource: (source) => {
-        const next = new Map(get().items);
-        for (const [id, item] of next) {
-          if (item.source === source) {
-            next.delete(id);
-          }
-        }
-        set(
-          { items: next },
-          false,
-          "status-bar-registry/unregisterBySource",
-        );
-      },
-
-      refreshVisibility: () => {
-        set(
-          { visibilityTick: get().visibilityTick + 1 },
-          false,
-          "status-bar-registry/refreshVisibility",
-        );
-      },
-
-      getLeftItems: () => {
-        const { items } = get();
-        const left: StatusBarItem[] = [];
-
-        for (const item of items.values()) {
-          if (item.alignment !== "left") continue;
-          if (item.when !== undefined && !item.when()) continue;
-          left.push(item);
-        }
-
-        left.sort((a, b) => b.priority - a.priority);
-        return left;
-      },
-
-      getRightItems: () => {
-        const { items } = get();
-        const right: StatusBarItem[] = [];
-
-        for (const item of items.values()) {
-          if (item.alignment !== "right") continue;
-          if (item.when !== undefined && !item.when()) continue;
-          right.push(item);
-        }
-
-        right.sort((a, b) => b.priority - a.priority);
-        return right;
-      },
-    }),
-    { name: "status-bar-registry", enabled: import.meta.env.DEV },
-  ),
-);
+  right.sort((a, b) => b.priority - a.priority);
+  return right;
+}

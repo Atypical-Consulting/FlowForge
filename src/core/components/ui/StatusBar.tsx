@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useStatusBarRegistry } from "@/framework/extension-system/statusBarRegistry";
+import { useStatusBarRegistry, getLeftItems, getRightItems } from "@/framework/extension-system/statusBarRegistry";
 import type { StatusBarItem } from "@/framework/extension-system/statusBarRegistry";
 
 function StatusBarWidget({ item }: { item: StatusBarItem }) {
@@ -33,11 +33,11 @@ export function StatusBar() {
   const visibilityTick = useStatusBarRegistry((s) => s.visibilityTick);
 
   const leftItems = useMemo(
-    () => useStatusBarRegistry.getState().getLeftItems(),
+    () => getLeftItems(),
     [items, visibilityTick],
   );
   const rightItems = useMemo(
-    () => useStatusBarRegistry.getState().getRightItems(),
+    () => getRightItems(),
     [items, visibilityTick],
   );
 

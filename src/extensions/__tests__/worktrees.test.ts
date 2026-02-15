@@ -26,7 +26,7 @@ describe("worktrees extension", () => {
   it("registers worktree sidebar panel on activation", async () => {
     await onActivate(api);
 
-    const panels = useSidebarPanelRegistry.getState().panels;
+    const panels = useSidebarPanelRegistry.getState().items;
     expect(panels.has("ext:worktrees:worktree-panel")).toBe(true);
 
     api.cleanup();
@@ -37,7 +37,7 @@ describe("worktrees extension", () => {
 
     const panel = useSidebarPanelRegistry
       .getState()
-      .panels.get("ext:worktrees:worktree-panel");
+      .items.get("ext:worktrees:worktree-panel");
     expect(panel?.priority).toBe(69);
     expect(panel?.defaultOpen).toBe(false);
 
@@ -65,7 +65,7 @@ describe("worktrees extension", () => {
     api.cleanup();
 
     expect(
-      useSidebarPanelRegistry.getState().panels.has("ext:worktrees:worktree-panel")
+      useSidebarPanelRegistry.getState().items.has("ext:worktrees:worktree-panel")
     ).toBe(false);
     expect(getCommandById("ext:worktrees:create-worktree")).toBeUndefined();
     expect(getCommandById("ext:worktrees:refresh-worktrees")).toBeUndefined();
@@ -79,7 +79,7 @@ describe("worktrees extension", () => {
     await onActivate(api2);
 
     expect(
-      useSidebarPanelRegistry.getState().panels.has("ext:worktrees:worktree-panel")
+      useSidebarPanelRegistry.getState().items.has("ext:worktrees:worktree-panel")
     ).toBe(true);
     expect(getCommandById("ext:worktrees:create-worktree")).toBeDefined();
 

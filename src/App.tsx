@@ -108,7 +108,7 @@ function WelcomeFallback() {
 }
 
 function WelcomeScreen() {
-  const registration = useBladeRegistry((s) => s.blades.get("welcome-screen"));
+  const registration = useBladeRegistry((s) => s.items.get("welcome-screen"));
 
   if (!registration) {
     return <WelcomeFallback />;
@@ -153,9 +153,9 @@ function App() {
       const defaultTab = settings.general.defaultTab;
       if (
         (defaultTab === "topology" || defaultTab === "history") &&
-        useBladeRegistry.getState().blades.has("topology-graph")
+        useBladeRegistry.getState().items.has("topology-graph")
       ) {
-        getNavigationActor().send({ type: "SWITCH_PROCESS", process: "topology" });
+        getNavigationActor().send({ type: "SWITCH_WORKFLOW", workflow: "topology" });
       }
     });
     initNavigation();

@@ -1,4 +1,4 @@
-import { useSidebarPanelRegistry } from "@/framework/layout/sidebarPanelRegistry";
+import { useSidebarPanelRegistry, getVisiblePanels } from "@/framework/layout/sidebarPanelRegistry";
 import type { SidebarPanelConfig } from "@/framework/layout/sidebarPanelRegistry";
 import { Folder } from "lucide-react";
 
@@ -15,13 +15,13 @@ const makePanel = (
 describe("SidebarPanelRegistry", () => {
   beforeEach(() => {
     useSidebarPanelRegistry.setState({
-      panels: new Map(),
+      items: new Map(),
       visibilityTick: 0,
     });
   });
 
   it("registers and retrieves panel", () => {
-    const { register, getVisiblePanels } =
+    const { register } =
       useSidebarPanelRegistry.getState();
     register(makePanel({ id: "explorer" }));
 
@@ -31,7 +31,7 @@ describe("SidebarPanelRegistry", () => {
   });
 
   it("getVisiblePanels sorts by priority descending", () => {
-    const { register, getVisiblePanels } =
+    const { register } =
       useSidebarPanelRegistry.getState();
     register(makePanel({ id: "low", priority: 10 }));
     register(makePanel({ id: "high", priority: 100 }));
@@ -42,7 +42,7 @@ describe("SidebarPanelRegistry", () => {
   });
 
   it("getVisiblePanels filters by when() condition", () => {
-    const { register, getVisiblePanels } =
+    const { register } =
       useSidebarPanelRegistry.getState();
     register(makePanel({ id: "visible", when: () => true }));
     register(makePanel({ id: "hidden", when: () => false }));
@@ -55,10 +55,10 @@ describe("SidebarPanelRegistry", () => {
   it("unregister removes panel", () => {
     const { register, unregister } = useSidebarPanelRegistry.getState();
     register(makePanel({ id: "temp" }));
-    expect(useSidebarPanelRegistry.getState().panels.size).toBe(1);
+    expect(useSidebarPanelRegistry.getState().items.size).toBe(1);
 
     unregister("temp");
-    expect(useSidebarPanelRegistry.getState().panels.size).toBe(0);
+    expect(useSidebarPanelRegistry.getState().items.size).toBe(0);
   });
 
   it("unregisterBySource removes all panels for source", () => {
@@ -69,9 +69,9 @@ describe("SidebarPanelRegistry", () => {
     register(makePanel({ id: "core-a", source: "core" }));
 
     unregisterBySource("ext:bar");
-    const { panels } = useSidebarPanelRegistry.getState();
-    expect(panels.size).toBe(1);
-    expect(panels.has("core-a")).toBe(true);
+    const { items } = useSidebarPanelRegistry.getState();
+    expect(items.size).toBe(1);
+    expect(items.has("core-a")).toBe(true);
   });
 
   it("refreshVisibility increments tick", () => {

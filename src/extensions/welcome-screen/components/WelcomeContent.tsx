@@ -24,7 +24,7 @@ export function WelcomeContent() {
   const [pendingInitPath, setPendingInitPath] = useState<string | null>(null);
   const [showInitRepo, setShowInitRepo] = useState(false);
 
-  const initRepoRegistration = useBladeRegistry((s) => s.blades.get("init-repo"));
+  const initRepoRegistration = useBladeRegistry((s) => s.items.get("init-repo"));
 
   // Mid-session disable recovery: if user is viewing Init Repo blade
   // and the extension is disabled, reset to prevent stuck loading screen

@@ -22,7 +22,7 @@ export function CommandPalette() {
   const shouldReduceMotion = useReducedMotion();
 
   // Subscribe to commands Map -- re-renders on any register/unregister
-  const commandsMap = useCommandRegistry((s) => s.commands);
+  const commandsMap = useCommandRegistry((s) => s.items);
 
   const enabledCommands = useMemo(
     () => Array.from(commandsMap.values()).filter((cmd) => (cmd.enabled ? cmd.enabled() : true)),

@@ -2,6 +2,7 @@ import {
   type ToolbarAction,
   TOOLBAR_GROUP_ORDER,
   useToolbarRegistry,
+  getGroupedToolbarActions,
 } from "@/framework/extension-system/toolbarRegistry";
 import { usePreferencesStore as useSettingsStore } from "../../../stores/domain/preferences";
 import { formatShortcut } from "../../../hooks/useKeyboardShortcuts";
@@ -11,11 +12,11 @@ import { formatShortcut } from "../../../hooks/useKeyboardShortcuts";
  * Groups actions by intent group and persists visibility to the Tauri store.
  */
 export function ToolbarSettings() {
-  const actions = useToolbarRegistry((s) => s.actions);
+  const actions = useToolbarRegistry((s) => s.items);
   const { settingsData, updateSetting } = useSettingsStore();
   const hiddenActions = settingsData.toolbar?.hiddenActions ?? [];
 
-  const grouped = useToolbarRegistry.getState().getGrouped();
+  const grouped = getGroupedToolbarActions();
 
   // Get all actions (not filtered by when()) so users can configure
   // visibility of repo-specific actions even when no repo is open

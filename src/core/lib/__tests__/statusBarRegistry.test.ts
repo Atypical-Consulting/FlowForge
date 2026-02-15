@@ -1,4 +1,4 @@
-import { useStatusBarRegistry } from "@/framework/extension-system/statusBarRegistry";
+import { useStatusBarRegistry, getLeftItems, getRightItems } from "@/framework/extension-system/statusBarRegistry";
 import type { StatusBarItem } from "@/framework/extension-system/statusBarRegistry";
 
 const makeItem = (
@@ -22,7 +22,7 @@ describe("StatusBarRegistry", () => {
   });
 
   it("getLeftItems returns only left-aligned items sorted by priority", () => {
-    const { register, getLeftItems } = useStatusBarRegistry.getState();
+    const { register } = useStatusBarRegistry.getState();
     register(makeItem({ id: "low", alignment: "left", priority: 10 }));
     register(makeItem({ id: "high", alignment: "left", priority: 100 }));
     register(makeItem({ id: "right-item", alignment: "right", priority: 50 }));
@@ -34,7 +34,7 @@ describe("StatusBarRegistry", () => {
   });
 
   it("getRightItems returns only right-aligned items sorted by priority", () => {
-    const { register, getRightItems } = useStatusBarRegistry.getState();
+    const { register } = useStatusBarRegistry.getState();
     register(makeItem({ id: "low-r", alignment: "right", priority: 5 }));
     register(makeItem({ id: "high-r", alignment: "right", priority: 50 }));
     register(makeItem({ id: "left-item", alignment: "left", priority: 100 }));
@@ -46,7 +46,7 @@ describe("StatusBarRegistry", () => {
   });
 
   it("filters by when() condition", () => {
-    const { register, getLeftItems } = useStatusBarRegistry.getState();
+    const { register } = useStatusBarRegistry.getState();
     register(makeItem({ id: "visible", when: () => true }));
     register(makeItem({ id: "hidden", when: () => false }));
 

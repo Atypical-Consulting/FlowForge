@@ -3,6 +3,7 @@ import {
   type ToolbarAction,
   TOOLBAR_GROUP_ORDER,
   useToolbarRegistry,
+  getGroupedToolbarActions,
 } from "@/framework/extension-system/toolbarRegistry";
 import { usePreferencesStore } from "../../stores/domain/preferences";
 import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
@@ -22,7 +23,7 @@ import { useToolbarOverflow } from "./useToolbarOverflow";
  */
 export function Toolbar() {
   // Subscribe to registry changes for reactivity
-  const actions = useToolbarRegistry((s) => s.actions);
+  const actions = useToolbarRegistry((s) => s.items);
   const visibilityTick = useToolbarRegistry((s) => s.visibilityTick);
   const hiddenActions = usePreferencesStore(
     (s) => s.settingsData.toolbar?.hiddenActions ?? [],
@@ -34,7 +35,7 @@ export function Toolbar() {
 
   // Build the flattened ordered action list
   const { orderedActions, groupBoundaries } = useMemo(() => {
-    const grouped = useToolbarRegistry.getState().getGrouped();
+    const grouped = getGroupedToolbarActions();
     const ordered: ToolbarAction[] = [];
     const boundaries: { group: string; startIndex: number }[] = [];
 

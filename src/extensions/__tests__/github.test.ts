@@ -158,7 +158,7 @@ describe("github extension", () => {
   it("registers 4 toolbar actions on activation", async () => {
     await onActivate(api);
 
-    const actions = useToolbarRegistry.getState().actions;
+    const actions = useToolbarRegistry.getState().items;
     const toolbarIds = [
       "ext:github:github-status",
       "ext:github:open-pull-requests",
@@ -213,7 +213,7 @@ describe("github extension", () => {
     await onActivate(api);
     api.cleanup();
 
-    const actions = useToolbarRegistry.getState().actions;
+    const actions = useToolbarRegistry.getState().items;
     const toolbarIds = [
       "ext:github:github-status",
       "ext:github:open-pull-requests",

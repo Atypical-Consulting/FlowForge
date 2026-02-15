@@ -17,7 +17,7 @@ interface BladeRendererProps {
 }
 
 export function BladeRenderer({ blade, goBack, isFocusMode, onToggleFocusMode }: BladeRendererProps) {
-  const reg = useBladeRegistry((s) => s.blades.get(blade.type));
+  const reg = useBladeRegistry((s) => s.items.get(blade.type));
   if (!reg)
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8">
