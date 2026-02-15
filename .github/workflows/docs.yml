@@ -41,6 +41,8 @@ jobs:
 
       - name: Build documentation
         run: npm run docs:build
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
