@@ -9,8 +9,8 @@ export const selectBladeStack = (snap: NavSnapshot) =>
 export const selectActiveBlade = (snap: NavSnapshot) =>
   snap.context.bladeStack[snap.context.bladeStack.length - 1];
 
-export const selectActiveProcess = (snap: NavSnapshot) =>
-  snap.context.activeProcess;
+export const selectActiveWorkflow = (snap: NavSnapshot) =>
+  snap.context.activeWorkflow;
 
 export const selectIsConfirmingDiscard = (snap: NavSnapshot) =>
   snap.matches("confirmingDiscard");

@@ -8,7 +8,7 @@ import { useGitOpsStore as useStashStore } from "../stores/domain/git-ops";
 import { useGitOpsStore as useTagStore } from "../stores/domain/git-ops";
 import { toast } from "@/framework/stores/toast";
 import { useGitOpsStore as useUndoStore } from "../stores/domain/git-ops";
-import { ProcessNavigation } from "../blades/_shared";
+import { WorkflowNavigation } from "../blades/_shared";
 import { MenuBar } from "./menu-bar";
 import { BranchSwitcher } from "../../extensions/branches/components/BranchSwitcher";
 import { RepoSwitcher } from "../../extensions/repository/components/RepoSwitcher";
@@ -139,7 +139,7 @@ export function Header() {
               <BranchSwitcher onSelectBranch={handleBranchSwitch} />
             </>
           )}
-          {status && <ProcessNavigation className="ml-4" />}
+          {status && <WorkflowNavigation className="ml-4" />}
         </div>
 
         <Toolbar />

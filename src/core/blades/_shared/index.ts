@@ -9,6 +9,6 @@ export { BladeContentLoading } from "./BladeContentLoading";
 export { BladeContentError } from "./BladeContentError";
 export { BladeContentEmpty } from "./BladeContentEmpty";
 export { BladeBreadcrumb } from "./BladeBreadcrumb";
-export { ProcessNavigation } from "./ProcessNavigation";
+export { WorkflowNavigation } from "./WorkflowNavigation";
 export { NavigationGuardDialog } from "@/framework/layout/NavigationGuardDialog";
 export { FileTreeBlade } from "./FileTreeBlade";

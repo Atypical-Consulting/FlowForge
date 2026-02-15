@@ -6,17 +6,17 @@ import {
   useNavigationActorRef,
 } from "@/framework/layout/navigation/context";
 import {
-  selectActiveProcess,
+  selectActiveWorkflow,
   selectBladeStack,
   selectLastAction,
   selectDirtyBladeIds,
 } from "@/framework/layout/navigation/selectors";
-import type { BladeType, BladePropsMap, CoreBladeType, ProcessType, TypedBlade } from "@/framework/layout/navigation/types";
+import type { BladeType, BladePropsMap, CoreBladeType, WorkflowType, TypedBlade } from "@/framework/layout/navigation/types";
 
 export function useBladeNavigation() {
   const actorRef = useNavigationActorRef();
   const bladeStack = useSelector(actorRef, selectBladeStack);
-  const activeProcess = useSelector(actorRef, selectActiveProcess);
+  const activeWorkflow = useSelector(actorRef, selectActiveWorkflow);
   const lastAction = useSelector(actorRef, selectLastAction);
   const dirtyBladeIds = useSelector(actorRef, selectDirtyBladeIds);
 
@@ -153,11 +153,11 @@ export function useBladeNavigation() {
     popToIndex: (index: number) => actorRef.send({ type: "POP_TO_INDEX", index }),
     replaceBlade,
     resetStack: () => actorRef.send({ type: "RESET_STACK" }),
-    setProcess: (process: ProcessType) => actorRef.send({ type: "SWITCH_PROCESS", process }),
+    setWorkflow: (workflow: WorkflowType) => actorRef.send({ type: "SWITCH_WORKFLOW", workflow }),
     markDirty: (bladeId: string) => actorRef.send({ type: "MARK_DIRTY", bladeId }),
     markClean: (bladeId: string) => actorRef.send({ type: "MARK_CLEAN", bladeId }),
     bladeStack,
-    activeProcess,
+    activeWorkflow,
     lastAction,
     dirtyBladeIds,
   };

@@ -2,12 +2,12 @@ import type { BladeType, BladePropsMap, TypedBlade, CoreBladeType, ExtensionBlad
 
 export type { TypedBlade, BladeType, BladePropsMap, CoreBladeType, ExtensionBladeType };
 
-export type ProcessType = "staging" | "topology";
+export type WorkflowType = "staging" | "topology";
 
 export type LastAction = "push" | "pop" | "replace" | "reset" | "init";
 
 export interface NavigationContext {
-  activeProcess: ProcessType;
+  activeWorkflow: WorkflowType;
   bladeStack: TypedBlade[];
   dirtyBladeIds: Record<string, true>;
   lastAction: LastAction;
@@ -31,7 +31,7 @@ export type NavigationEvent =
       props: Record<string, unknown>;
     }
   | { type: "RESET_STACK" }
-  | { type: "SWITCH_PROCESS"; process: ProcessType }
+  | { type: "SWITCH_WORKFLOW"; workflow: WorkflowType }
   | { type: "MARK_DIRTY"; bladeId: string }
   | { type: "MARK_CLEAN"; bladeId: string }
   | { type: "CONFIRM_DISCARD" }

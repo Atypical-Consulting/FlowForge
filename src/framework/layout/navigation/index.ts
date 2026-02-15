@@ -1,5 +1,5 @@
 export { navigationMachine } from "./navigationMachine";
-export { rootBladeForProcess } from "./actions";
+export { rootBladeForWorkflow } from "./actions";
 export {
   NavigationProvider,
   getNavigationActor,
@@ -10,7 +10,7 @@ export { getInspector } from "./inspector";
 export {
   selectBladeStack,
   selectActiveBlade,
-  selectActiveProcess,
+  selectActiveWorkflow,
   selectIsConfirmingDiscard,
   selectLastAction,
   selectDirtyBladeIds,
@@ -20,7 +20,7 @@ export {
 export type {
   NavigationContext,
   NavigationEvent,
-  ProcessType,
+  WorkflowType,
   LastAction,
   TypedBlade,
   BladeType,
