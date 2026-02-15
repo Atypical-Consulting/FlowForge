@@ -1,5 +1,5 @@
 import { memo } from "react";
-import type { ToolbarAction } from "../../lib/toolbarRegistry";
+import type { ToolbarAction } from "@/framework/extension-system/toolbarRegistry";
 import { ShortcutTooltip } from "../ui/ShortcutTooltip";
 import { Button } from "../ui/button";
 

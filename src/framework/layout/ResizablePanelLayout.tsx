@@ -8,7 +8,7 @@ import {
   type PanelSize,
 } from "react-resizable-panels";
 import type { ReactNode, Ref } from "react";
-import { cn } from "../../core/lib/utils";
+import { cn } from "../lib/utils";
 
 interface ResizablePanelLayoutProps {
   autoSaveId: string;

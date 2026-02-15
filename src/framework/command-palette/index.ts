@@ -22,3 +22,7 @@ export {
 } from "./fuzzySearch";
 
 export { CommandPalette } from "./components";
+
+export { formatShortcut } from "./formatShortcut";
+
+export { usePaletteStore, type PaletteState } from "./paletteStore";

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { setup } from "xstate";
-import { useMachineRegistry } from "./machineRegistry";
+import { useMachineRegistry } from "@/framework/extension-system/machineRegistry";
 
 // Minimal test machine
 const testMachine = setup({

@@ -2,11 +2,11 @@ import { Channel } from "@tauri-apps/api/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useHotkeys } from "react-hotkeys-hook";
 import { type SyncProgress, commands } from "../../bindings";
-import { openBlade } from "../lib/bladeOpener";
+import { openBlade } from "@/framework/layout/bladeOpener";
 import { useBladeRegistry } from "@/framework/layout/bladeRegistry";
 import { executeCommand } from "@/framework/command-palette/commandRegistry";
 import { getNavigationActor } from "@/framework/layout/navigation/context";
-import { useUIStore as useCommandPaletteStore } from "../stores/domain/ui-state";
+import { usePaletteStore as useCommandPaletteStore } from "@/framework/command-palette/paletteStore";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { useGitOpsStore as useTopologyStore } from "../stores/domain/git-ops";
 import { usePreferencesStore } from "../stores/domain/preferences";
@@ -337,14 +337,5 @@ export function useKeyboardShortcuts() {
   };
 }
 
-/**
- * Format shortcut for display (handles Mac vs Windows)
- */
-export function formatShortcut(shortcut: string): string {
-  const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
-  return shortcut
-    .replace("mod", isMac ? "⌘" : "Ctrl")
-    .replace("shift", isMac ? "⇧" : "Shift")
-    .replace("alt", isMac ? "⌥" : "Alt")
-    .replace(/\+/g, isMac ? "" : "+");
-}
+// Re-export from framework for backward compatibility
+export { formatShortcut } from "@/framework/command-palette/formatShortcut";

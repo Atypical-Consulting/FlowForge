@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cn } from "../../core/lib/utils";
+import { cn } from "../lib/utils";
 import {
   ResizablePanelLayout,
   ResizablePanel,

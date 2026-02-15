@@ -1,6 +1,6 @@
 import { MoreHorizontal } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import type { ToolbarAction } from "../../lib/toolbarRegistry";
+import type { ToolbarAction } from "@/framework/extension-system/toolbarRegistry";
 import { formatShortcut } from "../../hooks/useKeyboardShortcuts";
 import { Button } from "../ui/button";
 

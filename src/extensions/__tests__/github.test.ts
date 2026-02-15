@@ -2,7 +2,7 @@ import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
 import { getCommandById } from "@/framework/command-palette/commandRegistry";
-import { useToolbarRegistry } from "../../core/lib/toolbarRegistry";
+import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
 
 // Mock blade components used by the GitHub extension
 vi.mock("../github/blades/GitHubAuthBlade", () => ({

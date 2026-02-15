@@ -1,12 +1,12 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
-import { useContextMenuRegistry } from "../../core/lib/contextMenuRegistry";
+import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
 import { useSidebarPanelRegistry } from "@/framework/layout/sidebarPanelRegistry";
-import { useStatusBarRegistry } from "../../core/lib/statusBarRegistry";
-import { useToolbarRegistry } from "../../core/lib/toolbarRegistry";
-import { gitHookBus, GitHookBus } from "../../core/lib/gitHookBus";
+import { useStatusBarRegistry } from "@/framework/extension-system/statusBarRegistry";
+import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
+import { gitHookBus, GitHookBus } from "@/framework/extension-system/operationBus";
 import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
-import type { ContextMenuContext } from "../../core/lib/contextMenuRegistry";
+import type { ContextMenuContext } from "@/framework/extension-system/contextMenuRegistry";
 import type { LucideIcon } from "lucide-react";
 
 // Minimal stub for LucideIcon used by sidebar/toolbar configs

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BladeLoadingFallback } from "../../_shared/BladeLoadingFallback";
+import { BladeLoadingFallback } from "@/framework/layout/BladeLoadingFallback";
 
 const MarkdownRenderer = lazy(() =>
   import("../../../components/markdown/MarkdownRenderer").then((m) => ({

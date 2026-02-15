@@ -12,8 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "../../components/ui/dialog";
-import { Button } from "../../components/ui/button";
+} from "@/core/components/ui/dialog";
+import { Button } from "@/core/components/ui/button";
 
 export function NavigationGuardDialog() {
   const actorRef = useNavigationActorRef();

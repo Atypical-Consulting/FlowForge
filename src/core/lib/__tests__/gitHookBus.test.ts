@@ -1,4 +1,4 @@
-import { GitHookBus } from "../gitHookBus";
+import { GitHookBus } from "@/framework/extension-system/operationBus";
 
 describe("GitHookBus", () => {
   let bus: GitHookBus;

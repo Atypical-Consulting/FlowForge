@@ -1,12 +1,39 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { commands } from "../../bindings";
 import { toast } from "../stores/toast";
 import { getStore } from "../stores/persistence/tauri";
 import { ExtensionAPI } from "./ExtensionAPI";
 import type { BuiltInExtensionConfig, ExtensionInfo } from "./types";
-import type { ExtensionManifest } from "../../extensions/extensionManifest";
+import type { ExtensionManifest } from "./manifest";
+
+// ---------------------------------------------------------------------------
+// Dependency Injection
+// ---------------------------------------------------------------------------
+
+interface ExtensionHostDeps {
+  /** Discover extensions on the filesystem and return their manifests. */
+  discoverExtensions: (path: string) => Promise<{ status: "ok"; data: ExtensionManifest[] } | { status: "error"; error: string }>;
+}
+
+let hostDeps: ExtensionHostDeps | null = null;
+
+/**
+ * Configure the ExtensionHost with platform-specific dependencies.
+ * Must be called before `discoverExtensions` is used.
+ */
+export function configureExtensionHost(deps: ExtensionHostDeps): void {
+  hostDeps = deps;
+}
+
+function getHostDeps(): ExtensionHostDeps {
+  if (!hostDeps) {
+    throw new Error(
+      "[ExtensionHost] Not configured. Call configureExtensionHost() before using the extension host.",
+    );
+  }
+  return hostDeps;
+}
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -112,7 +139,7 @@ export const useExtensionHost = create<ExtensionHostState>()(
         const extensionsDir = repoPath + "/.flowforge/extensions";
 
         try {
-          const result = await commands.discoverExtensions(extensionsDir);
+          const result = await getHostDeps().discoverExtensions(extensionsDir);
 
           if (result.status === "error") {
             console.error(

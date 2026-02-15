@@ -29,12 +29,12 @@ import {
 import { type SyncProgress, commands as tauriCommands } from "../../bindings";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
 import { getErrorMessage } from "../lib/errors";
-import { gitHookBus } from "../lib/gitHookBus";
-import { openBlade } from "../lib/bladeOpener";
+import { gitHookBus } from "@/framework/extension-system/operationBus";
+import { openBlade } from "@/framework/layout/bladeOpener";
 import { queryClient } from "../lib/queryClient";
-import type { ToolbarAction } from "../lib/toolbarRegistry";
-import { useToolbarRegistry } from "../lib/toolbarRegistry";
-import { useUIStore as useCommandPaletteStore } from "../stores/domain/ui-state";
+import type { ToolbarAction } from "@/framework/extension-system/toolbarRegistry";
+import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
+import { usePaletteStore as useCommandPaletteStore } from "@/framework/command-palette/paletteStore";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { toast } from "@/framework/stores/toast";
 import { useGitOpsStore as useUndoStore } from "../stores/domain/git-ops";

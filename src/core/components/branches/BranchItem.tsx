@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import type { AheadBehind } from "../../../bindings";
 import { commands } from "../../../bindings";
 import type { EnrichedBranch } from "../../lib/branchClassifier";
-import { useContextMenuRegistry } from "../../lib/contextMenuRegistry";
-import { gitHookBus } from "../../lib/gitHookBus";
+import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
+import { gitHookBus } from "@/framework/extension-system/operationBus";
 import { cn } from "../../lib/utils";
 import { BranchTypeBadge } from "./BranchTypeBadge";
 

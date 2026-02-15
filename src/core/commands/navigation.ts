@@ -4,7 +4,7 @@ import { useBladeRegistry } from "@/framework/layout/bladeRegistry";
 import { getNavigationActor } from "@/framework/layout/navigation/context";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { usePreferencesStore } from "../stores/domain/preferences";
-import { useUIStore as useCommandPaletteStore } from "../stores/domain/ui-state";
+import { usePaletteStore as useCommandPaletteStore } from "@/framework/command-palette/paletteStore";
 
 registerCommand({
   id: "command-palette",

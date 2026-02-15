@@ -295,7 +295,18 @@ export function RepositoryView() {
 
         {/* Main area - Blade Container */}
         <ResizablePanel id="blades" defaultSize={80}>
-          <BladeContainer />
+          <BladeContainer
+            isFocusMode={layoutState.focusedPanel !== null}
+            onToggleFocusMode={() => {
+              const { layoutState: ls, enterFocusMode, exitFocusMode } =
+                usePreferencesStore.getState();
+              if (ls.focusedPanel) {
+                exitFocusMode();
+              } else {
+                enterFocusMode("blades");
+              }
+            }}
+          />
         </ResizablePanel>
       </ResizablePanelLayout>
 

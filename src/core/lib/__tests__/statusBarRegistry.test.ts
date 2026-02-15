@@ -1,5 +1,5 @@
-import { useStatusBarRegistry } from "../statusBarRegistry";
-import type { StatusBarItem } from "../statusBarRegistry";
+import { useStatusBarRegistry } from "@/framework/extension-system/statusBarRegistry";
+import type { StatusBarItem } from "@/framework/extension-system/statusBarRegistry";
 
 const makeItem = (
   overrides: Partial<StatusBarItem> & { id: string },

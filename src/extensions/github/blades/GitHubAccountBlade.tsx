@@ -9,7 +9,7 @@
 import { useEffect } from "react";
 import { Github, LogOut, UserCircle, ExternalLink } from "lucide-react";
 import { Button } from "../../../core/components/ui/button";
-import { openBlade } from "../../../core/lib/bladeOpener";
+import { openBlade } from "@/framework/layout/bladeOpener";
 import { useGitHubStore } from "../githubStore";
 import { RateLimitBar } from "../components/RateLimitBar";
 

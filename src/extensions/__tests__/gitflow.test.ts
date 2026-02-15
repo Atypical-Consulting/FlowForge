@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
 import { useSidebarPanelRegistry } from "@/framework/layout/sidebarPanelRegistry";
-import { useToolbarRegistry } from "../../core/lib/toolbarRegistry";
+import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
 import { onActivate, onDeactivate } from "../gitflow";
 
 describe("gitflow extension", () => {

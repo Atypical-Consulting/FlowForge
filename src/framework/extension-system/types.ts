@@ -1,5 +1,5 @@
 import type { ExtensionAPI } from "./ExtensionAPI";
-import type { ExtensionManifest } from "../../extensions/extensionManifest";
+import type { ExtensionManifest } from "./manifest";
 
 export type TrustLevel = "built-in" | "user-trusted" | "sandboxed";
 

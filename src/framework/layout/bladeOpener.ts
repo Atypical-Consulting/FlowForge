@@ -1,6 +1,6 @@
-import type { CoreBladeType, BladePropsMap } from "../stores/bladeTypes";
-import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
-import { getNavigationActor } from "@/framework/layout/navigation/context";
+import type { CoreBladeType, BladePropsMap } from "./navigation/types";
+import { getBladeRegistration } from "./bladeRegistry";
+import { getNavigationActor } from "./navigation/context";
 
 /** Open a core blade with type-safe props */
 export function openBlade<K extends CoreBladeType>(
