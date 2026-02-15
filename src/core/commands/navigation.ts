@@ -1,9 +1,8 @@
-import { FileText, GitBranch, History, Search } from "lucide-react";
+import { FileText, History, Search } from "lucide-react";
 import { registerCommand } from "@/framework/command-palette/commandRegistry";
 import { useBladeRegistry } from "@/framework/layout/bladeRegistry";
 import { getNavigationActor } from "@/framework/layout/navigation/context";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
-import { usePreferencesStore } from "../stores/domain/preferences";
 import { usePaletteStore as useCommandPaletteStore } from "@/framework/command-palette/paletteStore";
 
 registerCommand({
@@ -47,33 +46,3 @@ registerCommand({
   enabled: () => !!useRepositoryStore.getState().repoStatus,
 });
 
-registerCommand({
-  id: "show-branches",
-  title: "Show Branches",
-  description: "Toggle the branches dropdown",
-  category: "Navigation",
-  shortcut: "mod+b",
-  icon: GitBranch,
-  action: () => {
-    usePreferencesStore.getState().toggleNavBranchDropdown();
-  },
-  enabled: () => !!useRepositoryStore.getState().repoStatus,
-});
-
-registerCommand({
-  id: "open-branch-manager",
-  title: "Open Branch Manager",
-  description: "Open the branch management blade",
-  category: "Navigation",
-  shortcut: "mod+shift+b",
-  icon: GitBranch,
-  action: () => {
-    getNavigationActor().send({
-      type: "PUSH_BLADE",
-      bladeType: "branch-manager" as const,
-      title: "Branch Manager",
-      props: {},
-    });
-  },
-  enabled: () => !!useRepositoryStore.getState().repoStatus,
-});
