@@ -1,35 +1,19 @@
-// --- Types ---
+// ---------------------------------------------------------------------------
+// Generic OperationBus — typed pre/post lifecycle hooks
+// ---------------------------------------------------------------------------
 
-export type GitOperation =
-  | "commit"
-  | "push"
-  | "pull"
-  | "fetch"
-  | "checkout"
-  | "branch-create"
-  | "branch-delete"
-  | "merge"
-  | "stash"
-  | "tag-create";
-
-export interface GitHookContext {
-  operation: GitOperation;
-  branchName?: string;
-  commitOid?: string;
-  commitMessage?: string;
-  remoteName?: string;
-  tagName?: string;
-  error?: string;
-}
-
+/**
+ * Result returned by a "will" (pre-operation) handler.
+ * Return `{ cancel: true, reason: "..." }` to veto the operation.
+ */
 export interface WillHookResult {
   cancel?: boolean;
   reason?: string;
 }
 
-export type DidHandler = (ctx: GitHookContext) => void | Promise<void>;
-export type WillHandler = (
-  ctx: GitHookContext,
+export type DidHandler<TCtx> = (ctx: TCtx) => void | Promise<void>;
+export type WillHandler<TCtx> = (
+  ctx: TCtx,
 ) => WillHookResult | Promise<WillHookResult | void> | void;
 
 interface HandlerEntry<H> {
@@ -38,26 +22,48 @@ interface HandlerEntry<H> {
   source: string;
 }
 
-// --- GitHookBus ---
-
-export class GitHookBus {
-  private didHandlers = new Map<GitOperation, Set<HandlerEntry<DidHandler>>>();
+/**
+ * Generic operation bus for pre/post lifecycle hooks.
+ *
+ * Usage:
+ * ```ts
+ * type FileOp = "save" | "delete" | "rename";
+ * interface FileOpCtx { operation: FileOp; filePath: string; }
+ *
+ * const fileOpBus = new OperationBus<FileOp, FileOpCtx>("FileOpBus");
+ * fileOpBus.onDid("save", (ctx) => console.log(`Saved ${ctx.filePath}`), "logger");
+ * ```
+ */
+export class OperationBus<
+  TOperation extends string,
+  TContext extends { operation: TOperation },
+> {
+  private didHandlers = new Map<
+    TOperation,
+    Set<HandlerEntry<DidHandler<TContext>>>
+  >();
   private willHandlers = new Map<
-    GitOperation,
-    Set<HandlerEntry<WillHandler>>
+    TOperation,
+    Set<HandlerEntry<WillHandler<TContext>>>
   >();
   private reentryDepth = 0;
 
+  constructor(private readonly name: string = "OperationBus") {}
+
   onDid(
-    operation: GitOperation,
-    handler: DidHandler,
+    operation: TOperation,
+    handler: DidHandler<TContext>,
     source: string,
     priority = 0,
   ): () => void {
     if (!this.didHandlers.has(operation)) {
       this.didHandlers.set(operation, new Set());
     }
-    const entry: HandlerEntry<DidHandler> = { handler, priority, source };
+    const entry: HandlerEntry<DidHandler<TContext>> = {
+      handler,
+      priority,
+      source,
+    };
     this.didHandlers.get(operation)!.add(entry);
 
     return () => {
@@ -66,15 +72,19 @@ export class GitHookBus {
   }
 
   onWill(
-    operation: GitOperation,
-    handler: WillHandler,
+    operation: TOperation,
+    handler: WillHandler<TContext>,
     source: string,
     priority = 0,
   ): () => void {
     if (!this.willHandlers.has(operation)) {
       this.willHandlers.set(operation, new Set());
     }
-    const entry: HandlerEntry<WillHandler> = { handler, priority, source };
+    const entry: HandlerEntry<WillHandler<TContext>> = {
+      handler,
+      priority,
+      source,
+    };
     this.willHandlers.get(operation)!.add(entry);
 
     return () => {
@@ -83,14 +93,14 @@ export class GitHookBus {
   }
 
   async emitDid(
-    operation: GitOperation,
-    ctx?: Omit<GitHookContext, "operation">,
+    operation: TOperation,
+    ctx?: Omit<TContext, "operation">,
   ): Promise<void> {
     if (this.reentryDepth > 0) return;
 
     this.reentryDepth++;
     try {
-      const fullCtx: GitHookContext = { operation, ...ctx };
+      const fullCtx = { operation, ...ctx } as TContext;
       const entries = this.didHandlers.get(operation);
       if (!entries || entries.size === 0) return;
 
@@ -100,7 +110,7 @@ export class GitHookBus {
             await entry.handler(fullCtx);
           } catch (err) {
             console.error(
-              `[GitHookBus] Error in onDid handler for "${operation}" (source: ${entry.source}):`,
+              `[${this.name}] Error in onDid handler for "${operation}" (source: ${entry.source}):`,
               err,
             );
           }
@@ -112,10 +122,10 @@ export class GitHookBus {
   }
 
   async emitWill(
-    operation: GitOperation,
-    ctx?: Omit<GitHookContext, "operation">,
+    operation: TOperation,
+    ctx?: Omit<TContext, "operation">,
   ): Promise<WillHookResult> {
-    const fullCtx: GitHookContext = { operation, ...ctx };
+    const fullCtx = { operation, ...ctx } as TContext;
     const entries = this.willHandlers.get(operation);
     if (!entries || entries.size === 0) return {};
 
@@ -130,7 +140,7 @@ export class GitHookBus {
         }
       } catch (err) {
         console.error(
-          `[GitHookBus] Error in onWill handler for "${operation}" (source: ${entry.source}):`,
+          `[${this.name}] Error in onWill handler for "${operation}" (source: ${entry.source}):`,
           err,
         );
         // Fail-open: errors do NOT cancel
@@ -158,4 +168,36 @@ export class GitHookBus {
   }
 }
 
-export const gitHookBus = new GitHookBus();
+// ---------------------------------------------------------------------------
+// Git-specific types & singleton (backward-compatible)
+// ---------------------------------------------------------------------------
+
+export type GitOperation =
+  | "commit"
+  | "push"
+  | "pull"
+  | "fetch"
+  | "checkout"
+  | "branch-create"
+  | "branch-delete"
+  | "merge"
+  | "stash"
+  | "tag-create";
+
+export interface GitHookContext {
+  operation: GitOperation;
+  branchName?: string;
+  commitOid?: string;
+  commitMessage?: string;
+  remoteName?: string;
+  tagName?: string;
+  error?: string;
+}
+
+/** @deprecated Use `OperationBus<GitOperation, GitHookContext>` directly. */
+export type GitHookBus = OperationBus<GitOperation, GitHookContext>;
+
+/** Global Git operation bus instance. */
+export const gitHookBus = new OperationBus<GitOperation, GitHookContext>(
+  "GitHookBus",
+);

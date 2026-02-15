@@ -280,7 +280,7 @@ export class ExtensionAPI {
    * The handler fires after the git operation completes.
    * @sandboxSafety sandbox-safe - Handler receives serializable GitHookContext. No DOM access needed.
    */
-  onDidGit(operation: GitOperation, handler: DidHandler): void {
+  onDidGit(operation: GitOperation, handler: DidHandler<GitHookContext>): void {
     const unsub = gitHookBus.onDid(
       operation,
       handler,
@@ -294,7 +294,7 @@ export class ExtensionAPI {
    * The handler fires before the git operation and can cancel it.
    * @sandboxSafety sandbox-safe - Handler receives/returns serializable data. Can validate git operations.
    */
-  onWillGit(operation: GitOperation, handler: WillHandler): void {
+  onWillGit(operation: GitOperation, handler: WillHandler<GitHookContext>): void {
     const unsub = gitHookBus.onWill(
       operation,
       handler,

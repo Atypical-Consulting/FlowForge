@@ -4,7 +4,7 @@ import { useContextMenuRegistry } from "@/framework/extension-system/contextMenu
 import { useSidebarPanelRegistry } from "@/framework/layout/sidebarPanelRegistry";
 import { useStatusBarRegistry } from "@/framework/extension-system/statusBarRegistry";
 import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
-import { gitHookBus, GitHookBus } from "@/framework/extension-system/operationBus";
+import { gitHookBus } from "@/framework/extension-system/operationBus";
 import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
 import type { ContextMenuContext } from "@/framework/extension-system/contextMenuRegistry";
 import type { LucideIcon } from "lucide-react";
