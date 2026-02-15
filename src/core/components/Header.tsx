@@ -10,8 +10,8 @@ import { toast } from "@/framework/stores/toast";
 import { useGitOpsStore as useUndoStore } from "../stores/domain/git-ops";
 import { ProcessNavigation } from "../blades/_shared";
 import { MenuBar } from "./menu-bar";
-import { BranchSwitcher } from "./navigation/BranchSwitcher";
-import { RepoSwitcher } from "./navigation/RepoSwitcher";
+import { BranchSwitcher } from "../../extensions/branches/components/BranchSwitcher";
+import { RepoSwitcher } from "../../extensions/repository/components/RepoSwitcher";
 import { Toolbar } from "./toolbar/Toolbar";
 import { Button } from "./ui/button";
 

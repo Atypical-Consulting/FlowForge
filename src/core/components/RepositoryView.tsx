@@ -13,11 +13,11 @@ import { getPresetById } from "@/framework/layout/layoutPresets";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { usePreferencesStore } from "../stores/domain/preferences";
 import { BladeContainer } from "../blades/_shared";
-import { BranchList } from "./branches/BranchList";
+import { BranchList } from "../../extensions/branches/components/BranchList";
 import { CommitForm } from "./commit/CommitForm";
 import { ResizablePanelLayout, ResizablePanel, ResizeHandle } from "./layout";
-import { StashList } from "./stash/StashList";
-import { TagList } from "./tags/TagList";
+import { StashList } from "../../extensions/stash/components/StashList";
+import { TagList } from "../../extensions/tags/components/TagList";
 
 
 // Minimal error boundary for extension panels (react-error-boundary not in deps)

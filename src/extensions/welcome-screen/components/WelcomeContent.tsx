@@ -9,7 +9,7 @@ import { fadeInUp, staggerContainer, staggerItem } from "@/framework/theme/anima
 import { useBladeRegistry } from "@/framework/layout/bladeRegistry";
 import { modKeyLabel } from "../../../core/lib/platform";
 import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";
-import { CloneForm } from "../../../core/components/clone/CloneForm";
+import { CloneForm } from "../../../extensions/repository/components/CloneForm";
 import { Button } from "../../../core/components/ui/button";
 import { AnimatedGradientBg } from "./AnimatedGradientBg";
 import { GitInitBanner } from "./GitInitBanner";

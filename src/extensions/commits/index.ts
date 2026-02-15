@@ -6,7 +6,7 @@ import { toast } from "@/framework/stores/toast";
 export async function onActivate(api: ExtensionAPI): Promise<void> {
   // Lazy component import -- loaded on first blade render, not during activation
   const CommitDetailsBlade = lazy(() =>
-    import("../../core/blades/commit-details/CommitDetailsBlade").then((m) => ({
+    import("./blades/CommitDetailsBlade").then((m) => ({
       default: m.CommitDetailsBlade,
     }))
   );

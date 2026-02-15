@@ -1,4 +1,4 @@
-import type { DiffSource } from "../blades/diff";
+import type { DiffSource } from "@/extensions/diff/blades";
 
 /**
  * Central map: blade type -> required props.

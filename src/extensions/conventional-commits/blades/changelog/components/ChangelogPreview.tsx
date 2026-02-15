@@ -3,7 +3,7 @@ import { useState } from "react";
 import type { ConventionalCommitType } from "../../../lib/commit-type-theme";
 import { cn } from "../../../../../core/lib/utils";
 import type { ChangelogOutput } from "../store";
-import { CommitTypeIcon } from "../../../../../core/components/icons/CommitTypeIcon";
+import { CommitTypeIcon } from "../../../../commits/components/CommitTypeIcon";
 
 interface ChangelogPreviewProps {
   changelog: ChangelogOutput;

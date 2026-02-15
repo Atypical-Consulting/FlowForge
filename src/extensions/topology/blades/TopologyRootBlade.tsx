@@ -2,7 +2,7 @@ import { History, Network } from "lucide-react";
 import { useState } from "react";
 import { cn } from "../../../core/lib/utils";
 import { useBladeNavigation } from "../../../core/hooks/useBladeNavigation";
-import { CommitHistory } from "../../../core/components/commit/CommitHistory";
+import { CommitHistory } from "../../commits/components/CommitHistory";
 import { TopologyPanel } from "../components/TopologyPanel";
 
 type TopologyView = "graph" | "history";

@@ -8,7 +8,7 @@ import { usePreferencesStore } from "../../core/stores/domain/preferences";
 export async function onActivate(api: ExtensionAPI): Promise<void> {
   // Lazy component import -- loaded on first blade render, not during activation
   const BranchManagerBlade = lazy(() =>
-    import("../../core/blades/branch-manager/BranchManagerBlade").then((m) => ({
+    import("./blades/BranchManagerBlade").then((m) => ({
       default: m.BranchManagerBlade,
     }))
   );

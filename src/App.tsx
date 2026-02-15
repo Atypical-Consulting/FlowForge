@@ -47,6 +47,8 @@ import { onActivate as branchesExtActivate, onDeactivate as branchesExtDeactivat
 import { onActivate as syncExtActivate, onDeactivate as syncExtDeactivate } from "./extensions/sync";
 import { onActivate as diffExtActivate, onDeactivate as diffExtDeactivate } from "./extensions/diff";
 import { onActivate as commitsExtActivate, onDeactivate as commitsExtDeactivate } from "./extensions/commits";
+import { onActivate as stashExtActivate, onDeactivate as stashExtDeactivate } from "./extensions/stash";
+import { onActivate as tagsExtActivate, onDeactivate as tagsExtDeactivate } from "./extensions/tags";
 
 // Configure ExtensionHost with Tauri-specific discovery
 configureExtensionHost({
@@ -319,6 +321,22 @@ function App() {
       version: "1.0.0",
       activate: commitsExtActivate,
       deactivate: commitsExtDeactivate,
+    });
+
+    registerBuiltIn({
+      id: "stash",
+      name: "Stash",
+      version: "1.0.0",
+      activate: stashExtActivate,
+      deactivate: stashExtDeactivate,
+    });
+
+    registerBuiltIn({
+      id: "tags",
+      name: "Tags",
+      version: "1.0.0",
+      activate: tagsExtActivate,
+      deactivate: tagsExtDeactivate,
     });
   }, [initTheme, initSettings, initNavigation, initMetadata, initChecklist, registerBuiltIn]);
 

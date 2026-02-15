@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 import type { FileChange } from "../../bindings";
-import type { DiffSource } from "../blades/diff";
+import type { DiffSource } from "@/extensions/diff/blades";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
