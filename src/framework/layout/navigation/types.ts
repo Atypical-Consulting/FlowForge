@@ -1,8 +1,8 @@
-import type { BladeType, BladePropsMap, TypedBlade, CoreBladeType, ExtensionBladeType } from "../../../core/stores/bladeTypes";
+import type { BladeType, BladePropsMap, TypedBlade, CoreBladeType, ExtensionBladeType } from "../bladeTypes";
 
 export type { TypedBlade, BladeType, BladePropsMap, CoreBladeType, ExtensionBladeType };
 
-export type WorkflowType = "staging" | "topology";
+export type WorkflowType = string;
 
 export type LastAction = "push" | "pop" | "replace" | "reset" | "init";
 
