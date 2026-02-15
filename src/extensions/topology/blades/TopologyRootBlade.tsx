@@ -1,6 +1,6 @@
 import { History, Network } from "lucide-react";
 import { useState } from "react";
-import { cn } from "../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 import { useBladeNavigation } from "../../../core/hooks/useBladeNavigation";
 import { CommitHistory } from "../../commits/components/CommitHistory";
 import { TopologyPanel } from "../components/TopologyPanel";

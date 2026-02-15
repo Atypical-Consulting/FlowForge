@@ -18,7 +18,7 @@ import { CommitActionBar } from "../../components/CommitActionBar";
 import { TemplateSelector } from "../../components/TemplateSelector";
 import { ScopeFrequencyChart } from "../../components/ScopeFrequencyChart";
 import type { CommitTemplate } from "../../store";
-import { cn } from "../../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 
 const MAX_DESCRIPTION_LENGTH = 72;
 const BLADE_ID = "conventional-commit-blade";

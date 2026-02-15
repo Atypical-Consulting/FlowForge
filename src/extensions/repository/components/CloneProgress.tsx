@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { CheckCircle, Loader2 } from "lucide-react";
 import type { CloneProgress as CloneProgressType } from "../../../bindings";
-import { cn } from "../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 
 interface CloneProgressProps {
   progress: CloneProgressType | null;

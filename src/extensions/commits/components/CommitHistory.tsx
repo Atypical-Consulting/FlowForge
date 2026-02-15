@@ -6,7 +6,7 @@ import { Skeleton } from "../../../core/components/ui/Skeleton";
 import { Virtuoso } from "react-virtuoso";
 import { type CommitSummary, commands } from "../../../bindings";
 import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
-import { cn } from "../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 import { GravatarAvatar } from "../../git-insights/components/GravatarAvatar";
 import { useInsightsStore } from "../../git-insights/insightsStore";
 import { AuthorFilter } from "./AuthorFilter";

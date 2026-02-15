@@ -5,7 +5,7 @@ import { commands } from "../../../bindings";
 import type { EnrichedBranch } from "../../../core/lib/branchClassifier";
 import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
 import { gitHookBus } from "@/framework/extension-system/operationBus";
-import { cn } from "../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 import { BranchTypeBadge } from "./BranchTypeBadge";
 
 function AheadBehindBadge({ branchName, isRemote }: { branchName: string; isRemote: boolean }) {

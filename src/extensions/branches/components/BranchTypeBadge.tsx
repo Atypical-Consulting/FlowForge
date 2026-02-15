@@ -1,5 +1,5 @@
 import { classifyBranch, BRANCH_BADGE_STYLES, type GitflowBranchType } from "../../../core/lib/branchClassifier";
-import { cn } from "../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 
 const TEXT_COLORS: Record<GitflowBranchType, string> = {
   main: "text-ctp-blue",

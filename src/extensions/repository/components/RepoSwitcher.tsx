@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, FolderGit } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRecentRepos } from "../../../core/hooks/useRecentRepos";
-import { cn } from "../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 import { usePreferencesStore as useNavigationStore } from "../../../core/stores/domain/preferences";
 import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";
 import { RepoSwitcherItem, type RepoItemData } from "./RepoSwitcherItem";

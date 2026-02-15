@@ -18,7 +18,7 @@ import { SCOPE_PROFILES } from "../types";
 import type { AuthStep } from "../types";
 import { ScopeSelector } from "../components/ScopeSelector";
 import { DeviceCodeDisplay } from "../components/DeviceCodeDisplay";
-import { cn } from "../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 
 const STEP_LABELS = ["Permissions", "Authorize", "Done"];
 

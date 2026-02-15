@@ -7,7 +7,7 @@
 
 import { Eye, Shield, Settings } from "lucide-react";
 import { SCOPE_PROFILES, CUSTOM_SCOPES } from "../types";
-import { cn } from "../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 
 interface ScopeSelectorProps {
   selectedProfile: string;

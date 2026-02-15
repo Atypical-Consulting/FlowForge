@@ -1,4 +1,4 @@
-import { cn } from "../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 
 interface BreakingChangeSectionProps {
   isBreaking: boolean;

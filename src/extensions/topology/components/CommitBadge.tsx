@@ -6,7 +6,7 @@ import {
   type ConventionalCommitType,
 } from "../../conventional-commits/lib/commit-type-theme";
 import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
-import { cn } from "../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 import {
   BRANCH_BADGE_STYLES,
   BRANCH_RING_COLORS,

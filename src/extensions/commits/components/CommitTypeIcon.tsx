@@ -4,7 +4,7 @@ import {
   COMMIT_TYPE_THEME,
   type ConventionalCommitType,
 } from "../../../extensions/conventional-commits/lib/commit-type-theme";
-import { cn } from "@/core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 import { parseConventionalType } from "@/core/lib/commitClassifier";
 
 interface CommitTypeIconProps {

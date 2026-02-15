@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { cn } from "../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 
 interface CharacterProgressProps {
   current: number;

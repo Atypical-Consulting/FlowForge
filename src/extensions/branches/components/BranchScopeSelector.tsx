@@ -1,5 +1,5 @@
 import type { BranchScopeDefinition } from "../../../core/lib/branchScopes";
-import { cn } from "../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 
 interface BranchScopeSelectorProps {
   scopes: BranchScopeDefinition[];

@@ -7,7 +7,7 @@ import {
   type CloneProgress as CloneProgressType,
   commands,
 } from "../../../bindings";
-import { cn } from "../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 import { useRecentRepos } from "../../../core/hooks/useRecentRepos";
 import { useGitOpsStore as useCloneStore } from "../../../core/stores/domain/git-ops";
 import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";

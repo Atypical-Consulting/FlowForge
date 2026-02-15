@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, Circle, GitBranch } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BranchInfo } from "../../../bindings";
-import { cn } from "../../../core/lib/utils";
+import { cn } from "@/framework/lib/utils";
 import { useGitOpsStore as useBranchStore } from "../../../core/stores/domain/git-ops";
 import { usePreferencesStore as useNavigationStore } from "../../../core/stores/domain/preferences";
 import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";
