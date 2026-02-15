@@ -1,5 +1,5 @@
 import { setup, assign, and, not } from "xstate";
-import { rootBladeForProcess } from "./actions";
+import { rootBladeForWorkflow } from "./actions";
 import { toast } from "../../stores/toast";
 import { isSingletonBlade } from "../bladeRegistry";
 import type { NavigationContext, NavigationEvent, TypedBlade } from "./types";
@@ -98,15 +98,15 @@ export const navigationMachine = setup({
       };
     }),
     resetStack: assign(({ context }) => ({
-      bladeStack: [rootBladeForProcess(context.activeProcess)],
+      bladeStack: [rootBladeForWorkflow(context.activeWorkflow)],
       dirtyBladeIds: {} as Record<string, true>,
       lastAction: "reset" as const,
     })),
-    switchProcess: assign(({ event }) => {
-      if (event.type !== "SWITCH_PROCESS") return {};
+    switchWorkflow: assign(({ event }) => {
+      if (event.type !== "SWITCH_WORKFLOW") return {};
       return {
-        activeProcess: event.process,
-        bladeStack: [rootBladeForProcess(event.process)],
+        activeWorkflow: event.workflow,
+        bladeStack: [rootBladeForWorkflow(event.workflow)],
         dirtyBladeIds: {} as Record<string, true>,
         lastAction: "reset" as const,
       };
@@ -172,14 +172,14 @@ export const navigationMachine = setup({
         case "RESET_STACK":
           return {
             ...base,
-            bladeStack: [rootBladeForProcess(context.activeProcess)],
+            bladeStack: [rootBladeForWorkflow(context.activeWorkflow)],
             lastAction: "reset" as const,
           };
-        case "SWITCH_PROCESS":
+        case "SWITCH_WORKFLOW":
           return {
             ...base,
-            activeProcess: pending.process,
-            bladeStack: [rootBladeForProcess(pending.process)],
+            activeWorkflow: pending.workflow,
+            bladeStack: [rootBladeForWorkflow(pending.workflow)],
             lastAction: "reset" as const,
           };
         default:
@@ -200,8 +200,8 @@ export const navigationMachine = setup({
   id: "bladeNavigation",
   initial: "navigating",
   context: {
-    activeProcess: "staging",
-    bladeStack: [rootBladeForProcess("staging")],
+    activeWorkflow: "staging",
+    bladeStack: [rootBladeForWorkflow("staging")],
     dirtyBladeIds: {},
     lastAction: "init",
     maxStackDepth: DEFAULT_MAX_STACK_DEPTH,
@@ -266,14 +266,14 @@ export const navigationMachine = setup({
             actions: "resetStack",
           },
         ],
-        SWITCH_PROCESS: [
+        SWITCH_WORKFLOW: [
           {
             guard: "hasDirtyBlades",
             target: "confirmingDiscard",
             actions: "storePendingEvent",
           },
           {
-            actions: "switchProcess",
+            actions: "switchWorkflow",
           },
         ],
         MARK_DIRTY: {

@@ -21,7 +21,7 @@ describe("navigationMachine", () => {
         singleton: true,
       } as any);
     }
-    // Register topology-graph so rootBladeForProcess finds it in the blade registry
+    // Register topology-graph so rootBladeForWorkflow finds it in the blade registry
     registerBlade({
       type: "topology-graph",
       defaultTitle: "Topology",
@@ -42,7 +42,7 @@ describe("navigationMachine", () => {
     const snap = actor.getSnapshot();
 
     expect(snap.value).toBe("navigating");
-    expect(snap.context.activeProcess).toBe("staging");
+    expect(snap.context.activeWorkflow).toBe("staging");
     expect(snap.context.bladeStack).toHaveLength(1);
     expect(snap.context.bladeStack[0].type).toBe("staging-changes");
     expect(snap.context.bladeStack[0].id).toBe("root");
@@ -188,7 +188,7 @@ describe("navigationMachine", () => {
 
   // --- Switch process ---
 
-  it("8. SWITCH_PROCESS changes process and resets to new root", () => {
+  it("8. SWITCH_WORKFLOW changes process and resets to new root", () => {
     const actor = createTestActor();
 
     actor.send({
@@ -197,10 +197,10 @@ describe("navigationMachine", () => {
       title: "Commit",
       props: { oid: "abc" },
     });
-    actor.send({ type: "SWITCH_PROCESS", process: "topology" });
+    actor.send({ type: "SWITCH_WORKFLOW", workflow: "topology" });
 
     const snap = actor.getSnapshot();
-    expect(snap.context.activeProcess).toBe("topology");
+    expect(snap.context.activeWorkflow).toBe("topology");
     expect(snap.context.bladeStack).toHaveLength(1);
     expect(snap.context.bladeStack[0].type).toBe("topology-graph");
     expect(snap.context.lastAction).toBe("reset");
@@ -389,7 +389,7 @@ describe("navigationMachine", () => {
     actor.stop();
   });
 
-  it("17. SWITCH_PROCESS with dirty blades enters confirmingDiscard", () => {
+  it("17. SWITCH_WORKFLOW with dirty blades enters confirmingDiscard", () => {
     const actor = createTestActor();
 
     actor.send({
@@ -401,16 +401,16 @@ describe("navigationMachine", () => {
     const bladeId = actor.getSnapshot().context.bladeStack[1].id;
 
     actor.send({ type: "MARK_DIRTY", bladeId });
-    actor.send({ type: "SWITCH_PROCESS", process: "topology" });
+    actor.send({ type: "SWITCH_WORKFLOW", workflow: "topology" });
 
     const snap = actor.getSnapshot();
     expect(snap.value).toBe("confirmingDiscard");
     expect(snap.context.pendingEvent).toEqual({
-      type: "SWITCH_PROCESS",
-      process: "topology",
+      type: "SWITCH_WORKFLOW",
+      workflow: "topology",
     });
     // Still on staging
-    expect(snap.context.activeProcess).toBe("staging");
+    expect(snap.context.activeWorkflow).toBe("staging");
 
     actor.stop();
   });
@@ -518,7 +518,7 @@ describe("navigationMachine", () => {
 
   // --- Additional dirty-form scenarios ---
 
-  it("CONFIRM_DISCARD after SWITCH_PROCESS performs the switch", () => {
+  it("CONFIRM_DISCARD after SWITCH_WORKFLOW performs the switch", () => {
     const actor = createTestActor();
 
     actor.send({
@@ -530,12 +530,12 @@ describe("navigationMachine", () => {
     const bladeId = actor.getSnapshot().context.bladeStack[1].id;
 
     actor.send({ type: "MARK_DIRTY", bladeId });
-    actor.send({ type: "SWITCH_PROCESS", process: "topology" });
+    actor.send({ type: "SWITCH_WORKFLOW", workflow: "topology" });
     actor.send({ type: "CONFIRM_DISCARD" });
 
     const snap = actor.getSnapshot();
     expect(snap.value).toBe("navigating");
-    expect(snap.context.activeProcess).toBe("topology");
+    expect(snap.context.activeWorkflow).toBe("topology");
     expect(snap.context.bladeStack).toHaveLength(1);
     expect(snap.context.bladeStack[0].type).toBe("topology-graph");
 
@@ -724,12 +724,12 @@ describe("navigationMachine", () => {
     const actor = createTestActor();
 
     actor.send({
-      type: "SWITCH_PROCESS",
-      process: "topology",
+      type: "SWITCH_WORKFLOW",
+      workflow: "topology",
     });
 
     expect(Object.keys(actor.getSnapshot().context.dirtyBladeIds)).toHaveLength(0);
-    expect(actor.getSnapshot().context.activeProcess).toBe("topology");
+    expect(actor.getSnapshot().context.activeWorkflow).toBe("topology");
 
     actor.stop();
   });

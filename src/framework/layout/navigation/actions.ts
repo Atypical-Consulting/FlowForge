@@ -1,8 +1,8 @@
 import { useBladeRegistry } from "../bladeRegistry";
-import type { ProcessType, TypedBlade } from "./types";
+import type { WorkflowType, TypedBlade } from "./types";
 
-export function rootBladeForProcess(process: ProcessType): TypedBlade {
-  if (process === "staging") {
+export function rootBladeForWorkflow(workflow: WorkflowType): TypedBlade {
+  if (workflow === "staging") {
     return {
       id: "root",
       type: "staging-changes",
@@ -11,7 +11,7 @@ export function rootBladeForProcess(process: ProcessType): TypedBlade {
     };
   }
   // Check if topology-graph blade is registered (extension active)
-  if (useBladeRegistry.getState().blades.has("topology-graph")) {
+  if (useBladeRegistry.getState().items.has("topology-graph")) {
     return {
       id: "root",
       type: "topology-graph",

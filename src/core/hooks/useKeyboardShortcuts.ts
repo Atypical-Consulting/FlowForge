@@ -268,7 +268,7 @@ export function useKeyboardShortcuts() {
     (e) => {
       e.preventDefault();
       if (status) {
-        getNavigationActor().send({ type: "SWITCH_PROCESS", process: "staging" });
+        getNavigationActor().send({ type: "SWITCH_WORKFLOW", workflow: "staging" });
       }
     },
     { preventDefault: true, enabled: !!status },
@@ -279,8 +279,8 @@ export function useKeyboardShortcuts() {
     "mod+2",
     (e) => {
       e.preventDefault();
-      if (status && useBladeRegistry.getState().blades.has("topology-graph")) {
-        getNavigationActor().send({ type: "SWITCH_PROCESS", process: "topology" });
+      if (status && useBladeRegistry.getState().items.has("topology-graph")) {
+        getNavigationActor().send({ type: "SWITCH_WORKFLOW", workflow: "topology" });
       }
     },
     { preventDefault: true, enabled: !!status },
@@ -314,11 +314,11 @@ export function useKeyboardShortcuts() {
   useHotkeys(
     "enter",
     () => {
-      if (!useBladeRegistry.getState().blades.has("topology-graph")) return;
+      if (!useBladeRegistry.getState().items.has("topology-graph")) return;
       const ctx = getNavigationActor().getSnapshot().context;
       const topologyStore = useTopologyStore.getState();
       if (
-        ctx.activeProcess === "topology" &&
+        ctx.activeWorkflow === "topology" &&
         topologyStore.topologySelectedCommit &&
         ctx.bladeStack.length === 1
       ) {

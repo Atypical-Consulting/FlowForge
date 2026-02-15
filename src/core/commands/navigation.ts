@@ -25,7 +25,7 @@ registerCommand({
   shortcut: "mod+1",
   icon: FileText,
   action: () => {
-    getNavigationActor().send({ type: "SWITCH_PROCESS", process: "staging" });
+    getNavigationActor().send({ type: "SWITCH_WORKFLOW", workflow: "staging" });
   },
   enabled: () => !!useRepositoryStore.getState().repoStatus,
 });
@@ -38,9 +38,9 @@ registerCommand({
   shortcut: "mod+2",
   icon: History,
   action: () => {
-    const hasTopology = useBladeRegistry.getState().blades.has("topology-graph");
+    const hasTopology = useBladeRegistry.getState().items.has("topology-graph");
     if (hasTopology) {
-      getNavigationActor().send({ type: "SWITCH_PROCESS", process: "topology" });
+      getNavigationActor().send({ type: "SWITCH_WORKFLOW", workflow: "topology" });
     }
   },
   enabled: () => !!useRepositoryStore.getState().repoStatus,

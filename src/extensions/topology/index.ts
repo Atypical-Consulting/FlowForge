@@ -34,7 +34,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     icon: History,
     keywords: ["topology", "history", "graph", "commits"],
     action: () => {
-      getNavigationActor().send({ type: "SWITCH_PROCESS", process: "topology" });
+      getNavigationActor().send({ type: "SWITCH_WORKFLOW", workflow: "topology" });
     },
     enabled: () => !!useGitOpsStore.getState().repoStatus,
   });
@@ -56,7 +56,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     const defaultTab = settings?.general?.defaultTab;
     if (defaultTab === "topology" || defaultTab === "history") {
       if (useGitOpsStore.getState().repoStatus) {
-        getNavigationActor().send({ type: "SWITCH_PROCESS", process: "topology" });
+        getNavigationActor().send({ type: "SWITCH_WORKFLOW", workflow: "topology" });
       }
     }
   } catch {

@@ -2,45 +2,45 @@ import { Files, Network } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useSelector } from "@xstate/react";
 import { useNavigationActorRef } from "@/framework/layout/navigation/context";
-import { selectActiveProcess } from "@/framework/layout/navigation/selectors";
-import type { ProcessType } from "@/framework/layout/navigation/types";
+import { selectActiveWorkflow } from "@/framework/layout/navigation/selectors";
+import type { WorkflowType } from "@/framework/layout/navigation/types";
 import { useBladeRegistry } from "@/framework/layout/bladeRegistry";
 import { cn } from "../../lib/utils";
 
-const ALL_PROCESSES = [
-  { id: "staging" as ProcessType, label: "Staging", icon: Files },
-  { id: "topology" as ProcessType, label: "Topology", icon: Network },
+const ALL_WORKFLOWS = [
+  { id: "staging" as WorkflowType, label: "Staging", icon: Files },
+  { id: "topology" as WorkflowType, label: "Topology", icon: Network },
 ];
 
-interface ProcessNavigationProps {
+interface WorkflowNavigationProps {
   className?: string;
 }
 
-export function ProcessNavigation({ className }: ProcessNavigationProps) {
+export function WorkflowNavigation({ className }: WorkflowNavigationProps) {
   const actorRef = useNavigationActorRef();
-  const activeProcess = useSelector(actorRef, selectActiveProcess);
+  const activeWorkflow = useSelector(actorRef, selectActiveWorkflow);
 
-  const blades = useBladeRegistry((s) => s.blades);
-  const visibleProcesses = useMemo(
-    () => ALL_PROCESSES.filter((p) => p.id === "staging" || blades.has("topology-graph")),
+  const blades = useBladeRegistry((s) => s.items);
+  const visibleWorkflows = useMemo(
+    () => ALL_WORKFLOWS.filter((p) => p.id === "staging" || blades.has("topology-graph")),
     [blades],
   );
 
   useEffect(() => {
-    if (activeProcess === "topology" && !blades.has("topology-graph")) {
-      actorRef.send({ type: "SWITCH_PROCESS", process: "staging" });
+    if (activeWorkflow === "topology" && !blades.has("topology-graph")) {
+      actorRef.send({ type: "SWITCH_WORKFLOW", workflow: "staging" });
     }
-  }, [activeProcess, blades, actorRef]);
+  }, [activeWorkflow, blades, actorRef]);
 
   return (
     <div className={cn("flex items-center gap-1", className)}>
-      {visibleProcesses.map(({ id, label, icon: Icon }) => (
+      {visibleWorkflows.map(({ id, label, icon: Icon }) => (
         <button
           key={id}
-          onClick={() => actorRef.send({ type: "SWITCH_PROCESS", process: id })}
+          onClick={() => actorRef.send({ type: "SWITCH_WORKFLOW", workflow: id })}
           className={cn(
             "px-3 py-1.5 rounded-md text-sm flex items-center gap-2 transition-colors",
-            activeProcess === id
+            activeWorkflow === id
               ? "bg-ctp-surface0 text-ctp-text"
               : "text-ctp-subtext0 hover:text-ctp-subtext1 hover:bg-ctp-surface0/50",
           )}
