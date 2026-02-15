@@ -5,16 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** Planning next milestone
+**Current focus:** Milestone v1.9.0 — Architecture Extraction & Monorepo
 
 ## Current Position
 
-Phase: None active
-Plan: None active
-Status: v1.8.0 shipped, awaiting next milestone
-Last activity: 2026-02-15 -- Archived v1.8.0 UI/UX Enhancements milestone
-
-Progress: Between milestones
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-15 — Milestone v1.9.0 started
 
 ## Milestone History
 
@@ -75,9 +73,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-15
-Stopped at: Archived v1.8.0 milestone. Ready for next milestone.
+Stopped at: Starting v1.9.0 milestone — defining requirements
 Resume file: None
 
 ---
 *State updated: 2026-02-15*
-*v1.8.0 UI/UX Enhancements shipped. Run `/gsd:new-milestone` to start next milestone.*
+*Milestone v1.9.0 Architecture Extraction & Monorepo started.*
