@@ -5,4 +5,4 @@ export type {
   ExtensionBladeContribution,
   ExtensionCommandContribution,
   ExtensionToolbarContribution,
-} from "../bindings";
+} from "../../bindings";

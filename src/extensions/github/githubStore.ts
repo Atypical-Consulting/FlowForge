@@ -11,7 +11,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { commands } from "../../bindings";
 import { toast } from "@/framework/stores/toast";
-import { openBlade } from "../../core/lib/bladeOpener";
+import { openBlade } from "@/framework/layout/bladeOpener";
 import type { AuthStep } from "./types";
 
 // Deduplication guard: prevents duplicate "Linked to" toast

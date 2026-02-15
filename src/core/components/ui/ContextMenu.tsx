@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { useContextMenuRegistry } from "../../lib/contextMenuRegistry";
+import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
 
 export function ContextMenuPortal() {
   const activeMenu = useContextMenuRegistry((s) => s.activeMenu);

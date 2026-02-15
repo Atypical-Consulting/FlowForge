@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useUIStore } from "../../stores/domain/ui-state";
+import { usePaletteStore as useUIStore } from "@/framework/command-palette/paletteStore";
 
 export interface UseMenuBarReturn {
   activeMenu: string | null;

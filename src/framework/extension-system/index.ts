@@ -1,4 +1,4 @@
-export { CURRENT_API_VERSION, useExtensionHost } from "./ExtensionHost";
+export { CURRENT_API_VERSION, useExtensionHost, configureExtensionHost } from "./ExtensionHost";
 export {
   type BladeNavigationEvent,
   type ExtensionBladeConfig,
@@ -24,3 +24,53 @@ export {
   extensionEventBus,
 } from "./eventBus";
 export { ExtensionSettings } from "./settings";
+
+// Extension manifest types
+export type {
+  ExtensionManifest,
+  ExtensionContributes,
+  ExtensionBladeContribution,
+  ExtensionCommandContribution,
+  ExtensionToolbarContribution,
+} from "./manifest";
+
+// Registry stores (moved from core/lib/)
+export {
+  useMachineRegistry,
+  registerMachine,
+  unregisterMachine,
+  unregisterMachinesBySource,
+  getMachineActor,
+  type MachineRegistryEntry,
+  type MachineRegistryState,
+} from "./machineRegistry";
+export {
+  useToolbarRegistry,
+  type ToolbarAction,
+  type ToolbarGroup,
+  type ToolbarRegistryState,
+  TOOLBAR_GROUP_ORDER,
+} from "./toolbarRegistry";
+export {
+  useContextMenuRegistry,
+  type ContextMenuItem,
+  type ContextMenuContext,
+  type ContextMenuLocation,
+  type ActiveMenu,
+  type ContextMenuRegistryState,
+} from "./contextMenuRegistry";
+export {
+  useStatusBarRegistry,
+  type StatusBarItem,
+  type StatusBarAlignment,
+  type StatusBarRegistryState,
+} from "./statusBarRegistry";
+export {
+  GitHookBus,
+  gitHookBus,
+  type GitOperation,
+  type GitHookContext,
+  type WillHookResult,
+  type DidHandler,
+  type WillHandler,
+} from "./operationBus";

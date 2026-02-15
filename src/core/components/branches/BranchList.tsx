@@ -4,7 +4,7 @@ import { useBulkSelect } from "../../hooks/useBulkSelect";
 import { useBranchScopes } from "../../hooks/useBranchScopes";
 import { useMergeWorkflow } from "../../hooks/useMergeWorkflow";
 import { bulkDeleteBranches, getProtectedBranches } from "../../lib/bulkBranchOps";
-import { gitHookBus } from "../../lib/gitHookBus";
+import { gitHookBus } from "@/framework/extension-system/operationBus";
 import { usePreferencesStore as useBranchMetadataStore } from "../../stores/domain/preferences";
 import { useGitOpsStore as useBranchStore } from "../../stores/domain/git-ops";
 import { useGitOpsStore as useGitflowStore } from "../../stores/domain/git-ops";

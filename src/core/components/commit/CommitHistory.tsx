@@ -5,7 +5,7 @@ import { EmptyState } from "../ui/EmptyState";
 import { Skeleton } from "../ui/Skeleton";
 import { Virtuoso } from "react-virtuoso";
 import { type CommitSummary, commands } from "../../../bindings";
-import { useContextMenuRegistry } from "../../lib/contextMenuRegistry";
+import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
 import { cn } from "../../lib/utils";
 import { GravatarAvatar } from "../../../extensions/git-insights/components/GravatarAvatar";
 import { useInsightsStore } from "../../../extensions/git-insights/insightsStore";

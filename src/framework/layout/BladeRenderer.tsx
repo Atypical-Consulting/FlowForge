@@ -1,18 +1,22 @@
 import { Suspense } from "react";
 import { Puzzle } from "lucide-react";
 import { useBladeRegistry } from "./bladeRegistry";
-import { openBlade } from "../../core/lib/bladeOpener";
+import { openBlade } from "./bladeOpener";
 import { BladePanel } from "./BladePanel";
-import { BladeLoadingFallback } from "../../core/blades/_shared/BladeLoadingFallback";
-import { BladeErrorBoundary } from "../../core/blades/_shared/BladeErrorBoundary";
-import type { TypedBlade } from "../../core/stores/bladeTypes";
+import { BladeLoadingFallback } from "./BladeLoadingFallback";
+import { BladeErrorBoundary } from "./BladeErrorBoundary";
+import type { TypedBlade } from "./navigation/types";
 
 interface BladeRendererProps {
   blade: TypedBlade;
   goBack: () => void;
+  /** Whether focus mode is currently active (passed through to BladePanel). */
+  isFocusMode?: boolean;
+  /** Callback to toggle focus mode (passed through to BladePanel). */
+  onToggleFocusMode?: () => void;
 }
 
-export function BladeRenderer({ blade, goBack }: BladeRendererProps) {
+export function BladeRenderer({ blade, goBack, isFocusMode, onToggleFocusMode }: BladeRendererProps) {
   const reg = useBladeRegistry((s) => s.blades.get(blade.type));
   if (!reg)
     return (
@@ -59,6 +63,8 @@ export function BladeRenderer({ blade, goBack }: BladeRendererProps) {
         trailing={reg.renderTrailing?.(blade.props as any, { goBack })}
         showBack={reg.showBack !== false}
         onBack={goBack}
+        isFocusMode={isFocusMode}
+        onToggleFocusMode={onToggleFocusMode}
       >
         {content}
       </BladePanel>

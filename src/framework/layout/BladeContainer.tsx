@@ -12,9 +12,16 @@ import {
 } from "../theme/animations";
 import { BladeRenderer } from "./BladeRenderer";
 import { BladeStrip } from "./BladeStrip";
-import { NavigationGuardDialog } from "../../core/blades/_shared/NavigationGuardDialog";
+import { NavigationGuardDialog } from "./NavigationGuardDialog";
 
-export function BladeContainer() {
+interface BladeContainerProps {
+  /** Whether focus mode is currently active (passed through to BladePanel). */
+  isFocusMode?: boolean;
+  /** Callback to toggle focus mode (passed through to BladePanel). */
+  onToggleFocusMode?: () => void;
+}
+
+export function BladeContainer({ isFocusMode, onToggleFocusMode }: BladeContainerProps = {}) {
   const actorRef = useNavigationActorRef();
   const bladeStack = useSelector(actorRef, selectBladeStack);
   const lastAction = useSelector(actorRef, selectLastAction);
@@ -58,6 +65,8 @@ export function BladeContainer() {
           <BladeRenderer
             blade={activeBlade}
             goBack={() => actorRef.send({ type: "POP_BLADE" })}
+            isFocusMode={isFocusMode}
+            onToggleFocusMode={onToggleFocusMode}
           />
         </motion.div>
       </AnimatePresence>

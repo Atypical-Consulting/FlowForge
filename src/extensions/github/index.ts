@@ -9,10 +9,10 @@
 import { createElement } from "react";
 import { Github, GitPullRequest, GitPullRequestCreate, CircleDot } from "lucide-react";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
-import { openBlade } from "../../core/lib/bladeOpener";
+import { openBlade } from "@/framework/layout/bladeOpener";
 import { useGitHubStore, getSelectedRemote, cancelGitHubPolling } from "./githubStore";
 import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
-import { useToolbarRegistry } from "../../core/lib/toolbarRegistry";
+import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
 import { queryClient } from "../../core/lib/queryClient";
 
 // Module-level unsubscribes for store listeners

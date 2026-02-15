@@ -1,6 +1,6 @@
 import { Puzzle } from "lucide-react";
 import { registerCommand } from "@/framework/command-palette/commandRegistry";
-import { openBlade } from "../lib/bladeOpener";
+import { openBlade } from "@/framework/layout/bladeOpener";
 
 registerCommand({
   id: "open-extension-manager",

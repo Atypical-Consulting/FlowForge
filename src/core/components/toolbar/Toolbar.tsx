@@ -3,7 +3,7 @@ import {
   type ToolbarAction,
   TOOLBAR_GROUP_ORDER,
   useToolbarRegistry,
-} from "../../lib/toolbarRegistry";
+} from "@/framework/extension-system/toolbarRegistry";
 import { usePreferencesStore } from "../../stores/domain/preferences";
 import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
 import { ToolbarButton } from "./ToolbarButton";

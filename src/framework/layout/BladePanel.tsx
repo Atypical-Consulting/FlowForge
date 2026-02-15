@@ -1,7 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
-import { usePreferencesStore } from "../../core/stores/domain/preferences";
-import { cn } from "../../core/lib/utils";
+import { cn } from "../lib/utils";
 
 interface BladePanelProps {
   children: ReactNode;
@@ -12,6 +11,10 @@ interface BladePanelProps {
   trailing?: ReactNode;
   onBack?: () => void;
   showBack?: boolean;
+  /** Whether focus mode is currently active. */
+  isFocusMode?: boolean;
+  /** Callback to toggle focus mode on double-click. */
+  onToggleFocusMode?: () => void;
 }
 
 export function BladePanel({
@@ -21,29 +24,17 @@ export function BladePanel({
   trailing,
   onBack,
   showBack,
+  isFocusMode = false,
+  onToggleFocusMode,
 }: BladePanelProps) {
-  const isFocused = usePreferencesStore(
-    (s) => s.layoutState.focusedPanel !== null,
-  );
-
-  const handleDoubleClick = () => {
-    const { layoutState, enterFocusMode, exitFocusMode } =
-      usePreferencesStore.getState();
-    if (layoutState.focusedPanel) {
-      exitFocusMode();
-    } else {
-      enterFocusMode("blades");
-    }
-  };
-
   return (
     <div className="flex flex-col h-full">
       <div
         className={cn(
           "h-10 px-3 flex items-center gap-2 border-b border-ctp-surface0 shrink-0",
-          isFocused ? "bg-ctp-blue/10" : "bg-ctp-crust",
+          isFocusMode ? "bg-ctp-blue/10" : "bg-ctp-crust",
         )}
-        onDoubleClick={handleDoubleClick}
+        onDoubleClick={onToggleFocusMode}
         title="Double-click to toggle focus mode"
       >
         {showBack && (
@@ -61,7 +52,7 @@ export function BladePanel({
           </span>
         )}
         {trailing && <div className="ml-auto shrink-0">{trailing}</div>}
-        {isFocused && (
+        {isFocusMode && (
           <span
             className={cn(
               "text-[10px] text-ctp-subtext0 shrink-0",

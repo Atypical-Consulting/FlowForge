@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import { useExtensionHost } from "@/framework/extension-system/ExtensionHost";
 import type { BuiltInExtensionConfig } from "@/framework/extension-system/types";
-import { useToolbarRegistry } from "../../core/lib/toolbarRegistry";
+import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
 import type { LucideIcon } from "lucide-react";
 
 // Mock Tauri / infrastructure dependencies

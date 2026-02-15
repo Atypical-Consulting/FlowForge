@@ -15,25 +15,25 @@ import {
 import {
   useMachineRegistry,
   type MachineRegistryEntry,
-} from "../../core/lib/machineRegistry";
-import { useToolbarRegistry, type ToolbarGroup } from "../../core/lib/toolbarRegistry";
+} from "./machineRegistry";
+import { useToolbarRegistry, type ToolbarGroup } from "./toolbarRegistry";
 import {
   useContextMenuRegistry,
   type ContextMenuLocation,
   type ContextMenuContext,
-} from "../../core/lib/contextMenuRegistry";
+} from "./contextMenuRegistry";
 import { useSidebarPanelRegistry } from "../layout/sidebarPanelRegistry";
 import {
   useStatusBarRegistry,
   type StatusBarAlignment,
-} from "../../core/lib/statusBarRegistry";
+} from "./statusBarRegistry";
 import {
   gitHookBus,
   type GitOperation,
   type GitHookContext,
   type DidHandler,
   type WillHandler,
-} from "../../core/lib/gitHookBus";
+} from "./operationBus";
 import { getNavigationActor } from "../layout/navigation/context";
 import type { LastAction } from "../layout/navigation/types";
 import { ExtensionSettings } from "./settings";

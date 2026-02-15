@@ -1,8 +1,8 @@
-import { useContextMenuRegistry } from "../contextMenuRegistry";
+import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
 import type {
   ContextMenuItem,
   ContextMenuContext,
-} from "../contextMenuRegistry";
+} from "@/framework/extension-system/contextMenuRegistry";
 
 const makeItem = (
   overrides: Partial<ContextMenuItem> & { id: string },

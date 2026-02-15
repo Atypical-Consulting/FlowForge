@@ -2,7 +2,7 @@ import {
   type ToolbarAction,
   TOOLBAR_GROUP_ORDER,
   useToolbarRegistry,
-} from "../../../lib/toolbarRegistry";
+} from "@/framework/extension-system/toolbarRegistry";
 import { usePreferencesStore as useSettingsStore } from "../../../stores/domain/preferences";
 import { formatShortcut } from "../../../hooks/useKeyboardShortcuts";
 

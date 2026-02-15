@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { useStatusBarRegistry } from "../../lib/statusBarRegistry";
-import type { StatusBarItem } from "../../lib/statusBarRegistry";
+import { useStatusBarRegistry } from "@/framework/extension-system/statusBarRegistry";
+import type { StatusBarItem } from "@/framework/extension-system/statusBarRegistry";
 
 function StatusBarWidget({ item }: { item: StatusBarItem }) {
   const content = item.renderCustom();

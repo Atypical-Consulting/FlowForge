@@ -26,7 +26,8 @@ import { usePreferencesStore as useThemeStore } from "./core/stores/domain/prefe
 import { useGitOpsStore as useUndoStore } from "./core/stores/domain/git-ops";
 import { useBladeRegistry } from "@/framework/layout/bladeRegistry";
 import { modKeyLabel } from "./core/lib/platform";
-import { useExtensionHost } from "./extensions";
+import { useExtensionHost, configureExtensionHost } from "./extensions";
+import { commands as tauriCommands } from "./bindings";
 import { onActivate as viewerCodeActivate, onDeactivate as viewerCodeDeactivate } from "./extensions/viewer-code";
 import { onActivate as viewerMarkdownActivate, onDeactivate as viewerMarkdownDeactivate } from "./extensions/viewer-markdown";
 import { onActivate as viewer3dActivate, onDeactivate as viewer3dDeactivate } from "./extensions/viewer-3d";
@@ -42,6 +43,14 @@ import { onActivate as welcomeActivate, onDeactivate as welcomeDeactivate } from
 import { onActivate as topologyActivate, onDeactivate as topologyDeactivate } from "./extensions/topology";
 import { onActivate as conflictActivate, onDeactivate as conflictDeactivate } from "./extensions/conflict-resolution";
 import { onActivate as insightsActivate, onDeactivate as insightsDeactivate } from "./extensions/git-insights";
+
+// Configure ExtensionHost with Tauri-specific discovery
+configureExtensionHost({
+  discoverExtensions: async (path: string) => {
+    const result = await tauriCommands.discoverExtensions(path);
+    return result;
+  },
+});
 
 function WelcomeFallback() {
   const { openRepository } = useGitOpsStore();
