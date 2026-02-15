@@ -8,3 +8,10 @@ export {
   toast,
 } from "./toast";
 export { getStore } from "./persistence/tauri";
+export {
+  createRegistry,
+  type RegistryItem,
+  type BaseRegistryState,
+  type VisibilityMixin,
+  type CreateRegistryOptions,
+} from "./createRegistry";

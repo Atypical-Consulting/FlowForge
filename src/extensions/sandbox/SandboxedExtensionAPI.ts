@@ -1,7 +1,7 @@
 import { REQUIRES_TRUST_METHODS } from "./sandbox-api-surface";
 import type { RequiresTrustMethod } from "./sandbox-api-surface";
 import type { ExtensionAPI, BladeNavigationEvent } from "@/framework/extension-system/ExtensionAPI";
-import type { GitOperation, DidHandler, WillHandler } from "@/framework/extension-system/operationBus";
+import type { GitOperation, GitHookContext, DidHandler, WillHandler } from "@/framework/extension-system/operationBus";
 import type { Disposable } from "@/framework/extension-system/ExtensionAPI";
 
 /**
@@ -37,11 +37,11 @@ export class SandboxedExtensionAPI {
 
   // --- Sandbox-safe methods ---
 
-  onDidGit(operation: GitOperation, handler: DidHandler): void {
+  onDidGit(operation: GitOperation, handler: DidHandler<GitHookContext>): void {
     this.hostApi.onDidGit(operation, handler);
   }
 
-  onWillGit(operation: GitOperation, handler: WillHandler): void {
+  onWillGit(operation: GitOperation, handler: WillHandler<GitHookContext>): void {
     this.hostApi.onWillGit(operation, handler);
   }
 

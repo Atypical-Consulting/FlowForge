@@ -1,10 +1,10 @@
-import { GitHookBus } from "@/framework/extension-system/operationBus";
+import { OperationBus, type GitOperation, type GitHookContext } from "@/framework/extension-system/operationBus";
 
-describe("GitHookBus", () => {
-  let bus: GitHookBus;
+describe("GitHookBus (OperationBus)", () => {
+  let bus: OperationBus<GitOperation, GitHookContext>;
 
   beforeEach(() => {
-    bus = new GitHookBus();
+    bus = new OperationBus<GitOperation, GitHookContext>("GitHookBus");
   });
 
   it("emitDid fires registered onDid handler with correct context", async () => {
