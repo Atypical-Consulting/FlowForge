@@ -1,4 +1,4 @@
-import type { CoreBladeType, BladePropsMap } from "./navigation/types";
+import type { CoreBladeType, BladePropsMap } from "./bladeTypes";
 import { getBladeRegistration } from "./bladeRegistry";
 import { getNavigationActor } from "./navigation/context";
 

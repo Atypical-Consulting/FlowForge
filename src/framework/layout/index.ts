@@ -1,4 +1,13 @@
 export {
+  type BladePropsMap,
+  type CoreBladeType,
+  type ExtensionBladeType,
+  type BladeType,
+  type TypedBlade,
+  isCoreBladeType,
+} from "./bladeTypes";
+
+export {
   type BladeRenderContext,
   type BladeRegistration,
   getRegistration,
