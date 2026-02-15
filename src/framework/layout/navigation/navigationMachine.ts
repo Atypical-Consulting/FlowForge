@@ -2,6 +2,7 @@ import { setup, assign, and, not } from "xstate";
 import { rootBladeForWorkflow } from "./actions";
 import { toast } from "../../stores/toast";
 import { isSingletonBlade } from "../bladeRegistry";
+import { getDefaultWorkflowId } from "./workflowRegistry";
 import type { NavigationContext, NavigationEvent, TypedBlade } from "./types";
 
 const DEFAULT_MAX_STACK_DEPTH = 8;
@@ -199,14 +200,14 @@ export const navigationMachine = setup({
 }).createMachine({
   id: "bladeNavigation",
   initial: "navigating",
-  context: {
-    activeWorkflow: "staging",
-    bladeStack: [rootBladeForWorkflow("staging")],
-    dirtyBladeIds: {},
-    lastAction: "init",
+  context: () => ({
+    activeWorkflow: getDefaultWorkflowId(),
+    bladeStack: [rootBladeForWorkflow(getDefaultWorkflowId())],
+    dirtyBladeIds: {} as Record<string, true>,
+    lastAction: "init" as const,
     maxStackDepth: DEFAULT_MAX_STACK_DEPTH,
-    pendingEvent: null,
-  },
+    pendingEvent: null as NavigationEvent | null,
+  }),
   states: {
     navigating: {
       on: {
