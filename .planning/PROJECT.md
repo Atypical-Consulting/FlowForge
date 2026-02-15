@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A cross-platform desktop Git client built on Tauri (Rust backend + React frontend) that makes Gitflow, conventional commits, and worktrees the structural foundation of the interface — not afterthoughts buried in menus. Features a blade-based navigation system with 22+ blade types managed by an XState finite state machine, co-located feature modules, 3 consolidated domain stores, and a fully extensible platform with 13 independently toggleable built-in extensions (including GitHub, Gitflow, Conventional Commits, Topology, Worktrees, Init Repo, and content viewers). All registries (blades, commands, previews, sidebar panels) are reactive Zustand stores with source-based cleanup. Includes sandbox infrastructure for future third-party extension safety.
+A cross-platform desktop Git client built on Tauri (Rust backend + React frontend) that makes Gitflow, conventional commits, and worktrees the structural foundation of the interface — not afterthoughts buried in menus. Features a blade-based navigation system with 22+ blade types managed by an XState finite state machine, co-located feature modules, 3 consolidated domain stores, and a fully extensible platform with 15 independently toggleable built-in extensions (including GitHub, Gitflow, Conventional Commits, Topology, Worktrees, Init Repo, Git Insights, Conflict Resolution, and content viewers). Includes professional diff viewing with hunk/line staging, inline conflict resolution, a Git insights dashboard, and customizable workspace layouts. All registries (blades, commands, previews, sidebar panels) are reactive Zustand stores with source-based cleanup. Includes sandbox infrastructure for future third-party extension safety.
 
 ## Core Value
 
@@ -218,19 +218,33 @@ Each layer adds value; each inner layer stands without the outer ones.
 - ✓ Toggle tests for topology (9), worktrees (7), and init-repo (9) extensions — v1.7
 - ✓ Extension developer documentation updated with new built-in extension examples — v1.7
 
+- ✓ Collapsible unchanged regions in diff viewer with expander — v1.8
+- ✓ Hunk staging from diff viewer via gutter controls — v1.8
+- ✓ Line staging with clickable controls and keyboard shortcuts — v1.8
+- ✓ Word-level diff highlighting within changed lines — v1.8
+- ✓ Diff view mode preference persists across sessions — v1.8
+- ✓ Author avatars in history views with Gravatar + initials fallback — v1.8
+- ✓ Commit heat map by recency with legend on topology graph — v1.8
+- ✓ Hover tooltips on topology commit nodes — v1.8
+- ✓ Pinned repos on welcome screen with persistent pin state — v1.8
+- ✓ Health indicators on welcome screen repo cards — v1.8
+- ✓ Quick actions on welcome screen repo cards — v1.8
+- ✓ Two-pane conflict diff view with editable result panel — v1.8
+- ✓ One-click conflict resolution (ours/theirs/both) with undo — v1.8
+- ✓ Manual conflict editing with syntax highlighting and reset — v1.8
+- ✓ Mark file as resolved stages + toast confirmation — v1.8
+- ✓ Commit activity chart with configurable time ranges — v1.8
+- ✓ Contributor breakdown with click-to-filter — v1.8
+- ✓ Branch health overview with staleness and quick actions — v1.8
+- ✓ Repository stats cards — v1.8
+- ✓ Layout presets (Review, Commit, Explore, Focus) via toolbar menu — v1.8
+- ✓ Focus mode via double-click + Esc exit — v1.8
+- ✓ Panel toggle via Panels menu — v1.8
+- ✓ Panel sizes persist across sessions with reset option — v1.8
+
 ### Active
 
-## Current Milestone: v1.8.0 UI/UX Enhancements
-
-**Goal:** Elevate FlowForge's user experience with enhanced diff viewing, inline conflict resolution, workspace customization, commit visualization, welcome screen polish, and a Git insights dashboard.
-
-**Target features:**
-- Enhanced Diff Viewer (collapsible regions, line-level staging, word-level highlighting, preference persistence)
-- Branch & Commit Visualization (author avatars, commit heat map, node tooltips)
-- Welcome Screen Enhancement (pinned repos, health indicators, quick actions)
-- Inline Conflict Resolution (three-way merge view, one-click resolve, manual editing)
-- Git Insights Dashboard (commit activity, contributor breakdown, branch health, repo stats)
-- Customizable Workspace Layouts (presets, focus mode, panel toggles, persistence)
+(No active milestone — run `/gsd:new-milestone` to start next)
 
 ### Deferred to v2+
 
@@ -245,7 +259,7 @@ Each layer adds value; each inner layer stands without the outer ones.
 - Policy configuration file (.gitclient-policy.yml) — v2 alongside MCP; guardrails exist in v1 but aren't user-configurable
 - Interactive rebase drag-and-drop — valuable polish, not core differentiator, v3
 - Smart staging with automatic changeset grouping — underserved not unserved, v3
-- Branch health monitoring (staleness, drift indicators) — moved to v1.8.0 as part of Git Insights Dashboard
+- Branch health monitoring (staleness, drift indicators) — delivered in v1.8.0 as part of Git Insights Dashboard
 - Built-in code editor — scope creep, IDE competition
 - Mercurial/SVN support — Git-only focus
 - CI/CD integration — feature creep (CI status indicators on PRs sufficient)
@@ -261,15 +275,16 @@ Each layer adds value; each inner layer stands without the outer ones.
 
 ## Context
 
-**Current state:** Shipped v1.7.0 with ~41,705 LOC TypeScript + ~11,145 Rust.
-Tech stack: Tauri 2.x, React 19, XState v5, Zustand (3 domain stores + 4 Zustand-based registries: blades, commands, previews, sidebar panels), React Query, Monaco Editor, Three.js, framer-motion, reqwest, keyring.
-All 296 requirements implemented across 47 phases (~230 plans) in eight milestones.
+**Current state:** Shipped v1.8.0 with ~46,958 LOC TypeScript + ~13,059 Rust.
+Tech stack: Tauri 2.x, React 19, XState v5, Zustand (3 domain stores + 4 Zustand-based registries: blades, commands, previews, sidebar panels), React Query, Monaco Editor, Three.js, visx, framer-motion, reqwest, keyring.
+All 319 requirements implemented across 53 phases (~248 plans) in nine milestones.
 22+ blade types in co-located feature modules with XState FSM navigation.
-Extension platform with 13 independently toggleable built-in extensions (GitHub, Gitflow, Conventional Commits, Topology, Worktrees, Init Repo, Welcome Screen, and 6 content viewers).
+Extension platform with 15 independently toggleable built-in extensions (GitHub, Gitflow, Conventional Commits, Topology, Worktrees, Init Repo, Welcome Screen, Git Insights, Conflict Resolution, and 6 content viewers).
 All registries (blades, commands, previews) are reactive Zustand stores with source-based cleanup.
+Professional diff viewer with hunk/line staging, inline conflict resolution, Git insights dashboard, and workspace layout presets.
 Sandbox infrastructure: trust levels, Worker prototype, API method classification.
-270 tests (Vitest + jsdom) covering stores, components, extensions, toggle lifecycle, and machine logic.
-Documentation website live on GitHub Pages with extension developer guides and READMEs for all 13 extensions.
+295 tests (Vitest + jsdom) covering stores, components, extensions, toggle lifecycle, and machine logic. 74 Rust tests.
+Documentation website live on GitHub Pages with extension developer guides.
 
 **Known tech debt:**
 - CC blade accessibility polish (aria-live debounce, amend mode styling, aria-labels)
@@ -278,7 +293,9 @@ Documentation website live on GitHub Pages with extension developer guides and R
 - Pre-existing TS2440 in auto-generated bindings.ts
 - Phase 34 human runtime testing pending (6 OAuth flow items)
 - GFEX-06 needs human runtime verification (architecture correct)
-- 13 items pending human runtime verification from v1.7.0 (CommandPalette, toggle UIs, dialog flows)
+- 13 items pending human runtime verification from v1.7.0
+- CONF-01 partial: file tree conflict indicators and staging panel filter not implemented
+- 29 items pending human runtime verification from v1.8.0
 
 **v2 vision:** MCP server exposing repository state (branches, worktrees, commit history, diffs, Gitflow context) as structured resources and tools. Tiered autonomy model:
 - **Tier 1 (full autonomy):** Reversible, local, convention-clear operations
@@ -353,6 +370,14 @@ Documentation website live on GitHub Pages with extension developer guides and R
 | Registry-aware rootBladeForProcess (v1.7) | Navigation machine checks BladeRegistry before returning topology; falls back to commit-list-fallback | ✓ Good — graceful degradation |
 | File watcher in extension lifecycle (v1.7) | Topology file watcher moves from App.tsx to extension onActivate/onDeactivate; no orphaned listeners | ✓ Good — proper cleanup |
 | CORE vs EXTENSION discovery split (v1.7) | _discovery.ts splits EXPECTED_TYPES into core (warn) and extension (debug) for clear architectural boundary | ✓ Good — enforces layering |
+| Monaco hideUnchangedRegions for collapsible diffs (v1.8) | Built-in Monaco feature avoids custom implementation; maps to DIFF-01 directly | ✓ Good — zero custom code |
+| visx for chart visualizations (v1.8) | Low-level D3-based React components; flexible without opinionated chart framework overhead | ✓ Good — clean integration |
+| Conflict resolution as extension (v1.8) | Follows established extension-first architecture; independently toggleable | ✓ Good — consistent pattern |
+| Git Insights as extension (v1.8) | Analytics dashboard is optional enrichment, not core Git functionality | ✓ Good — keeps core lean |
+| Two-segment heat map interpolation (v1.8) | Green→yellow→red provides clearer visual distinction than linear gradient | ✓ Good — readable visualization |
+| Transient focus mode state (v1.8) | Focus panel not persisted to Tauri Store; always starts in normal mode | ✓ Good — predictable UX |
+| isApplyingPreset ref guard (v1.8) | Prevents onLayoutChanged from marking programmatic preset switches as "custom" | ✓ Good — clean preset tracking |
+| Temporary repo handle for health checks (v1.8) | Avoids state conflicts with active repository when checking welcome screen health | ✓ Good — safe isolation |
 
 ---
-*Last updated: 2026-02-12 after v1.8.0 milestone start*
+*Last updated: 2026-02-15 after v1.8.0 milestone completion*

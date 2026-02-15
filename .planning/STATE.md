@@ -2,19 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-12)
+See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** The intelligence is in the agent; the authority is in the infrastructure.
-**Current focus:** v1.8.0 UI/UX Enhancements -- Phase 53: Workspace Layout Presets
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 53 of 53 (Workspace Layout Presets)
-Plan: 2 of 2 in current phase
-Status: Phase 53 Complete
-Last activity: 2026-02-14 -- Completed 53-02 (panel wiring: imperative API, focus mode, sidebar toggle, keyboard shortcuts)
+Phase: None active
+Plan: None active
+Status: v1.8.0 shipped, awaiting next milestone
+Last activity: 2026-02-15 -- Archived v1.8.0 UI/UX Enhancements milestone
 
-Progress: [██████████] 100% (v1.8.0)
+Progress: Between milestones
 
 ## Milestone History
 
@@ -28,6 +28,7 @@ Progress: [██████████] 100% (v1.8.0)
 | v1.5.0 GitHub Extension | Complete | 2026-02-10 |
 | v1.6.0 Refactor to Extensions | Complete | 2026-02-11 |
 | v1.7.0 Extensions Everywhere | Complete | 2026-02-11 |
+| v1.8.0 UI/UX Enhancements | Complete | 2026-02-15 |
 
 See `.planning/MILESTONES.md` for full history.
 
@@ -35,9 +36,9 @@ See `.planning/MILESTONES.md` for full history.
 
 **Cumulative:**
 - Total phases: 53 complete
-- Total plans: ~245 complete
-- Total requirements validated: 306
-- Codebase: ~42,200 LOC TypeScript + ~11,400 Rust
+- Total plans: ~248 complete
+- Total requirements validated: 319
+- Codebase: ~46,958 LOC TypeScript + ~13,059 Rust
 - Tests: 295 (Vitest + jsdom), 74 (Rust)
 - Built-in extensions: 15
 
@@ -52,26 +53,12 @@ See `.planning/MILESTONES.md` for full history.
 - Phase 34 human runtime testing pending (6 OAuth flow items)
 - GFEX-06 needs human runtime verification (architecture correct)
 - 13 items pending human runtime verification from v1.7.0
-- Phase 50: 5 items pending human runtime verification (ViewZone visuals, hunk round-trip, line selection, keyboard shortcuts, partial indicator)
-- Phase 51 gaps: CLOSED — contributor filter wired to CommitHistory, GravatarAvatar integrated in history views (plan 51-05)
+- CONF-01 partial: file tree conflict indicators and staging panel filter not implemented
+- 29 items pending human runtime verification from v1.8.0
 
 ### Key Decisions
 
 All decisions logged in PROJECT.md Key Decisions table with outcomes marked.
-- Phase 52-01: Two-segment interpolation (green->yellow->red) for clearer visual distinction at gradient extremes
-- Phase 52-01: 100ms anti-flicker delay on tooltip hide to prevent flash between adjacent nodes
-- Phase 52-01: Legend as absolute overlay at bottom-left to avoid layout shifts
-- Phase 52-02: isPinned optional field for backward compat with existing stored data
-- Phase 52-02: Pin state preserved when re-opening repo via existingEntry lookup
-- Phase 52-03: Temporary repo handle pattern for health checks avoids state conflicts with active repository
-- Phase 52-03: 500ms debounce on health checks to prevent rapid re-fetches
-- Phase 52-03: Health dot between folder icon and repo name for left-side visual indicator
-- Phase 53-01: Focus mode state (focusedPanel) is transient, not persisted to Tauri Store
-- Phase 53-01: Manual resize sets activePreset to "custom" for non-preset state detection
-- Phase 53-01: Panel IDs as open-ended strings for forward compatibility with future panels
-- Phase 53-02: isApplyingPreset ref guard prevents onLayoutChanged from marking programmatic preset switches as custom
-- Phase 53-02: queueMicrotask used to reset guard after imperative setLayout synchronous side effects
-- Phase 53-02: Focus hint positioned conditionally with ml-auto for correct layout with/without trailing elements
 
 ### Research Flags
 
@@ -87,10 +74,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-14
-Stopped at: Completed 53-02-PLAN.md (panel wiring and UI integration). Phase 53 complete (2/2 plans done).
+Last session: 2026-02-15
+Stopped at: Archived v1.8.0 milestone. Ready for next milestone.
 Resume file: None
 
 ---
-*State updated: 2026-02-14*
-*Phase 53 (Workspace Layout Presets) complete. v1.8.0 milestone ready for final verification.*
+*State updated: 2026-02-15*
+*v1.8.0 UI/UX Enhancements shipped. Run `/gsd:new-milestone` to start next milestone.*

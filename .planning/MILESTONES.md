@@ -264,3 +264,39 @@
 
 ---
 
+
+## v1.8.0 UI/UX Enhancements (Shipped: 2026-02-15)
+
+**Delivered:** Elevated FlowForge's user experience with professional diff viewing, inline conflict resolution, hunk & line staging, a Git insights dashboard, visualization polish, and workspace layout presets.
+
+**Phases completed:** 48-53 (6 phases, 18 plans, 23 requirements)
+
+**Key accomplishments:**
+
+- Built professional diff viewer with collapsible unchanged regions, word-level highlighting, and persistent view mode preferences
+- Implemented inline conflict resolution with three-way merge view, one-click hunk resolution (ours/theirs/both), editable result editor, and mark-as-resolved workflow
+- Added hunk & line staging from within the diff viewer via gutter controls, per-line selection with keyboard shortcuts, and partial-stage indicators
+- Shipped Git Insights Dashboard extension with commit activity charts, contributor breakdown with cross-extension filtering, branch health overview, repo stats cards, and Gravatar avatars
+- Polished welcome screen with pinned repos, health status dots, quick actions, and topology graph with commit heat map and hover tooltips
+- Built workspace layout presets (Review, Commit, Explore, Focus) with focus mode, panel toggles, sidebar shortcut, and persistent panel sizes
+
+**Stats:**
+
+- 133 files changed (+22,860/-409 lines)
+- ~60,017 lines of code (46,958 TypeScript + 13,059 Rust)
+- 6 phases, 18 plans, 23 requirements (22 satisfied, 1 partial)
+- 3 days (2026-02-12 → 2026-02-14)
+- 12 feature commits
+
+**Git range:** `feat(48-02)` → `feat(53-02)`
+
+**Tech debt accepted:**
+- CONF-01 partial: file tree conflict indicators and staging panel filter not implemented (toolbar badge exists)
+- 29 items pending human runtime verification across all 6 phases
+- Phase 48 missing formal VERIFICATION.md (UAT 8/8 passed)
+- Pre-existing TS2440 in auto-generated bindings.ts
+
+**What's next:** v2.0 — MCP server, tiered autonomy model, or further polish
+
+---
+
