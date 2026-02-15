@@ -2,6 +2,7 @@ import { createActor } from "xstate";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { navigationMachine } from "./navigationMachine";
 import { registerBlade, unregisterBlade } from "../bladeRegistry";
+import { registerWorkflow, clearWorkflows } from "./workflowRegistry";
 
 function createTestActor() {
   const actor = createActor(navigationMachine);
@@ -10,8 +11,23 @@ function createTestActor() {
 }
 
 describe("navigationMachine", () => {
-  // Register singleton blade types so isSingletonBlade() works in tests
+  // Register test workflows and singleton blade types
   beforeEach(() => {
+    clearWorkflows();
+
+    // Register domain workflows for testing
+    registerWorkflow({
+      id: "staging",
+      label: "Staging",
+      rootBlade: { type: "staging-changes", title: "Changes", props: {} as Record<string, never> },
+    });
+    registerWorkflow({
+      id: "topology",
+      label: "Topology",
+      rootBlade: { type: "topology-graph", title: "Topology", props: {} as Record<string, never> },
+      fallbackBlade: { type: "commit-list-fallback", title: "History", props: {} as Record<string, never> },
+    });
+
     const singletonTypes = ["settings", "changelog", "gitflow-cheatsheet", "conventional-commit", "repo-browser"];
     for (const type of singletonTypes) {
       registerBlade({

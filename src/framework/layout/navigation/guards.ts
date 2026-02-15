@@ -1,3 +1,4 @@
+import { isSingletonBlade } from "../bladeRegistry";
 import type { NavigationContext, NavigationEvent } from "./types";
 
 type GuardArgs = {
@@ -5,20 +6,11 @@ type GuardArgs = {
   event: NavigationEvent;
 };
 
-/** Singleton blade types that can only appear once in the stack. */
-const SINGLETON_TYPES = new Set([
-  "settings",
-  "changelog",
-  "gitflow-cheatsheet",
-  "conventional-commit",
-  "repo-browser",
-]);
-
 export const navigationGuards = {
   /** NAV-05: Prevent duplicate singleton blades in the stack */
   isNotSingleton: ({ context, event }: GuardArgs) => {
     if (event.type !== "PUSH_BLADE") return true;
-    if (!SINGLETON_TYPES.has(event.bladeType)) return true;
+    if (!isSingletonBlade(event.bladeType)) return true;
     return !context.bladeStack.some((b) => b.type === event.bladeType);
   },
 

@@ -1,29 +1,26 @@
 import { useBladeRegistry } from "../bladeRegistry";
+import { getWorkflow, getDefaultWorkflowId } from "./workflowRegistry";
 import type { WorkflowType, TypedBlade } from "./types";
 
 export function rootBladeForWorkflow(workflow: WorkflowType): TypedBlade {
-  if (workflow === "staging") {
-    return {
-      id: "root",
-      type: "staging-changes",
-      title: "Changes",
-      props: {} as Record<string, never>,
-    };
+  const config = getWorkflow(workflow);
+  if (!config) {
+    // Fallback to first registered workflow
+    const fallbackId = getDefaultWorkflowId();
+    const fallback = getWorkflow(fallbackId);
+    if (fallback) {
+      return { id: "root", ...fallback.rootBlade } as TypedBlade;
+    }
+    return { id: "root", type: "empty" as any, title: "Empty", props: {} } as TypedBlade;
   }
-  // Check if topology-graph blade is registered (extension active)
-  if (useBladeRegistry.getState().items.has("topology-graph")) {
-    return {
-      id: "root",
-      type: "topology-graph",
-      title: "Topology",
-      props: {} as Record<string, never>,
-    };
+
+  // Check if fallback needed (root blade not registered)
+  if (
+    config.fallbackBlade &&
+    !useBladeRegistry.getState().items.has(config.rootBlade.type as string)
+  ) {
+    return { id: "root", ...config.fallbackBlade } as TypedBlade;
   }
-  // Fallback: simple commit list when topology extension is disabled
-  return {
-    id: "root",
-    type: "commit-list-fallback",
-    title: "History",
-    props: {} as Record<string, never>,
-  };
+
+  return { id: "root", ...config.rootBlade } as TypedBlade;
 }

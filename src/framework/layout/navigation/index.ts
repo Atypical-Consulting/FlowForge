@@ -26,3 +26,12 @@ export type {
   BladeType,
   BladePropsMap,
 } from "./types";
+
+export {
+  registerWorkflow,
+  getWorkflow,
+  getDefaultWorkflowId,
+  getAllWorkflows,
+  clearWorkflows,
+  type WorkflowConfig,
+} from "./workflowRegistry";
