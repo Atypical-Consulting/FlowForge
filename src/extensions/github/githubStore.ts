@@ -10,7 +10,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { commands } from "../../bindings";
-import { toast } from "../../core/stores/toast";
+import { toast } from "@/framework/stores/toast";
 import { openBlade } from "../../core/lib/bladeOpener";
 import type { AuthStep } from "./types";
 

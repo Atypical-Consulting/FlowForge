@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { registerStoreForReset } from "../../registry";
+import { registerStoreForReset } from "@/framework/stores/registry";
 import {
   createStagingSlice,
   type StagingSlice,

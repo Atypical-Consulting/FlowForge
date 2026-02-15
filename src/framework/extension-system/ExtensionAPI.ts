@@ -6,38 +6,38 @@ import {
   registerBlade,
   unregisterBlade,
   type BladeRenderContext,
-} from "../core/lib/bladeRegistry";
+} from "../layout/bladeRegistry";
 import {
   registerCommand,
   unregisterCommand,
   type CommandCategory,
-} from "../core/lib/commandRegistry";
+} from "../command-palette/commandRegistry";
 import {
   useMachineRegistry,
   type MachineRegistryEntry,
-} from "../core/lib/machineRegistry";
-import { useToolbarRegistry, type ToolbarGroup } from "../core/lib/toolbarRegistry";
+} from "../../core/lib/machineRegistry";
+import { useToolbarRegistry, type ToolbarGroup } from "../../core/lib/toolbarRegistry";
 import {
   useContextMenuRegistry,
   type ContextMenuLocation,
   type ContextMenuContext,
-} from "../core/lib/contextMenuRegistry";
-import { useSidebarPanelRegistry } from "../core/lib/sidebarPanelRegistry";
+} from "../../core/lib/contextMenuRegistry";
+import { useSidebarPanelRegistry } from "../layout/sidebarPanelRegistry";
 import {
   useStatusBarRegistry,
   type StatusBarAlignment,
-} from "../core/lib/statusBarRegistry";
+} from "../../core/lib/statusBarRegistry";
 import {
   gitHookBus,
   type GitOperation,
   type GitHookContext,
   type DidHandler,
   type WillHandler,
-} from "../core/lib/gitHookBus";
-import { getNavigationActor } from "../core/machines/navigation/context";
-import type { LastAction } from "../core/machines/navigation/types";
-import { ExtensionSettings } from "./extensionSettings";
-import { extensionEventBus, type EventHandler } from "./extensionEventBus";
+} from "../../core/lib/gitHookBus";
+import { getNavigationActor } from "../layout/navigation/context";
+import type { LastAction } from "../layout/navigation/types";
+import { ExtensionSettings } from "./settings";
+import { extensionEventBus, type EventHandler } from "./eventBus";
 
 // --- Navigation event type for extensions ---
 

@@ -1,6 +1,6 @@
 import { ChevronLeft, Circle } from "lucide-react";
 import type { ReactNode } from "react";
-import { cn } from "../../lib/utils";
+import { cn } from "../../core/lib/utils";
 
 interface BladeStripProps {
   title: string;

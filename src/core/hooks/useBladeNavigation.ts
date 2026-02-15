@@ -1,17 +1,17 @@
 import { useSelector } from "@xstate/react";
 import type { FileChange } from "../../bindings";
-import { getBladeRegistration } from "../lib/bladeRegistry";
+import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
 import { bladeTypeForFile } from "../lib/fileTypeUtils";
 import {
   useNavigationActorRef,
-} from "../machines/navigation/context";
+} from "@/framework/layout/navigation/context";
 import {
   selectActiveProcess,
   selectBladeStack,
   selectLastAction,
   selectDirtyBladeIds,
-} from "../machines/navigation/selectors";
-import type { BladeType, BladePropsMap, CoreBladeType, ProcessType, TypedBlade } from "../machines/navigation/types";
+} from "@/framework/layout/navigation/selectors";
+import type { BladeType, BladePropsMap, CoreBladeType, ProcessType, TypedBlade } from "@/framework/layout/navigation/types";
 
 export function useBladeNavigation() {
   const actorRef = useNavigationActorRef();

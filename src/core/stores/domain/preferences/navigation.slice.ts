@@ -1,5 +1,5 @@
 import type { StateCreator } from "zustand";
-import { getStore } from "../../../lib/store";
+import { getStore } from "@/framework/stores/persistence/tauri";
 import type { PreferencesStore } from "./index";
 import type { PreferencesMiddleware } from "./types";
 

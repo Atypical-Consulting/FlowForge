@@ -1,4 +1,4 @@
-import { useBladeRegistry } from "../../../lib/bladeRegistry";
+import { useBladeRegistry } from "@/framework/layout/bladeRegistry";
 import { usePreferencesStore as useSettingsStore } from "../../../stores/domain/preferences";
 
 const tabOptions = [

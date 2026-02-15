@@ -1,8 +1,8 @@
 import { REQUIRES_TRUST_METHODS } from "./sandbox-api-surface";
 import type { RequiresTrustMethod } from "./sandbox-api-surface";
-import type { ExtensionAPI, BladeNavigationEvent } from "../ExtensionAPI";
+import type { ExtensionAPI, BladeNavigationEvent } from "@/framework/extension-system/ExtensionAPI";
 import type { GitOperation, DidHandler, WillHandler } from "../../core/lib/gitHookBus";
-import type { Disposable } from "../ExtensionAPI";
+import type { Disposable } from "@/framework/extension-system/ExtensionAPI";
 
 /**
  * Restricted API proxy for sandboxed (untrusted) extensions.

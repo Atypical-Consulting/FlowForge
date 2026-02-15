@@ -1,5 +1,5 @@
 import { GitCommitHorizontal } from "lucide-react";
-import { getNavigationActor } from "../../../core/machines/navigation/context";
+import { getNavigationActor } from "@/framework/layout/navigation/context";
 
 export function TopologyEmptyState() {
   const handleGoToChanges = () => {

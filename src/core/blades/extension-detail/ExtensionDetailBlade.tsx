@@ -15,20 +15,20 @@ import {
   Trash2,
   Wrench,
 } from "lucide-react";
-import { useExtensionHost } from "../../../extensions/ExtensionHost";
+import { useExtensionHost } from "@/framework/extension-system/ExtensionHost";
 import { getExtensionReadme } from "../../../extensions/extensionReadme";
 import { MarkdownRenderer } from "../../components/markdown/MarkdownRenderer";
 import { useToolbarRegistry } from "../../lib/toolbarRegistry";
 import { useContextMenuRegistry } from "../../lib/contextMenuRegistry";
-import { useSidebarPanelRegistry } from "../../lib/sidebarPanelRegistry";
+import { useSidebarPanelRegistry } from "@/framework/layout/sidebarPanelRegistry";
 import { useStatusBarRegistry } from "../../lib/statusBarRegistry";
-import { getAllBladeTypes } from "../../lib/bladeRegistry";
-import { getCommands } from "../../lib/commandRegistry";
+import { getAllBladeTypes } from "@/framework/layout/bladeRegistry";
+import { getCommands } from "@/framework/command-palette/commandRegistry";
 import { Button } from "../../components/ui/button";
 import { ToggleSwitch } from "../../components/ui/ToggleSwitch";
-import { toast } from "../../stores/toast";
+import { toast } from "@/framework/stores/toast";
 import { cn } from "../../lib/utils";
-import type { TrustLevel } from "../../../extensions/extensionTypes";
+import type { TrustLevel } from "@/framework/extension-system/types";
 
 interface ExtensionDetailBladeProps {
   extensionId: string;

@@ -1,6 +1,6 @@
 import { lazy } from "react";
 import { FileText } from "lucide-react";
-import type { ExtensionAPI } from "../ExtensionAPI";
+import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { openBlade } from "../../core/lib/bladeOpener";
 import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
 import { useConventionalStore } from "./store";

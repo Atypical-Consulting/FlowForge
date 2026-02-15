@@ -1,6 +1,6 @@
 import { AnimatePresence } from "framer-motion";
 import { useEffect, useRef } from "react";
-import { useToastStore } from "../../stores/toast";
+import { useToastStore } from "@/framework/stores/toast";
 import { Toast } from "./Toast";
 
 export function ToastContainer() {

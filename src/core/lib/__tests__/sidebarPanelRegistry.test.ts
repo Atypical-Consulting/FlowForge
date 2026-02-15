@@ -1,5 +1,5 @@
-import { useSidebarPanelRegistry } from "../sidebarPanelRegistry";
-import type { SidebarPanelConfig } from "../sidebarPanelRegistry";
+import { useSidebarPanelRegistry } from "@/framework/layout/sidebarPanelRegistry";
+import type { SidebarPanelConfig } from "@/framework/layout/sidebarPanelRegistry";
 import { Folder } from "lucide-react";
 
 const makePanel = (

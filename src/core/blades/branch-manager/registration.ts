@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { registerBlade } from "../../lib/bladeRegistry";
+import { registerBlade } from "@/framework/layout/bladeRegistry";
 
 const BranchManagerBlade = lazy(() =>
   import("./BranchManagerBlade").then((m) => ({ default: m.BranchManagerBlade })),

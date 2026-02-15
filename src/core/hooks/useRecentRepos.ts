@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getStore } from "../lib/store";
+import { getStore } from "@/framework/stores/persistence/tauri";
 
 export interface RecentRepo {
   path: string;

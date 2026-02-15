@@ -10,10 +10,10 @@ import {
   Workflow,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useExtensionHost } from "../../../extensions/ExtensionHost";
+import { useExtensionHost } from "@/framework/extension-system/ExtensionHost";
 import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
 import { commands } from "../../../bindings";
-import { toast } from "../../stores/toast";
+import { toast } from "@/framework/stores/toast";
 import { Button } from "../../components/ui/button";
 import { ExtensionCard } from "./components/ExtensionCard";
 import { InstallExtensionDialog } from "./components/InstallExtensionDialog";

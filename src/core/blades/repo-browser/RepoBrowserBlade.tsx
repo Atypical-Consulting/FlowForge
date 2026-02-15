@@ -4,7 +4,7 @@ import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { commands } from "../../../bindings";
 import type { RepoFileEntry } from "../../../bindings";
 import { bladeTypeForFile } from "../../lib/fileDispatch";
-import { getBladeRegistration } from "../../lib/bladeRegistry";
+import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
 import { FileTypeIcon } from "../../components/icons/FileTypeIcon";
 import { BladeContentLoading } from "../_shared/BladeContentLoading";

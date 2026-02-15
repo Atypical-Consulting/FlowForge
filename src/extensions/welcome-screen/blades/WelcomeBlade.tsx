@@ -1,7 +1,7 @@
 import { useSelector } from "@xstate/react";
-import { BladeRenderer } from "../../../core/blades/_shared/BladeRenderer";
-import { useNavigationActorRef } from "../../../core/machines/navigation/context";
-import { selectBladeStack } from "../../../core/machines/navigation/selectors";
+import { BladeRenderer } from "@/framework/layout/BladeRenderer";
+import { useNavigationActorRef } from "@/framework/layout/navigation/context";
+import { selectBladeStack } from "@/framework/layout/navigation/selectors";
 import { WelcomeContent } from "../components/WelcomeContent";
 
 export function WelcomeBlade() {

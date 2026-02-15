@@ -36,7 +36,7 @@ import type { ToolbarAction } from "../lib/toolbarRegistry";
 import { useToolbarRegistry } from "../lib/toolbarRegistry";
 import { useUIStore as useCommandPaletteStore } from "../stores/domain/ui-state";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
-import { toast } from "../stores/toast";
+import { toast } from "@/framework/stores/toast";
 import { useGitOpsStore as useUndoStore } from "../stores/domain/git-ops";
 
 // --- Helpers ---

@@ -1,4 +1,4 @@
-import { registerBlade } from "../../lib/bladeRegistry";
+import { registerBlade } from "@/framework/layout/bladeRegistry";
 import { CommitListFallbackBlade } from "./CommitListFallbackBlade";
 
 registerBlade({

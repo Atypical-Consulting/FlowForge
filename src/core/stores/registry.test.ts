@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { resetAllStores, registerStoreForReset } from "./registry";
+import { resetAllStores, registerStoreForReset } from "@/framework/stores/registry";
 
 describe("Store Registry", () => {
   it("resetAllStores resets a registered store to initial state", () => {

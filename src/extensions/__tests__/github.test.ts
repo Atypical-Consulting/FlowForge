@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
-import { ExtensionAPI } from "../ExtensionAPI";
-import { getBladeRegistration } from "../../core/lib/bladeRegistry";
-import { getCommandById } from "../../core/lib/commandRegistry";
+import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
+import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
+import { getCommandById } from "@/framework/command-palette/commandRegistry";
 import { useToolbarRegistry } from "../../core/lib/toolbarRegistry";
 
 // Mock blade components used by the GitHub extension

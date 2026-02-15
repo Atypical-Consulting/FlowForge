@@ -8,7 +8,7 @@ import { gitHookBus } from "../../lib/gitHookBus";
 import { usePreferencesStore as useBranchMetadataStore } from "../../stores/domain/preferences";
 import { useGitOpsStore as useBranchStore } from "../../stores/domain/git-ops";
 import { useGitOpsStore as useGitflowStore } from "../../stores/domain/git-ops";
-import { toast } from "../../stores/toast";
+import { toast } from "@/framework/stores/toast";
 import { BranchBulkActions } from "./BranchBulkActions";
 import { BranchItem } from "./BranchItem";
 import { BranchScopeSelector } from "./BranchScopeSelector";

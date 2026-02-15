@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import type { ExtensionAPI } from "../ExtensionAPI";
+import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { renderPathBreadcrumb } from "../../core/lib/bladeUtils";
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {

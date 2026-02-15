@@ -1,12 +1,12 @@
 import { useCallback, useState } from "react";
 import { useRecentRepos } from "../hooks/useRecentRepos";
 import { useGitOpsStore as useBranchStore } from "../stores/domain/git-ops";
-import { getNavigationActor } from "../machines/navigation/context";
+import { getNavigationActor } from "@/framework/layout/navigation/context";
 import { usePreferencesStore as useNavigationStore } from "../stores/domain/preferences";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { useGitOpsStore as useStashStore } from "../stores/domain/git-ops";
 import { useGitOpsStore as useTagStore } from "../stores/domain/git-ops";
-import { toast } from "../stores/toast";
+import { toast } from "@/framework/stores/toast";
 import { useGitOpsStore as useUndoStore } from "../stores/domain/git-ops";
 import { ProcessNavigation } from "../blades/_shared";
 import { MenuBar } from "./menu-bar";

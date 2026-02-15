@@ -1,11 +1,11 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
-import { ExtensionAPI } from "../ExtensionAPI";
+import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { useContextMenuRegistry } from "../../core/lib/contextMenuRegistry";
-import { useSidebarPanelRegistry } from "../../core/lib/sidebarPanelRegistry";
+import { useSidebarPanelRegistry } from "@/framework/layout/sidebarPanelRegistry";
 import { useStatusBarRegistry } from "../../core/lib/statusBarRegistry";
 import { useToolbarRegistry } from "../../core/lib/toolbarRegistry";
 import { gitHookBus, GitHookBus } from "../../core/lib/gitHookBus";
-import { getBladeRegistration } from "../../core/lib/bladeRegistry";
+import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
 import type { ContextMenuContext } from "../../core/lib/contextMenuRegistry";
 import type { LucideIcon } from "lucide-react";
 

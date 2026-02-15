@@ -1,5 +1,5 @@
 import { FolderGit2, Plus, RefreshCw } from "lucide-react";
-import type { ExtensionAPI } from "../ExtensionAPI";
+import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { useGitOpsStore } from "../../core/stores/domain/git-ops";
 import { WorktreeSidebarPanel } from "./components";
 

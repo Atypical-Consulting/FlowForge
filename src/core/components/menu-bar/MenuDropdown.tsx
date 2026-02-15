@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef } from "react";
-import { getCommandById } from "../../lib/commandRegistry";
+import { getCommandById } from "@/framework/command-palette/commandRegistry";
 import type { MenuEntryDef, MenuItemDef } from "./menu-definitions";
 import { MenuDivider } from "./MenuDivider";
 import { MenuItem } from "./MenuItem";

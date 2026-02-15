@@ -1,6 +1,6 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
-import { useExtensionHost } from "../ExtensionHost";
-import type { BuiltInExtensionConfig } from "../extensionTypes";
+import { useExtensionHost } from "@/framework/extension-system/ExtensionHost";
+import type { BuiltInExtensionConfig } from "@/framework/extension-system/types";
 import { useToolbarRegistry } from "../../core/lib/toolbarRegistry";
 import type { LucideIcon } from "lucide-react";
 

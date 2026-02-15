@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import type { BranchHealthInfo } from "../types";
 import { commands } from "../../../bindings";
-import { toast } from "../../../core/stores/toast";
+import { toast } from "@/framework/stores/toast";
 import { useInsightsStore } from "../insightsStore";
 
 interface Props {

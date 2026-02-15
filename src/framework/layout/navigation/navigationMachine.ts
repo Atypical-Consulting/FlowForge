@@ -1,7 +1,7 @@
 import { setup, assign, and, not } from "xstate";
 import { rootBladeForProcess } from "./actions";
 import { toast } from "../../stores/toast";
-import { isSingletonBlade } from "../../lib/bladeRegistry";
+import { isSingletonBlade } from "../bladeRegistry";
 import type { NavigationContext, NavigationEvent, TypedBlade } from "./types";
 
 const DEFAULT_MAX_STACK_DEPTH = 8;

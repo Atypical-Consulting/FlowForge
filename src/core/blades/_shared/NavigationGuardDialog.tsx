@@ -1,11 +1,11 @@
 import { useSelector } from "@xstate/react";
 import { AlertTriangle } from "lucide-react";
-import { useNavigationActorRef } from "../../machines/navigation/context";
+import { useNavigationActorRef } from "@/framework/layout/navigation/context";
 import {
   selectIsConfirmingDiscard,
   selectDirtyBladeIds,
   selectBladeStack,
-} from "../../machines/navigation/selectors";
+} from "@/framework/layout/navigation/selectors";
 import {
   Dialog,
   DialogContent,

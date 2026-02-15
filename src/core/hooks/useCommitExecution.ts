@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type SyncProgress, commands } from "../../bindings";
 import { getErrorMessage } from "../lib/errors";
 import { gitHookBus } from "../lib/gitHookBus";
-import { toast } from "../stores/toast";
+import { toast } from "@/framework/stores/toast";
 
 interface UseCommitExecutionOptions {
   onCommitSuccess?: (message: string) => void;

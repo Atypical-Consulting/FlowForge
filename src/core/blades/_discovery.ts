@@ -1,4 +1,4 @@
-import { clearCoreRegistry, getAllBladeTypes } from "../lib/bladeRegistry";
+import { clearCoreRegistry, getAllBladeTypes } from "@/framework/layout/bladeRegistry";
 
 // Single-glob: scan per-blade registration files
 const modules = import.meta.glob(

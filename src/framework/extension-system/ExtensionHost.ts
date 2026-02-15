@@ -1,12 +1,12 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { commands } from "../bindings";
-import { toast } from "../core/stores/toast";
-import { getStore } from "../core/lib/store";
+import { commands } from "../../bindings";
+import { toast } from "../stores/toast";
+import { getStore } from "../stores/persistence/tauri";
 import { ExtensionAPI } from "./ExtensionAPI";
-import type { BuiltInExtensionConfig, ExtensionInfo } from "./extensionTypes";
-import type { ExtensionManifest } from "./extensionManifest";
+import type { BuiltInExtensionConfig, ExtensionInfo } from "./types";
+import type { ExtensionManifest } from "../../extensions/extensionManifest";
 
 // ---------------------------------------------------------------------------
 // Constants
