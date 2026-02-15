@@ -1,10 +1,10 @@
 import { Files, Network } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useSelector } from "@xstate/react";
-import { useNavigationActorRef } from "../../machines/navigation/context";
-import { selectActiveProcess } from "../../machines/navigation/selectors";
-import type { ProcessType } from "../../machines/navigation/types";
-import { useBladeRegistry } from "../../lib/bladeRegistry";
+import { useNavigationActorRef } from "@/framework/layout/navigation/context";
+import { selectActiveProcess } from "@/framework/layout/navigation/selectors";
+import type { ProcessType } from "@/framework/layout/navigation/types";
+import { useBladeRegistry } from "@/framework/layout/bladeRegistry";
 import { cn } from "../../lib/utils";
 
 const ALL_PROCESSES = [

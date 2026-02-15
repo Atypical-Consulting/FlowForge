@@ -1,5 +1,5 @@
-import { createBladeStore } from "./createBladeStore";
-import { resetAllStores } from "./registry";
+import { createBladeStore } from "@/framework/stores/createBladeStore";
+import { resetAllStores } from "@/framework/stores/registry";
 
 describe("createBladeStore", () => {
   it("creates a store with initial state", () => {

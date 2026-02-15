@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { registerStoreForReset } from "../../registry";
+import { registerStoreForReset } from "@/framework/stores/registry";
 import { createRepositorySlice, type RepositorySlice } from "./repository.slice";
 import { createBranchSlice, type BranchSlice } from "./branches.slice";
 import { createTagSlice, type TagSlice } from "./tags.slice";

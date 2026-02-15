@@ -6,7 +6,7 @@ import type {
   ValidationResult,
 } from "../../bindings";
 import { buildCommitMessage as buildMessage } from "./lib/conventional-utils";
-import { createBladeStore } from "../../core/stores/createBladeStore";
+import { createBladeStore } from "@/framework/stores/createBladeStore";
 
 /**
  * Valid conventional commit types.

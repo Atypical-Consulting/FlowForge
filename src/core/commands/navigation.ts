@@ -1,7 +1,7 @@
 import { FileText, GitBranch, History, Search } from "lucide-react";
-import { registerCommand } from "../lib/commandRegistry";
-import { useBladeRegistry } from "../lib/bladeRegistry";
-import { getNavigationActor } from "../machines/navigation/context";
+import { registerCommand } from "@/framework/command-palette/commandRegistry";
+import { useBladeRegistry } from "@/framework/layout/bladeRegistry";
+import { getNavigationActor } from "@/framework/layout/navigation/context";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { usePreferencesStore } from "../stores/domain/preferences";
 import { useUIStore as useCommandPaletteStore } from "../stores/domain/ui-state";

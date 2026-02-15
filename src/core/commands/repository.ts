@@ -4,7 +4,7 @@ import {
   RefreshCw,
   X,
 } from "lucide-react";
-import { registerCommand } from "../lib/commandRegistry";
+import { registerCommand } from "@/framework/command-palette/commandRegistry";
 import { useGitOpsStore as useBranchStore } from "../stores/domain/git-ops";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { useGitOpsStore as useStashStore } from "../stores/domain/git-ops";

@@ -7,7 +7,7 @@ import { useAmendPrefill } from "../../hooks/useAmendPrefill";
 import { useBladeFormGuard } from "./hooks/useBladeFormGuard";
 import { useConventionalStore } from "../../store";
 import { useBladeNavigation } from "../../../../core/hooks/useBladeNavigation";
-import { SplitPaneLayout } from "../../../../core/components/layout/SplitPaneLayout";
+import { SplitPaneLayout } from "@/framework/layout/SplitPaneLayout";
 import { TypeSelector } from "../../components/TypeSelector";
 import { ScopeAutocomplete } from "../../components/ScopeAutocomplete";
 import { BreakingChangeSection } from "../../components/BreakingChangeSection";

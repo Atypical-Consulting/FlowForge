@@ -1,10 +1,10 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
-import { useCommandRegistry, getOrderedCategories } from "../../lib/commandRegistry";
-import type { CommandCategory } from "../../lib/commandRegistry";
-import { searchCommands } from "../../lib/fuzzySearch";
-import { useUIStore as useCommandPaletteStore } from "../../stores/domain/ui-state";
+import { useCommandRegistry, getOrderedCategories } from "../commandRegistry";
+import type { CommandCategory } from "../commandRegistry";
+import { searchCommands } from "../fuzzySearch";
+import { useUIStore as useCommandPaletteStore } from "../../../core/stores/domain/ui-state";
 import { CommandPaletteItem } from "./CommandPaletteItem";
 
 export function CommandPalette() {

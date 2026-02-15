@@ -3,14 +3,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useHotkeys } from "react-hotkeys-hook";
 import { type SyncProgress, commands } from "../../bindings";
 import { openBlade } from "../lib/bladeOpener";
-import { useBladeRegistry } from "../lib/bladeRegistry";
-import { executeCommand } from "../lib/commandRegistry";
-import { getNavigationActor } from "../machines/navigation/context";
+import { useBladeRegistry } from "@/framework/layout/bladeRegistry";
+import { executeCommand } from "@/framework/command-palette/commandRegistry";
+import { getNavigationActor } from "@/framework/layout/navigation/context";
 import { useUIStore as useCommandPaletteStore } from "../stores/domain/ui-state";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { useGitOpsStore as useTopologyStore } from "../stores/domain/git-ops";
 import { usePreferencesStore } from "../stores/domain/preferences";
-import { toast } from "../stores/toast";
+import { toast } from "@/framework/stores/toast";
 
 /**
  * Keyboard shortcuts for common Git operations.

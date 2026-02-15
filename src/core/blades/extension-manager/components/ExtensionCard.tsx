@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { ChevronRight, Trash2 } from "lucide-react";
-import type { ExtensionInfo } from "../../../../extensions/extensionTypes";
+import type { ExtensionInfo } from "@/framework/extension-system/types";
 import { ToggleSwitch } from "../../../components/ui/ToggleSwitch";
 import { PermissionBadge } from "../../../components/ui/PermissionBadge";
-import { useExtensionHost } from "../../../../extensions/ExtensionHost";
+import { useExtensionHost } from "@/framework/extension-system/ExtensionHost";
 import { useBladeNavigation } from "../../../hooks/useBladeNavigation";
 import { Button } from "../../../components/ui/button";
-import { toast } from "../../../stores/toast";
+import { toast } from "@/framework/stores/toast";
 import { cn } from "../../../lib/utils";
 
 interface ExtensionCardProps {

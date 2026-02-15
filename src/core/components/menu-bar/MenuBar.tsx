@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { executeCommand, getCommandById } from "../../lib/commandRegistry";
+import { executeCommand, getCommandById } from "@/framework/command-palette/commandRegistry";
 import type { MenuItemDef } from "./menu-definitions";
 import { menuDefinitions } from "./menu-definitions";
 import { MenuBarItem } from "./MenuBarItem";

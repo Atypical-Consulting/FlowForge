@@ -1,4 +1,4 @@
-import { getStore } from "../core/lib/store";
+import { getStore } from "../stores/persistence/tauri";
 
 /**
  * Key prefix used for all extension settings in the store.

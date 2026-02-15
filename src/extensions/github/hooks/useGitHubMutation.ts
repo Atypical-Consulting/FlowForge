@@ -7,7 +7,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { commands } from "../../../bindings";
-import { toast } from "../../../core/stores/toast";
+import { toast } from "@/framework/stores/toast";
 
 /**
  * Extract a human-readable error message from a GitHubError or unknown error.

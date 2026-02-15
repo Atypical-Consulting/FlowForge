@@ -9,7 +9,7 @@
 
 import { Copy } from "lucide-react";
 import { useContextMenuRegistry } from "../lib/contextMenuRegistry";
-import { toast } from "../stores/toast";
+import { toast } from "@/framework/stores/toast";
 
 // --- commit-list: Copy SHA ---
 

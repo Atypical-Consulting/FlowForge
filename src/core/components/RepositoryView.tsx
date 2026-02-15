@@ -8,8 +8,8 @@ import { Component, useCallback, useEffect, useMemo, useRef, useState } from "re
 import type { ErrorInfo, ReactNode } from "react";
 import { useGroupRef, usePanelRef } from "react-resizable-panels";
 import type { Layout } from "react-resizable-panels";
-import { useSidebarPanelRegistry } from "../lib/sidebarPanelRegistry";
-import { getPresetById } from "../lib/layoutPresets";
+import { useSidebarPanelRegistry } from "@/framework/layout/sidebarPanelRegistry";
+import { getPresetById } from "@/framework/layout/layoutPresets";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { usePreferencesStore } from "../stores/domain/preferences";
 import { BladeContainer } from "../blades/_shared";

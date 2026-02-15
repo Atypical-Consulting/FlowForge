@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { ExtensionAPI } from "../ExtensionAPI";
-import { getBladeRegistration } from "../../core/lib/bladeRegistry";
-import { useSidebarPanelRegistry } from "../../core/lib/sidebarPanelRegistry";
+import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
+import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
+import { useSidebarPanelRegistry } from "@/framework/layout/sidebarPanelRegistry";
 import { useToolbarRegistry } from "../../core/lib/toolbarRegistry";
 import { onActivate, onDeactivate } from "../gitflow";
 

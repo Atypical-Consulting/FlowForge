@@ -1,8 +1,8 @@
 import { lazy } from "react";
 import { History } from "lucide-react";
 import { listen } from "@tauri-apps/api/event";
-import type { ExtensionAPI } from "../ExtensionAPI";
-import { getNavigationActor } from "../../core/machines/navigation/context";
+import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
+import { getNavigationActor } from "@/framework/layout/navigation/context";
 import { useGitOpsStore } from "../../core/stores/domain/git-ops";
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {

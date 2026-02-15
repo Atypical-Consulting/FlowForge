@@ -1,7 +1,7 @@
-export { BladeContainer } from "./BladeContainer";
-export { BladePanel } from "./BladePanel";
-export { BladeStrip } from "./BladeStrip";
-export { BladeRenderer } from "./BladeRenderer";
+export { BladeContainer } from "@/framework/layout/BladeContainer";
+export { BladePanel } from "@/framework/layout/BladePanel";
+export { BladeStrip } from "@/framework/layout/BladeStrip";
+export { BladeRenderer } from "@/framework/layout/BladeRenderer";
 export { BladeErrorBoundary } from "./BladeErrorBoundary";
 export { BladeLoadingFallback } from "./BladeLoadingFallback";
 export { BladeToolbar } from "./BladeToolbar";

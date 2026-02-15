@@ -1,6 +1,6 @@
 import { Maximize2, PanelLeft, RotateCcw } from "lucide-react";
-import { registerCommand } from "../lib/commandRegistry";
-import { LAYOUT_PRESETS } from "../lib/layoutPresets";
+import { registerCommand } from "@/framework/command-palette/commandRegistry";
+import { LAYOUT_PRESETS } from "@/framework/layout/layoutPresets";
 import { usePreferencesStore } from "../stores/domain/preferences";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 

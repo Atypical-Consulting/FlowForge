@@ -1,5 +1,5 @@
 import { Puzzle } from "lucide-react";
-import { registerCommand } from "../lib/commandRegistry";
+import { registerCommand } from "@/framework/command-palette/commandRegistry";
 import { openBlade } from "../lib/bladeOpener";
 
 registerCommand({

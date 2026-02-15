@@ -9,9 +9,9 @@ import {
 import type { SyncProgress } from "../../bindings";
 import { commands as tauriCommands } from "../../bindings";
 import { getErrorMessage } from "../lib/errors";
-import { registerCommand } from "../lib/commandRegistry";
+import { registerCommand } from "@/framework/command-palette/commandRegistry";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
-import { toast } from "../stores/toast";
+import { toast } from "@/framework/stores/toast";
 
 registerCommand({
   id: "push",

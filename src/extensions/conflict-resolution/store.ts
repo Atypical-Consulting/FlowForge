@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import { toast } from "../../core/stores/toast";
+import { toast } from "@/framework/stores/toast";
 import { commands } from "../../bindings";
-import { registerStoreForReset } from "../../core/stores/registry";
+import { registerStoreForReset } from "@/framework/stores/registry";
 import type {
   ConflictFile,
   ConflictHunk,

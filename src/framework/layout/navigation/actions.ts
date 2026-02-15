@@ -1,4 +1,4 @@
-import { useBladeRegistry } from "../../lib/bladeRegistry";
+import { useBladeRegistry } from "../bladeRegistry";
 import type { ProcessType, TypedBlade } from "./types";
 
 export function rootBladeForProcess(process: ProcessType): TypedBlade {

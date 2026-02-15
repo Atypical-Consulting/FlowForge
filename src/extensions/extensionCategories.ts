@@ -1,4 +1,4 @@
-import type { ExtensionInfo } from "./extensionTypes";
+import type { ExtensionInfo } from "@/framework/extension-system/types";
 
 export type ExtensionCategory =
   | "source-control"

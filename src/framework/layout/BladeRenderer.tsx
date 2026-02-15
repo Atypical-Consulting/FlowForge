@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import { Puzzle } from "lucide-react";
-import { useBladeRegistry } from "../../lib/bladeRegistry";
-import { openBlade } from "../../lib/bladeOpener";
+import { useBladeRegistry } from "./bladeRegistry";
+import { openBlade } from "../../core/lib/bladeOpener";
 import { BladePanel } from "./BladePanel";
-import { BladeLoadingFallback } from "./BladeLoadingFallback";
-import { BladeErrorBoundary } from "./BladeErrorBoundary";
-import type { TypedBlade } from "../../stores/bladeTypes";
+import { BladeLoadingFallback } from "../../core/blades/_shared/BladeLoadingFallback";
+import { BladeErrorBoundary } from "../../core/blades/_shared/BladeErrorBoundary";
+import type { TypedBlade } from "../../core/stores/bladeTypes";
 
 interface BladeRendererProps {
   blade: TypedBlade;

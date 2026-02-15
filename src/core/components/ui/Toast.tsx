@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "../../lib/utils";
-import type { Toast as ToastType } from "../../stores/toast";
+import type { Toast as ToastType } from "@/framework/stores/toast";
 
 interface ToastProps {
   toast: ToastType;

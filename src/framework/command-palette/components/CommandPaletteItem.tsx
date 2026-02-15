@@ -1,6 +1,6 @@
-import type { Command } from "../../lib/commandRegistry";
-import { highlightMatches } from "../../lib/fuzzySearch";
-import { formatShortcut } from "../../hooks/useKeyboardShortcuts";
+import type { Command } from "../commandRegistry";
+import { highlightMatches } from "../fuzzySearch";
+import { formatShortcut } from "../../../core/hooks/useKeyboardShortcuts";
 
 interface CommandPaletteItemProps {
   command: Command;

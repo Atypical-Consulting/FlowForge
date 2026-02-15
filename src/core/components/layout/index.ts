@@ -2,6 +2,6 @@ export {
   ResizablePanelLayout,
   ResizablePanel,
   ResizeHandle,
-} from "./ResizablePanelLayout";
-export { SplitPaneLayout } from "./SplitPaneLayout";
+} from "@/framework/layout/ResizablePanelLayout";
+export { SplitPaneLayout } from "@/framework/layout/SplitPaneLayout";
 export type { Layout } from "react-resizable-panels";

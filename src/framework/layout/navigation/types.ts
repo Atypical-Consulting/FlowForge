@@ -1,4 +1,4 @@
-import type { BladeType, BladePropsMap, TypedBlade, CoreBladeType, ExtensionBladeType } from "../../stores/bladeTypes";
+import type { BladeType, BladePropsMap, TypedBlade, CoreBladeType, ExtensionBladeType } from "../../../core/stores/bladeTypes";
 
 export type { TypedBlade, BladeType, BladePropsMap, CoreBladeType, ExtensionBladeType };
 

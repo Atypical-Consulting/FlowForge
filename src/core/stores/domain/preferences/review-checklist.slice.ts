@@ -1,6 +1,6 @@
 import type { StateCreator } from "zustand";
-import { getStore } from "../../../lib/store";
-import { toast } from "../../toast";
+import { getStore } from "@/framework/stores/persistence/tauri";
+import { toast } from "@/framework/stores/toast";
 import type { PreferencesStore } from "./index";
 import type { PreferencesMiddleware } from "./types";
 

@@ -4,7 +4,7 @@ import {
   ResizablePanelLayout,
   ResizablePanel,
   ResizeHandle,
-} from "../../../core/components/layout/ResizablePanelLayout";
+} from "@/framework/layout/ResizablePanelLayout";
 import { useConflictStore } from "../store";
 import { useConflictFiles, useConflictFileContent } from "../hooks/useConflictQuery";
 import { ConflictFileList } from "./components/ConflictFileList";

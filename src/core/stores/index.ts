@@ -6,13 +6,13 @@ export type { UIStore } from "./domain/ui-state";
 export { usePreferencesStore, initAllPreferences } from "./domain/preferences";
 export type { PreferencesStore } from "./domain/preferences";
 
-// Infrastructure (standalone)
-export { useToastStore, toast } from "./toast";
-export type { Toast, ToastType } from "./toast";
+// Infrastructure (re-exported from framework)
+export { useToastStore, toast } from "@/framework/stores/toast";
+export type { Toast, ToastType } from "@/framework/stores/toast";
 
-// Store utilities
-export { resetAllStores, registerStoreForReset } from "./registry";
-export { createBladeStore } from "./createBladeStore";
+// Store utilities (re-exported from framework)
+export { resetAllStores, registerStoreForReset } from "@/framework/stores/registry";
+export { createBladeStore } from "@/framework/stores/createBladeStore";
 
 // Type definitions
 export type { BladeType, BladePropsMap, TypedBlade } from "./bladeTypes";

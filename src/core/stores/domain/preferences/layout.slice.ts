@@ -1,10 +1,10 @@
 import type { StateCreator } from "zustand";
-import { getStore } from "../../../lib/store";
+import { getStore } from "@/framework/stores/persistence/tauri";
 import {
   DEFAULT_PRESET_ID,
   getPresetById,
   type PresetId,
-} from "../../../lib/layoutPresets";
+} from "@/framework/layout/layoutPresets";
 import type { PreferencesStore } from "./index";
 import type { PreferencesMiddleware } from "./types";
 

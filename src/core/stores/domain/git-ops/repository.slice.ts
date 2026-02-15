@@ -2,9 +2,9 @@ import type { StateCreator } from "zustand";
 import type { RepoStatus } from "../../../../bindings";
 import { commands } from "../../../../bindings";
 import { getErrorMessage } from "../../../lib/errors";
-import { getNavigationActor } from "../../../machines/navigation/context";
-import { toast } from "../../toast";
-import { resetAllStores } from "../../registry";
+import { getNavigationActor } from "@/framework/layout/navigation/context";
+import { toast } from "@/framework/stores/toast";
+import { resetAllStores } from "@/framework/stores/registry";
 import type { GitOpsMiddleware } from "./types";
 import type { GitOpsStore } from "./index";
 

@@ -11,9 +11,9 @@ vi.mock("../../core/stores/domain/git-ops", () => ({
   },
 }));
 
-import { ExtensionAPI } from "../ExtensionAPI";
-import { useSidebarPanelRegistry } from "../../core/lib/sidebarPanelRegistry";
-import { getCommandById } from "../../core/lib/commandRegistry";
+import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
+import { useSidebarPanelRegistry } from "@/framework/layout/sidebarPanelRegistry";
+import { getCommandById } from "@/framework/command-palette/commandRegistry";
 import { onActivate, onDeactivate } from "../worktrees";
 
 describe("worktrees extension", () => {

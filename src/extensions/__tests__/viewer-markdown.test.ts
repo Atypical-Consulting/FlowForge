@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { ExtensionAPI } from "../ExtensionAPI";
-import { getBladeRegistration } from "../../core/lib/bladeRegistry";
+import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
+import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
 import { onActivate, onDeactivate } from "../viewer-markdown";
 
 describe("viewer-markdown extension", () => {

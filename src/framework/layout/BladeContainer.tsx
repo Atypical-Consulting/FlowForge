@@ -1,18 +1,18 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useSelector } from "@xstate/react";
-import { useNavigationActorRef } from "../../machines/navigation/context";
+import { useNavigationActorRef } from "./navigation/context";
 import {
   selectBladeStack,
   selectLastAction,
   selectDirtyBladeIds,
-} from "../../machines/navigation/selectors";
+} from "./navigation/selectors";
 import {
   bladeTransitionVariants,
   bladeTransitionConfig,
-} from "../../lib/animations";
+} from "../theme/animations";
 import { BladeRenderer } from "./BladeRenderer";
 import { BladeStrip } from "./BladeStrip";
-import { NavigationGuardDialog } from "./NavigationGuardDialog";
+import { NavigationGuardDialog } from "../../core/blades/_shared/NavigationGuardDialog";
 
 export function BladeContainer() {
   const actorRef = useNavigationActorRef();

@@ -1,7 +1,7 @@
 import { createActor } from "xstate";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { navigationMachine } from "./navigationMachine";
-import { registerBlade, unregisterBlade } from "../../lib/bladeRegistry";
+import { registerBlade, unregisterBlade } from "../bladeRegistry";
 
 function createTestActor() {
   const actor = createActor(navigationMachine);

@@ -1,5 +1,5 @@
 import { GitBranch } from "lucide-react";
-import { registerCommand } from "../lib/commandRegistry";
+import { registerCommand } from "@/framework/command-palette/commandRegistry";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 
 registerCommand({
