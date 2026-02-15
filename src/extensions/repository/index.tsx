@@ -22,7 +22,7 @@ const whenRepoNotOpen = (): boolean =>
 export async function onActivate(api: ExtensionAPI): Promise<void> {
   // Lazy component import
   const RepoBrowserBlade = lazy(() =>
-    import("../../core/blades/repo-browser/RepoBrowserBlade").then((m) => ({
+    import("./blades/RepoBrowserBlade").then((m) => ({
       default: m.RepoBrowserBlade,
     })),
   );

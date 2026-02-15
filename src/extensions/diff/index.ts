@@ -1,11 +1,11 @@
 import { lazy } from "react";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { renderPathBreadcrumb } from "../../core/lib/bladeUtils";
-import type { DiffSource } from "../../core/blades/diff/types";
+import type { DiffSource } from "./blades/types";
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {
   const DiffBlade = lazy(() =>
-    import("../../core/blades/diff/DiffBlade").then((m) => ({
+    import("./blades/DiffBlade").then((m) => ({
       default: m.DiffBlade,
     }))
   );

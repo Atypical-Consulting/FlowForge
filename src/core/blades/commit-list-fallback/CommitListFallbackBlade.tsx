@@ -1,5 +1,5 @@
-import { useBladeNavigation } from "../../hooks/useBladeNavigation";
-import { CommitHistory } from "../../components/commit/CommitHistory";
+import { useBladeNavigation } from "@/core/hooks/useBladeNavigation";
+import { CommitHistory } from "@/extensions/commits/components/CommitHistory";
 
 export function CommitListFallbackBlade() {
   const { openBlade } = useBladeNavigation();
