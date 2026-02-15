@@ -68,10 +68,6 @@ export {
 } from "./statusBarRegistry";
 export {
   OperationBus,
-  type GitHookBus,
-  gitHookBus,
-  type GitOperation,
-  type GitHookContext,
   type WillHookResult,
   type DidHandler,
   type WillHandler,

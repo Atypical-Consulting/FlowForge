@@ -1,6 +1,6 @@
 import { setup, assign } from "xstate";
 import type { MergeResult } from "../../../bindings";
-import { gitHookBus } from "@/framework/extension-system/operationBus";
+import { gitHookBus } from "@/core/services/gitHookBus";
 import type { MergeContext, MergeEvent } from "./types";
 import { executeMerge, abortMergeActor } from "./actors";
 

@@ -4,7 +4,7 @@ import { ArrowDown, ArrowUp, CloudDownload, Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { type SyncProgress, commands } from "../../../bindings";
 import { formatShortcut } from "@/framework/command-palette/formatShortcut";
-import { gitHookBus } from "@/framework/extension-system/operationBus";
+import { gitHookBus } from "@/core/services/gitHookBus";
 import { toast } from "@/framework/stores/toast";
 import { ShortcutTooltip } from "@/core/components/ui/ShortcutTooltip";
 import { Button } from "@/core/components/ui/button";
