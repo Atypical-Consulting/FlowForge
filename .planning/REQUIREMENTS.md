@@ -139,27 +139,82 @@ Requirements for v1.9.0 milestone. Each maps to roadmap phases.
 
 ## Traceability
 
-Updated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MONO-01..08 | TBD | Pending |
-| REFAC-01..06 | TBD | Pending |
-| STOR-01..08 | TBD | Pending |
-| THEME-01..06 | TBD | Pending |
-| CMD-01..04 | TBD | Pending |
-| LAYOUT-01..08 | TBD | Pending |
-| EXT-01..10 | TBD | Pending |
-| CORE-01..03 | TBD | Pending |
-| SKEL-01..05 | TBD | Pending |
-| TEST-01..06 | TBD | Pending |
-| DEBT-01..04 | TBD | Pending |
+| MONO-01 | Phase 54 | Pending |
+| MONO-02 | Phase 54 | Pending |
+| MONO-03 | Phase 54 | Pending |
+| MONO-04 | Phase 54 | Pending |
+| MONO-05 | Phase 54 | Pending |
+| MONO-06 | Phase 54 | Pending |
+| MONO-07 | Phase 54 | Pending |
+| MONO-08 | Phase 54 | Pending |
+| REFAC-01 | Phase 55 | Pending |
+| REFAC-02 | Phase 55 | Pending |
+| REFAC-03 | Phase 55 | Pending |
+| REFAC-04 | Phase 55 | Pending |
+| REFAC-05 | Phase 55 | Pending |
+| REFAC-06 | Phase 55 | Pending |
+| STOR-01 | Phase 56 | Pending |
+| STOR-02 | Phase 56 | Pending |
+| STOR-03 | Phase 56 | Pending |
+| STOR-04 | Phase 56 | Pending |
+| STOR-05 | Phase 56 | Pending |
+| STOR-06 | Phase 56 | Pending |
+| STOR-07 | Phase 56 | Pending |
+| STOR-08 | Phase 56 | Pending |
+| THEME-01 | Phase 56 | Pending |
+| THEME-02 | Phase 56 | Pending |
+| THEME-03 | Phase 56 | Pending |
+| THEME-04 | Phase 56 | Pending |
+| THEME-05 | Phase 56 | Pending |
+| THEME-06 | Phase 56 | Pending |
+| CMD-01 | Phase 57 | Pending |
+| CMD-02 | Phase 57 | Pending |
+| CMD-03 | Phase 57 | Pending |
+| CMD-04 | Phase 57 | Pending |
+| LAYOUT-01 | Phase 57 | Pending |
+| LAYOUT-02 | Phase 57 | Pending |
+| LAYOUT-03 | Phase 57 | Pending |
+| LAYOUT-04 | Phase 57 | Pending |
+| LAYOUT-05 | Phase 57 | Pending |
+| LAYOUT-06 | Phase 57 | Pending |
+| LAYOUT-07 | Phase 57 | Pending |
+| LAYOUT-08 | Phase 57 | Pending |
+| EXT-01 | Phase 58 | Pending |
+| EXT-02 | Phase 58 | Pending |
+| EXT-03 | Phase 58 | Pending |
+| EXT-04 | Phase 58 | Pending |
+| EXT-05 | Phase 58 | Pending |
+| EXT-06 | Phase 58 | Pending |
+| EXT-07 | Phase 58 | Pending |
+| EXT-08 | Phase 58 | Pending |
+| EXT-09 | Phase 58 | Pending |
+| EXT-10 | Phase 58 | Pending |
+| CORE-01 | Phase 58 | Pending |
+| CORE-02 | Phase 58 | Pending |
+| CORE-03 | Phase 58 | Pending |
+| SKEL-01 | Phase 59 | Pending |
+| SKEL-02 | Phase 59 | Pending |
+| SKEL-03 | Phase 59 | Pending |
+| SKEL-04 | Phase 59 | Pending |
+| SKEL-05 | Phase 59 | Pending |
+| TEST-01 | Phase 56 | Pending |
+| TEST-02 | Phase 56 | Pending |
+| TEST-03 | Phase 56 | Pending |
+| TEST-04 | Phase 56 | Pending |
+| TEST-05 | Phase 56 | Pending |
+| TEST-06 | Phase 56 | Pending |
+| DEBT-01 | Phase 55 | Pending |
+| DEBT-02 | Phase 55 | Pending |
+| DEBT-03 | Phase 58 | Pending |
+| DEBT-04 | Phase 58 | Pending |
 
 **Coverage:**
-- v1.9.0 requirements: 64 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 64
+- v1.9.0 requirements: 68 total
+- Mapped to phases: 68
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-15 after initial definition*
+*Last updated: 2026-02-18 after roadmap phase assignment*
