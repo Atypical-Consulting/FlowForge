@@ -21,8 +21,8 @@ vi.mock("../../toast", () => ({
   },
 }));
 
-import { usePreferencesStore } from "./index";
 import { resetAllStores } from "../../registry";
+import { usePreferencesStore } from "./index";
 import { DEFAULT_CHECKLIST } from "./review-checklist.slice";
 
 describe("Preferences store", () => {
@@ -86,9 +86,9 @@ describe("Preferences store", () => {
         }),
       );
       expect(mockStore.save).toHaveBeenCalled();
-      expect(usePreferencesStore.getState().settingsData.git.defaultRemote).toBe(
-        "upstream",
-      );
+      expect(
+        usePreferencesStore.getState().settingsData.git.defaultRemote,
+      ).toBe("upstream");
     });
   });
 
@@ -155,9 +155,9 @@ describe("Preferences store", () => {
     it("pinRepo adds to navPinnedRepoPaths and persists", async () => {
       await usePreferencesStore.getState().pinRepo("/test/repo");
 
-      expect(
-        usePreferencesStore.getState().navPinnedRepoPaths,
-      ).toContain("/test/repo");
+      expect(usePreferencesStore.getState().navPinnedRepoPaths).toContain(
+        "/test/repo",
+      );
       expect(mockStore.set).toHaveBeenCalledWith(
         "nav-pinned-repos",
         expect.arrayContaining(["/test/repo"]),
@@ -168,9 +168,9 @@ describe("Preferences store", () => {
       await usePreferencesStore.getState().pinRepo("/test/repo");
       await usePreferencesStore.getState().unpinRepo("/test/repo");
 
-      expect(
-        usePreferencesStore.getState().navPinnedRepoPaths,
-      ).not.toContain("/test/repo");
+      expect(usePreferencesStore.getState().navPinnedRepoPaths).not.toContain(
+        "/test/repo",
+      );
     });
 
     it("pinRepo is idempotent", async () => {
@@ -209,10 +209,14 @@ describe("Preferences store", () => {
         .pinBranch("/test/repo", "feature/test");
 
       expect(
-        usePreferencesStore.getState().isBranchPinned("/test/repo", "feature/test"),
+        usePreferencesStore
+          .getState()
+          .isBranchPinned("/test/repo", "feature/test"),
       ).toBe(true);
       expect(
-        usePreferencesStore.getState().isBranchPinned("/test/repo", "other-branch"),
+        usePreferencesStore
+          .getState()
+          .isBranchPinned("/test/repo", "other-branch"),
       ).toBe(false);
     });
 
@@ -242,9 +246,7 @@ describe("Preferences store", () => {
 
   describe("review checklist slice", () => {
     it("getChecklistItems returns defaults for flow type", () => {
-      const items = usePreferencesStore
-        .getState()
-        .getChecklistItems("feature");
+      const items = usePreferencesStore.getState().getChecklistItems("feature");
       expect(items).toHaveLength(3);
       expect(items).toEqual(DEFAULT_CHECKLIST.feature);
     });
@@ -270,9 +272,7 @@ describe("Preferences store", () => {
       await usePreferencesStore
         .getState()
         .updateChecklistItems("feature", newItems);
-      await usePreferencesStore
-        .getState()
-        .resetChecklistToDefaults("feature");
+      await usePreferencesStore.getState().resetChecklistToDefaults("feature");
 
       expect(
         usePreferencesStore.getState().checklistCustomItems.feature,

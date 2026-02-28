@@ -1,19 +1,19 @@
 import { useSelector } from "@xstate/react";
 import { AlertTriangle } from "lucide-react";
-import { useNavigationActorRef } from "@/framework/layout/navigation/context";
-import {
-  selectIsConfirmingDiscard,
-  selectDirtyBladeIds,
-  selectBladeStack,
-} from "@/framework/layout/navigation/selectors";
+import { Button } from "@/core/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/core/components/ui/dialog";
-import { Button } from "@/core/components/ui/button";
+import { useNavigationActorRef } from "@/framework/layout/navigation/context";
+import {
+  selectBladeStack,
+  selectDirtyBladeIds,
+  selectIsConfirmingDiscard,
+} from "@/framework/layout/navigation/selectors";
 
 export function NavigationGuardDialog() {
   const actorRef = useNavigationActorRef();
@@ -26,11 +26,14 @@ export function NavigationGuardDialog() {
     .map((b) => b.title);
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => {
-      if (!open) {
-        actorRef.send({ type: "CANCEL_DISCARD" });
-      }
-    }}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          actorRef.send({ type: "CANCEL_DISCARD" });
+        }
+      }}
+    >
       <DialogContent>
         <DialogHeader>
           <div className="flex items-center gap-2">
@@ -41,7 +44,9 @@ export function NavigationGuardDialog() {
         <p className="text-sm text-ctp-subtext0">
           You have unsaved changes in{" "}
           <span className="font-medium text-ctp-text">
-            {dirtyTitles.length > 0 ? dirtyTitles.join(", ") : "the current blade"}
+            {dirtyTitles.length > 0
+              ? dirtyTitles.join(", ")
+              : "the current blade"}
           </span>{" "}
           that will be lost if you navigate away.
         </p>

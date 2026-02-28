@@ -18,7 +18,7 @@ export function useRecentRepos() {
   // Load recent repos on mount
   useEffect(() => {
     loadRecentRepos();
-  }, []);
+  }, [loadRecentRepos]);
 
   const loadRecentRepos = async () => {
     try {
@@ -48,7 +48,12 @@ export function useRecentRepos() {
 
       // Add to front with updated timestamp, preserving pin state
       const updated: RecentRepo[] = [
-        { path, name: repoName, lastOpened: Date.now(), isPinned: existingEntry?.isPinned },
+        {
+          path,
+          name: repoName,
+          lastOpened: Date.now(),
+          isPinned: existingEntry?.isPinned,
+        },
         ...filtered,
       ].slice(0, MAX_RECENT_REPOS);
 
@@ -76,7 +81,7 @@ export function useRecentRepos() {
       const store = await getStore();
       const existing = (await store.get<RecentRepo[]>(RECENT_REPOS_KEY)) || [];
       const updated = existing.map((r) =>
-        r.path === path ? { ...r, isPinned: !r.isPinned } : r
+        r.path === path ? { ...r, isPinned: !r.isPinned } : r,
       );
       await store.set(RECENT_REPOS_KEY, updated);
       setRecentRepos(updated);

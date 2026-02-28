@@ -1,7 +1,7 @@
 import { AnimatePresence } from "framer-motion";
 import { cn } from "../../lib/utils";
-import type { MenuEntryDef, MenuItemDef } from "./menu-definitions";
 import { MenuDropdown } from "./MenuDropdown";
+import type { MenuEntryDef, MenuItemDef } from "./menu-definitions";
 
 interface MenuBarItemProps {
   label: string;

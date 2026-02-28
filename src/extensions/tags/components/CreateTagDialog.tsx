@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import { useState } from "react";
-import { commands } from "../../../bindings";
 import { getErrorMessage } from "@/core/lib/errors";
+import { commands } from "../../../bindings";
 
 interface CreateTagDialogProps {
   onClose: () => void;
@@ -65,7 +65,6 @@ export function CreateTagDialog({ onClose, onCreated }: CreateTagDialogProps) {
               onChange={(e) => setName(e.target.value)}
               placeholder="v1.0.0"
               className="w-full px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 rounded focus:outline-none focus:border-ctp-blue"
-              autoFocus
             />
           </div>
 

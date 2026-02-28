@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock bladeOpener
 vi.mock("../../core/lib/bladeOpener", () => ({
@@ -14,9 +14,9 @@ vi.mock("../init-repo/store", () => ({
   },
 }));
 
+import { getCommandById } from "@/framework/command-palette/commandRegistry";
 import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
-import { getCommandById } from "@/framework/command-palette/commandRegistry";
 import { onActivate, onDeactivate } from "../init-repo";
 
 describe("init-repo extension", () => {

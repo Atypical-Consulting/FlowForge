@@ -7,7 +7,13 @@
   "main": "index.ts",
   "contributes": {
     "blades": [{ "type": "topology-graph", "title": "Topology" }],
-    "commands": [{ "id": "show-topology", "title": "Show History", "category": "Navigation" }]
+    "commands": [
+      {
+        "id": "show-topology",
+        "title": "Show History",
+        "category": "Navigation"
+      }
+    ]
   },
   "trustLevel": "built-in"
 }

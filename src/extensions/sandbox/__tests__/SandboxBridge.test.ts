@@ -6,7 +6,7 @@
  * This validates: ready handshake, API call/response, method blocking,
  * termination, and double-start prevention.
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SandboxBridge } from "../SandboxBridge";
 import type { HostToWorkerMessage, WorkerToHostMessage } from "../types";
 
@@ -21,10 +21,7 @@ class MockWorker {
   onerror: ((event: ErrorEvent) => void) | null = null;
   private messageHandler: ((msg: HostToWorkerMessage) => void) | null = null;
 
-  constructor(
-    _url: string | URL,
-    _opts?: WorkerOptions,
-  ) {
+  constructor(_url: string | URL, _opts?: WorkerOptions) {
     // Register in the global mock so tests can configure behavior
     MockWorker.lastInstance = this;
   }
@@ -141,12 +138,24 @@ describe("SandboxBridge", () => {
     worker.simulateSend({ type: "ready" });
     await startPromise;
 
-    await expect(bridge.callApi("registerBlade", [])).rejects.toThrow("not sandbox-safe");
-    await expect(bridge.callApi("contributeToolbar", [])).rejects.toThrow("not sandbox-safe");
-    await expect(bridge.callApi("registerCommand", [])).rejects.toThrow("not sandbox-safe");
-    await expect(bridge.callApi("contributeContextMenu", [])).rejects.toThrow("not sandbox-safe");
-    await expect(bridge.callApi("contributeSidebarPanel", [])).rejects.toThrow("not sandbox-safe");
-    await expect(bridge.callApi("contributeStatusBar", [])).rejects.toThrow("not sandbox-safe");
+    await expect(bridge.callApi("registerBlade", [])).rejects.toThrow(
+      "not sandbox-safe",
+    );
+    await expect(bridge.callApi("contributeToolbar", [])).rejects.toThrow(
+      "not sandbox-safe",
+    );
+    await expect(bridge.callApi("registerCommand", [])).rejects.toThrow(
+      "not sandbox-safe",
+    );
+    await expect(bridge.callApi("contributeContextMenu", [])).rejects.toThrow(
+      "not sandbox-safe",
+    );
+    await expect(bridge.callApi("contributeSidebarPanel", [])).rejects.toThrow(
+      "not sandbox-safe",
+    );
+    await expect(bridge.callApi("contributeStatusBar", [])).rejects.toThrow(
+      "not sandbox-safe",
+    );
   });
 
   it("allows all sandbox-safe methods", async () => {
@@ -199,7 +208,9 @@ describe("SandboxBridge", () => {
     worker.simulateSend({ type: "ready" });
     await startPromise;
 
-    await expect(bridge.start("worker://test2")).rejects.toThrow("already running");
+    await expect(bridge.start("worker://test2")).rejects.toThrow(
+      "already running",
+    );
   });
 
   it("handles api-response errors from worker", async () => {
@@ -218,6 +229,8 @@ describe("SandboxBridge", () => {
       }
     });
 
-    await expect(bridge.callApi("onDidGit", [])).rejects.toThrow("handler threw an error");
+    await expect(bridge.callApi("onDidGit", [])).rejects.toThrow(
+      "handler threw an error",
+    );
   });
 });

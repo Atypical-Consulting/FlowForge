@@ -13,7 +13,12 @@ interface RateLimitBarProps {
   reset: number;
 }
 
-export function RateLimitBar({ label, remaining, limit, reset }: RateLimitBarProps) {
+export function RateLimitBar({
+  label,
+  remaining,
+  limit,
+  reset,
+}: RateLimitBarProps) {
   const pct = limit > 0 ? remaining / limit : 0;
   const widthPct = Math.max(0, Math.min(100, pct * 100));
 
@@ -38,13 +43,14 @@ export function RateLimitBar({ label, remaining, limit, reset }: RateLimitBarPro
       </div>
       <div className="w-full h-2 bg-ctp-surface0 rounded-full overflow-hidden">
         <div
-          className={cn("h-full rounded-full transition-all duration-300", barColor)}
+          className={cn(
+            "h-full rounded-full transition-all duration-300",
+            barColor,
+          )}
           style={{ width: `${widthPct}%` }}
         />
       </div>
-      <p className="text-xs text-ctp-overlay0">
-        Resets in {resetMinutes}min
-      </p>
+      <p className="text-xs text-ctp-overlay0">Resets in {resetMinutes}min</p>
     </div>
   );
 }

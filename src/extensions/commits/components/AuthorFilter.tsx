@@ -1,7 +1,7 @@
 import { Users } from "lucide-react";
 import { useMemo } from "react";
-import type { CommitSummary } from "../../../bindings";
 import { cn } from "@/framework/lib/utils";
+import type { CommitSummary } from "../../../bindings";
 
 interface AuthorFilterProps {
   commits: CommitSummary[];
@@ -47,9 +47,7 @@ export function AuthorFilter({
           "cursor-pointer",
         )}
       >
-        <option value="">
-          All Authors ({authors.length} contributors)
-        </option>
+        <option value="">All Authors ({authors.length} contributors)</option>
         {authors.map((author) => (
           <option key={author.key} value={author.key}>
             {author.name} &lt;{author.email}&gt;

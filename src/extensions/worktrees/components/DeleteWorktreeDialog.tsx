@@ -1,7 +1,5 @@
 import { AlertTriangle } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useGitOpsStore as useBranchStore } from "../../../core/stores/domain/git-ops";
-import { useGitOpsStore as useWorktreeStore } from "../../../core/stores/domain/git-ops";
 import { Button } from "../../../core/components/ui/button";
 import {
   Dialog,
@@ -10,6 +8,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../../core/components/ui/dialog";
+import {
+  useGitOpsStore as useBranchStore,
+  useGitOpsStore as useWorktreeStore,
+} from "../../../core/stores/domain/git-ops";
 
 interface DeleteWorktreeDialogProps {
   worktreeName: string | null;
@@ -20,8 +22,13 @@ export function DeleteWorktreeDialog({
   worktreeName,
   onOpenChange,
 }: DeleteWorktreeDialogProps) {
-  const { worktreeList: worktrees, deleteWorktree, worktreeIsLoading: isLoading, worktreeError: error, clearWorktreeError: clearError } =
-    useWorktreeStore();
+  const {
+    worktreeList: worktrees,
+    deleteWorktree,
+    worktreeIsLoading: isLoading,
+    worktreeError: error,
+    clearWorktreeError: clearError,
+  } = useWorktreeStore();
   const { branchList: branches } = useBranchStore();
 
   const [deleteBranch, setDeleteBranch] = useState(false);
@@ -29,7 +36,7 @@ export function DeleteWorktreeDialog({
 
   const worktree = useMemo(
     () => worktrees.find((wt) => wt.name === worktreeName),
-    [worktrees, worktreeName]
+    [worktrees, worktreeName],
   );
 
   // Check if branch is merged (can be safely deleted)
@@ -45,7 +52,11 @@ export function DeleteWorktreeDialog({
   const handleDelete = async () => {
     if (!worktreeName) return;
 
-    const success = await deleteWorktree(worktreeName, forceDelete, deleteBranch);
+    const success = await deleteWorktree(
+      worktreeName,
+      forceDelete,
+      deleteBranch,
+    );
 
     if (success) {
       onOpenChange(false);

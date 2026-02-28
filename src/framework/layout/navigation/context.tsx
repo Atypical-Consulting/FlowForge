@@ -1,5 +1,5 @@
-import { createContext, useContext, type ReactNode } from "react";
-import { createActor, type ActorRefFrom } from "xstate";
+import { createContext, type ReactNode, useContext } from "react";
+import { type ActorRefFrom, createActor } from "xstate";
 import { navigationMachine } from "./navigationMachine";
 
 type NavigationActorRef = ActorRefFrom<typeof navigationMachine>;

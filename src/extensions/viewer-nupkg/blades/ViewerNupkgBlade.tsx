@@ -1,5 +1,5 @@
-import { NugetPackageViewer } from "../components/NugetPackageViewer";
 import type { FileChange } from "../../../bindings";
+import { NugetPackageViewer } from "../components/NugetPackageViewer";
 
 interface ViewerNupkgBladeProps {
   filePath: string;

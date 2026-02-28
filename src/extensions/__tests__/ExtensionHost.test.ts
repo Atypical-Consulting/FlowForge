@@ -1,8 +1,8 @@
-import { vi, describe, it, expect, beforeEach } from "vitest";
-import { useExtensionHost } from "@/framework/extension-system/ExtensionHost";
-import type { BuiltInExtensionConfig } from "@/framework/extension-system/types";
-import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
 import type { LucideIcon } from "lucide-react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useExtensionHost } from "@/framework/extension-system/ExtensionHost";
+import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
+import type { BuiltInExtensionConfig } from "@/framework/extension-system/types";
 
 // Mock Tauri / infrastructure dependencies
 vi.mock("@tauri-apps/api/core", () => ({
@@ -60,7 +60,7 @@ describe("ExtensionHost", () => {
 
     const ext = useExtensionHost.getState().extensions.get("test-ext");
     expect(ext).toBeDefined();
-    expect(ext!.status).toBe("active");
+    expect(ext?.status).toBe("active");
   });
 
   it("registerBuiltIn sets trustLevel to built-in", async () => {
@@ -68,7 +68,7 @@ describe("ExtensionHost", () => {
     await useExtensionHost.getState().registerBuiltIn(config);
 
     const ext = useExtensionHost.getState().extensions.get("test-ext");
-    expect(ext!.trustLevel).toBe("built-in");
+    expect(ext?.trustLevel).toBe("built-in");
   });
 
   it("registerBuiltIn sets builtIn flag to true", async () => {
@@ -76,7 +76,7 @@ describe("ExtensionHost", () => {
     await useExtensionHost.getState().registerBuiltIn(config);
 
     const ext = useExtensionHost.getState().extensions.get("test-ext");
-    expect(ext!.builtIn).toBe(true);
+    expect(ext?.builtIn).toBe(true);
   });
 
   it("registerBuiltIn calls the activate callback with an ExtensionAPI", async () => {
@@ -96,10 +96,14 @@ describe("ExtensionHost", () => {
   it("deactivateExtension transitions to disabled status", async () => {
     const config = createTestConfig();
     await useExtensionHost.getState().registerBuiltIn(config);
-    expect(useExtensionHost.getState().extensions.get("test-ext")!.status).toBe("active");
+    expect(useExtensionHost.getState().extensions.get("test-ext")?.status).toBe(
+      "active",
+    );
 
     await useExtensionHost.getState().deactivateExtension("test-ext");
-    expect(useExtensionHost.getState().extensions.get("test-ext")!.status).toBe("disabled");
+    expect(useExtensionHost.getState().extensions.get("test-ext")?.status).toBe(
+      "disabled",
+    );
   });
 
   it("deactivateExtension calls api.cleanup() removing registrations", async () => {
@@ -117,10 +121,14 @@ describe("ExtensionHost", () => {
     });
 
     await useExtensionHost.getState().registerBuiltIn(config);
-    expect(useToolbarRegistry.getState().items.has("ext:test-ext:test-action")).toBe(true);
+    expect(
+      useToolbarRegistry.getState().items.has("ext:test-ext:test-action"),
+    ).toBe(true);
 
     await useExtensionHost.getState().deactivateExtension("test-ext");
-    expect(useToolbarRegistry.getState().items.has("ext:test-ext:test-action")).toBe(false);
+    expect(
+      useToolbarRegistry.getState().items.has("ext:test-ext:test-action"),
+    ).toBe(false);
   });
 
   it("deactivateExtension calls onDeactivate callback", async () => {
@@ -143,10 +151,14 @@ describe("ExtensionHost", () => {
     expect(activateFn).toHaveBeenCalledTimes(1);
 
     await useExtensionHost.getState().deactivateExtension("test-ext");
-    expect(useExtensionHost.getState().extensions.get("test-ext")!.status).toBe("disabled");
+    expect(useExtensionHost.getState().extensions.get("test-ext")?.status).toBe(
+      "disabled",
+    );
 
     await useExtensionHost.getState().activateExtension("test-ext");
-    expect(useExtensionHost.getState().extensions.get("test-ext")!.status).toBe("active");
+    expect(useExtensionHost.getState().extensions.get("test-ext")?.status).toBe(
+      "active",
+    );
     expect(activateFn).toHaveBeenCalledTimes(2);
   });
 
@@ -173,11 +185,13 @@ describe("ExtensionHost", () => {
     await useExtensionHost.getState().registerBuiltIn(config);
 
     const ext = useExtensionHost.getState().extensions.get("test-ext");
-    expect(ext!.status).toBe("error");
-    expect(ext!.error).toBe("activation boom");
+    expect(ext?.status).toBe("error");
+    expect(ext?.error).toBe("activation boom");
 
     // Partial toolbar registration should be cleaned up
-    expect(useToolbarRegistry.getState().items.has("ext:test-ext:partial-action")).toBe(false);
+    expect(
+      useToolbarRegistry.getState().items.has("ext:test-ext:partial-action"),
+    ).toBe(false);
 
     errorSpy.mockRestore();
   });

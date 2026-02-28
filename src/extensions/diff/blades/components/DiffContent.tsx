@@ -1,7 +1,7 @@
 import { DiffEditor, type DiffOnMount } from "@monaco-editor/react";
 import { useEffect, useMemo, useRef } from "react";
-import type { DiffHunkDetail } from "../../../../bindings";
 import { MONACO_COMMON_OPTIONS, MONACO_THEME } from "@/core/lib/monacoConfig";
+import type { DiffHunkDetail } from "../../../../bindings";
 import "@/core/lib/monacoTheme";
 import { StagingDiffEditor } from "./StagingDiffEditor";
 
@@ -44,7 +44,8 @@ export function DiffContent({
   stagingSource,
 }: DiffContentProps) {
   const editorRef = useRef<Parameters<DiffOnMount>[0] | null>(null);
-  const modelsRef = useRef<ReturnType<Parameters<DiffOnMount>[0]["getModel"]>>(null);
+  const modelsRef =
+    useRef<ReturnType<Parameters<DiffOnMount>[0]["getModel"]>>(null);
 
   // Dispose models on unmount. keepCurrentOriginalModel/keepCurrentModifiedModel
   // tell @monaco-editor/react to skip model disposal in its own cleanup so the

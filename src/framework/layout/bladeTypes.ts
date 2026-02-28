@@ -17,7 +17,7 @@
 
 /** Base blade props map — apps extend via module augmentation */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface BladePropsMap {}
+export type BladePropsMap = {};
 
 /** Core blade types derived from the map */
 export type CoreBladeType = keyof BladePropsMap;
@@ -43,4 +43,9 @@ export type TypedBlade =
         props: BladePropsMap[K];
       };
     }[CoreBladeType]
-  | { id: string; type: ExtensionBladeType; title: string; props: Record<string, unknown> };
+  | {
+      id: string;
+      type: ExtensionBladeType;
+      title: string;
+      props: Record<string, unknown>;
+    };

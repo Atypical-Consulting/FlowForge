@@ -1,13 +1,13 @@
 import { Loader2 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { useDiffQuery } from "./hooks/useDiffQuery";
+import { DiffContent } from "./components/DiffContent";
+import { DiffMarkdownPreview } from "./components/DiffMarkdownPreview";
+import { DiffToolbar } from "./components/DiffToolbar";
+import { StagingDiffNavigation } from "./components/StagingDiffNavigation";
 import { useDiffPreferences } from "./hooks/useDiffPreferences";
+import { useDiffQuery } from "./hooks/useDiffQuery";
 import { useHunkStaging } from "./hooks/useHunkStaging";
 import { useLineStaging } from "./hooks/useLineStaging";
-import { DiffContent } from "./components/DiffContent";
-import { DiffToolbar } from "./components/DiffToolbar";
-import { DiffMarkdownPreview } from "./components/DiffMarkdownPreview";
-import { StagingDiffNavigation } from "./components/StagingDiffNavigation";
 import type { DiffSource } from "./types";
 
 interface DiffBladeProps {
@@ -15,7 +15,12 @@ interface DiffBladeProps {
 }
 
 export function DiffBlade({ source }: DiffBladeProps) {
-  const { viewMode, collapseUnchanged, setDiffViewMode, setDiffCollapseUnchanged } = useDiffPreferences();
+  const {
+    viewMode,
+    collapseUnchanged,
+    setDiffViewMode,
+    setDiffCollapseUnchanged,
+  } = useDiffPreferences();
   const inline = viewMode === "inline";
 
   const [showPreview, setShowPreview] = useState(false);
@@ -27,17 +32,12 @@ export function DiffBlade({ source }: DiffBladeProps) {
 
   const isStagingMode = source.mode === "staging";
 
-  const {
-    hunks,
-    toggleHunk,
-    stageHunks,
-    unstageHunks,
-    isOperationPending,
-  } = useHunkStaging({
-    filePath: source.filePath,
-    staged: isStagingMode ? source.staged : false,
-    enabled: isStagingMode,
-  });
+  const { hunks, toggleHunk, stageHunks, unstageHunks, isOperationPending } =
+    useHunkStaging({
+      filePath: source.filePath,
+      staged: isStagingMode ? source.staged : false,
+      enabled: isStagingMode,
+    });
 
   const lineStagingResult = useLineStaging({
     filePath: source.filePath,
@@ -53,10 +53,7 @@ export function DiffBlade({ source }: DiffBladeProps) {
     setDiffCollapseUnchanged(!collapseUnchanged);
   }, [collapseUnchanged, setDiffCollapseUnchanged]);
 
-  const allHunkIndices = useMemo(
-    () => hunks.map((_, i) => i),
-    [hunks],
-  );
+  const allHunkIndices = useMemo(() => hunks.map((_, i) => i), [hunks]);
 
   const handleStageAll = useCallback(() => {
     stageHunks(allHunkIndices);

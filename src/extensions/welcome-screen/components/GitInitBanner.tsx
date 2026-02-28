@@ -9,9 +9,12 @@ interface GitInitBannerProps {
   onSetup: () => void;
 }
 
-export function GitInitBanner({ path, onDismiss, onSetup }: GitInitBannerProps) {
-  const folderName =
-    path.split("/").pop() || path.split("\\").pop() || path;
+export function GitInitBanner({
+  path,
+  onDismiss,
+  onSetup,
+}: GitInitBannerProps) {
+  const folderName = path.split("/").pop() || path.split("\\").pop() || path;
 
   return (
     <motion.div

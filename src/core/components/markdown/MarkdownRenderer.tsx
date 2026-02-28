@@ -1,7 +1,7 @@
 import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import remarkGfm from "remark-gfm";
 import "@catppuccin/highlightjs/css/catppuccin-mocha.css";
 import { useMemo } from "react";
 import { createMarkdownComponents } from "./markdownComponents";
@@ -18,10 +18,7 @@ const sanitizeSchema = {
       ...(defaultSchema.attributes?.code || []),
       ["className", /^hljs-/, /^language-/],
     ],
-    span: [
-      ...(defaultSchema.attributes?.span || []),
-      ["className", /^hljs-/],
-    ],
+    span: [...(defaultSchema.attributes?.span || []), ["className", /^hljs-/]],
   },
 };
 
@@ -56,10 +53,7 @@ export function MarkdownRenderer({
     <div className={className}>
       <Markdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[
-          rehypeHighlight,
-          [rehypeSanitize, sanitizeSchema],
-        ]}
+        rehypePlugins={[rehypeHighlight, [rehypeSanitize, sanitizeSchema]]}
         components={components}
       >
         {content}

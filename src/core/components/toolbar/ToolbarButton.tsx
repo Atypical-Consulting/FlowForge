@@ -1,7 +1,7 @@
 import { memo } from "react";
 import type { ToolbarAction } from "@/framework/extension-system/toolbarRegistry";
-import { ShortcutTooltip } from "../ui/ShortcutTooltip";
 import { Button } from "../ui/button";
+import { ShortcutTooltip } from "../ui/ShortcutTooltip";
 
 interface ToolbarButtonProps {
   action: ToolbarAction;
@@ -21,7 +21,7 @@ export const ToolbarButton = memo(function ToolbarButton({
   const Icon = action.icon;
 
   const badgeValue = action.badge?.() ?? null;
-  const showBadge = badgeValue != null && badgeValue !== 0 && badgeValue !== '';
+  const showBadge = badgeValue != null && badgeValue !== 0 && badgeValue !== "";
 
   return (
     <ShortcutTooltip shortcut={action.shortcut ?? ""} label={action.label}>

@@ -6,7 +6,9 @@ export function CommitListFallbackBlade() {
 
   return (
     <div className="flex flex-col h-full">
-      <CommitHistory onCommitSelect={(oid) => openBlade("commit-details", { oid })} />
+      <CommitHistory
+        onCommitSelect={(oid) => openBlade("commit-details", { oid })}
+      />
     </div>
   );
 }

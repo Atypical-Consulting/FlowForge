@@ -7,22 +7,21 @@ import {
   RotateCcw,
   Undo2,
 } from "lucide-react";
+import { gitHookBus } from "@/core/services/gitHookBus";
+import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
+import { toast } from "@/framework/stores/toast";
 import type { SyncProgress } from "../../bindings";
 import { commands as tauriCommands } from "../../bindings";
 import { getErrorMessage } from "../../core/lib/errors";
 import { queryClient } from "../../core/lib/queryClient";
-import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
-import { gitHookBus } from "@/core/services/gitHookBus";
 import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
-import { toast } from "@/framework/stores/toast";
 
 // Module-level loading flags for sync operations.
 let fetchLoading = false;
 let pullLoading = false;
 let pushLoading = false;
 
-const whenRepoOpen = (): boolean =>
-  !!useRepositoryStore.getState().repoStatus;
+const whenRepoOpen = (): boolean => !!useRepositoryStore.getState().repoStatus;
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {
   // ── Commands ──────────────────────────────────────────────

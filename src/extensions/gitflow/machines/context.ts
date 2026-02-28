@@ -1,4 +1,4 @@
-import { createActor, type ActorRefFrom } from "xstate";
+import { type ActorRefFrom, createActor } from "xstate";
 import { gitflowMachine } from "./gitflowMachine";
 
 export type GitflowActorRef = ActorRefFrom<typeof gitflowMachine>;

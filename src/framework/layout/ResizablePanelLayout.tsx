@@ -1,13 +1,13 @@
+import type { ReactNode, Ref } from "react";
 import {
   Group,
-  Panel,
-  Separator,
   type GroupImperativeHandle,
-  type PanelImperativeHandle,
   type Layout,
+  Panel,
+  type PanelImperativeHandle,
   type PanelSize,
+  Separator,
 } from "react-resizable-panels";
-import type { ReactNode, Ref } from "react";
 import { cn } from "../lib/utils";
 
 interface ResizablePanelLayoutProps {

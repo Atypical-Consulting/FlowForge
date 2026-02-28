@@ -1,18 +1,21 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FocusEvent, useCallback, useMemo, useRef, useState } from "react";
-import type { FileChange } from "../../../bindings";
 import { commands } from "../../../bindings";
-import { useBladeNavigation } from "../../hooks/useBladeNavigation";
-import { useStagingKeyboard } from "./hooks/useStagingKeyboard";
-import { useUIStore as useStagingStore } from "../../stores/domain/ui-state";
 import { SplitPaneLayout } from "../../components/layout";
+import { useBladeNavigation } from "../../hooks/useBladeNavigation";
+import { useUIStore as useStagingStore } from "../../stores/domain/ui-state";
 import { StagingDiffPreview } from "./components/StagingDiffPreview";
 import { StagingPanel } from "./components/StagingPanel";
+import { useStagingKeyboard } from "./hooks/useStagingKeyboard";
 
 export function StagingChangesBlade() {
   const { openStagingDiff } = useBladeNavigation();
   const queryClient = useQueryClient();
-  const { stagingSelectedFile: selectedFile, stagingSelectedSection: selectedSection, selectFile } = useStagingStore();
+  const {
+    stagingSelectedFile: selectedFile,
+    stagingSelectedSection: selectedSection,
+    selectFile,
+  } = useStagingStore();
   const [fileListFocused, setFileListFocused] = useState(false);
   const fileListRef = useRef<HTMLDivElement>(null);
 
@@ -101,7 +104,6 @@ export function StagingChangesBlade() {
       primary={
         <div
           ref={fileListRef}
-          tabIndex={0}
           role="region"
           aria-label="Changed files"
           onFocus={handleFocus}

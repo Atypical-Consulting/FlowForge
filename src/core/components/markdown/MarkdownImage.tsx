@@ -13,7 +13,11 @@ interface MarkdownImageProps {
  * External/data URLs are used directly.
  * Relative paths are fetched from git HEAD via readRepoFile.
  */
-export function MarkdownImage({ src, alt, currentFilePath }: MarkdownImageProps) {
+export function MarkdownImage({
+  src,
+  alt,
+  currentFilePath,
+}: MarkdownImageProps) {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -93,10 +97,6 @@ export function MarkdownImage({ src, alt, currentFilePath }: MarkdownImageProps)
   }
 
   return (
-    <img
-      src={imageSrc}
-      alt={alt || ""}
-      className="max-w-full rounded my-2"
-    />
+    <img src={imageSrc} alt={alt || ""} className="max-w-full rounded my-2" />
   );
 }

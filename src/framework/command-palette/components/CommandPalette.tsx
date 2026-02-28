@@ -1,8 +1,8 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
-import { useCommandRegistry, getOrderedCategories } from "../commandRegistry";
 import type { CommandCategory } from "../commandRegistry";
+import { getOrderedCategories, useCommandRegistry } from "../commandRegistry";
 import { searchCommands } from "../fuzzySearch";
 import { usePaletteStore as useCommandPaletteStore } from "../paletteStore";
 import { CommandPaletteItem } from "./CommandPaletteItem";
@@ -25,7 +25,10 @@ export function CommandPalette() {
   const commandsMap = useCommandRegistry((s) => s.items);
 
   const enabledCommands = useMemo(
-    () => Array.from(commandsMap.values()).filter((cmd) => (cmd.enabled ? cmd.enabled() : true)),
+    () =>
+      Array.from(commandsMap.values()).filter((cmd) =>
+        cmd.enabled ? cmd.enabled() : true,
+      ),
     [commandsMap],
   );
   const results = useMemo(
@@ -40,14 +43,16 @@ export function CommandPalette() {
     for (const item of results) {
       const cat = item.command.category;
       if (!groups.has(cat)) groups.set(cat, []);
-      groups.get(cat)!.push(item);
+      groups.get(cat)?.push(item);
     }
     // Sort groups by category order (core first, then extension alphabetically)
-    return getOrderedCategories().filter((cat) => groups.has(cat as CommandCategory)).map((cat) => ({
-      category: cat,
-      items: groups.get(cat)!,
-    }));
-  }, [results, query, commandsMap]);
+    return getOrderedCategories()
+      .filter((cat) => groups.has(cat as CommandCategory))
+      .map((cat) => ({
+        category: cat,
+        items: groups.get(cat)!,
+      }));
+  }, [results, query]);
 
   // Clamp selectedIndex when results list shrinks (e.g., extension disabled while palette open)
   useEffect(() => {
@@ -173,7 +178,6 @@ export function CommandPalette() {
               {/* Results list */}
               <ul
                 id="command-palette-list"
-                role="listbox"
                 aria-label="Commands"
                 className="max-h-80 overflow-y-auto py-1"
               >
@@ -191,7 +195,6 @@ export function CommandPalette() {
                             return (
                               <li
                                 key={scored.command.id}
-                                role="option"
                                 id={`cmd-${scored.command.id}`}
                                 aria-selected={currentIndex === selectedIndex}
                               >
@@ -213,7 +216,6 @@ export function CommandPalette() {
                     results.map((scored, i) => (
                       <li
                         key={scored.command.id}
-                        role="option"
                         id={`cmd-${scored.command.id}`}
                         aria-selected={i === selectedIndex}
                       >

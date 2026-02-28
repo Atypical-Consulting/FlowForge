@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { commands } from "../../../../bindings";
 import { useBladeNavigation } from "@/core/hooks/useBladeNavigation";
 import { useUIStore as useStagingStore } from "@/core/stores/domain/ui-state";
+import { commands } from "../../../../bindings";
 
 interface StagingDiffNavigationProps {
   currentFilePath: string;

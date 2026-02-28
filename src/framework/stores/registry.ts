@@ -6,9 +6,7 @@ export function resetAllStores(): void {
   storeResetFns.forEach((resetFn) => resetFn());
 }
 
-export function registerStoreForReset<T>(
-  store: StoreApi<T>,
-): void {
+export function registerStoreForReset<T>(store: StoreApi<T>): void {
   storeResetFns.add(() => {
     store.setState(store.getInitialState(), true);
   });

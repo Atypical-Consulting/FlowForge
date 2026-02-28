@@ -5,7 +5,12 @@ interface SettingsFieldProps {
   children: React.ReactNode;
 }
 
-export function SettingsField({ label, description, htmlFor, children }: SettingsFieldProps) {
+export function SettingsField({
+  label,
+  description,
+  htmlFor,
+  children,
+}: SettingsFieldProps) {
   return (
     <div>
       <label

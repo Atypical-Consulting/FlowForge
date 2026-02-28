@@ -1,6 +1,6 @@
 import { useBladeRegistry } from "../bladeRegistry";
-import { getWorkflow, getDefaultWorkflowId } from "./workflowRegistry";
-import type { WorkflowType, TypedBlade } from "./types";
+import type { TypedBlade, WorkflowType } from "./types";
+import { getDefaultWorkflowId, getWorkflow } from "./workflowRegistry";
 
 export function rootBladeForWorkflow(workflow: WorkflowType): TypedBlade {
   const config = getWorkflow(workflow);
@@ -11,7 +11,12 @@ export function rootBladeForWorkflow(workflow: WorkflowType): TypedBlade {
     if (fallback) {
       return { id: "root", ...fallback.rootBlade } as TypedBlade;
     }
-    return { id: "root", type: "empty" as any, title: "Empty", props: {} } as TypedBlade;
+    return {
+      id: "root",
+      type: "empty" as any,
+      title: "Empty",
+      props: {},
+    } as TypedBlade;
   }
 
   // Check if fallback needed (root blade not registered)

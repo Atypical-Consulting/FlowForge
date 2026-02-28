@@ -103,7 +103,9 @@ export function GitflowBranchReference({
                 className="w-3 h-3 rounded-full shrink-0"
                 style={{ backgroundColor: color }}
               />
-              <h4 className={`text-sm font-semibold ${isCurrent ? "text-ctp-text" : "text-ctp-subtext1"}`}>
+              <h4
+                className={`text-sm font-semibold ${isCurrent ? "text-ctp-text" : "text-ctp-subtext1"}`}
+              >
                 {info.name}
               </h4>
               {isCurrent && (

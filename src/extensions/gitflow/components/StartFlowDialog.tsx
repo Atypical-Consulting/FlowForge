@@ -76,7 +76,6 @@ export function StartFlowDialog({ flowType, onClose }: StartFlowDialogProps) {
               }}
               placeholder={placeholder}
               className="w-full px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 rounded text-sm focus:outline-none focus:border-ctp-blue focus:ring-1 focus:ring-ctp-blue"
-              autoFocus
             />
             <p className="text-xs text-ctp-overlay0 mt-1.5">
               Branch will be created as{" "}

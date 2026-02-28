@@ -1,9 +1,9 @@
 import type { StateCreator } from "zustand";
-import type { WorktreeInfo, CreateWorktreeOptions } from "../../../../bindings";
+import type { CreateWorktreeOptions, WorktreeInfo } from "../../../../bindings";
 import { commands } from "../../../../bindings";
 import { getErrorMessage } from "../../../lib/errors";
-import type { GitOpsMiddleware } from "./types";
 import type { GitOpsStore } from "./index";
+import type { GitOpsMiddleware } from "./types";
 
 export interface WorktreeSlice {
   worktreeList: WorktreeInfo[];
@@ -12,8 +12,14 @@ export interface WorktreeSlice {
   worktreeSelected: string | null;
 
   loadWorktrees: () => Promise<void>;
-  createWorktree: (options: CreateWorktreeOptions) => Promise<WorktreeInfo | null>;
-  deleteWorktree: (name: string, force: boolean, deleteBranch: boolean) => Promise<boolean>;
+  createWorktree: (
+    options: CreateWorktreeOptions,
+  ) => Promise<WorktreeInfo | null>;
+  deleteWorktree: (
+    name: string,
+    force: boolean,
+    deleteBranch: boolean,
+  ) => Promise<boolean>;
   selectWorktree: (name: string | null) => void;
   openInExplorer: (path: string) => Promise<void>;
   switchToWorktree: (path: string) => Promise<boolean>;
@@ -32,38 +38,64 @@ export const createWorktreeSlice: StateCreator<
   worktreeSelected: null,
 
   loadWorktrees: async () => {
-    set({ worktreeIsLoading: true, worktreeError: null }, undefined, "gitOps:worktree/load");
+    set(
+      { worktreeIsLoading: true, worktreeError: null },
+      undefined,
+      "gitOps:worktree/load",
+    );
     const result = await commands.listWorktrees();
     if (result.status === "ok") {
-      set({ worktreeList: result.data, worktreeIsLoading: false }, undefined, "gitOps:worktree/loadOk");
+      set(
+        { worktreeList: result.data, worktreeIsLoading: false },
+        undefined,
+        "gitOps:worktree/loadOk",
+      );
     } else {
-      set({ worktreeError: getErrorMessage(result.error), worktreeIsLoading: false });
+      set({
+        worktreeError: getErrorMessage(result.error),
+        worktreeIsLoading: false,
+      });
     }
   },
 
   createWorktree: async (options) => {
-    set({ worktreeIsLoading: true, worktreeError: null }, undefined, "gitOps:worktree/create");
+    set(
+      { worktreeIsLoading: true, worktreeError: null },
+      undefined,
+      "gitOps:worktree/create",
+    );
     const result = await commands.createWorktree(options);
     if (result.status === "ok") {
       await get().loadWorktrees();
       return result.data;
     }
-    set({ worktreeError: getErrorMessage(result.error), worktreeIsLoading: false });
+    set({
+      worktreeError: getErrorMessage(result.error),
+      worktreeIsLoading: false,
+    });
     return null;
   },
 
   deleteWorktree: async (name, force, deleteBranch) => {
-    set({ worktreeIsLoading: true, worktreeError: null }, undefined, "gitOps:worktree/delete");
+    set(
+      { worktreeIsLoading: true, worktreeError: null },
+      undefined,
+      "gitOps:worktree/delete",
+    );
     const result = await commands.deleteWorktree(name, force, deleteBranch);
     if (result.status === "ok") {
       await get().loadWorktrees();
       return true;
     }
-    set({ worktreeError: getErrorMessage(result.error), worktreeIsLoading: false });
+    set({
+      worktreeError: getErrorMessage(result.error),
+      worktreeIsLoading: false,
+    });
     return false;
   },
 
-  selectWorktree: (name) => set({ worktreeSelected: name }, undefined, "gitOps:worktree/select"),
+  selectWorktree: (name) =>
+    set({ worktreeSelected: name }, undefined, "gitOps:worktree/select"),
 
   openInExplorer: async (path) => {
     const { revealItemInDir } = await import("@tauri-apps/plugin-opener");
@@ -79,5 +111,6 @@ export const createWorktreeSlice: StateCreator<
     }
   },
 
-  clearWorktreeError: () => set({ worktreeError: null }, undefined, "gitOps:worktree/clearError"),
+  clearWorktreeError: () =>
+    set({ worktreeError: null }, undefined, "gitOps:worktree/clearError"),
 });

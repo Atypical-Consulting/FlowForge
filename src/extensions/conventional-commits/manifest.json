@@ -7,15 +7,32 @@
   "main": "index.ts",
   "contributes": {
     "blades": [
-      { "type": "conventional-commit", "title": "Conventional Commit", "singleton": true },
+      {
+        "type": "conventional-commit",
+        "title": "Conventional Commit",
+        "singleton": true
+      },
       { "type": "changelog", "title": "Generate Changelog", "singleton": true }
     ],
     "commands": [
-      { "id": "generate-changelog", "title": "Generate Changelog", "category": "Repository" },
-      { "id": "open-conventional-commit", "title": "Open Conventional Commit Composer", "category": "Repository" }
+      {
+        "id": "generate-changelog",
+        "title": "Generate Changelog",
+        "category": "Repository"
+      },
+      {
+        "id": "open-conventional-commit",
+        "title": "Open Conventional Commit Composer",
+        "category": "Repository"
+      }
     ],
     "toolbar": [
-      { "id": "changelog", "label": "Changelog", "group": "views", "priority": 30 }
+      {
+        "id": "changelog",
+        "label": "Changelog",
+        "group": "views",
+        "priority": 30
+      }
     ]
   },
   "permissions": null,

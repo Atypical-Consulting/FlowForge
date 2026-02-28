@@ -1,5 +1,5 @@
-import type { ComponentType, ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
+import type { ComponentType, ReactNode } from "react";
 import { createRegistry } from "../stores/createRegistry";
 
 // --- Types ---

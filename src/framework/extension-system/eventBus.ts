@@ -54,7 +54,7 @@ export class ExtensionEventBus {
     }
 
     const entry: HandlerEntry = { handler, source };
-    bySource.get(source)!.add(entry);
+    bySource.get(source)?.add(entry);
 
     return () => {
       this.off(event, entry);

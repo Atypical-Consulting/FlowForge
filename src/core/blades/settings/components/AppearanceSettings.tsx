@@ -1,6 +1,6 @@
 import { Monitor, Moon, Sun } from "lucide-react";
-import type { Theme } from "../../../stores/domain/preferences/theme.slice";
 import { usePreferencesStore as useThemeStore } from "../../../stores/domain/preferences";
+import type { Theme } from "../../../stores/domain/preferences/theme.slice";
 
 const themeOptions: { value: Theme; icon: React.ReactNode; label: string }[] = [
   { value: "light", icon: <Sun className="w-4 h-4" />, label: "Light" },

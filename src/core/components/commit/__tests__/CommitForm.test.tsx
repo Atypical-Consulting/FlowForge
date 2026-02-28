@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the extensions module to control isCCActive
 const mockExtensionStatus = vi.hoisted(() => ({
@@ -10,9 +10,7 @@ const mockExtensionStatus = vi.hoisted(() => ({
 vi.mock("../../../../extensions", () => ({
   useExtensionHost: (selector: (s: any) => any) =>
     selector({
-      extensions: new Map([
-        ["conventional-commits", mockExtensionStatus],
-      ]),
+      extensions: new Map([["conventional-commits", mockExtensionStatus]]),
     }),
 }));
 
@@ -53,9 +51,12 @@ vi.mock("../../../../bindings", () => ({
 }));
 
 // Mock ConventionalCommitForm since it has deep dependencies
-vi.mock("../../../../extensions/conventional-commits/components/ConventionalCommitForm", () => ({
-  ConventionalCommitForm: () => <div data-testid="cc-form">CC Form</div>,
-}));
+vi.mock(
+  "../../../../extensions/conventional-commits/components/ConventionalCommitForm",
+  () => ({
+    ConventionalCommitForm: () => <div data-testid="cc-form">CC Form</div>,
+  }),
+);
 
 import { CommitForm } from "../CommitForm";
 
@@ -73,7 +74,7 @@ describe("CommitForm graceful degradation", () => {
     render(
       <QueryClientProvider client={queryClient}>
         <CommitForm />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
   it("hides CC toggle when extension is inactive", () => {
@@ -94,7 +95,9 @@ describe("CommitForm graceful degradation", () => {
     mockExtensionStatus.status = "inactive";
     renderCommitForm();
 
-    expect(screen.getByPlaceholderText("Commit message...")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Commit message..."),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Commit" })).toBeInTheDocument();
   });
 

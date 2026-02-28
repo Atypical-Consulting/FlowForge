@@ -1,12 +1,12 @@
-import { useState } from "react";
 import { ChevronRight, Trash2 } from "lucide-react";
-import type { ExtensionInfo } from "@/framework/extension-system/types";
-import { ToggleSwitch } from "../../../components/ui/ToggleSwitch";
-import { PermissionBadge } from "../../../components/ui/PermissionBadge";
+import { useState } from "react";
 import { useExtensionHost } from "@/framework/extension-system/ExtensionHost";
-import { useBladeNavigation } from "../../../hooks/useBladeNavigation";
-import { Button } from "../../../components/ui/button";
+import type { ExtensionInfo } from "@/framework/extension-system/types";
 import { toast } from "@/framework/stores/toast";
+import { Button } from "../../../components/ui/button";
+import { PermissionBadge } from "../../../components/ui/PermissionBadge";
+import { ToggleSwitch } from "../../../components/ui/ToggleSwitch";
+import { useBladeNavigation } from "../../../hooks/useBladeNavigation";
 import { cn } from "../../../lib/utils";
 
 interface ExtensionCardProps {
@@ -42,14 +42,20 @@ export function ExtensionCard({ extension, onUninstall }: ExtensionCardProps) {
         toast.success(`${extension.name} enabled`);
       }
     } catch (e) {
-      toast.error(`Failed to toggle: ${e instanceof Error ? e.message : String(e)}`);
+      toast.error(
+        `Failed to toggle: ${e instanceof Error ? e.message : String(e)}`,
+      );
     } finally {
       setIsToggling(false);
     }
   };
 
   const handleOpenDetail = () => {
-    openBlade("extension-detail", { extensionId: extension.id }, extension.name);
+    openBlade(
+      "extension-detail",
+      { extensionId: extension.id },
+      extension.name,
+    );
   };
 
   return (
@@ -77,7 +83,9 @@ export function ExtensionCard({ extension, onUninstall }: ExtensionCardProps) {
             <span className="text-sm font-medium text-ctp-text truncate">
               {extension.name}
             </span>
-            <span className="text-xs text-ctp-overlay0">{extension.version}</span>
+            <span className="text-xs text-ctp-overlay0">
+              {extension.version}
+            </span>
             {isBuiltIn && (
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-ctp-surface1 text-ctp-subtext0 font-medium">
                 Built-in
@@ -116,7 +124,10 @@ export function ExtensionCard({ extension, onUninstall }: ExtensionCardProps) {
 
         {/* Right side */}
         {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
-        <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="flex items-center gap-2 shrink-0"
+          onClick={(e) => e.stopPropagation()}
+        >
           {!isError && (
             <ToggleSwitch
               checked={isActive}

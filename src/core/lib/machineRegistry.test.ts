@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { setup } from "xstate";
 import { useMachineRegistry } from "@/framework/extension-system/machineRegistry";
 
@@ -43,9 +43,9 @@ describe("machineRegistry", () => {
 
     const entry = get("core:test");
     expect(entry).toBeDefined();
-    expect(entry!.id).toBe("core:test");
-    expect(entry!.source).toBe("core");
-    expect(entry!.category).toBe("workflow");
+    expect(entry?.id).toBe("core:test");
+    expect(entry?.source).toBe("core");
+    expect(entry?.category).toBe("workflow");
   });
 
   it("getActor returns the actor reference", () => {

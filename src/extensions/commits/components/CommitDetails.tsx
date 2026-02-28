@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Clock, FileText, Loader2, User } from "lucide-react";
-import { type CommitSummary, commands } from "../../../bindings";
 import { cn } from "@/framework/lib/utils";
+import { type CommitSummary, commands } from "../../../bindings";
 
 interface CommitDetailsProps {
   commit: CommitSummary;

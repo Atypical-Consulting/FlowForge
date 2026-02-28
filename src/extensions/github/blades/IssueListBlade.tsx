@@ -7,18 +7,18 @@
  * open/closed/all views. PRs are filtered out by the backend.
  */
 
+import { CircleDot, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Virtuoso } from "react-virtuoso";
-import { CircleDot, Loader2 } from "lucide-react";
-import { useGitHubStore } from "../githubStore";
-import { useIssueList } from "../hooks/useGitHubQuery";
-import { useBladeNavigation } from "../../../core/hooks/useBladeNavigation";
 import { BladeContentEmpty } from "../../../core/blades/_shared/BladeContentEmpty";
 import { BladeContentError } from "../../../core/blades/_shared/BladeContentError";
 import { BladeContentLoading } from "../../../core/blades/_shared/BladeContentLoading";
-import { StatusBadge } from "../components/StatusBadge";
+import { useBladeNavigation } from "../../../core/hooks/useBladeNavigation";
 import { LabelPill } from "../components/LabelPill";
+import { StatusBadge } from "../components/StatusBadge";
 import { TimeAgo } from "../components/TimeAgo";
+import { useGitHubStore } from "../githubStore";
+import { useIssueList } from "../hooks/useGitHubQuery";
 
 type StateFilter = "open" | "closed" | "all";
 
@@ -52,7 +52,9 @@ export function IssueListBlade() {
           <select
             value={selectedRemoteIndex}
             onChange={(e) =>
-              useGitHubStore.getState().setSelectedRemote(Number(e.target.value))
+              useGitHubStore
+                .getState()
+                .setSelectedRemote(Number(e.target.value))
             }
             className="w-full text-xs bg-ctp-surface0 text-ctp-text border border-ctp-surface1 rounded px-2 py-1"
           >
@@ -123,7 +125,9 @@ function IssueList({ owner, repo, state, onSelect }: IssueListInnerProps) {
     return (
       <BladeContentError
         message="Failed to load issues"
-        detail={query.error instanceof Error ? query.error.message : "Unknown error"}
+        detail={
+          query.error instanceof Error ? query.error.message : "Unknown error"
+        }
         onRetry={() => query.refetch()}
       />
     );
@@ -133,7 +137,7 @@ function IssueList({ owner, repo, state, onSelect }: IssueListInnerProps) {
     return (
       <BladeContentEmpty
         icon={CircleDot}
-        message={`No ${state === "all" ? "" : state + " "}issues`}
+        message={`No ${state === "all" ? "" : `${state} `}issues`}
       />
     );
   }
@@ -163,7 +167,11 @@ function IssueList({ owner, repo, state, onSelect }: IssueListInnerProps) {
                 <span>{issue.authorLogin}</span>
                 <TimeAgo date={issue.createdAt} />
                 {issue.labels.slice(0, 3).map((label) => (
-                  <LabelPill key={label.name} name={label.name} color={label.color} />
+                  <LabelPill
+                    key={label.name}
+                    name={label.name}
+                    color={label.color}
+                  />
                 ))}
                 {issue.assigneeLogins.length > 0 && (
                   <span className="text-ctp-subtext0 truncate">

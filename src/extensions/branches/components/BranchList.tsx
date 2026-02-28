@@ -1,14 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
 import { Pin, Shield } from "lucide-react";
-import { useBulkSelect } from "../../../core/hooks/useBulkSelect";
-import { useBranchScopes } from "../../../core/hooks/useBranchScopes";
-import { useMergeWorkflow } from "../../../core/hooks/useMergeWorkflow";
-import { bulkDeleteBranches, getProtectedBranches } from "../../../core/lib/bulkBranchOps";
+import { useEffect, useMemo, useState } from "react";
 import { gitHookBus } from "@/core/services/gitHookBus";
-import { usePreferencesStore as useBranchMetadataStore } from "../../../core/stores/domain/preferences";
-import { useGitOpsStore as useBranchStore } from "../../../core/stores/domain/git-ops";
-import { useGitOpsStore as useGitflowStore } from "../../../core/stores/domain/git-ops";
 import { toast } from "@/framework/stores/toast";
+import { useBranchScopes } from "../../../core/hooks/useBranchScopes";
+import { useBulkSelect } from "../../../core/hooks/useBulkSelect";
+import { useMergeWorkflow } from "../../../core/hooks/useMergeWorkflow";
+import {
+  bulkDeleteBranches,
+  getProtectedBranches,
+} from "../../../core/lib/bulkBranchOps";
+import {
+  useGitOpsStore as useBranchStore,
+  useGitOpsStore as useGitflowStore,
+} from "../../../core/stores/domain/git-ops";
+import { usePreferencesStore as useBranchMetadataStore } from "../../../core/stores/domain/preferences";
 import { BranchBulkActions } from "./BranchBulkActions";
 import { BranchItem } from "./BranchItem";
 import { BranchScopeSelector } from "./BranchScopeSelector";
@@ -39,8 +44,17 @@ export function BranchList({
     loadAllBranches,
   } = useBranchScopes();
 
-  const { checkoutBranch, deleteBranch, clearBranchError: clearError } = useBranchStore();
-  const { mergeResult: lastMergeResult, startMerge, abort: abortMerge, isMerging: mergeIsLoading } = useMergeWorkflow();
+  const {
+    checkoutBranch,
+    deleteBranch,
+    clearBranchError: clearError,
+  } = useBranchStore();
+  const {
+    mergeResult: lastMergeResult,
+    startMerge,
+    abort: abortMerge,
+    isMerging: mergeIsLoading,
+  } = useMergeWorkflow();
   const [mergingBranch, setMergingBranch] = useState<string | null>(null);
 
   // Bulk delete state
@@ -82,7 +96,9 @@ export function BranchList({
     if (success) {
       await loadAllBranches(true);
       if (repoPath) {
-        await useBranchMetadataStore.getState().recordBranchVisit(repoPath, branchName);
+        await useBranchMetadataStore
+          .getState()
+          .recordBranchVisit(repoPath, branchName);
       }
     }
   };
@@ -180,8 +196,7 @@ export function BranchList({
         onSelectAllMerged={() => {
           const merged = branches
             .filter(
-              (b) =>
-                b.isMerged && !b.isHead && !protectedBranches.has(b.name),
+              (b) => b.isMerged && !b.isHead && !protectedBranches.has(b.name),
             )
             .map((b) => b.name);
           bulkSelect.selectAllMerged(merged);
@@ -214,8 +229,8 @@ export function BranchList({
 
         {branches.map((branch) => (
           <div key={branch.name} className="flex items-center gap-1">
-            {bulkSelect.selectionMode && (
-              protectedBranches.has(branch.name) ? (
+            {bulkSelect.selectionMode &&
+              (protectedBranches.has(branch.name) ? (
                 <span title="Protected branch" className="shrink-0 ml-1">
                   <Shield className="w-3.5 h-3.5 text-ctp-blue" />
                 </span>
@@ -224,16 +239,16 @@ export function BranchList({
                   type="checkbox"
                   checked={bulkSelect.isSelected(branch.name)}
                   onChange={(e) => {
-                    const shiftKey = e.nativeEvent instanceof MouseEvent
-                      ? (e.nativeEvent as MouseEvent).shiftKey
-                      : false;
+                    const shiftKey =
+                      e.nativeEvent instanceof MouseEvent
+                        ? (e.nativeEvent as MouseEvent).shiftKey
+                        : false;
                     bulkSelect.toggleSelect(branch.name, shiftKey);
                   }}
                   className="accent-ctp-blue shrink-0 ml-1"
                   aria-label={`Select ${branch.name}`}
                 />
-              )
-            )}
+              ))}
             <div className="flex-1 min-w-0">
               <BranchItem
                 branch={branch}

@@ -1,5 +1,5 @@
-import { lazy } from "react";
 import { FolderGit2 } from "lucide-react";
+import { lazy } from "react";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { openBlade } from "@/framework/layout/bladeOpener";
 
@@ -7,7 +7,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
   const InitRepoBlade = lazy(() =>
     import("./blades/InitRepoBlade").then((m) => ({
       default: m.InitRepoBlade,
-    }))
+    })),
   );
 
   api.registerBlade({

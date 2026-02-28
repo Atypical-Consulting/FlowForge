@@ -1,9 +1,9 @@
 import {
-  ok,
-  err,
   createBranchInfo,
-  createTagInfo,
   createStashEntry,
+  createTagInfo,
+  err,
+  ok,
 } from "../../../test-utils/mocks/tauri-commands";
 import { useGitOpsStore } from "./index";
 
@@ -134,10 +134,12 @@ describe("useGitOpsStore", () => {
       mockCommands.createBranch.mockResolvedValueOnce(ok(newBranch));
       mockCommands.listBranches.mockResolvedValueOnce(ok([newBranch]));
 
-      const result = await useGitOpsStore.getState().createBranch("feature/test", true);
+      const result = await useGitOpsStore
+        .getState()
+        .createBranch("feature/test", true);
 
       expect(result).not.toBeNull();
-      expect(result!.name).toBe("feature/test");
+      expect(result?.name).toBe("feature/test");
     });
   });
 
@@ -195,7 +197,9 @@ describe("useGitOpsStore", () => {
       mockCommands.stashSave.mockResolvedValueOnce(ok("stash@{0}"));
       mockCommands.listStashes.mockResolvedValueOnce(ok([]));
 
-      const result = await useGitOpsStore.getState().saveStash("test stash", false);
+      const result = await useGitOpsStore
+        .getState()
+        .saveStash("test stash", false);
 
       expect(result).toBe(true);
       expect(mockCommands.stashSave).toHaveBeenCalledWith("test stash", false);

@@ -1,9 +1,9 @@
-import { setup, assign, and, not } from "xstate";
-import { rootBladeForWorkflow } from "./actions";
+import { and, assign, not, setup } from "xstate";
 import { toast } from "../../stores/toast";
 import { isSingletonBlade } from "../bladeRegistry";
-import { getDefaultWorkflowId } from "./workflowRegistry";
+import { rootBladeForWorkflow } from "./actions";
 import type { NavigationContext, NavigationEvent, TypedBlade } from "./types";
+import { getDefaultWorkflowId } from "./workflowRegistry";
 
 const DEFAULT_MAX_STACK_DEPTH = 8;
 

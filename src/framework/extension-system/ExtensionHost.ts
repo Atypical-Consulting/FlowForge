@@ -1,11 +1,11 @@
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { convertFileSrc } from "@tauri-apps/api/core";
-import { toast } from "../stores/toast";
 import { getStore } from "../stores/persistence/tauri";
+import { toast } from "../stores/toast";
 import { ExtensionAPI } from "./ExtensionAPI";
-import type { BuiltInExtensionConfig, ExtensionInfo } from "./types";
 import type { ExtensionManifest } from "./manifest";
+import type { BuiltInExtensionConfig, ExtensionInfo } from "./types";
 
 // ---------------------------------------------------------------------------
 // Dependency Injection
@@ -13,7 +13,12 @@ import type { ExtensionManifest } from "./manifest";
 
 interface ExtensionHostDeps {
   /** Discover extensions on the filesystem and return their manifests. */
-  discoverExtensions: (path: string) => Promise<{ status: "ok"; data: ExtensionManifest[] } | { status: "error"; error: string }>;
+  discoverExtensions: (
+    path: string,
+  ) => Promise<
+    | { status: "ok"; data: ExtensionManifest[] }
+    | { status: "error"; error: string }
+  >;
 }
 
 let hostDeps: ExtensionHostDeps | null = null;
@@ -76,11 +81,15 @@ interface ExtensionHostState {
 // ---------------------------------------------------------------------------
 
 /** Persist disabled extension IDs to tauri-plugin-store */
-async function persistDisabledExtensions(extensions: Map<string, ExtensionInfo>): Promise<void> {
+async function persistDisabledExtensions(
+  extensions: Map<string, ExtensionInfo>,
+): Promise<void> {
   try {
     const store = await getStore();
     const disabledIds = Array.from(extensions.values())
-      .filter((ext) => ext.status === "deactivated" || ext.status === "disabled")
+      .filter(
+        (ext) => ext.status === "deactivated" || ext.status === "disabled",
+      )
       .map((ext) => ext.id);
     await store.set("disabledExtensions", disabledIds);
     await store.save();
@@ -136,16 +145,13 @@ export const useExtensionHost = create<ExtensionHostState>()(
       discoverExtensions: async (repoPath: string) => {
         set({ isDiscovering: true }, false, "extension-host/discover:start");
 
-        const extensionsDir = repoPath + "/.flowforge/extensions";
+        const extensionsDir = `${repoPath}/.flowforge/extensions`;
 
         try {
           const result = await getHostDeps().discoverExtensions(extensionsDir);
 
           if (result.status === "error") {
-            console.error(
-              "Extension discovery failed:",
-              result.error,
-            );
+            console.error("Extension discovery failed:", result.error);
             toast.error(`Extension discovery failed: ${result.error}`);
             set(
               { isDiscovering: false },
@@ -198,11 +204,7 @@ export const useExtensionHost = create<ExtensionHostState>()(
           );
         } catch (e) {
           console.error("Extension discovery threw:", e);
-          set(
-            { isDiscovering: false },
-            false,
-            "extension-host/discover:error",
-          );
+          set({ isDiscovering: false }, false, "extension-host/discover:error");
         }
       },
 
@@ -212,7 +214,13 @@ export const useExtensionHost = create<ExtensionHostState>()(
 
       activateExtension: async (id: string) => {
         const ext = get().extensions.get(id);
-        if (!ext || (ext.status !== "discovered" && ext.status !== "disabled" && ext.status !== "deactivated")) return;
+        if (
+          !ext ||
+          (ext.status !== "discovered" &&
+            ext.status !== "disabled" &&
+            ext.status !== "deactivated")
+        )
+          return;
 
         // Built-in extensions use their stored config instead of filesystem import
         const builtInConfig = builtInConfigs.get(id);
@@ -222,15 +230,25 @@ export const useExtensionHost = create<ExtensionHostState>()(
           try {
             await builtInConfig.activate(api);
             extensionApis.set(id, api);
-            extensionModules.set(id, { onDeactivate: builtInConfig.deactivate });
-            updateExtension(get, set, id, { status: "active", error: undefined });
+            extensionModules.set(id, {
+              onDeactivate: builtInConfig.deactivate,
+            });
+            updateExtension(get, set, id, {
+              status: "active",
+              error: undefined,
+            });
             await persistDisabledExtensions(get().extensions);
           } catch (e) {
             api.cleanup();
             const errorMessage = e instanceof Error ? e.message : String(e);
             console.error(`Failed to activate built-in extension "${id}":`, e);
-            updateExtension(get, set, id, { status: "error", error: errorMessage });
-            toast.error(`Extension "${ext.name}" failed to activate: ${errorMessage}`);
+            updateExtension(get, set, id, {
+              status: "error",
+              error: errorMessage,
+            });
+            toast.error(
+              `Extension "${ext.name}" failed to activate: ${errorMessage}`,
+            );
           }
           return;
         }
@@ -243,7 +261,7 @@ export const useExtensionHost = create<ExtensionHostState>()(
           // Build entry point URL from basePath + main using Tauri asset protocol
           const basePath = ext.manifest.basePath ?? "";
           const mainFile = ext.manifest.main;
-          const filePath = basePath + "/" + mainFile;
+          const filePath = `${basePath}/${mainFile}`;
 
           // convertFileSrc converts an absolute filesystem path to a URL
           // that the Tauri webview can load (asset:// protocol on desktop)
@@ -274,8 +292,7 @@ export const useExtensionHost = create<ExtensionHostState>()(
           // Clean up any partial registrations made before the error
           api.cleanup();
 
-          const errorMessage =
-            e instanceof Error ? e.message : String(e);
+          const errorMessage = e instanceof Error ? e.message : String(e);
           console.error(`Failed to activate extension "${id}":`, e);
 
           updateExtension(get, set, id, {
@@ -303,10 +320,7 @@ export const useExtensionHost = create<ExtensionHostState>()(
           try {
             await module.onDeactivate();
           } catch (e) {
-            console.error(
-              `Error during onDeactivate of extension "${id}":`,
-              e,
-            );
+            console.error(`Error during onDeactivate of extension "${id}":`, e);
           }
         }
 
@@ -412,12 +426,8 @@ export const useExtensionHost = create<ExtensionHostState>()(
           });
         } catch (e) {
           api.cleanup();
-          const errorMessage =
-            e instanceof Error ? e.message : String(e);
-          console.error(
-            `Failed to activate built-in extension "${id}":`,
-            e,
-          );
+          const errorMessage = e instanceof Error ? e.message : String(e);
+          console.error(`Failed to activate built-in extension "${id}":`, e);
           updateExtension(get, set, id, {
             status: "error",
             error: errorMessage,

@@ -45,8 +45,9 @@ export function useRovingTabindex(itemCount: number) {
       setActiveIndex(newIndex);
 
       // Focus the element at the new index
-      const items =
-        e.currentTarget.querySelectorAll<HTMLElement>("[data-toolbar-item]");
+      const items = e.currentTarget.querySelectorAll<HTMLElement>(
+        "[data-toolbar-item]",
+      );
       items[newIndex]?.focus();
     },
     [activeIndex, itemCount],

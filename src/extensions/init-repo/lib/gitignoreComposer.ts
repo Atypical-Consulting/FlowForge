@@ -48,7 +48,7 @@ export function composeGitignore(templates: TemplateSection[]): string {
   result = result.replace(/\n{4,}/g, "\n\n\n");
 
   // Ensure single trailing newline
-  return result.trimEnd() + "\n";
+  return `${result.trimEnd()}\n`;
 }
 
 /**

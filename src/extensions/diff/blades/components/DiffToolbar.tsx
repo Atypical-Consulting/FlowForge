@@ -4,8 +4,8 @@ import {
   Columns,
   Eye,
   FoldVertical,
-  ListPlus,
   ListMinus,
+  ListPlus,
   UnfoldVertical,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -106,7 +106,11 @@ export function DiffToolbar({
             variant="ghost"
             size="sm"
             onClick={onToggleCollapse}
-            title={collapseUnchanged ? "Show all lines" : "Collapse unchanged regions"}
+            title={
+              collapseUnchanged
+                ? "Show all lines"
+                : "Collapse unchanged regions"
+            }
             className="h-7 px-2"
           >
             {collapseUnchanged ? (

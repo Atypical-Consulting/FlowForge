@@ -2,12 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";
 import { ArrowDown, ArrowUp, CloudDownload, Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
-import { type SyncProgress, commands } from "../../../bindings";
-import { formatShortcut } from "@/framework/command-palette/formatShortcut";
+import { Button } from "@/core/components/ui/button";
+import { ShortcutTooltip } from "@/core/components/ui/ShortcutTooltip";
 import { gitHookBus } from "@/core/services/gitHookBus";
 import { toast } from "@/framework/stores/toast";
-import { ShortcutTooltip } from "@/core/components/ui/ShortcutTooltip";
-import { Button } from "@/core/components/ui/button";
+import { commands, type SyncProgress } from "../../../bindings";
 import { SyncProgressDisplay } from "./SyncProgress";
 
 export function SyncButtons() {

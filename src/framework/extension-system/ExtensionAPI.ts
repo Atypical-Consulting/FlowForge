@@ -1,41 +1,34 @@
-import type { ComponentType, ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
+import type { ComponentType, ReactNode } from "react";
 import type { AnyActorRef, AnyStateMachine, Subscription } from "xstate";
 import { createActor } from "xstate";
 import {
-  registerBlade,
-  unregisterBlade,
-  type BladeRenderContext,
-} from "../layout/bladeRegistry";
-import {
+  type CommandCategory,
   registerCommand,
   unregisterCommand,
-  type CommandCategory,
 } from "../command-palette/commandRegistry";
 import {
-  useMachineRegistry,
-  type MachineRegistryEntry,
-} from "./machineRegistry";
-import { useToolbarRegistry, type ToolbarGroup } from "./toolbarRegistry";
-import {
-  useContextMenuRegistry,
-  type ContextMenuLocation,
-  type ContextMenuContext,
-} from "./contextMenuRegistry";
-import { useSidebarPanelRegistry } from "../layout/sidebarPanelRegistry";
-import {
-  useStatusBarRegistry,
-  type StatusBarAlignment,
-} from "./statusBarRegistry";
-import {
-  OperationBus,
-  type DidHandler,
-  type WillHandler,
-} from "./operationBus";
+  type BladeRenderContext,
+  registerBlade,
+  unregisterBlade,
+} from "../layout/bladeRegistry";
 import { getNavigationActor } from "../layout/navigation/context";
 import type { LastAction } from "../layout/navigation/types";
+import { useSidebarPanelRegistry } from "../layout/sidebarPanelRegistry";
+import {
+  type ContextMenuContext,
+  type ContextMenuLocation,
+  useContextMenuRegistry,
+} from "./contextMenuRegistry";
+import { type EventHandler, extensionEventBus } from "./eventBus";
+import { useMachineRegistry } from "./machineRegistry";
+import type { DidHandler, OperationBus, WillHandler } from "./operationBus";
 import { ExtensionSettings } from "./settings";
-import { extensionEventBus, type EventHandler } from "./eventBus";
+import {
+  type StatusBarAlignment,
+  useStatusBarRegistry,
+} from "./statusBarRegistry";
+import { type ToolbarGroup, useToolbarRegistry } from "./toolbarRegistry";
 
 // --- Navigation event type for extensions ---
 
@@ -342,7 +335,10 @@ export class ExtensionAPI {
         handler({
           action: lastAction,
           blade: topBlade
-            ? { type: topBlade.type, props: topBlade.props as Record<string, unknown> }
+            ? {
+                type: topBlade.type,
+                props: topBlade.props as Record<string, unknown>,
+              }
             : { type: "", props: {} },
           stackDepth: bladeStack.length,
         });
@@ -462,9 +458,7 @@ export class ExtensionAPI {
     for (const id of this.registeredCommands) {
       unregisterCommand(id);
     }
-    useToolbarRegistry
-      .getState()
-      .unregisterBySource(`ext:${this.extensionId}`);
+    useToolbarRegistry.getState().unregisterBySource(`ext:${this.extensionId}`);
 
     // 2. New UI registries (context menu, sidebar, status bar)
     useContextMenuRegistry
@@ -498,9 +492,7 @@ export class ExtensionAPI {
         );
       }
     }
-    useMachineRegistry
-      .getState()
-      .unregisterBySource(`ext:${this.extensionId}`);
+    useMachineRegistry.getState().unregisterBySource(`ext:${this.extensionId}`);
 
     // 4. Extension event bus
     extensionEventBus.removeAllForSource(this.extensionId);

@@ -6,18 +6,24 @@
  */
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { commands } from "../../../bindings";
 import { toast } from "@/framework/stores/toast";
+import { commands } from "../../../bindings";
 
 /**
  * Extract a human-readable error message from a GitHubError or unknown error.
  */
 function extractGitHubErrorMessage(error: unknown): string {
   if (error && typeof error === "object") {
-    if ("message" in error && typeof (error as Record<string, unknown>).message === "string") {
+    if (
+      "message" in error &&
+      typeof (error as Record<string, unknown>).message === "string"
+    ) {
       return (error as Record<string, string>).message;
     }
-    if ("type" in error && typeof (error as Record<string, unknown>).type === "string") {
+    if (
+      "type" in error &&
+      typeof (error as Record<string, unknown>).type === "string"
+    ) {
       return (error as Record<string, string>).type;
     }
   }
@@ -60,7 +66,13 @@ export function useMergePullRequest(owner: string, repo: string) {
     onSuccess: (_data, variables) => {
       toast.success(`Pull request #${variables.pullNumber} merged`);
       queryClient.invalidateQueries({
-        queryKey: ["ext:github", "pullRequest", owner, repo, variables.pullNumber],
+        queryKey: [
+          "ext:github",
+          "pullRequest",
+          owner,
+          repo,
+          variables.pullNumber,
+        ],
       });
       queryClient.invalidateQueries({
         queryKey: ["ext:github", "pullRequests", owner, repo],

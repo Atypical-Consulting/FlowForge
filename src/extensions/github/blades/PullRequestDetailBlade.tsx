@@ -6,19 +6,19 @@
  * Includes a link to open the PR on GitHub in an external browser.
  */
 
-import { useState, useEffect } from "react";
 import { ExternalLink, GitMerge } from "lucide-react";
-import { usePullRequestDetail } from "../hooks/useGitHubQuery";
-import { useMergePullRequest } from "../hooks/useGitHubMutation";
+import { useEffect, useState } from "react";
 import { BladeContentError } from "../../../core/blades/_shared/BladeContentError";
 import { BladeContentLoading } from "../../../core/blades/_shared/BladeContentLoading";
 import { MarkdownRenderer } from "../../../core/components/markdown/MarkdownRenderer";
 import { Button } from "../../../core/components/ui/button";
-import { StatusBadge } from "../components/StatusBadge";
-import { LabelPill } from "../components/LabelPill";
-import { TimeAgo } from "../components/TimeAgo";
 import { CommentCard } from "../components/CommentCard";
+import { LabelPill } from "../components/LabelPill";
 import { MergeConfirmDialog } from "../components/MergeConfirmDialog";
+import { StatusBadge } from "../components/StatusBadge";
+import { TimeAgo } from "../components/TimeAgo";
+import { useMergePullRequest } from "../hooks/useGitHubMutation";
+import { usePullRequestDetail } from "../hooks/useGitHubQuery";
 
 interface PullRequestDetailBladeProps {
   owner: string;
@@ -26,8 +26,16 @@ interface PullRequestDetailBladeProps {
   number: number;
 }
 
-export function PullRequestDetailBlade({ owner, repo, number }: PullRequestDetailBladeProps) {
-  const { data, isLoading, error, refetch } = usePullRequestDetail(owner, repo, number);
+export function PullRequestDetailBlade({
+  owner,
+  repo,
+  number,
+}: PullRequestDetailBladeProps) {
+  const { data, isLoading, error, refetch } = usePullRequestDetail(
+    owner,
+    repo,
+    number,
+  );
   const mergeMutation = useMergePullRequest(owner, repo);
   const [showMergeDialog, setShowMergeDialog] = useState(false);
 
@@ -58,7 +66,11 @@ export function PullRequestDetailBlade({ owner, repo, number }: PullRequestDetai
 
         {/* Status row */}
         <div className="flex items-center gap-2 mt-2">
-          <StatusBadge state={data.state} merged={data.merged} draft={data.draft} />
+          <StatusBadge
+            state={data.state}
+            merged={data.merged}
+            draft={data.draft}
+          />
           <span className="text-xs text-ctp-subtext0">#{number}</span>
           <span className="text-xs text-ctp-overlay0">{data.authorLogin}</span>
           <TimeAgo date={data.createdAt} />
@@ -87,7 +99,11 @@ export function PullRequestDetailBlade({ owner, repo, number }: PullRequestDetai
         {data.labels.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
             {data.labels.map((label) => (
-              <LabelPill key={label.name} name={label.name} color={label.color} />
+              <LabelPill
+                key={label.name}
+                name={label.name}
+                color={label.color}
+              />
             ))}
           </div>
         )}
@@ -112,7 +128,9 @@ export function PullRequestDetailBlade({ owner, repo, number }: PullRequestDetai
         {data.body ? (
           <MarkdownRenderer content={data.body} />
         ) : (
-          <p className="text-sm text-ctp-overlay0 italic">No description provided.</p>
+          <p className="text-sm text-ctp-overlay0 italic">
+            No description provided.
+          </p>
         )}
       </div>
 

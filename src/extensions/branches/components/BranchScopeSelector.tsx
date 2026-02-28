@@ -1,5 +1,5 @@
-import type { BranchScopeDefinition } from "../../../core/lib/branchScopes";
 import { cn } from "@/framework/lib/utils";
+import type { BranchScopeDefinition } from "../../../core/lib/branchScopes";
 
 interface BranchScopeSelectorProps {
   scopes: BranchScopeDefinition[];
@@ -7,7 +7,11 @@ interface BranchScopeSelectorProps {
   onChange: (scopeId: string) => void;
 }
 
-export function BranchScopeSelector({ scopes, activeScopeId, onChange }: BranchScopeSelectorProps) {
+export function BranchScopeSelector({
+  scopes,
+  activeScopeId,
+  onChange,
+}: BranchScopeSelectorProps) {
   const handleKeyDown = (e: React.KeyboardEvent, idx: number) => {
     if (e.key === "ArrowRight") {
       e.preventDefault();
@@ -21,7 +25,11 @@ export function BranchScopeSelector({ scopes, activeScopeId, onChange }: BranchS
   };
 
   return (
-    <div role="radiogroup" aria-label="Branch scope" className="flex bg-ctp-surface0 rounded-md p-0.5 mx-2 mb-2">
+    <div
+      role="radiogroup"
+      aria-label="Branch scope"
+      className="flex bg-ctp-surface0 rounded-md p-0.5 mx-2 mb-2"
+    >
       {scopes.map((scope, idx) => {
         const active = scope.id === activeScopeId;
         return (
@@ -37,7 +45,7 @@ export function BranchScopeSelector({ scopes, activeScopeId, onChange }: BranchS
               "flex-1 text-xs font-medium rounded-sm py-1 px-2 transition-all",
               active
                 ? "bg-ctp-surface1 text-ctp-text shadow-sm"
-                : "text-ctp-overlay1 hover:text-ctp-subtext0"
+                : "text-ctp-overlay1 hover:text-ctp-subtext0",
             )}
           >
             {scope.label}

@@ -1,6 +1,6 @@
-import { lazy } from "react";
-import { History } from "lucide-react";
 import { listen } from "@tauri-apps/api/event";
+import { History } from "lucide-react";
+import { lazy } from "react";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { getNavigationActor } from "@/framework/layout/navigation/context";
 import { useGitOpsStore } from "../../core/stores/domain/git-ops";
@@ -10,7 +10,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
   const TopologyRootBlade = lazy(() =>
     import("./blades/TopologyRootBlade").then((m) => ({
       default: m.TopologyRootBlade,
-    }))
+    })),
   );
 
   api.registerBlade({
@@ -34,29 +34,40 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     icon: History,
     keywords: ["topology", "history", "graph", "commits"],
     action: () => {
-      getNavigationActor().send({ type: "SWITCH_WORKFLOW", workflow: "topology" });
+      getNavigationActor().send({
+        type: "SWITCH_WORKFLOW",
+        workflow: "topology",
+      });
     },
     enabled: () => !!useGitOpsStore.getState().repoStatus,
   });
 
   // 3. File watcher: auto-refresh topology when repository files change externally
-  const unlisten = await listen<{ paths: string[] }>("repository-changed", () => {
-    const state = useGitOpsStore.getState();
-    if (state.nodes.length > 0) {
-      state.loadGraph();
-    }
-  });
+  const unlisten = await listen<{ paths: string[] }>(
+    "repository-changed",
+    () => {
+      const state = useGitOpsStore.getState();
+      if (state.nodes.length > 0) {
+        state.loadGraph();
+      }
+    },
+  );
   api.onDispose(() => unlisten());
 
   // 4. Apply defaultTab setting: if user prefers topology as default, switch to it
   try {
     const { Store } = await import("@tauri-apps/plugin-store");
     const store = await Store.load("settings.json");
-    const settings = await store.get<{ general?: { defaultTab?: string } }>("settings");
+    const settings = await store.get<{ general?: { defaultTab?: string } }>(
+      "settings",
+    );
     const defaultTab = settings?.general?.defaultTab;
     if (defaultTab === "topology" || defaultTab === "history") {
       if (useGitOpsStore.getState().repoStatus) {
-        getNavigationActor().send({ type: "SWITCH_WORKFLOW", workflow: "topology" });
+        getNavigationActor().send({
+          type: "SWITCH_WORKFLOW",
+          workflow: "topology",
+        });
       }
     }
   } catch {

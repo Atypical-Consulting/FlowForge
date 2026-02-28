@@ -1,49 +1,49 @@
+export { BladeContainer } from "./BladeContainer";
+export { BladeErrorBoundary } from "./BladeErrorBoundary";
+export { BladeLoadingFallback } from "./BladeLoadingFallback";
+export { BladePanel } from "./BladePanel";
+export { BladeRenderer } from "./BladeRenderer";
+export { BladeStrip } from "./BladeStrip";
+export { openBlade } from "./bladeOpener";
 export {
-  type BladePropsMap,
-  type CoreBladeType,
-  type ExtensionBladeType,
-  type BladeType,
-  type TypedBlade,
-  isCoreBladeType,
-} from "./bladeTypes";
-
-export {
-  type BladeRenderContext,
   type BladeRegistration,
-  getRegistration,
+  type BladeRenderContext,
+  clearCoreRegistry,
+  getAllBladeTypes,
   getAllTypes,
+  getBladeRegistration,
+  getRegistration,
   isSingleton,
-  useBladeRegistry,
+  isSingletonBlade,
   registerBlade,
   unregisterBlade,
   unregisterBySource,
-  clearCoreRegistry,
-  getBladeRegistration,
-  getAllBladeTypes,
-  isSingletonBlade,
+  useBladeRegistry,
 } from "./bladeRegistry";
-
 export {
-  type SidebarPanelConfig,
-  useSidebarPanelRegistry,
-  getVisiblePanels,
-} from "./sidebarPanelRegistry";
-
+  type BladePropsMap,
+  type BladeType,
+  type CoreBladeType,
+  type ExtensionBladeType,
+  isCoreBladeType,
+  type TypedBlade,
+} from "./bladeTypes";
 export {
+  DEFAULT_PRESET_ID,
+  getPresetById,
+  LAYOUT_PRESETS,
   type LayoutPreset,
   type PresetId,
-  DEFAULT_PRESET_ID,
-  LAYOUT_PRESETS,
-  getPresetById,
 } from "./layoutPresets";
-
-export { BladeContainer } from "./BladeContainer";
-export { BladeRenderer } from "./BladeRenderer";
-export { BladePanel } from "./BladePanel";
-export { BladeStrip } from "./BladeStrip";
-export { BladeLoadingFallback } from "./BladeLoadingFallback";
-export { BladeErrorBoundary } from "./BladeErrorBoundary";
 export { NavigationGuardDialog } from "./NavigationGuardDialog";
-export { openBlade } from "./bladeOpener";
-export { ResizablePanelLayout, ResizablePanel, ResizeHandle } from "./ResizablePanelLayout";
+export {
+  ResizablePanel,
+  ResizablePanelLayout,
+  ResizeHandle,
+} from "./ResizablePanelLayout";
 export { SplitPaneLayout } from "./SplitPaneLayout";
+export {
+  getVisiblePanels,
+  type SidebarPanelConfig,
+  useSidebarPanelRegistry,
+} from "./sidebarPanelRegistry";

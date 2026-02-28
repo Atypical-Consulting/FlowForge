@@ -1,9 +1,15 @@
-import { REQUIRES_TRUST_METHODS } from "./sandbox-api-surface";
+import type { GitHookContext, GitOperation } from "@/core/services/gitHookBus";
+import type {
+  BladeNavigationEvent,
+  Disposable,
+  ExtensionAPI,
+} from "@/framework/extension-system/ExtensionAPI";
+import type {
+  DidHandler,
+  WillHandler,
+} from "@/framework/extension-system/operationBus";
 import type { RequiresTrustMethod } from "./sandbox-api-surface";
-import type { ExtensionAPI, BladeNavigationEvent } from "@/framework/extension-system/ExtensionAPI";
-import type { GitOperation, GitHookContext } from "@/core/services/gitHookBus";
-import type { DidHandler, WillHandler } from "@/framework/extension-system/operationBus";
-import type { Disposable } from "@/framework/extension-system/ExtensionAPI";
+import { REQUIRES_TRUST_METHODS } from "./sandbox-api-surface";
 
 /**
  * Restricted API proxy for sandboxed (untrusted) extensions.
@@ -42,7 +48,10 @@ export class SandboxedExtensionAPI {
     this.hostApi.onDidGit(operation, handler);
   }
 
-  onWillGit(operation: GitOperation, handler: WillHandler<GitHookContext>): void {
+  onWillGit(
+    operation: GitOperation,
+    handler: WillHandler<GitHookContext>,
+  ): void {
     this.hostApi.onWillGit(operation, handler);
   }
 
@@ -65,9 +74,9 @@ export class SandboxedExtensionAPI {
   private trustError(method: string): Error {
     return new Error(
       `${method}() requires trust level "built-in" or "user-trusted". ` +
-      `Sandboxed extensions cannot call this method because it requires ` +
-      `React component references or closure access that cannot be ` +
-      `serialized across the Worker boundary.`
+        `Sandboxed extensions cannot call this method because it requires ` +
+        `React component references or closure access that cannot be ` +
+        `serialized across the Worker boundary.`,
     );
   }
 }

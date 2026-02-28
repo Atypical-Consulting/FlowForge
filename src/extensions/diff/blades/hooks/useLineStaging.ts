@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useCallback, useRef } from "react";
-import { commands } from "../../../../bindings";
+import { useCallback, useRef, useState } from "react";
 import type { DiffHunkDetail } from "../../../../bindings";
+import { commands } from "../../../../bindings";
 import { findHunkForLine, linesToRanges } from "../lib/diffUtils";
 
 interface UseLineStagingOptions {
@@ -10,7 +10,11 @@ interface UseLineStagingOptions {
   hunks: DiffHunkDetail[];
 }
 
-export function useLineStaging({ filePath, staged, hunks }: UseLineStagingOptions) {
+export function useLineStaging({
+  filePath,
+  staged,
+  hunks,
+}: UseLineStagingOptions) {
   const queryClient = useQueryClient();
   const [selectedLines, setSelectedLines] = useState<Set<number>>(new Set());
   const lastClickedLine = useRef<number | null>(null);
@@ -22,7 +26,7 @@ export function useLineStaging({ filePath, staged, hunks }: UseLineStagingOption
   }, [queryClient, filePath]);
 
   const toggleLine = useCallback((lineNumber: number) => {
-    setSelectedLines(prev => {
+    setSelectedLines((prev) => {
       const next = new Set(prev);
       if (next.has(lineNumber)) next.delete(lineNumber);
       else next.add(lineNumber);
@@ -35,7 +39,7 @@ export function useLineStaging({ filePath, staged, hunks }: UseLineStagingOption
     const fromLine = lastClickedLine.current ?? toLine;
     const start = Math.min(fromLine, toLine);
     const end = Math.max(fromLine, toLine);
-    setSelectedLines(prev => {
+    setSelectedLines((prev) => {
       const next = new Set(prev);
       for (let i = start; i <= end; i++) next.add(i);
       return next;

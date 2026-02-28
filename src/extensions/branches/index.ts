@@ -1,5 +1,5 @@
-import { lazy } from "react";
 import { GitBranch } from "lucide-react";
+import { lazy } from "react";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { getNavigationActor } from "@/framework/layout/navigation/context";
 import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
@@ -10,7 +10,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
   const BranchManagerBlade = lazy(() =>
     import("./blades/BranchManagerBlade").then((m) => ({
       default: m.BranchManagerBlade,
-    }))
+    })),
   );
 
   // Register blade type with coreOverride to preserve existing blade type name

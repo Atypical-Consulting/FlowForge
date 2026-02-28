@@ -1,17 +1,20 @@
 import { useSelector } from "@xstate/react";
-import type { FileChange } from "../../bindings";
 import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
-import { bladeTypeForFile } from "../lib/fileTypeUtils";
-import {
-  useNavigationActorRef,
-} from "@/framework/layout/navigation/context";
+import { useNavigationActorRef } from "@/framework/layout/navigation/context";
 import {
   selectActiveWorkflow,
   selectBladeStack,
-  selectLastAction,
   selectDirtyBladeIds,
+  selectLastAction,
 } from "@/framework/layout/navigation/selectors";
-import type { BladeType, BladePropsMap, CoreBladeType, WorkflowType, TypedBlade } from "@/framework/layout/navigation/types";
+import type {
+  BladePropsMap,
+  BladeType,
+  CoreBladeType,
+  WorkflowType,
+} from "@/framework/layout/navigation/types";
+import type { FileChange } from "../../bindings";
+import { bladeTypeForFile } from "../lib/fileTypeUtils";
 
 export function useBladeNavigation() {
   const actorRef = useNavigationActorRef();
@@ -42,9 +45,14 @@ export function useBladeNavigation() {
       title ??
       (typeof reg?.defaultTitle === "function"
         ? reg.defaultTitle(props as any)
-        : reg?.defaultTitle ?? type);
+        : (reg?.defaultTitle ?? type));
 
-    actorRef.send({ type: "PUSH_BLADE", bladeType: type as BladeType, title: resolvedTitle, props });
+    actorRef.send({
+      type: "PUSH_BLADE",
+      bladeType: type as BladeType,
+      title: resolvedTitle,
+      props,
+    });
   }
 
   /** Push a diff/viewer blade for a historical commit file */
@@ -77,7 +85,13 @@ export function useBladeNavigation() {
     if (type === "diff" || type === "viewer-markdown") {
       openBlade(
         "diff",
-        { source: { mode: "staging", filePath: file.path, staged: section === "staged" } },
+        {
+          source: {
+            mode: "staging",
+            filePath: file.path,
+            staged: section === "staged",
+          },
+        },
         title,
       );
     } else if (type === "viewer-image") {
@@ -150,12 +164,16 @@ export function useBladeNavigation() {
     goToRoot: () => actorRef.send({ type: "RESET_STACK" }),
     pushBlade,
     popBlade: () => actorRef.send({ type: "POP_BLADE" }),
-    popToIndex: (index: number) => actorRef.send({ type: "POP_TO_INDEX", index }),
+    popToIndex: (index: number) =>
+      actorRef.send({ type: "POP_TO_INDEX", index }),
     replaceBlade,
     resetStack: () => actorRef.send({ type: "RESET_STACK" }),
-    setWorkflow: (workflow: WorkflowType) => actorRef.send({ type: "SWITCH_WORKFLOW", workflow }),
-    markDirty: (bladeId: string) => actorRef.send({ type: "MARK_DIRTY", bladeId }),
-    markClean: (bladeId: string) => actorRef.send({ type: "MARK_CLEAN", bladeId }),
+    setWorkflow: (workflow: WorkflowType) =>
+      actorRef.send({ type: "SWITCH_WORKFLOW", workflow }),
+    markDirty: (bladeId: string) =>
+      actorRef.send({ type: "MARK_DIRTY", bladeId }),
+    markClean: (bladeId: string) =>
+      actorRef.send({ type: "MARK_CLEAN", bladeId }),
     bladeStack,
     activeWorkflow,
     lastAction,

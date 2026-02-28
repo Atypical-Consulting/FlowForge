@@ -7,18 +7,18 @@
  * open/closed/all views with stale-while-revalidate caching.
  */
 
+import { GitPullRequest, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Virtuoso } from "react-virtuoso";
-import { GitPullRequest, Loader2 } from "lucide-react";
-import { useGitHubStore } from "../githubStore";
-import { usePullRequestList } from "../hooks/useGitHubQuery";
-import { useBladeNavigation } from "../../../core/hooks/useBladeNavigation";
 import { BladeContentEmpty } from "../../../core/blades/_shared/BladeContentEmpty";
 import { BladeContentError } from "../../../core/blades/_shared/BladeContentError";
 import { BladeContentLoading } from "../../../core/blades/_shared/BladeContentLoading";
-import { StatusBadge } from "../components/StatusBadge";
+import { useBladeNavigation } from "../../../core/hooks/useBladeNavigation";
 import { LabelPill } from "../components/LabelPill";
+import { StatusBadge } from "../components/StatusBadge";
 import { TimeAgo } from "../components/TimeAgo";
+import { useGitHubStore } from "../githubStore";
+import { usePullRequestList } from "../hooks/useGitHubQuery";
 
 type StateFilter = "open" | "closed" | "all";
 
@@ -52,7 +52,9 @@ export function PullRequestListBlade() {
           <select
             value={selectedRemoteIndex}
             onChange={(e) =>
-              useGitHubStore.getState().setSelectedRemote(Number(e.target.value))
+              useGitHubStore
+                .getState()
+                .setSelectedRemote(Number(e.target.value))
             }
             className="w-full text-xs bg-ctp-surface0 text-ctp-text border border-ctp-surface1 rounded px-2 py-1"
           >
@@ -66,7 +68,11 @@ export function PullRequestListBlade() {
       )}
 
       {/* Filter tabs */}
-      <div className="px-3 py-2" role="tablist" aria-label="Pull request state filter">
+      <div
+        className="px-3 py-2"
+        role="tablist"
+        aria-label="Pull request state filter"
+      >
         <div className="flex gap-1 bg-ctp-mantle rounded-lg p-0.5">
           {FILTER_TABS.map((tab) => (
             <button
@@ -113,7 +119,12 @@ interface PullRequestListInnerProps {
   onSelect: (pr: { number: number; title: string }) => void;
 }
 
-function PullRequestList({ owner, repo, state, onSelect }: PullRequestListInnerProps) {
+function PullRequestList({
+  owner,
+  repo,
+  state,
+  onSelect,
+}: PullRequestListInnerProps) {
   const query = usePullRequestList(owner, repo, state);
   const prs = query.data?.pages.flatMap((p) => p.items) ?? [];
 
@@ -123,7 +134,9 @@ function PullRequestList({ owner, repo, state, onSelect }: PullRequestListInnerP
     return (
       <BladeContentError
         message="Failed to load pull requests"
-        detail={query.error instanceof Error ? query.error.message : "Unknown error"}
+        detail={
+          query.error instanceof Error ? query.error.message : "Unknown error"
+        }
         onRetry={() => query.refetch()}
       />
     );
@@ -133,7 +146,7 @@ function PullRequestList({ owner, repo, state, onSelect }: PullRequestListInnerP
     return (
       <BladeContentEmpty
         icon={GitPullRequest}
-        message={`No ${state === "all" ? "" : state + " "}pull requests`}
+        message={`No ${state === "all" ? "" : `${state} `}pull requests`}
       />
     );
   }
@@ -154,7 +167,11 @@ function PullRequestList({ owner, repo, state, onSelect }: PullRequestListInnerP
         >
           <div className="flex items-start gap-2">
             <div className="pt-0.5 shrink-0">
-              <StatusBadge state={pr.state} merged={pr.merged} draft={pr.draft} />
+              <StatusBadge
+                state={pr.state}
+                merged={pr.merged}
+                draft={pr.draft}
+              />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-ctp-text truncate">{pr.title}</p>
@@ -163,7 +180,11 @@ function PullRequestList({ owner, repo, state, onSelect }: PullRequestListInnerP
                 <span>{pr.authorLogin}</span>
                 <TimeAgo date={pr.createdAt} />
                 {pr.labels.slice(0, 3).map((label) => (
-                  <LabelPill key={label.name} name={label.name} color={label.color} />
+                  <LabelPill
+                    key={label.name}
+                    name={label.name}
+                    color={label.color}
+                  />
                 ))}
               </div>
             </div>

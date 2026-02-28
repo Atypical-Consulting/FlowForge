@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
 import { onActivate, onDeactivate } from "../viewer-code";

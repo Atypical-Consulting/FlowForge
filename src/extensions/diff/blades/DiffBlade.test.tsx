@@ -3,11 +3,25 @@ import { render } from "../../test-utils/render";
 const mockCommands = vi.hoisted(() => ({
   getFileDiff: vi.fn().mockResolvedValue({
     status: "ok",
-    data: { path: "test.ts", oldContent: "", newContent: "", hunks: [], isBinary: false, language: "typescript" },
+    data: {
+      path: "test.ts",
+      oldContent: "",
+      newContent: "",
+      hunks: [],
+      isBinary: false,
+      language: "typescript",
+    },
   }),
   getCommitFileDiff: vi.fn().mockResolvedValue({
     status: "ok",
-    data: { path: "test.ts", oldContent: "", newContent: "", hunks: [], isBinary: false, language: "typescript" },
+    data: {
+      path: "test.ts",
+      oldContent: "",
+      newContent: "",
+      hunks: [],
+      isBinary: false,
+      language: "typescript",
+    },
   }),
   getStagingStatus: vi.fn().mockResolvedValue({
     status: "ok",
@@ -41,7 +55,9 @@ import { DiffBlade } from "./DiffBlade";
 describe("DiffBlade", () => {
   it("renders without crashing", () => {
     const { container } = render(
-      <DiffBlade source={{ mode: "staging", filePath: "test.ts", staged: false }} />,
+      <DiffBlade
+        source={{ mode: "staging", filePath: "test.ts", staged: false }}
+      />,
     );
     expect(container.firstChild).not.toBeNull();
   });

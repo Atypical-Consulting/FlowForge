@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 
 export function useBulkSelect(branchNames: string[]) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -14,9 +14,7 @@ export function useBulkSelect(branchNames: string[]) {
           const endIdx = branchNames.indexOf(name);
           if (startIdx !== -1 && endIdx !== -1) {
             const [from, to] =
-              startIdx < endIdx
-                ? [startIdx, endIdx]
-                : [endIdx, startIdx];
+              startIdx < endIdx ? [startIdx, endIdx] : [endIdx, startIdx];
             for (let i = from; i <= to; i++) {
               next.add(branchNames[i]);
             }

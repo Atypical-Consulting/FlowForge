@@ -62,7 +62,13 @@ function buildTree(files: FileChanged[]): TreeNode {
   return root;
 }
 
-function StatsBar({ additions, deletions }: { additions: number; deletions: number }) {
+function StatsBar({
+  additions,
+  deletions,
+}: {
+  additions: number;
+  deletions: number;
+}) {
   const total = additions + deletions;
   if (total === 0) return null;
 
@@ -73,10 +79,7 @@ function StatsBar({ additions, deletions }: { additions: number; deletions: numb
       <span className="text-xs text-ctp-green">+{additions}</span>
       <span className="text-xs text-ctp-red">-{deletions}</span>
       <div className="w-16 h-2 rounded-full overflow-hidden flex bg-ctp-surface0">
-        <div
-          className="bg-ctp-green h-full"
-          style={{ width: `${addPct}%` }}
-        />
+        <div className="bg-ctp-green h-full" style={{ width: `${addPct}%` }} />
         <div
           className="bg-ctp-red h-full"
           style={{ width: `${100 - addPct}%` }}
@@ -106,7 +109,12 @@ function FileRow({
         isSelected && "bg-ctp-surface0 ring-1 ring-ctp-blue/30",
       )}
     >
-      <span className={cn("w-4 text-center text-xs font-mono shrink-0", statusInfo.color)}>
+      <span
+        className={cn(
+          "w-4 text-center text-xs font-mono shrink-0",
+          statusInfo.color,
+        )}
+      >
         {statusInfo.label}
       </span>
       <span className="text-ctp-subtext1 truncate flex-1" title={file.path}>
@@ -165,8 +173,8 @@ function TreeView({
         <FileRow
           key={fileNode.path}
           file={fileNode.file!}
-          onSelect={() => onSelectFile(fileNode.file!.path)}
-          isSelected={selectedFile === fileNode.file!.path}
+          onSelect={() => onSelectFile(fileNode.file?.path)}
+          isSelected={selectedFile === fileNode.file?.path}
         />
       ))}
     </div>

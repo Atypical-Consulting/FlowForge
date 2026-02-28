@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
 import { onActivate, onDeactivate } from "../viewer-image";
@@ -21,7 +21,9 @@ describe("viewer-image extension", () => {
   it("registers blade type without ext: namespace (coreOverride)", async () => {
     await onActivate(api);
 
-    expect(getBladeRegistration("ext:viewer-image:viewer-image")).toBeUndefined();
+    expect(
+      getBladeRegistration("ext:viewer-image:viewer-image"),
+    ).toBeUndefined();
 
     api.cleanup();
   });

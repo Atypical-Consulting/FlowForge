@@ -28,193 +28,195 @@
 
 /* React Flow Controls - Theme-aware */
 .react-flow__controls {
-    background: var(--catppuccin-color-mantle);
-    border: 1px solid var(--catppuccin-color-surface0);
-    border-radius: 6px;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  background: var(--catppuccin-color-mantle);
+  border: 1px solid var(--catppuccin-color-surface0);
+  border-radius: 6px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 
 .react-flow__controls-button {
-    background: var(--catppuccin-color-mantle);
-    border-bottom: 1px solid var(--catppuccin-color-surface0);
-    fill: var(--catppuccin-color-subtext0);
-    width: 28px;
-    height: 28px;
+  background: var(--catppuccin-color-mantle);
+  border-bottom: 1px solid var(--catppuccin-color-surface0);
+  fill: var(--catppuccin-color-subtext0);
+  width: 28px;
+  height: 28px;
 }
 
 .react-flow__controls-button:hover {
-    background: var(--catppuccin-color-surface0);
-    fill: var(--catppuccin-color-text);
+  background: var(--catppuccin-color-surface0);
+  fill: var(--catppuccin-color-text);
 }
 
 .react-flow__controls-button:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 /* React Flow Attribution - Theme-aware */
 .react-flow__attribution {
-    background: var(--catppuccin-color-mantle);
-    border: 1px solid var(--catppuccin-color-surface0);
-    border-radius: 4px;
-    padding: 2px 6px;
-    font-size: 10px;
+  background: var(--catppuccin-color-mantle);
+  border: 1px solid var(--catppuccin-color-surface0);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 10px;
 }
 
 .react-flow__attribution a {
-    color: var(--catppuccin-color-overlay0);
-    text-decoration: none;
+  color: var(--catppuccin-color-overlay0);
+  text-decoration: none;
 }
 
 .react-flow__attribution a:hover {
-    color: var(--catppuccin-color-subtext0);
+  color: var(--catppuccin-color-subtext0);
 }
 
 @keyframes dirty-pulse {
-    0%,
-    100% {
-        filter: drop-shadow(0 0 0px var(--catppuccin-color-yellow));
-        opacity: 1;
-    }
-    50% {
-        filter: drop-shadow(0 0 4px var(--catppuccin-color-yellow));
-        opacity: 0.7;
-    }
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0px var(--catppuccin-color-yellow));
+    opacity: 1;
+  }
+  50% {
+    filter: drop-shadow(0 0 4px var(--catppuccin-color-yellow));
+    opacity: 0.7;
+  }
 }
 
 @keyframes gentle-pulse {
-    0%,
-    100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.6;
-    }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 @keyframes stage-flash {
-    0% {
-        background-color: rgb(166 227 161 / 0.3);
-    }
-    100% {
-        background-color: transparent;
-    }
+  0% {
+    background-color: rgb(166 227 161 / 0.3);
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 
 /* Hunk staging gutter controls */
 .hunk-stage-glyph {
-    cursor: pointer;
+  cursor: pointer;
 }
 .hunk-stage-glyph::before {
-    content: "+";
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 16px;
-    height: 16px;
-    border-radius: 3px;
-    font-size: 12px;
-    font-weight: bold;
-    color: var(--catppuccin-color-green);
-    background: rgb(166 227 161 / 0.15);
-    transition: background 0.15s;
+  content: "+";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--catppuccin-color-green);
+  background: rgb(166 227 161 / 0.15);
+  transition: background 0.15s;
 }
 .hunk-stage-glyph:hover::before {
-    background: rgb(166 227 161 / 0.3);
+  background: rgb(166 227 161 / 0.3);
 }
 
 .hunk-unstage-glyph {
-    cursor: pointer;
+  cursor: pointer;
 }
 .hunk-unstage-glyph::before {
-    content: "\2212";
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 16px;
-    height: 16px;
-    border-radius: 3px;
-    font-size: 12px;
-    font-weight: bold;
-    color: var(--catppuccin-color-peach);
-    background: rgb(250 179 135 / 0.15);
-    transition: background 0.15s;
+  content: "\2212";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--catppuccin-color-peach);
+  background: rgb(250 179 135 / 0.15);
+  transition: background 0.15s;
 }
 .hunk-unstage-glyph:hover::before {
-    background: rgb(250 179 135 / 0.3);
+  background: rgb(250 179 135 / 0.3);
 }
 
 /* Line selection gutter controls */
 .line-stage-checkbox {
-    cursor: pointer;
+  cursor: pointer;
 }
 .line-stage-checkbox::before {
-    content: "";
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 12px;
-    height: 12px;
-    border: 1.5px solid var(--catppuccin-color-overlay1);
-    border-radius: 2px;
-    margin: 2px;
-    transition: border-color 0.15s, background 0.15s;
+  content: "";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--catppuccin-color-overlay1);
+  border-radius: 2px;
+  margin: 2px;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 .line-stage-checkbox:hover::before {
-    border-color: var(--catppuccin-color-blue);
-    background: rgb(137 180 250 / 0.1);
+  border-color: var(--catppuccin-color-blue);
+  background: rgb(137 180 250 / 0.1);
 }
 
 .line-stage-checkbox-checked {
-    cursor: pointer;
+  cursor: pointer;
 }
 .line-stage-checkbox-checked::before {
-    content: "";
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 12px;
-    height: 12px;
-    border: 1.5px solid var(--catppuccin-color-blue);
-    border-radius: 2px;
-    margin: 2px;
-    background: var(--catppuccin-color-blue);
+  content: "";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--catppuccin-color-blue);
+  border-radius: 2px;
+  margin: 2px;
+  background: var(--catppuccin-color-blue);
 }
 
 .line-stage-selected {
-    cursor: pointer;
+  cursor: pointer;
 }
 .line-stage-selected::before {
-    content: "";
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 12px;
-    height: 12px;
-    border: 1.5px solid var(--catppuccin-color-blue);
-    border-radius: 2px;
-    margin: 2px;
-    background: var(--catppuccin-color-blue);
+  content: "";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--catppuccin-color-blue);
+  border-radius: 2px;
+  margin: 2px;
+  background: var(--catppuccin-color-blue);
 }
 
 /* Selected line highlight */
 .line-selected-for-staging {
-    background: rgb(137 180 250 / 0.1) !important;
+  background: rgb(137 180 250 / 0.1);
 }
 
 @keyframes fadeOut {
-    from {
-        opacity: 1;
-    }
-    to {
-        opacity: 0;
-    }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 /* Color scheme meta for browser UI (scrollbars, etc.) */
 html.mocha {
-    color-scheme: dark;
+  color-scheme: dark;
 }
 
 html.latte {
-    color-scheme: light;
+  color-scheme: light;
 }

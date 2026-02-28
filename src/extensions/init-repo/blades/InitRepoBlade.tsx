@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import { commands } from "../../../bindings";
-import { useProjectDetection } from "../hooks/useGitignoreTemplates";
-import { useInitRepoStore } from "../store";
 import { SplitPaneLayout } from "@/framework/layout/SplitPaneLayout";
+import { commands } from "../../../bindings";
 import { InitRepoForm } from "../components/InitRepoForm";
 import { InitRepoPreview } from "../components/InitRepoPreview";
+import { useProjectDetection } from "../hooks/useGitignoreTemplates";
+import { useInitRepoStore } from "../store";
 
 interface InitRepoBladeProps {
   directoryPath: string;

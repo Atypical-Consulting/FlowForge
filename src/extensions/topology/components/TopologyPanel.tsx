@@ -1,22 +1,22 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Flame, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCommitGraph } from "../../../core/hooks/useCommitGraph";
-import { classifyBranch } from "../../../core/lib/branchClassifier";
 import type { GitflowBranchType } from "../../../core/lib/branchClassifier";
-import { LaneHeader } from "./LaneHeader";
-import { CommitBadge } from "./CommitBadge";
-import { CommitTooltip } from "./CommitTooltip";
-import { HeatMapLegend } from "./HeatMapLegend";
-import { TopologyEmptyState } from "./TopologyEmptyState";
+import { classifyBranch } from "../../../core/lib/branchClassifier";
+import { getHeatColor } from "../lib/heatMapUtils";
 import {
   BADGE_HEIGHT,
   BADGE_WIDTH,
+  computeLayout,
   type LaneLine,
   type PositionedEdge,
   type PositionedNode,
-  computeLayout,
 } from "../lib/layoutUtils";
-import { getHeatColor } from "../lib/heatMapUtils";
+import { CommitBadge } from "./CommitBadge";
+import { CommitTooltip } from "./CommitTooltip";
+import { HeatMapLegend } from "./HeatMapLegend";
+import { LaneHeader } from "./LaneHeader";
+import { TopologyEmptyState } from "./TopologyEmptyState";
 
 interface TopologyPanelProps {
   onCommitSelect?: (oid: string) => void;
@@ -192,9 +192,7 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
                   r={pn.r}
                   fill={nodeFill}
                   fillOpacity={0.9}
-                  stroke={
-                    pn.node.oid === selectedCommit ? "#ffffff" : nodeFill
-                  }
+                  stroke={pn.node.oid === selectedCommit ? "#ffffff" : nodeFill}
                   strokeWidth={pn.node.oid === selectedCommit ? 3 : 1.5}
                   strokeOpacity={pn.node.oid === selectedCommit ? 1 : 0.6}
                   className="cursor-pointer pointer-events-auto"
@@ -267,10 +265,7 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
       {/* Heat map legend overlay */}
       {heatMapEnabled && (
         <div className="absolute bottom-3 left-3 z-40">
-          <HeatMapLegend
-            minDate={new Date(minTs)}
-            maxDate={new Date(maxTs)}
-          />
+          <HeatMapLegend minDate={new Date(minTs)} maxDate={new Date(maxTs)} />
         </div>
       )}
     </div>

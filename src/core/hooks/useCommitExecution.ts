@@ -1,9 +1,9 @@
-import { Channel } from "@tauri-apps/api/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { type SyncProgress, commands } from "../../bindings";
-import { getErrorMessage } from "../lib/errors";
+import { Channel } from "@tauri-apps/api/core";
 import { gitHookBus } from "@/core/services/gitHookBus";
 import { toast } from "@/framework/stores/toast";
+import { commands, type SyncProgress } from "../../bindings";
+import { getErrorMessage } from "../lib/errors";
 
 interface UseCommitExecutionOptions {
   onCommitSuccess?: (message: string) => void;
@@ -74,7 +74,9 @@ export function useCommitExecution(options?: UseCommitExecutionOptions) {
   });
 
   const commit = async (message: string, amend = false) => {
-    const willResult = await gitHookBus.emitWill("commit", { commitMessage: message });
+    const willResult = await gitHookBus.emitWill("commit", {
+      commitMessage: message,
+    });
     if (willResult.cancel) {
       toast.warning(willResult.reason ?? "Commit cancelled by extension");
       return;
@@ -83,7 +85,9 @@ export function useCommitExecution(options?: UseCommitExecutionOptions) {
   };
 
   const commitAndPush = async (message: string, amend = false) => {
-    const willResult = await gitHookBus.emitWill("commit", { commitMessage: message });
+    const willResult = await gitHookBus.emitWill("commit", {
+      commitMessage: message,
+    });
     if (willResult.cancel) {
       toast.warning(willResult.reason ?? "Commit cancelled by extension");
       return;

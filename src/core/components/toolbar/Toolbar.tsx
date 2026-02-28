@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import {
-  type ToolbarAction,
-  TOOLBAR_GROUP_ORDER,
-  useToolbarRegistry,
   getGroupedToolbarActions,
+  TOOLBAR_GROUP_ORDER,
+  type ToolbarAction,
+  useToolbarRegistry,
 } from "@/framework/extension-system/toolbarRegistry";
-import { usePreferencesStore } from "../../stores/domain/preferences";
 import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
+import { usePreferencesStore } from "../../stores/domain/preferences";
 import { ToolbarButton } from "./ToolbarButton";
 import { ToolbarGroup } from "./ToolbarGroup";
 import { ToolbarOverflowMenu } from "./ToolbarOverflowMenu";
@@ -23,13 +23,13 @@ import { useToolbarOverflow } from "./useToolbarOverflow";
  */
 export function Toolbar() {
   // Subscribe to registry changes for reactivity
-  const actions = useToolbarRegistry((s) => s.items);
-  const visibilityTick = useToolbarRegistry((s) => s.visibilityTick);
+  const _actions = useToolbarRegistry((s) => s.items);
+  const _visibilityTick = useToolbarRegistry((s) => s.visibilityTick);
   const hiddenActions = usePreferencesStore(
     (s) => s.settingsData.toolbar?.hiddenActions ?? [],
   );
   // Subscribe to repoStatus so when() conditions re-evaluate on repo change
-  const repoStatus = useRepositoryStore((s) => s.repoStatus);
+  const _repoStatus = useRepositoryStore((s) => s.repoStatus);
 
   const { containerRef, visibleCount } = useToolbarOverflow();
 
@@ -50,7 +50,7 @@ export function Toolbar() {
 
     return { orderedActions: ordered, groupBoundaries: boundaries };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- repoStatus + visibilityTick trigger when() re-eval
-  }, [actions, hiddenActions, repoStatus, visibilityTick]);
+  }, [hiddenActions]);
 
   // Split into inline and overflowed
   const inlineActions = orderedActions.slice(0, visibleCount);

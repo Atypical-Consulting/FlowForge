@@ -1,18 +1,20 @@
+import { useMutation } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
-import { useMutation } from "@tanstack/react-query";
 import { FolderOpen, GitFork, Loader2, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { cn } from "@/framework/lib/utils";
+import { toast } from "@/framework/stores/toast";
 import {
   type CloneProgress as CloneProgressType,
   commands,
 } from "../../../bindings";
-import { cn } from "@/framework/lib/utils";
-import { useRecentRepos } from "../../../core/hooks/useRecentRepos";
-import { useGitOpsStore as useCloneStore } from "../../../core/stores/domain/git-ops";
-import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";
-import { toast } from "@/framework/stores/toast";
 import { Button } from "../../../core/components/ui/button";
+import { useRecentRepos } from "../../../core/hooks/useRecentRepos";
+import {
+  useGitOpsStore as useCloneStore,
+  useGitOpsStore as useRepositoryStore,
+} from "../../../core/stores/domain/git-ops";
 import { CloneProgress } from "./CloneProgress";
 
 /** Extract repository name from a Git URL */

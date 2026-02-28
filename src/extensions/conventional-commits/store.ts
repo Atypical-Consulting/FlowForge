@@ -1,12 +1,12 @@
-import { commands } from "../../bindings";
+import { createBladeStore } from "@/framework/stores/createBladeStore";
 import type {
   CommitType,
   ScopeSuggestion,
   TypeSuggestion,
   ValidationResult,
 } from "../../bindings";
+import { commands } from "../../bindings";
 import { buildCommitMessage as buildMessage } from "./lib/conventional-utils";
-import { createBladeStore } from "@/framework/stores/createBladeStore";
 
 /**
  * Valid conventional commit types.
@@ -217,8 +217,22 @@ export const useConventionalStore = createBladeStore<ConventionalState>(
     },
 
     buildCommitMessage: () => {
-      const { commitType, scope, description, body, isBreaking, breakingDescription } = get();
-      return buildMessage({ commitType, scope, description, body, isBreaking, breakingDescription });
+      const {
+        commitType,
+        scope,
+        description,
+        body,
+        isBreaking,
+        breakingDescription,
+      } = get();
+      return buildMessage({
+        commitType,
+        scope,
+        description,
+        body,
+        isBreaking,
+        breakingDescription,
+      });
     },
 
     reset: () =>

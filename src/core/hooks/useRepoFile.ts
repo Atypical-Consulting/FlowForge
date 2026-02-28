@@ -18,7 +18,7 @@ export function useRepoFile(filePath: string) {
       throw new Error(
         result.error.type === "EmptyRepository"
           ? "Repository has no commits"
-          : `Failed to read file: ${filePath}`
+          : `Failed to read file: ${filePath}`,
       );
     },
     staleTime: 60_000,

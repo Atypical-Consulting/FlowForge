@@ -1,11 +1,11 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, FolderGit } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRecentRepos } from "../../../core/hooks/useRecentRepos";
 import { cn } from "@/framework/lib/utils";
-import { usePreferencesStore as useNavigationStore } from "../../../core/stores/domain/preferences";
+import { useRecentRepos } from "../../../core/hooks/useRecentRepos";
 import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";
-import { RepoSwitcherItem, type RepoItemData } from "./RepoSwitcherItem";
+import { usePreferencesStore as useNavigationStore } from "../../../core/stores/domain/preferences";
+import { type RepoItemData, RepoSwitcherItem } from "./RepoSwitcherItem";
 
 const slideDown = {
   hidden: { opacity: 0, y: -8 },

@@ -13,8 +13,7 @@ export const selectPhase = (snap: GitflowSnapshot) => snap.context.phase;
 export const selectGitflowResult = (snap: GitflowSnapshot) =>
   snap.context.result;
 
-export const selectGitflowError = (snap: GitflowSnapshot) =>
-  snap.context.error;
+export const selectGitflowError = (snap: GitflowSnapshot) => snap.context.error;
 
 export const selectRefreshErrors = (snap: GitflowSnapshot) =>
   snap.context.refreshErrors;
@@ -28,8 +27,7 @@ export const selectIsAborting = (snap: GitflowSnapshot) =>
 export const selectIsRefreshing = (snap: GitflowSnapshot) =>
   snap.matches("refreshing");
 
-export const selectIsStale = (snap: GitflowSnapshot) =>
-  snap.matches("stale");
+export const selectIsStale = (snap: GitflowSnapshot) => snap.matches("stale");
 
 export const selectIsBusy = (snap: GitflowSnapshot) =>
   snap.matches("executing") ||

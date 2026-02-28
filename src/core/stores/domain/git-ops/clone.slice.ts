@@ -1,7 +1,7 @@
 import type { StateCreator } from "zustand";
 import type { CloneProgress } from "../../../../bindings";
-import type { GitOpsMiddleware } from "./types";
 import type { GitOpsStore } from "./index";
+import type { GitOpsMiddleware } from "./types";
 
 export interface CloneSlice {
   cloneIsCloning: boolean;
@@ -26,7 +26,11 @@ export const createCloneSlice: StateCreator<
   cloneError: null,
 
   startClone: () => {
-    set({ cloneIsCloning: true, cloneProgress: null, cloneError: null }, undefined, "gitOps:clone/start");
+    set(
+      { cloneIsCloning: true, cloneProgress: null, cloneError: null },
+      undefined,
+      "gitOps:clone/start",
+    );
   },
 
   updateCloneProgress: (progress) => {
@@ -38,10 +42,18 @@ export const createCloneSlice: StateCreator<
   },
 
   setCloneError: (error) => {
-    set({ cloneIsCloning: false, cloneError: error }, undefined, "gitOps:clone/error");
+    set(
+      { cloneIsCloning: false, cloneError: error },
+      undefined,
+      "gitOps:clone/error",
+    );
   },
 
   resetClone: () => {
-    set({ cloneIsCloning: false, cloneProgress: null, cloneError: null }, undefined, "gitOps:clone/reset");
+    set(
+      { cloneIsCloning: false, cloneProgress: null, cloneError: null },
+      undefined,
+      "gitOps:clone/reset",
+    );
   },
 });

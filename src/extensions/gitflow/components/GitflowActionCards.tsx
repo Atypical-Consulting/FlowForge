@@ -1,7 +1,7 @@
+import type { LucideIcon } from "lucide-react";
 import { ArrowRight, GitBranch, GitMerge, Rocket, Tag } from "lucide-react";
 import type { GitflowBranchType } from "../../../core/lib/branchClassifier";
 import { BRANCH_TYPE_COLORS } from "../../../core/lib/branchClassifier";
-import type { LucideIcon } from "lucide-react";
 
 interface ActionCard {
   icon: LucideIcon;
@@ -96,11 +96,12 @@ export function GitflowActionCards({ branchType }: GitflowActionCardsProps) {
           className="bg-ctp-surface0/50 hover:bg-ctp-surface0 border border-ctp-surface1 rounded-lg p-4 transition-colors"
         >
           <div className="flex items-start gap-3">
-            <card.icon className="w-5 h-5 shrink-0 mt-0.5" style={{ color: BRANCH_TYPE_COLORS[branchType] }} />
+            <card.icon
+              className="w-5 h-5 shrink-0 mt-0.5"
+              style={{ color: BRANCH_TYPE_COLORS[branchType] }}
+            />
             <div className="min-w-0">
-              <p className="text-sm font-medium text-ctp-text">
-                {card.title}
-              </p>
+              <p className="text-sm font-medium text-ctp-text">{card.title}</p>
               <p className="text-sm text-ctp-subtext0 mt-0.5">
                 {card.description}
               </p>

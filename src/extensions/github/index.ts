@@ -6,14 +6,23 @@
  * GitHub-specific code in core UI files.
  */
 
+import {
+  CircleDot,
+  Github,
+  GitPullRequest,
+  GitPullRequestCreate,
+} from "lucide-react";
 import { createElement } from "react";
-import { Github, GitPullRequest, GitPullRequestCreate, CircleDot } from "lucide-react";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
-import { openBlade } from "@/framework/layout/bladeOpener";
-import { useGitHubStore, getSelectedRemote, cancelGitHubPolling } from "./githubStore";
-import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
 import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
+import { openBlade } from "@/framework/layout/bladeOpener";
 import { queryClient } from "../../core/lib/queryClient";
+import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
+import {
+  cancelGitHubPolling,
+  getSelectedRemote,
+  useGitHubStore,
+} from "./githubStore";
 
 // Module-level unsubscribes for store listeners
 let unsubRepoWatch: (() => void) | null = null;
@@ -157,9 +166,15 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     icon: GitPullRequest,
     action: () => {
       const remote = getSelectedRemote();
-      if (remote) openBlade("ext:github:pull-requests", { owner: remote.owner, repo: remote.repo });
+      if (remote)
+        openBlade("ext:github:pull-requests", {
+          owner: remote.owner,
+          repo: remote.repo,
+        });
     },
-    enabled: () => useGitHubStore.getState().isAuthenticated && useGitHubStore.getState().detectedRemotes.length > 0,
+    enabled: () =>
+      useGitHubStore.getState().isAuthenticated &&
+      useGitHubStore.getState().detectedRemotes.length > 0,
   });
 
   api.registerCommand({
@@ -169,9 +184,15 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     icon: CircleDot,
     action: () => {
       const remote = getSelectedRemote();
-      if (remote) openBlade("ext:github:issues", { owner: remote.owner, repo: remote.repo });
+      if (remote)
+        openBlade("ext:github:issues", {
+          owner: remote.owner,
+          repo: remote.repo,
+        });
     },
-    enabled: () => useGitHubStore.getState().isAuthenticated && useGitHubStore.getState().detectedRemotes.length > 0,
+    enabled: () =>
+      useGitHubStore.getState().isAuthenticated &&
+      useGitHubStore.getState().detectedRemotes.length > 0,
   });
 
   api.registerCommand({
@@ -181,7 +202,11 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     icon: GitPullRequestCreate,
     action: () => {
       const remote = getSelectedRemote();
-      if (remote) openBlade("ext:github:create-pr", { owner: remote.owner, repo: remote.repo });
+      if (remote)
+        openBlade("ext:github:create-pr", {
+          owner: remote.owner,
+          repo: remote.repo,
+        });
     },
     enabled: () => {
       const gh = useGitHubStore.getState();
@@ -221,7 +246,11 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     },
     execute: () => {
       const remote = getSelectedRemote();
-      if (remote) openBlade("ext:github:pull-requests", { owner: remote.owner, repo: remote.repo });
+      if (remote)
+        openBlade("ext:github:pull-requests", {
+          owner: remote.owner,
+          repo: remote.repo,
+        });
     },
   });
 
@@ -237,7 +266,11 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     },
     execute: () => {
       const remote = getSelectedRemote();
-      if (remote) openBlade("ext:github:issues", { owner: remote.owner, repo: remote.repo });
+      if (remote)
+        openBlade("ext:github:issues", {
+          owner: remote.owner,
+          repo: remote.repo,
+        });
     },
   });
 
@@ -250,11 +283,19 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     when: () => {
       const { isAuthenticated, detectedRemotes } = useGitHubStore.getState();
       const repo = useRepositoryStore.getState();
-      return isAuthenticated && detectedRemotes.length > 0 && !!repo.repoStatus?.branchName;
+      return (
+        isAuthenticated &&
+        detectedRemotes.length > 0 &&
+        !!repo.repoStatus?.branchName
+      );
     },
     execute: () => {
       const remote = getSelectedRemote();
-      if (remote) openBlade("ext:github:create-pr", { owner: remote.owner, repo: remote.repo });
+      if (remote)
+        openBlade("ext:github:create-pr", {
+          owner: remote.owner,
+          repo: remote.repo,
+        });
     },
   });
 
@@ -262,7 +303,8 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
   useGitHubStore.getState().checkAuth();
 
   // Subscribe to repo changes for remote auto-detection
-  let prevRepoPath: string | null = useRepositoryStore.getState().repoStatus?.repoPath ?? null;
+  let prevRepoPath: string | null =
+    useRepositoryStore.getState().repoStatus?.repoPath ?? null;
   unsubRepoWatch = useRepositoryStore.subscribe((state) => {
     const currentPath = state.repoStatus?.repoPath ?? null;
     if (currentPath !== prevRepoPath) {
@@ -280,16 +322,14 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
   });
 
   // Refresh toolbar visibility when auth or remotes change
-  unsubGitHubWatch = useGitHubStore.subscribe(
-    (state, prevState) => {
-      if (
-        state.isAuthenticated !== prevState.isAuthenticated ||
-        state.detectedRemotes !== prevState.detectedRemotes
-      ) {
-        useToolbarRegistry.getState().refreshVisibility();
-      }
-    },
-  );
+  unsubGitHubWatch = useGitHubStore.subscribe((state, prevState) => {
+    if (
+      state.isAuthenticated !== prevState.isAuthenticated ||
+      state.detectedRemotes !== prevState.detectedRemotes
+    ) {
+      useToolbarRegistry.getState().refreshVisibility();
+    }
+  });
 
   // Also detect remotes if a repo is already open
   if (useRepositoryStore.getState().repoStatus) {
