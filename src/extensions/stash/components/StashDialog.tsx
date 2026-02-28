@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useGitOpsStore as useStashStore } from "@/core/stores/domain/git-ops";
 import { Button } from "@/core/components/ui/button";
 import {
   Dialog,
@@ -9,13 +8,18 @@ import {
   DialogTitle,
 } from "@/core/components/ui/dialog";
 import { Input } from "@/core/components/ui/input";
+import { useGitOpsStore as useStashStore } from "@/core/stores/domain/git-ops";
 
 interface StashDialogProps {
   onClose: () => void;
 }
 
 export function StashDialog({ onClose }: StashDialogProps) {
-  const { saveStash, stashIsLoading: isLoading, stashError: error } = useStashStore();
+  const {
+    saveStash,
+    stashIsLoading: isLoading,
+    stashError: error,
+  } = useStashStore();
   const [message, setMessage] = useState("");
   const [includeUntracked, setIncludeUntracked] = useState(false);
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock @tauri-apps/api/event (listen returns an unlisten function)
 vi.mock("@tauri-apps/api/event", () => ({
@@ -11,7 +11,7 @@ vi.mock("@tauri-apps/plugin-store", () => ({
     load: vi.fn(() =>
       Promise.resolve({
         get: vi.fn(() => Promise.resolve(null)),
-      })
+      }),
     ),
   },
 }));
@@ -34,9 +34,9 @@ vi.mock("../../core/stores/domain/git-ops", () => ({
   },
 }));
 
+import { getCommandById } from "@/framework/command-palette/commandRegistry";
 import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
-import { getCommandById } from "@/framework/command-palette/commandRegistry";
 import { onActivate, onDeactivate } from "../topology";
 
 describe("topology extension", () => {

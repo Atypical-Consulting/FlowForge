@@ -14,7 +14,7 @@ export interface WillHookResult {
 export type DidHandler<TCtx> = (ctx: TCtx) => void | Promise<void>;
 export type WillHandler<TCtx> = (
   ctx: TCtx,
-) => WillHookResult | Promise<WillHookResult | void> | void;
+) => WillHookResult | Promise<WillHookResult | undefined> | undefined;
 
 interface HandlerEntry<H> {
   handler: H;
@@ -64,7 +64,7 @@ export class OperationBus<
       priority,
       source,
     };
-    this.didHandlers.get(operation)!.add(entry);
+    this.didHandlers.get(operation)?.add(entry);
 
     return () => {
       this.didHandlers.get(operation)?.delete(entry);
@@ -85,7 +85,7 @@ export class OperationBus<
       priority,
       source,
     };
-    this.willHandlers.get(operation)!.add(entry);
+    this.willHandlers.get(operation)?.add(entry);
 
     return () => {
       this.willHandlers.get(operation)?.delete(entry);
@@ -167,4 +167,3 @@ export class OperationBus<
     }
   }
 }
-

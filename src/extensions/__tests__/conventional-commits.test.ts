@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
 import { onActivate, onDeactivate } from "../conventional-commits";
@@ -23,8 +23,12 @@ describe("conventional-commits extension", () => {
     await onActivate(api);
 
     // Should NOT be namespaced
-    expect(getBladeRegistration("ext:conventional-commits:conventional-commit")).toBeUndefined();
-    expect(getBladeRegistration("ext:conventional-commits:changelog")).toBeUndefined();
+    expect(
+      getBladeRegistration("ext:conventional-commits:conventional-commit"),
+    ).toBeUndefined();
+    expect(
+      getBladeRegistration("ext:conventional-commits:changelog"),
+    ).toBeUndefined();
 
     api.cleanup();
   });

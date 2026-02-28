@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock git-ops store
 vi.mock("../../core/stores/domain/git-ops", () => ({
@@ -11,9 +11,9 @@ vi.mock("../../core/stores/domain/git-ops", () => ({
   },
 }));
 
+import { getCommandById } from "@/framework/command-palette/commandRegistry";
 import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { useSidebarPanelRegistry } from "@/framework/layout/sidebarPanelRegistry";
-import { getCommandById } from "@/framework/command-palette/commandRegistry";
 import { onActivate, onDeactivate } from "../worktrees";
 
 describe("worktrees extension", () => {
@@ -65,7 +65,9 @@ describe("worktrees extension", () => {
     api.cleanup();
 
     expect(
-      useSidebarPanelRegistry.getState().items.has("ext:worktrees:worktree-panel")
+      useSidebarPanelRegistry
+        .getState()
+        .items.has("ext:worktrees:worktree-panel"),
     ).toBe(false);
     expect(getCommandById("ext:worktrees:create-worktree")).toBeUndefined();
     expect(getCommandById("ext:worktrees:refresh-worktrees")).toBeUndefined();
@@ -79,7 +81,9 @@ describe("worktrees extension", () => {
     await onActivate(api2);
 
     expect(
-      useSidebarPanelRegistry.getState().items.has("ext:worktrees:worktree-panel")
+      useSidebarPanelRegistry
+        .getState()
+        .items.has("ext:worktrees:worktree-panel"),
     ).toBe(true);
     expect(getCommandById("ext:worktrees:create-worktree")).toBeDefined();
 

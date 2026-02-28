@@ -80,9 +80,7 @@ export const createReviewChecklistSlice: StateCreator<
   },
 
   getChecklistItems: (flowType: FlowType) => {
-    return (
-      get().checklistCustomItems[flowType] ?? DEFAULT_CHECKLIST[flowType]
-    );
+    return get().checklistCustomItems[flowType] ?? DEFAULT_CHECKLIST[flowType];
   },
 
   updateChecklistItems: async (

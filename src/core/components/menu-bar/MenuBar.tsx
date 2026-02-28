@@ -1,8 +1,11 @@
 import { useCallback } from "react";
-import { executeCommand, getCommandById } from "@/framework/command-palette/commandRegistry";
+import {
+  executeCommand,
+  getCommandById,
+} from "@/framework/command-palette/commandRegistry";
+import { MenuBarItem } from "./MenuBarItem";
 import type { MenuItemDef } from "./menu-definitions";
 import { menuDefinitions } from "./menu-definitions";
-import { MenuBarItem } from "./MenuBarItem";
 import { useMenuBar } from "./useMenuBar";
 
 const menuIds = menuDefinitions.map((m) => m.id);
@@ -34,7 +37,6 @@ export function MenuBar() {
   return (
     <nav
       ref={containerRef}
-      role="menubar"
       aria-label="Application menu"
       className="flex items-center"
     >

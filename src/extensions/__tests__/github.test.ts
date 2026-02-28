@@ -1,8 +1,8 @@
-import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
-import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
-import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getCommandById } from "@/framework/command-palette/commandRegistry";
+import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
+import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
 
 // Mock blade components used by the GitHub extension
 vi.mock("../github/blades/GitHubAuthBlade", () => ({
@@ -85,7 +85,9 @@ describe("github extension", () => {
     onDeactivate = ghModule.onDeactivate;
 
     const ghStore = await import("../github/githubStore");
-    cancelGitHubPolling = ghStore.cancelGitHubPolling as ReturnType<typeof vi.fn>;
+    cancelGitHubPolling = ghStore.cancelGitHubPolling as ReturnType<
+      typeof vi.fn
+    >;
 
     const qc = await import("../../core/lib/queryClient");
     queryClient = qc.queryClient as { removeQueries: ReturnType<typeof vi.fn> };

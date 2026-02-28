@@ -1,7 +1,7 @@
 import { Check, Search, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useGitignoreTemplateList } from "../hooks/useGitignoreTemplates";
 import { getCategoryForTemplate } from "../../../core/lib/gitignoreCategories";
+import { useGitignoreTemplateList } from "../hooks/useGitignoreTemplates";
 import { useInitRepoStore } from "../store";
 import { CategoryFilter } from "./CategoryFilter";
 
@@ -141,12 +141,10 @@ export function TemplatePicker() {
         ) : (
           <ul
             ref={listRef}
-            role="listbox"
             aria-multiselectable="true"
             aria-label="Gitignore templates"
             className="max-h-80 overflow-y-auto space-y-0.5"
             onKeyDown={handleKeyDown}
-            tabIndex={0}
           >
             {filteredTemplates.map((t, idx) => {
               const isSelected = selectedTemplates.includes(t.name);
@@ -155,7 +153,6 @@ export function TemplatePicker() {
               return (
                 <li
                   key={t.name}
-                  role="option"
                   aria-selected={isSelected}
                   onClick={() => toggleTemplate(t.name)}
                   className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer text-sm transition-colors ${
@@ -171,9 +168,7 @@ export function TemplatePicker() {
                         : "border-ctp-surface2 bg-ctp-surface0"
                     }`}
                   >
-                    {isSelected && (
-                      <Check className="w-3 h-3 text-ctp-base" />
-                    )}
+                    {isSelected && <Check className="w-3 h-3 text-ctp-base" />}
                   </div>
                   <span
                     className={isSelected ? "text-ctp-text font-medium" : ""}

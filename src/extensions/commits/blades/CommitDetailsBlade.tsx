@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { Check, Clock, Copy, GitCommit, Loader2, User } from "lucide-react";
 import { useState } from "react";
-import { commands } from "../../../bindings";
-import { useBladeNavigation } from "../../../core/hooks/useBladeNavigation";
 import { toast } from "@/framework/stores/toast";
+import { commands } from "../../../bindings";
 import { FileTreeBlade } from "../../../core/blades/_shared/FileTreeBlade";
+import { useBladeNavigation } from "../../../core/hooks/useBladeNavigation";
 
 interface CommitDetailsBladeProps {
   oid: string;
@@ -113,7 +113,8 @@ export function CommitDetailsBlade({ oid }: CommitDetailsBladeProps) {
           <div className="flex items-center gap-2 text-sm text-ctp-overlay0">
             <User className="w-4 h-4 shrink-0" />
             <span>
-              Committer: {details.committerName} &lt;{details.committerEmail}&gt;
+              Committer: {details.committerName} &lt;{details.committerEmail}
+              &gt;
             </span>
           </div>
         )}

@@ -1,11 +1,11 @@
 import { GitCommit } from "lucide-react";
 import { memo } from "react";
+import { parseConventionalType } from "@/core/lib/commitClassifier";
+import { cn } from "@/framework/lib/utils";
 import {
   COMMIT_TYPE_THEME,
   type ConventionalCommitType,
 } from "../../../extensions/conventional-commits/lib/commit-type-theme";
-import { cn } from "@/framework/lib/utils";
-import { parseConventionalType } from "@/core/lib/commitClassifier";
 
 interface CommitTypeIconProps {
   /** Pass a commit type directly. */
@@ -31,7 +31,9 @@ export const CommitTypeIcon = memo(function CommitTypeIcon({
 }: CommitTypeIconProps) {
   const resolvedType =
     commitType ??
-    ((message ? parseConventionalType(message) : null) as ConventionalCommitType | null);
+    ((message
+      ? parseConventionalType(message)
+      : null) as ConventionalCommitType | null);
 
   const theme = resolvedType ? COMMIT_TYPE_THEME[resolvedType] : null;
   const Icon = theme?.icon ?? GitCommit;

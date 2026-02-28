@@ -13,11 +13,14 @@ import type { HostToWorkerMessage, WorkerToHostMessage } from "./types";
  */
 export class SandboxBridge {
   private worker: Worker | null = null;
-  private pendingCalls = new Map<string, {
-    resolve: (value: unknown) => void;
-    reject: (error: Error) => void;
-    timer: ReturnType<typeof setTimeout>;
-  }>();
+  private pendingCalls = new Map<
+    string,
+    {
+      resolve: (value: unknown) => void;
+      reject: (error: Error) => void;
+      timer: ReturnType<typeof setTimeout>;
+    }
+  >();
   private _isRunning = false;
   private readonly callTimeout: number;
 
@@ -71,7 +74,7 @@ export class SandboxBridge {
   async initialize(extensionId: string, code: string): Promise<void> {
     this.assertRunning();
     const msg: HostToWorkerMessage = { type: "init", extensionId, code };
-    this.worker!.postMessage(msg);
+    this.worker?.postMessage(msg);
 
     // Wait for "initialized" response
     return new Promise<void>((resolve, reject) => {
@@ -109,8 +112,8 @@ export class SandboxBridge {
     if (!isSandboxSafe(method)) {
       throw new Error(
         `Method "${method}" is not sandbox-safe and cannot be called ` +
-        `through the sandbox bridge. It requires trust level "built-in" ` +
-        `or "user-trusted".`
+          `through the sandbox bridge. It requires trust level "built-in" ` +
+          `or "user-trusted".`,
       );
     }
 
@@ -119,7 +122,11 @@ export class SandboxBridge {
     return new Promise<unknown>((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pendingCalls.delete(callId);
-        reject(new Error(`API call "${method}" timed out after ${this.callTimeout}ms`));
+        reject(
+          new Error(
+            `API call "${method}" timed out after ${this.callTimeout}ms`,
+          ),
+        );
       }, this.callTimeout);
 
       this.pendingCalls.set(callId, { resolve, reject, timer });
@@ -130,7 +137,7 @@ export class SandboxBridge {
         method,
         args,
       };
-      this.worker!.postMessage(msg);
+      this.worker?.postMessage(msg);
     });
   }
 

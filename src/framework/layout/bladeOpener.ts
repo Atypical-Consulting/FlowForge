@@ -1,5 +1,5 @@
-import type { CoreBladeType, BladePropsMap } from "./bladeTypes";
 import { getBladeRegistration } from "./bladeRegistry";
+import type { BladePropsMap, CoreBladeType } from "./bladeTypes";
 import { getNavigationActor } from "./navigation/context";
 
 /** Open a core blade with type-safe props */
@@ -24,7 +24,12 @@ export function openBlade(
     title ??
     (typeof reg?.defaultTitle === "function"
       ? reg.defaultTitle(props as any)
-      : reg?.defaultTitle ?? type);
+      : (reg?.defaultTitle ?? type));
 
-  getNavigationActor().send({ type: "PUSH_BLADE", bladeType: type as any, title: resolvedTitle, props });
+  getNavigationActor().send({
+    type: "PUSH_BLADE",
+    bladeType: type as any,
+    title: resolvedTitle,
+    props,
+  });
 }

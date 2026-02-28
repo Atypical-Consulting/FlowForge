@@ -63,15 +63,21 @@ export const useToastStore = create<ToastState>((set) => ({
 
 export const toast = {
   success: (message: string, action?: ToastAction): string => {
-    return useToastStore.getState().addToast({ type: "success", message, action });
+    return useToastStore
+      .getState()
+      .addToast({ type: "success", message, action });
   },
   error: (message: string, action?: ToastAction): string => {
-    return useToastStore.getState().addToast({ type: "error", message, action });
+    return useToastStore
+      .getState()
+      .addToast({ type: "error", message, action });
   },
   info: (message: string, action?: ToastAction): string => {
     return useToastStore.getState().addToast({ type: "info", message, action });
   },
   warning: (message: string, action?: ToastAction): string => {
-    return useToastStore.getState().addToast({ type: "warning", message, action });
+    return useToastStore
+      .getState()
+      .addToast({ type: "warning", message, action });
   },
 };

@@ -1,16 +1,22 @@
 import { Check, GitBranch, GitMerge, Loader2, Pin, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { gitHookBus } from "@/core/services/gitHookBus";
+import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
+import { cn } from "@/framework/lib/utils";
 import type { AheadBehind } from "../../../bindings";
 import { commands } from "../../../bindings";
 import type { EnrichedBranch } from "../../../core/lib/branchClassifier";
-import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
-import { gitHookBus } from "@/core/services/gitHookBus";
-import { cn } from "@/framework/lib/utils";
 import { BranchTypeBadge } from "./BranchTypeBadge";
 
-function AheadBehindBadge({ branchName, isRemote }: { branchName: string; isRemote: boolean }) {
+function AheadBehindBadge({
+  branchName,
+  isRemote,
+}: {
+  branchName: string;
+  isRemote: boolean;
+}) {
   const [counts, setCounts] = useState<AheadBehind | null>(null);
-  const [tick, setTick] = useState(0);
+  const [_tick, setTick] = useState(0);
 
   useEffect(() => {
     if (isRemote) return;
@@ -20,8 +26,10 @@ function AheadBehindBadge({ branchName, isRemote }: { branchName: string; isRemo
         setCounts(result.data);
       }
     });
-    return () => { cancelled = true; };
-  }, [branchName, isRemote, tick]);
+    return () => {
+      cancelled = true;
+    };
+  }, [branchName, isRemote]);
 
   // Re-fetch ahead/behind after push/fetch/pull
   useEffect(() => {
@@ -40,12 +48,18 @@ function AheadBehindBadge({ branchName, isRemote }: { branchName: string; isRemo
   return (
     <span className="flex items-center gap-1 text-xs font-mono shrink-0">
       {counts.ahead > 0 && (
-        <span className="text-ctp-green" title={`${counts.ahead} commit(s) ahead of upstream`}>
+        <span
+          className="text-ctp-green"
+          title={`${counts.ahead} commit(s) ahead of upstream`}
+        >
           ↑{counts.ahead}
         </span>
       )}
       {counts.behind > 0 && (
-        <span className="text-ctp-blue" title={`${counts.behind} commit(s) behind upstream`}>
+        <span
+          className="text-ctp-blue"
+          title={`${counts.behind} commit(s) behind upstream`}
+        >
           ↓{counts.behind}
         </span>
       )}
@@ -55,9 +69,9 @@ function AheadBehindBadge({ branchName, isRemote }: { branchName: string; isRemo
 
 interface BranchItemProps {
   branch: EnrichedBranch;
-  onCheckout: () => Promise<unknown> | void;
-  onDelete: () => Promise<unknown> | void;
-  onMerge: () => Promise<unknown> | void;
+  onCheckout: () => Promise<unknown> | undefined;
+  onDelete: () => Promise<unknown> | undefined;
+  onMerge: () => Promise<unknown> | undefined;
   onTogglePin?: () => void;
   disabled?: boolean;
 }
@@ -77,7 +91,7 @@ export function BranchItem({
 
   const handleAction = async (
     action: "checkout" | "merge" | "delete",
-    fn: () => Promise<unknown> | void,
+    fn: () => Promise<unknown> | undefined,
   ) => {
     setLoadingAction(action);
     try {
@@ -98,11 +112,12 @@ export function BranchItem({
       )}
       onContextMenu={(e) => {
         e.preventDefault();
-        useContextMenuRegistry.getState().showMenu(
-          { x: e.clientX, y: e.clientY },
-          "branch-list",
-          { location: "branch-list", branchName: branch.name },
-        );
+        useContextMenuRegistry
+          .getState()
+          .showMenu({ x: e.clientX, y: e.clientY }, "branch-list", {
+            location: "branch-list",
+            branchName: branch.name,
+          });
       }}
     >
       <div className="flex items-center gap-1.5 min-w-0 flex-1">
@@ -117,7 +132,7 @@ export function BranchItem({
               "p-0.5 rounded shrink-0 transition-opacity",
               branch.isPinned
                 ? "text-ctp-blue hover:text-ctp-sapphire opacity-100"
-                : "text-ctp-overlay0 hover:text-ctp-subtext0 opacity-0 group-hover/item:opacity-100"
+                : "text-ctp-overlay0 hover:text-ctp-subtext0 opacity-0 group-hover/item:opacity-100",
             )}
             title={branch.isPinned ? "Unpin branch" : "Pin branch"}
             aria-label={branch.isPinned ? "Unpin branch" : "Pin branch"}

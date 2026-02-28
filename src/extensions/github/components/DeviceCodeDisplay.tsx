@@ -5,8 +5,8 @@
  * a countdown timer, and a polling spinner.
  */
 
-import { useEffect, useState } from "react";
 import { Check, Copy, ExternalLink, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "../../../core/components/ui/button";
 
 interface DeviceCodeDisplayProps {

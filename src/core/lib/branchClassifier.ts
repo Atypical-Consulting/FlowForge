@@ -32,8 +32,7 @@ export function classifyBranch(branchName: string): GitflowBranchType {
     return "feature";
   if (bare.startsWith("release/") || bare.startsWith("release-"))
     return "release";
-  if (bare.startsWith("hotfix/") || bare.startsWith("hotfix-"))
-    return "hotfix";
+  if (bare.startsWith("hotfix/") || bare.startsWith("hotfix-")) return "hotfix";
   return "other";
 }
 

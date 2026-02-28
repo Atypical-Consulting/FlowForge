@@ -1,12 +1,12 @@
 import type { StateCreator } from "zustand";
+import { getNavigationActor } from "@/framework/layout/navigation/context";
+import { resetAllStores } from "@/framework/stores/registry";
+import { toast } from "@/framework/stores/toast";
 import type { RepoStatus } from "../../../../bindings";
 import { commands } from "../../../../bindings";
 import { getErrorMessage } from "../../../lib/errors";
-import { getNavigationActor } from "@/framework/layout/navigation/context";
-import { toast } from "@/framework/stores/toast";
-import { resetAllStores } from "@/framework/stores/registry";
-import type { GitOpsMiddleware } from "./types";
 import type { GitOpsStore } from "./index";
+import type { GitOpsMiddleware } from "./types";
 
 export interface RepositorySlice {
   repoStatus: RepoStatus | null;
@@ -30,20 +30,36 @@ export const createRepositorySlice: StateCreator<
   repoError: null,
 
   openRepository: async (path: string) => {
-    set({ repoIsLoading: true, repoError: null }, undefined, "gitOps:repo/open");
+    set(
+      { repoIsLoading: true, repoError: null },
+      undefined,
+      "gitOps:repo/open",
+    );
     try {
       const result = await commands.openRepository(path);
       if (result.status === "ok") {
-        set({ repoStatus: result.data, repoIsLoading: false }, undefined, "gitOps:repo/openOk");
+        set(
+          { repoStatus: result.data, repoIsLoading: false },
+          undefined,
+          "gitOps:repo/openOk",
+        );
       } else {
         const errorMsg = getErrorMessage(result.error);
-        set({ repoError: errorMsg, repoIsLoading: false, repoStatus: null }, undefined, "gitOps:repo/openFail");
+        set(
+          { repoError: errorMsg, repoIsLoading: false, repoStatus: null },
+          undefined,
+          "gitOps:repo/openFail",
+        );
         throw new Error(errorMsg);
       }
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : String(e);
       if (!get().repoError) {
-        set({ repoError: errorMessage, repoIsLoading: false, repoStatus: null });
+        set({
+          repoError: errorMessage,
+          repoIsLoading: false,
+          repoStatus: null,
+        });
       }
       throw e;
     }
@@ -76,5 +92,6 @@ export const createRepositorySlice: StateCreator<
     getNavigationActor().send({ type: "RESET_STACK" });
   },
 
-  clearRepoError: () => set({ repoError: null }, undefined, "gitOps:repo/clearError"),
+  clearRepoError: () =>
+    set({ repoError: null }, undefined, "gitOps:repo/clearError"),
 });

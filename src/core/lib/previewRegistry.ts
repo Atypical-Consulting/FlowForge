@@ -1,8 +1,8 @@
 import type { ComponentType } from "react";
-import type { FileChange } from "../../bindings";
-import type { DiffSource } from "@/extensions/diff/blades";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
+import type { DiffSource } from "@/extensions/diff/blades";
+import type { FileChange } from "../../bindings";
 
 export type PreviewMode = "inline-diff" | "placeholder" | "custom";
 
@@ -54,11 +54,7 @@ export const usePreviewRegistry = create<PreviewRegistryState>()(
 
       unregisterBySource: (source) => {
         const next = get().previews.filter((r) => r.source !== source);
-        set(
-          { previews: next },
-          false,
-          "preview-registry/unregisterBySource",
-        );
+        set({ previews: next }, false, "preview-registry/unregisterBySource");
       },
 
       getForFile: (filePath) => {

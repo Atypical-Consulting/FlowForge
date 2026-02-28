@@ -7,13 +7,26 @@
   "main": "index.ts",
   "contributes": {
     "blades": [
-      { "type": "conflict-resolution", "title": "Conflict Resolution", "singleton": false }
+      {
+        "type": "conflict-resolution",
+        "title": "Conflict Resolution",
+        "singleton": false
+      }
     ],
     "commands": [
-      { "id": "open-conflict-resolution", "title": "Resolve Merge Conflicts", "category": "Git" }
+      {
+        "id": "open-conflict-resolution",
+        "title": "Resolve Merge Conflicts",
+        "category": "Git"
+      }
     ],
     "toolbar": [
-      { "id": "conflict-badge", "label": "Merge Conflicts", "group": "status", "priority": 40 }
+      {
+        "id": "conflict-badge",
+        "label": "Merge Conflicts",
+        "group": "status",
+        "priority": 40
+      }
     ]
   },
   "permissions": null,

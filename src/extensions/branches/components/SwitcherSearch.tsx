@@ -24,7 +24,6 @@ export function SwitcherSearch({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className="w-full pl-8 pr-8 py-2 text-sm bg-ctp-surface0 text-ctp-text placeholder:text-ctp-overlay0 outline-none"
-        autoFocus
       />
       {value && (
         <button

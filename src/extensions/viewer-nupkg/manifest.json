@@ -6,9 +6,7 @@
   "apiVersion": "1",
   "main": "index.ts",
   "contributes": {
-    "blades": [
-      { "type": "viewer-nupkg", "title": "Package" }
-    ],
+    "blades": [{ "type": "viewer-nupkg", "title": "Package" }],
     "commands": null,
     "toolbar": null
   },

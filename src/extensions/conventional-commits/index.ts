@@ -1,5 +1,5 @@
-import { lazy } from "react";
 import { FileText } from "lucide-react";
+import { lazy } from "react";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { openBlade } from "@/framework/layout/bladeOpener";
 import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
@@ -8,14 +8,16 @@ import { useConventionalStore } from "./store";
 export async function onActivate(api: ExtensionAPI): Promise<void> {
   // Lazy component imports -- loaded on first blade render, not during activation
   const ConventionalCommitBlade = lazy(() =>
-    import("./blades/conventional-commit/ConventionalCommitBlade").then((m) => ({
-      default: m.ConventionalCommitBlade,
-    }))
+    import("./blades/conventional-commit/ConventionalCommitBlade").then(
+      (m) => ({
+        default: m.ConventionalCommitBlade,
+      }),
+    ),
   );
   const ChangelogBlade = lazy(() =>
     import("./blades/changelog/ChangelogBlade").then((m) => ({
       default: m.ChangelogBlade,
-    }))
+    })),
   );
 
   // Register blade types with coreOverride to preserve existing blade type names

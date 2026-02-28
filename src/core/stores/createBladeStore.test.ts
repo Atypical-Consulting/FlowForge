@@ -10,13 +10,13 @@ describe("createBladeStore", () => {
   });
 
   it("auto-registers for reset", () => {
-    const useStore = createBladeStore<{ value: string; setValue: (v: string) => void }>(
-      "test-blade-reset",
-      (set) => ({
-        value: "initial",
-        setValue: (v: string) => set({ value: v }),
-      }),
-    );
+    const useStore = createBladeStore<{
+      value: string;
+      setValue: (v: string) => void;
+    }>("test-blade-reset", (set) => ({
+      value: "initial",
+      setValue: (v: string) => set({ value: v }),
+    }));
 
     useStore.getState().setValue("changed");
     expect(useStore.getState().value).toBe("changed");

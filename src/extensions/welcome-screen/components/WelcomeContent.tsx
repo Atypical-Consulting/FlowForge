@@ -1,30 +1,41 @@
 import { open } from "@tauri-apps/plugin-dialog";
 import { motion } from "framer-motion";
 import { AlertCircle, FolderOpen, GitFork } from "lucide-react";
-import appIcon from "../../../../src-tauri/icons/icon.png";
 import { Suspense, useCallback, useEffect, useState } from "react";
-import { commands } from "../../../bindings";
-import { useRecentRepos } from "../../../core/hooks/useRecentRepos";
-import { fadeInUp, staggerContainer, staggerItem } from "@/framework/theme/animations";
 import { useBladeRegistry } from "@/framework/layout/bladeRegistry";
+import {
+  fadeInUp,
+  staggerContainer,
+  staggerItem,
+} from "@/framework/theme/animations";
+import appIcon from "../../../../src-tauri/icons/icon.png";
+import { commands } from "../../../bindings";
+import { Button } from "../../../core/components/ui/button";
+import { useRecentRepos } from "../../../core/hooks/useRecentRepos";
 import { modKeyLabel } from "../../../core/lib/platform";
 import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";
 import { CloneForm } from "../../../extensions/repository/components/CloneForm";
-import { Button } from "../../../core/components/ui/button";
 import { AnimatedGradientBg } from "./AnimatedGradientBg";
 import { GitInitBanner } from "./GitInitBanner";
 import { GitInitFallbackBanner } from "./GitInitFallbackBanner";
 import { RecentRepos } from "./RecentRepos";
 
 export function WelcomeContent() {
-  const { openRepository, repoIsLoading: isLoading, repoError: error, clearRepoError: clearError } = useRepositoryStore();
+  const {
+    openRepository,
+    repoIsLoading: isLoading,
+    repoError: error,
+    clearRepoError: clearError,
+  } = useRepositoryStore();
   const { addRecentRepo } = useRecentRepos();
   const [isDragOver, setIsDragOver] = useState(false);
   const [showCloneForm, setShowCloneForm] = useState(false);
   const [pendingInitPath, setPendingInitPath] = useState<string | null>(null);
   const [showInitRepo, setShowInitRepo] = useState(false);
 
-  const initRepoRegistration = useBladeRegistry((s) => s.items.get("init-repo"));
+  const initRepoRegistration = useBladeRegistry((s) =>
+    s.items.get("init-repo"),
+  );
 
   // Mid-session disable recovery: if user is viewing Init Repo blade
   // and the extension is disabled, reset to prevent stuck loading screen
@@ -262,8 +273,10 @@ export function WelcomeContent() {
           </motion.div>
         )}
 
-        {pendingInitPath && !error && !showInitRepo && (
-          initRepoRegistration ? (
+        {pendingInitPath &&
+          !error &&
+          !showInitRepo &&
+          (initRepoRegistration ? (
             <GitInitBanner
               path={pendingInitPath}
               onDismiss={() => setPendingInitPath(null)}
@@ -279,8 +292,7 @@ export function WelcomeContent() {
                 setPendingInitPath(null);
               }}
             />
-          )
-        )}
+          ))}
 
         {/* Recent repos */}
         <motion.div variants={staggerItem}>

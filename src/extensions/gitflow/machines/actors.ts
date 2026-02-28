@@ -37,9 +37,7 @@ export const executeGitflowOp = fromPromise<string | null, ExecuteGitflowInput>(
       return result.data;
     }
     const fn =
-      operation === "release"
-        ? commands.finishRelease
-        : commands.finishHotfix;
+      operation === "release" ? commands.finishRelease : commands.finishHotfix;
     const result = await fn(tagMessage ?? null);
     if (result.status === "error") {
       throw new Error(getErrorMessage(result.error));

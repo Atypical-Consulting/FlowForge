@@ -23,7 +23,7 @@ export function FileTreeSearch({
         className={cn(
           "w-full pl-8 pr-8 py-1.5 text-sm bg-ctp-surface0 border border-ctp-surface1 rounded",
           "text-ctp-text placeholder:text-ctp-overlay0",
-          "focus:outline-none focus:border-ctp-blue focus:ring-1 focus:ring-ctp-blue"
+          "focus:outline-none focus:border-ctp-blue focus:ring-1 focus:ring-ctp-blue",
         )}
       />
       {value && (

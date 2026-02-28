@@ -19,7 +19,9 @@ export function useToolbarOverflow() {
     const container = containerRef.current;
     if (!container) return;
 
-    const items = container.querySelectorAll<HTMLElement>("[data-toolbar-item]");
+    const items = container.querySelectorAll<HTMLElement>(
+      "[data-toolbar-item]",
+    );
     if (items.length === 0) {
       setVisibleCount(Infinity);
       return;

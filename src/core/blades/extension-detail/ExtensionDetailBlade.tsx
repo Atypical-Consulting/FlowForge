@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   AlertTriangle,
   Blocks,
@@ -15,43 +14,65 @@ import {
   Trash2,
   Wrench,
 } from "lucide-react";
+import { useState } from "react";
+import { getCommands } from "@/framework/command-palette/commandRegistry";
+import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
 import { useExtensionHost } from "@/framework/extension-system/ExtensionHost";
+import { useStatusBarRegistry } from "@/framework/extension-system/statusBarRegistry";
+import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
+import type { TrustLevel } from "@/framework/extension-system/types";
+import { getAllBladeTypes } from "@/framework/layout/bladeRegistry";
+import { useSidebarPanelRegistry } from "@/framework/layout/sidebarPanelRegistry";
+import { toast } from "@/framework/stores/toast";
 import { getExtensionReadme } from "../../../extensions/extensionReadme";
 import { MarkdownRenderer } from "../../components/markdown/MarkdownRenderer";
-import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
-import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
-import { useSidebarPanelRegistry } from "@/framework/layout/sidebarPanelRegistry";
-import { useStatusBarRegistry } from "@/framework/extension-system/statusBarRegistry";
-import { getAllBladeTypes } from "@/framework/layout/bladeRegistry";
-import { getCommands } from "@/framework/command-palette/commandRegistry";
 import { Button } from "../../components/ui/button";
 import { ToggleSwitch } from "../../components/ui/ToggleSwitch";
-import { toast } from "@/framework/stores/toast";
 import { cn } from "../../lib/utils";
-import type { TrustLevel } from "@/framework/extension-system/types";
 
 interface ExtensionDetailBladeProps {
   extensionId: string;
 }
 
 const STATUS_STYLES: Record<string, { label: string; className: string }> = {
-  active: { label: "Active", className: "bg-ctp-green/15 text-ctp-green border-ctp-green/30" },
-  disabled: { label: "Disabled", className: "bg-ctp-surface1/50 text-ctp-overlay0 border-ctp-surface2" },
-  deactivated: { label: "Deactivated", className: "bg-ctp-surface1/50 text-ctp-overlay0 border-ctp-surface2" },
-  error: { label: "Error", className: "bg-ctp-red/15 text-ctp-red border-ctp-red/30" },
-  discovered: { label: "Discovered", className: "bg-ctp-blue/15 text-ctp-blue border-ctp-blue/30" },
-  activating: { label: "Activating...", className: "bg-ctp-yellow/15 text-ctp-yellow border-ctp-yellow/30" },
+  active: {
+    label: "Active",
+    className: "bg-ctp-green/15 text-ctp-green border-ctp-green/30",
+  },
+  disabled: {
+    label: "Disabled",
+    className: "bg-ctp-surface1/50 text-ctp-overlay0 border-ctp-surface2",
+  },
+  deactivated: {
+    label: "Deactivated",
+    className: "bg-ctp-surface1/50 text-ctp-overlay0 border-ctp-surface2",
+  },
+  error: {
+    label: "Error",
+    className: "bg-ctp-red/15 text-ctp-red border-ctp-red/30",
+  },
+  discovered: {
+    label: "Discovered",
+    className: "bg-ctp-blue/15 text-ctp-blue border-ctp-blue/30",
+  },
+  activating: {
+    label: "Activating...",
+    className: "bg-ctp-yellow/15 text-ctp-yellow border-ctp-yellow/30",
+  },
 };
 
 const TRUST_STYLES: Record<TrustLevel, { label: string; className: string }> = {
   "built-in": { label: "Built-in", className: "text-ctp-green" },
   "user-trusted": { label: "User Trusted", className: "text-ctp-blue" },
-  "sandboxed": { label: "Sandboxed", className: "text-ctp-yellow" },
+  sandboxed: { label: "Sandboxed", className: "text-ctp-yellow" },
 };
 
-export function ExtensionDetailBlade({ extensionId }: ExtensionDetailBladeProps) {
+export function ExtensionDetailBlade({
+  extensionId,
+}: ExtensionDetailBladeProps) {
   const [isToggling, setIsToggling] = useState(false);
-  const { extensions, activateExtension, deactivateExtension } = useExtensionHost();
+  const { extensions, activateExtension, deactivateExtension } =
+    useExtensionHost();
   const toolbarActions = useToolbarRegistry((s) => s.items);
   const contextMenuItems = useContextMenuRegistry((s) => s.items);
   const sidebarPanels = useSidebarPanelRegistry((s) => s.items);
@@ -70,8 +91,10 @@ export function ExtensionDetailBlade({ extensionId }: ExtensionDetailBladeProps)
   const isActive = extension.status === "active";
   const isError = extension.status === "error";
   const isBuiltIn = extension.builtIn === true;
-  const statusStyle = STATUS_STYLES[extension.status] ?? STATUS_STYLES.discovered;
-  const trustStyle = TRUST_STYLES[extension.trustLevel] ?? TRUST_STYLES.sandboxed;
+  const statusStyle =
+    STATUS_STYLES[extension.status] ?? STATUS_STYLES.discovered;
+  const trustStyle =
+    TRUST_STYLES[extension.trustLevel] ?? TRUST_STYLES.sandboxed;
 
   // Gather live contributions from registries
   const extSource = `ext:${extensionId}`;
@@ -122,7 +145,9 @@ export function ExtensionDetailBlade({ extensionId }: ExtensionDetailBladeProps)
         toast.success(`${extension.name} enabled`);
       }
     } catch (e) {
-      toast.error(`Failed to toggle: ${e instanceof Error ? e.message : String(e)}`);
+      toast.error(
+        `Failed to toggle: ${e instanceof Error ? e.message : String(e)}`,
+      );
     } finally {
       setIsToggling(false);
     }
@@ -179,7 +204,12 @@ export function ExtensionDetailBlade({ extensionId }: ExtensionDetailBladeProps)
           </span>
         )}
 
-        <span className={cn("flex items-center gap-1 text-xs", trustStyle.className)}>
+        <span
+          className={cn(
+            "flex items-center gap-1 text-xs",
+            trustStyle.className,
+          )}
+        >
           <Shield className="w-3 h-3" />
           {trustStyle.label}
         </span>
@@ -196,7 +226,9 @@ export function ExtensionDetailBlade({ extensionId }: ExtensionDetailBladeProps)
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-ctp-red shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-ctp-red">Activation Error</p>
+              <p className="text-sm font-medium text-ctp-red">
+                Activation Error
+              </p>
               <p className="text-xs text-ctp-red/80 mt-1">{extension.error}</p>
             </div>
           </div>
@@ -257,7 +289,9 @@ export function ExtensionDetailBlade({ extensionId }: ExtensionDetailBladeProps)
               <ContributionGroup
                 icon={MonitorCog}
                 label="Status Bar Items"
-                items={registeredStatusBar.map((i) => i.id.replace(extPrefix, ""))}
+                items={registeredStatusBar.map((i) =>
+                  i.id.replace(extPrefix, ""),
+                )}
               />
             )}
           </div>
@@ -265,7 +299,9 @@ export function ExtensionDetailBlade({ extensionId }: ExtensionDetailBladeProps)
       )}
 
       {/* Manifest-declared contributions (static, from manifest JSON) */}
-      {(manifestBlades.length > 0 || manifestCommands.length > 0 || manifestToolbar.length > 0) && (
+      {(manifestBlades.length > 0 ||
+        manifestCommands.length > 0 ||
+        manifestToolbar.length > 0) && (
         <Section title="Manifest Contributions" icon={Blocks}>
           <div className="space-y-3">
             {manifestBlades.length > 0 && (

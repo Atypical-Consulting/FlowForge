@@ -1,4 +1,4 @@
-import { type VariantProps, cva } from "class-variance-authority";
+import { cva, type VariantProps } from "class-variance-authority";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import * as React from "react";
@@ -53,8 +53,7 @@ const dialogContentVariants = cva(
 );
 
 interface DialogContentProps
-  extends
-    React.HTMLAttributes<HTMLDivElement>,
+  extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof dialogContentVariants> {}
 
 const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(

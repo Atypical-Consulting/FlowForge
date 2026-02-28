@@ -58,7 +58,7 @@ export function GitSettings() {
     (
       key: string,
       value: string,
-      timerRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>
+      timerRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>,
     ) => {
       if (timerRef.current) clearTimeout(timerRef.current);
 
@@ -77,7 +77,7 @@ export function GitSettings() {
         }, 2000);
       }, GIT_CONFIG_DEBOUNCE_MS);
     },
-    []
+    [],
   );
 
   const handleNameChange = useCallback(
@@ -85,7 +85,7 @@ export function GitSettings() {
       setUserName(e.target.value);
       saveGitConfig("user.name", e.target.value, nameTimerRef);
     },
-    [saveGitConfig]
+    [saveGitConfig],
   );
 
   const handleEmailChange = useCallback(
@@ -93,7 +93,7 @@ export function GitSettings() {
       setUserEmail(e.target.value);
       saveGitConfig("user.email", e.target.value, emailTimerRef);
     },
-    [saveGitConfig]
+    [saveGitConfig],
   );
 
   const handleBranchChange = useCallback(
@@ -101,7 +101,7 @@ export function GitSettings() {
       setDefaultBranch(e.target.value);
       saveGitConfig("init.defaultBranch", e.target.value, branchTimerRef);
     },
-    [saveGitConfig]
+    [saveGitConfig],
   );
 
   return (
@@ -219,7 +219,7 @@ export function GitSettings() {
                     updateSetting(
                       "git",
                       "autoFetchInterval",
-                      e.target.checked ? 5 : null
+                      e.target.checked ? 5 : null,
                     )
                   }
                   className="w-4 h-4 rounded border-ctp-surface1 bg-ctp-surface0 text-ctp-blue focus:ring-ctp-blue focus:ring-offset-0"
@@ -239,7 +239,7 @@ export function GitSettings() {
                       updateSetting(
                         "git",
                         "autoFetchInterval",
-                        parseInt(e.target.value) || 5
+                        parseInt(e.target.value, 10) || 5,
                       )
                     }
                     className="w-20 px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 rounded-md text-sm text-ctp-text focus:outline-none focus:ring-2 focus:ring-ctp-blue focus:border-transparent"

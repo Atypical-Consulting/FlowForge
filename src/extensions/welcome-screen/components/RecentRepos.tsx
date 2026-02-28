@@ -1,11 +1,14 @@
-import { useCallback } from "react";
 import { Clock, Pin } from "lucide-react";
-import { type RecentRepo, useRecentRepos } from "../../../core/hooks/useRecentRepos";
+import { useCallback } from "react";
+import { commands } from "../../../bindings";
+import {
+  type RecentRepo,
+  useRecentRepos,
+} from "../../../core/hooks/useRecentRepos";
 import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";
 import { usePreferencesStore } from "../../../core/stores/domain/preferences";
-import { commands } from "../../../bindings";
-import { RepoCard } from "./RepoCard";
 import { useRepoHealth } from "../hooks/useRepoHealth";
+import { RepoCard } from "./RepoCard";
 
 interface RecentReposProps {
   onRepoOpened?: () => void;
@@ -15,7 +18,9 @@ export function RecentRepos({ onRepoOpened }: RecentReposProps) {
   const { recentRepos, isLoading, removeRecentRepo, addRecentRepo, togglePin } =
     useRecentRepos();
   const { openRepository } = useRepositoryStore();
-  const terminal = usePreferencesStore((s) => s.settingsData.integrations.terminal);
+  const terminal = usePreferencesStore(
+    (s) => s.settingsData.integrations.terminal,
+  );
   const healthMap = useRepoHealth(recentRepos);
 
   const handleOpenInTerminal = useCallback(

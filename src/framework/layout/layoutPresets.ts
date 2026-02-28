@@ -1,10 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import {
-  FolderSearch,
-  LayoutGrid,
-  Maximize2,
-  SquarePen,
-} from "lucide-react";
+import { FolderSearch, LayoutGrid, Maximize2, SquarePen } from "lucide-react";
 
 export interface LayoutPreset {
   id: PresetId;

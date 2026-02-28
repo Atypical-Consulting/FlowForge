@@ -6,12 +6,12 @@
  * When not authenticated, shows an empty state with sign-in button.
  */
 
+import { ExternalLink, Github, LogOut, UserCircle } from "lucide-react";
 import { useEffect } from "react";
-import { Github, LogOut, UserCircle, ExternalLink } from "lucide-react";
-import { Button } from "../../../core/components/ui/button";
 import { openBlade } from "@/framework/layout/bladeOpener";
-import { useGitHubStore } from "../githubStore";
+import { Button } from "../../../core/components/ui/button";
 import { RateLimitBar } from "../components/RateLimitBar";
+import { useGitHubStore } from "../githubStore";
 
 export function GitHubAccountBlade() {
   const isAuthenticated = useGitHubStore((s) => s.isAuthenticated);
@@ -37,7 +37,8 @@ export function GitHubAccountBlade() {
         <Github className="w-12 h-12 text-ctp-overlay1" />
         <h3 className="text-lg font-medium text-ctp-text">Not signed in</h3>
         <p className="text-sm text-ctp-subtext0 max-w-xs">
-          Sign in to GitHub to access repositories, view rate limits, and manage your account.
+          Sign in to GitHub to access repositories, view rate limits, and manage
+          your account.
         </p>
         <Button
           variant="default"
@@ -65,8 +66,10 @@ export function GitHubAccountBlade() {
                 const parent = (e.target as HTMLImageElement).parentElement;
                 if (parent) {
                   const fallback = document.createElement("div");
-                  fallback.className = "w-14 h-14 rounded-full bg-ctp-surface0 flex items-center justify-center";
-                  fallback.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-ctp-overlay1"><path d="M18 20a6 6 0 0 0-12 0"/><circle cx="12" cy="10" r="4"/><circle cx="12" cy="12" r="10"/></svg>';
+                  fallback.className =
+                    "w-14 h-14 rounded-full bg-ctp-surface0 flex items-center justify-center";
+                  fallback.innerHTML =
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-ctp-overlay1"><path d="M18 20a6 6 0 0 0-12 0"/><circle cx="12" cy="10" r="4"/><circle cx="12" cy="12" r="10"/></svg>';
                   parent.insertBefore(fallback, e.target as HTMLImageElement);
                 }
               }}
@@ -148,10 +151,17 @@ export function GitHubAccountBlade() {
                   onClick={async (e) => {
                     e.preventDefault();
                     try {
-                      const { openUrl } = await import("@tauri-apps/plugin-opener");
-                      await openUrl(`https://github.com/${remote.owner}/${remote.repo}`);
+                      const { openUrl } = await import(
+                        "@tauri-apps/plugin-opener"
+                      );
+                      await openUrl(
+                        `https://github.com/${remote.owner}/${remote.repo}`,
+                      );
                     } catch {
-                      window.open(`https://github.com/${remote.owner}/${remote.repo}`, "_blank");
+                      window.open(
+                        `https://github.com/${remote.owner}/${remote.repo}`,
+                        "_blank",
+                      );
                     }
                   }}
                 >

@@ -6,9 +6,7 @@
   "apiVersion": "1",
   "main": "index.ts",
   "contributes": {
-    "blades": [
-      { "type": "viewer-3d", "title": "3D Model" }
-    ],
+    "blades": [{ "type": "viewer-3d", "title": "3D Model" }],
     "commands": null,
     "toolbar": null
   },

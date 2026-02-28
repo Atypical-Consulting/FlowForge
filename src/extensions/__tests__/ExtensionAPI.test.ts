@@ -1,14 +1,15 @@
-import { vi, describe, it, expect, beforeEach } from "vitest";
-import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
+import type { LucideIcon } from "lucide-react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { gitHookBus } from "@/core/services/gitHookBus";
 import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
-import { useSidebarPanelRegistry } from "@/framework/layout/sidebarPanelRegistry";
+import {
+  ExtensionAPI,
+  ExtensionAPI as ExtensionAPIClass,
+} from "@/framework/extension-system/ExtensionAPI";
 import { useStatusBarRegistry } from "@/framework/extension-system/statusBarRegistry";
 import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
-import { gitHookBus } from "@/core/services/gitHookBus";
-import { ExtensionAPI as ExtensionAPIClass } from "@/framework/extension-system/ExtensionAPI";
 import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
-import type { ContextMenuContext } from "@/framework/extension-system/contextMenuRegistry";
-import type { LucideIcon } from "lucide-react";
+import { useSidebarPanelRegistry } from "@/framework/layout/sidebarPanelRegistry";
 
 // Minimal stub for LucideIcon used by sidebar/toolbar configs
 const FakeIcon = (() => null) as unknown as LucideIcon;
@@ -44,8 +45,8 @@ describe("ExtensionAPI", () => {
 
     const items = useContextMenuRegistry.getState().items;
     expect(items.has("ext:test-ext:my-item")).toBe(true);
-    expect(items.get("ext:test-ext:my-item")!.source).toBe("ext:test-ext");
-    expect(items.get("ext:test-ext:my-item")!.label).toBe("Test Item");
+    expect(items.get("ext:test-ext:my-item")?.source).toBe("ext:test-ext");
+    expect(items.get("ext:test-ext:my-item")?.label).toBe("Test Item");
   });
 
   // Test 2
@@ -59,8 +60,13 @@ describe("ExtensionAPI", () => {
       priority: 100,
     });
 
-    expect(useSidebarPanelRegistry.getState().items.has("ext:test-ext:panel-high")).toBe(true);
-    expect(useSidebarPanelRegistry.getState().items.get("ext:test-ext:panel-high")!.priority).toBe(69);
+    expect(
+      useSidebarPanelRegistry.getState().items.has("ext:test-ext:panel-high"),
+    ).toBe(true);
+    expect(
+      useSidebarPanelRegistry.getState().items.get("ext:test-ext:panel-high")
+        ?.priority,
+    ).toBe(69);
 
     // Priority 0 should clamp to 1
     api.contributeSidebarPanel({
@@ -71,7 +77,10 @@ describe("ExtensionAPI", () => {
       priority: 0,
     });
 
-    expect(useSidebarPanelRegistry.getState().items.get("ext:test-ext:panel-low")!.priority).toBe(1);
+    expect(
+      useSidebarPanelRegistry.getState().items.get("ext:test-ext:panel-low")
+        ?.priority,
+    ).toBe(1);
 
     // Default priority (undefined) should become 50
     api.contributeSidebarPanel({
@@ -81,7 +90,10 @@ describe("ExtensionAPI", () => {
       component: () => null,
     });
 
-    expect(useSidebarPanelRegistry.getState().items.get("ext:test-ext:panel-default")!.priority).toBe(50);
+    expect(
+      useSidebarPanelRegistry.getState().items.get("ext:test-ext:panel-default")
+        ?.priority,
+    ).toBe(50);
   });
 
   // Test 3
@@ -94,8 +106,13 @@ describe("ExtensionAPI", () => {
       renderCustom: () => null,
     });
 
-    expect(useStatusBarRegistry.getState().items.has("ext:test-ext:status-high")).toBe(true);
-    expect(useStatusBarRegistry.getState().items.get("ext:test-ext:status-high")!.priority).toBe(89);
+    expect(
+      useStatusBarRegistry.getState().items.has("ext:test-ext:status-high"),
+    ).toBe(true);
+    expect(
+      useStatusBarRegistry.getState().items.get("ext:test-ext:status-high")
+        ?.priority,
+    ).toBe(89);
 
     // Priority -5 should clamp to 1
     api.contributeStatusBar({
@@ -105,7 +122,10 @@ describe("ExtensionAPI", () => {
       renderCustom: () => null,
     });
 
-    expect(useStatusBarRegistry.getState().items.get("ext:test-ext:status-low")!.priority).toBe(1);
+    expect(
+      useStatusBarRegistry.getState().items.get("ext:test-ext:status-low")
+        ?.priority,
+    ).toBe(1);
   });
 
   // Test 4
@@ -126,7 +146,10 @@ describe("ExtensionAPI", () => {
 
   // Test 5
   it("onWillGit registers handler that can cancel", async () => {
-    api.onWillGit("commit", () => ({ cancel: true, reason: "blocked by test" }));
+    api.onWillGit("commit", () => ({
+      cancel: true,
+      reason: "blocked by test",
+    }));
 
     const result = await gitHookBus.emitWill("commit");
 
@@ -248,7 +271,9 @@ describe("ExtensionAPI", () => {
       coreOverride: true,
     });
     expect(getBladeRegistration("viewer-markdown")).toBeDefined();
-    expect(getBladeRegistration("ext:content-viewers:viewer-markdown")).toBeUndefined();
+    expect(
+      getBladeRegistration("ext:content-viewers:viewer-markdown"),
+    ).toBeUndefined();
     api2.cleanup();
   });
 
@@ -287,7 +312,9 @@ describe("ExtensionAPI", () => {
       execute: vi.fn(),
     });
 
-    expect(useContextMenuRegistry.getState().items.has("ext:test-ext:item-2")).toBe(true);
+    expect(
+      useContextMenuRegistry.getState().items.has("ext:test-ext:item-2"),
+    ).toBe(true);
 
     // Second cleanup should only remove the second item, not error on missing first
     api.cleanup();

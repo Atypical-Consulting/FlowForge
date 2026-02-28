@@ -1,9 +1,9 @@
 import { FileText, History, Search } from "lucide-react";
 import { registerCommand } from "@/framework/command-palette/commandRegistry";
+import { usePaletteStore as useCommandPaletteStore } from "@/framework/command-palette/paletteStore";
 import { useBladeRegistry } from "@/framework/layout/bladeRegistry";
 import { getNavigationActor } from "@/framework/layout/navigation/context";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
-import { usePaletteStore as useCommandPaletteStore } from "@/framework/command-palette/paletteStore";
 
 registerCommand({
   id: "command-palette",
@@ -40,9 +40,11 @@ registerCommand({
   action: () => {
     const hasTopology = useBladeRegistry.getState().items.has("topology-graph");
     if (hasTopology) {
-      getNavigationActor().send({ type: "SWITCH_WORKFLOW", workflow: "topology" });
+      getNavigationActor().send({
+        type: "SWITCH_WORKFLOW",
+        workflow: "topology",
+      });
     }
   },
   enabled: () => !!useRepositoryStore.getState().repoStatus,
 });
-

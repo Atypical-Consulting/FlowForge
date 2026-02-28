@@ -3,9 +3,9 @@ import { AlertTriangle, Check, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import type { FileChange, FileStatus } from "../../../../bindings";
 import { commands } from "../../../../bindings";
+import { FileTypeIcon } from "../../../components/icons/FileTypeIcon";
 import { cn } from "../../../lib/utils";
 import { useUIStore as useStagingStore } from "../../../stores/domain/ui-state";
-import { FileTypeIcon } from "../../../components/icons/FileTypeIcon";
 
 interface FileItemProps {
   file: FileChange;
@@ -112,9 +112,7 @@ export function FileItem({
         <FileTypeIcon path={file.path} className="w-4 h-4" />
         {file.status === "conflicted" ? (
           <span title="Conflicted">
-            <AlertTriangle
-              className="absolute -bottom-0.5 -right-1 w-3 h-3 text-ctp-red"
-            />
+            <AlertTriangle className="absolute -bottom-0.5 -right-1 w-3 h-3 text-ctp-red" />
           </span>
         ) : (
           <span

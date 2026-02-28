@@ -7,10 +7,18 @@
   "main": "index.ts",
   "contributes": {
     "blades": [
-      { "type": "init-repo", "title": "Initialize Repository", "singleton": true }
+      {
+        "type": "init-repo",
+        "title": "Initialize Repository",
+        "singleton": true
+      }
     ],
     "commands": [
-      { "id": "init-repository", "title": "Initialize Repository", "category": "Repository" }
+      {
+        "id": "init-repository",
+        "title": "Initialize Repository",
+        "category": "Repository"
+      }
     ],
     "toolbar": null
   },

@@ -1,8 +1,8 @@
 // Re-export generated manifest types from Rust bindings
 export type {
-  ExtensionManifest,
-  ExtensionContributes,
   ExtensionBladeContribution,
   ExtensionCommandContribution,
+  ExtensionContributes,
+  ExtensionManifest,
   ExtensionToolbarContribution,
 } from "../../bindings";

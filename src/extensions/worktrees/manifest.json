@@ -8,8 +8,16 @@
   "contributes": {
     "blades": null,
     "commands": [
-      { "id": "create-worktree", "title": "Create Worktree", "category": "Worktrees" },
-      { "id": "refresh-worktrees", "title": "Refresh Worktrees", "category": "Worktrees" }
+      {
+        "id": "create-worktree",
+        "title": "Create Worktree",
+        "category": "Worktrees"
+      },
+      {
+        "id": "refresh-worktrees",
+        "title": "Refresh Worktrees",
+        "category": "Worktrees"
+      }
     ],
     "toolbar": null,
     "sidebarPanels": [

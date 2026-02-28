@@ -67,21 +67,61 @@ interface Connector {
 
 const CONNECTORS: Connector[] = [
   // Feature branch-out: develop -> feature (down)
-  { type: "feature", x: FEATURE_BRANCH_X, fromY: LANE_Y.develop, toY: LANE_Y.feature },
+  {
+    type: "feature",
+    x: FEATURE_BRANCH_X,
+    fromY: LANE_Y.develop,
+    toY: LANE_Y.feature,
+  },
   // Feature merge-back: feature -> develop (up)
-  { type: "feature", x: FEATURE_MERGE_X, fromY: LANE_Y.feature, toY: LANE_Y.develop },
+  {
+    type: "feature",
+    x: FEATURE_MERGE_X,
+    fromY: LANE_Y.feature,
+    toY: LANE_Y.develop,
+  },
   // Release branch-out: develop -> release (up)
-  { type: "release", x: RELEASE_BRANCH_X, fromY: LANE_Y.develop, toY: LANE_Y.release },
+  {
+    type: "release",
+    x: RELEASE_BRANCH_X,
+    fromY: LANE_Y.develop,
+    toY: LANE_Y.release,
+  },
   // Release merge to main (up)
-  { type: "release", x: RELEASE_MERGE_MAIN_X, fromY: LANE_Y.release, toY: LANE_Y.main },
+  {
+    type: "release",
+    x: RELEASE_MERGE_MAIN_X,
+    fromY: LANE_Y.release,
+    toY: LANE_Y.main,
+  },
   // Release merge to develop (down)
-  { type: "release", x: RELEASE_MERGE_DEV_X, fromY: LANE_Y.release, toY: LANE_Y.develop },
+  {
+    type: "release",
+    x: RELEASE_MERGE_DEV_X,
+    fromY: LANE_Y.release,
+    toY: LANE_Y.develop,
+  },
   // Hotfix branch-out: main -> hotfix (down)
-  { type: "hotfix", x: HOTFIX_BRANCH_X, fromY: LANE_Y.main, toY: LANE_Y.hotfix },
+  {
+    type: "hotfix",
+    x: HOTFIX_BRANCH_X,
+    fromY: LANE_Y.main,
+    toY: LANE_Y.hotfix,
+  },
   // Hotfix merge to main (up)
-  { type: "hotfix", x: HOTFIX_MERGE_MAIN_X, fromY: LANE_Y.hotfix, toY: LANE_Y.main },
+  {
+    type: "hotfix",
+    x: HOTFIX_MERGE_MAIN_X,
+    fromY: LANE_Y.hotfix,
+    toY: LANE_Y.main,
+  },
   // Hotfix merge to develop (down)
-  { type: "hotfix", x: HOTFIX_MERGE_DEV_X, fromY: LANE_Y.hotfix, toY: LANE_Y.develop },
+  {
+    type: "hotfix",
+    x: HOTFIX_MERGE_DEV_X,
+    fromY: LANE_Y.hotfix,
+    toY: LANE_Y.develop,
+  },
 ];
 
 const MARKER_TYPES: { id: string; type: GitflowBranchType }[] = [
@@ -104,11 +144,51 @@ interface LaneConfig {
 }
 
 const LANES: LaneConfig[] = [
-  { type: "main", label: "main", y: LANE_Y.main, xStart: LANE_X_START, xEnd: LANE_X_END, dashed: false, commits: MAIN_COMMITS },
-  { type: "hotfix", label: "hotfix/*", y: LANE_Y.hotfix, xStart: LANE_X_START, xEnd: LANE_X_END, dashed: true, commits: HOTFIX_COMMITS },
-  { type: "release", label: "release/*", y: LANE_Y.release, xStart: LANE_X_START, xEnd: LANE_X_END, dashed: true, commits: RELEASE_COMMITS },
-  { type: "develop", label: "develop", y: LANE_Y.develop, xStart: LANE_X_START, xEnd: LANE_X_END, dashed: false, commits: DEVELOP_COMMITS },
-  { type: "feature", label: "feature/*", y: LANE_Y.feature, xStart: LANE_X_START, xEnd: LANE_X_END, dashed: true, commits: FEATURE_COMMITS },
+  {
+    type: "main",
+    label: "main",
+    y: LANE_Y.main,
+    xStart: LANE_X_START,
+    xEnd: LANE_X_END,
+    dashed: false,
+    commits: MAIN_COMMITS,
+  },
+  {
+    type: "hotfix",
+    label: "hotfix/*",
+    y: LANE_Y.hotfix,
+    xStart: LANE_X_START,
+    xEnd: LANE_X_END,
+    dashed: true,
+    commits: HOTFIX_COMMITS,
+  },
+  {
+    type: "release",
+    label: "release/*",
+    y: LANE_Y.release,
+    xStart: LANE_X_START,
+    xEnd: LANE_X_END,
+    dashed: true,
+    commits: RELEASE_COMMITS,
+  },
+  {
+    type: "develop",
+    label: "develop",
+    y: LANE_Y.develop,
+    xStart: LANE_X_START,
+    xEnd: LANE_X_END,
+    dashed: false,
+    commits: DEVELOP_COMMITS,
+  },
+  {
+    type: "feature",
+    label: "feature/*",
+    y: LANE_Y.feature,
+    xStart: LANE_X_START,
+    xEnd: LANE_X_END,
+    dashed: true,
+    commits: FEATURE_COMMITS,
+  },
 ];
 
 /**
@@ -148,7 +228,14 @@ export function GitflowDiagram({ highlightedLane }: GitflowDiagramProps) {
       <defs>
         {/* Glow filter for active lane — uses userSpaceOnUse to avoid
             zero-height clipping on horizontal lines */}
-        <filter id="glow" filterUnits="userSpaceOnUse" x="0" y="0" width={SVG_WIDTH} height={SVG_HEIGHT}>
+        <filter
+          id="glow"
+          filterUnits="userSpaceOnUse"
+          x="0"
+          y="0"
+          width={SVG_WIDTH}
+          height={SVG_HEIGHT}
+        >
           <feGaussianBlur stdDeviation="3" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />

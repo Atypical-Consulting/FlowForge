@@ -1,10 +1,10 @@
-import { Suspense } from "react";
 import { Puzzle } from "lucide-react";
-import { useBladeRegistry } from "./bladeRegistry";
-import { openBlade } from "./bladeOpener";
-import { BladePanel } from "./BladePanel";
-import { BladeLoadingFallback } from "./BladeLoadingFallback";
+import { Suspense } from "react";
 import { BladeErrorBoundary } from "./BladeErrorBoundary";
+import { BladeLoadingFallback } from "./BladeLoadingFallback";
+import { BladePanel } from "./BladePanel";
+import { openBlade } from "./bladeOpener";
+import { useBladeRegistry } from "./bladeRegistry";
 import type { TypedBlade } from "./navigation/types";
 
 interface BladeRendererProps {
@@ -16,7 +16,12 @@ interface BladeRendererProps {
   onToggleFocusMode?: () => void;
 }
 
-export function BladeRenderer({ blade, goBack, isFocusMode, onToggleFocusMode }: BladeRendererProps) {
+export function BladeRenderer({
+  blade,
+  goBack,
+  isFocusMode,
+  onToggleFocusMode,
+}: BladeRendererProps) {
   const reg = useBladeRegistry((s) => s.items.get(blade.type));
   if (!reg)
     return (

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
-import { commands } from "../../../../bindings";
 import type { DiffHunkDetail } from "../../../../bindings";
+import { commands } from "../../../../bindings";
 
 interface UseHunkStagingOptions {
   filePath: string;

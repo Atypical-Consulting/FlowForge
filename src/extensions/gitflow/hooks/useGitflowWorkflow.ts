@@ -1,17 +1,17 @@
 import { useSelector } from "@xstate/react";
 import { getGitflowActor } from "../machines/context";
 import {
-  selectGitflowState,
-  selectOperation,
-  selectPhase,
-  selectGitflowResult,
   selectGitflowError,
-  selectRefreshErrors,
-  selectIsExecuting,
+  selectGitflowResult,
+  selectGitflowState,
   selectIsAborting,
+  selectIsBusy,
+  selectIsExecuting,
   selectIsRefreshing,
   selectIsStale,
-  selectIsBusy,
+  selectOperation,
+  selectPhase,
+  selectRefreshErrors,
 } from "../machines/selectors";
 import type { GitflowOp } from "../machines/types";
 

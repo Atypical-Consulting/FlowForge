@@ -1,4 +1,4 @@
-import { createActor, type ActorRefFrom } from "xstate";
+import { type ActorRefFrom, createActor } from "xstate";
 import { mergeMachine } from "./mergeMachine";
 
 export type MergeActorRef = ActorRefFrom<typeof mergeMachine>;

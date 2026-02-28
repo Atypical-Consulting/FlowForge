@@ -1,6 +1,10 @@
 import { useMemo } from "react";
-import { useStatusBarRegistry, getLeftItems, getRightItems } from "@/framework/extension-system/statusBarRegistry";
 import type { StatusBarItem } from "@/framework/extension-system/statusBarRegistry";
+import {
+  getLeftItems,
+  getRightItems,
+  useStatusBarRegistry,
+} from "@/framework/extension-system/statusBarRegistry";
 
 function StatusBarWidget({ item }: { item: StatusBarItem }) {
   const content = item.renderCustom();
@@ -29,17 +33,11 @@ function StatusBarWidget({ item }: { item: StatusBarItem }) {
 }
 
 export function StatusBar() {
-  const items = useStatusBarRegistry((s) => s.items);
-  const visibilityTick = useStatusBarRegistry((s) => s.visibilityTick);
+  const _items = useStatusBarRegistry((s) => s.items);
+  const _visibilityTick = useStatusBarRegistry((s) => s.visibilityTick);
 
-  const leftItems = useMemo(
-    () => getLeftItems(),
-    [items, visibilityTick],
-  );
-  const rightItems = useMemo(
-    () => getRightItems(),
-    [items, visibilityTick],
-  );
+  const leftItems = useMemo(() => getLeftItems(), []);
+  const rightItems = useMemo(() => getRightItems(), []);
 
   if (leftItems.length === 0 && rightItems.length === 0) return null;
 

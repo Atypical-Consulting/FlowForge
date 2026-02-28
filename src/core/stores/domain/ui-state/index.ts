@@ -2,13 +2,10 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { registerStoreForReset } from "@/framework/stores/registry";
 import {
-  createStagingSlice,
-  type StagingSlice,
-} from "./staging.slice";
-import {
-  createCommandPaletteSlice,
   type CommandPaletteSlice,
+  createCommandPaletteSlice,
 } from "./command-palette.slice";
+import { createStagingSlice, type StagingSlice } from "./staging.slice";
 
 export type UIStore = StagingSlice & CommandPaletteSlice;
 

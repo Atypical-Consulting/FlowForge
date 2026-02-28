@@ -1,8 +1,4 @@
-import {
-  createRepoStatus,
-  ok,
-  err,
-} from "../test-utils/mocks/tauri-commands";
+import { createRepoStatus, err, ok } from "../test-utils/mocks/tauri-commands";
 import { useGitOpsStore as useRepositoryStore } from "./domain/git-ops";
 
 const mockCommands = vi.hoisted(() => ({

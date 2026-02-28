@@ -1,8 +1,8 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createActor } from "xstate";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { navigationMachine } from "./navigationMachine";
 import { registerBlade, unregisterBlade } from "../bladeRegistry";
-import { registerWorkflow, clearWorkflows } from "./workflowRegistry";
+import { navigationMachine } from "./navigationMachine";
+import { clearWorkflows, registerWorkflow } from "./workflowRegistry";
 
 function createTestActor() {
   const actor = createActor(navigationMachine);
@@ -19,16 +19,34 @@ describe("navigationMachine", () => {
     registerWorkflow({
       id: "staging",
       label: "Staging",
-      rootBlade: { type: "staging-changes", title: "Changes", props: {} as Record<string, never> },
+      rootBlade: {
+        type: "staging-changes",
+        title: "Changes",
+        props: {} as Record<string, never>,
+      },
     });
     registerWorkflow({
       id: "topology",
       label: "Topology",
-      rootBlade: { type: "topology-graph", title: "Topology", props: {} as Record<string, never> },
-      fallbackBlade: { type: "commit-list-fallback", title: "History", props: {} as Record<string, never> },
+      rootBlade: {
+        type: "topology-graph",
+        title: "Topology",
+        props: {} as Record<string, never>,
+      },
+      fallbackBlade: {
+        type: "commit-list-fallback",
+        title: "History",
+        props: {} as Record<string, never>,
+      },
     });
 
-    const singletonTypes = ["settings", "changelog", "gitflow-cheatsheet", "conventional-commit", "repo-browser"];
+    const singletonTypes = [
+      "settings",
+      "changelog",
+      "gitflow-cheatsheet",
+      "conventional-commit",
+      "repo-browser",
+    ];
     for (const type of singletonTypes) {
       registerBlade({
         type,
@@ -496,9 +514,7 @@ describe("navigationMachine", () => {
     actor.send({ type: "POP_BLADE" });
 
     // The dirty entry should be removed
-    expect(
-      actor.getSnapshot().context.dirtyBladeIds[bladeId],
-    ).toBeUndefined();
+    expect(actor.getSnapshot().context.dirtyBladeIds[bladeId]).toBeUndefined();
 
     actor.stop();
   });
@@ -647,9 +663,9 @@ describe("navigationMachine", () => {
 
     actor.send({ type: "RESET_STACK" });
 
-    expect(
-      Object.keys(actor.getSnapshot().context.dirtyBladeIds),
-    ).toHaveLength(0);
+    expect(Object.keys(actor.getSnapshot().context.dirtyBladeIds)).toHaveLength(
+      0,
+    );
 
     actor.stop();
   });
@@ -744,7 +760,9 @@ describe("navigationMachine", () => {
       workflow: "topology",
     });
 
-    expect(Object.keys(actor.getSnapshot().context.dirtyBladeIds)).toHaveLength(0);
+    expect(Object.keys(actor.getSnapshot().context.dirtyBladeIds)).toHaveLength(
+      0,
+    );
     expect(actor.getSnapshot().context.activeWorkflow).toBe("topology");
 
     actor.stop();

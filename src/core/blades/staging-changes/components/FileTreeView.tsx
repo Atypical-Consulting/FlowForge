@@ -1,8 +1,8 @@
 import { Check, ChevronDown, ChevronRight, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { FileChange } from "../../../../bindings";
-import { cn } from "../../../lib/utils";
 import { FileTypeIcon } from "../../../components/icons/FileTypeIcon";
+import { cn } from "../../../lib/utils";
 import { FileItem } from "./FileItem";
 
 interface FileTreeNode {
@@ -251,7 +251,9 @@ function TreeNode({
                     section={section}
                     depth={0}
                     showFilenameOnly
-                    isPartiallyStaged={partiallyStagedPaths?.has(child.file.path)}
+                    isPartiallyStaged={partiallyStagedPaths?.has(
+                      child.file.path,
+                    )}
                   />
                 ) : null}
               </ConnectorRow>

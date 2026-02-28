@@ -1,5 +1,5 @@
-import type { ComponentType } from "react";
 import { Maximize2 } from "lucide-react";
+import type { ComponentType } from "react";
 
 interface NonTextPlaceholderProps {
   icon: ComponentType<{ className?: string }>;

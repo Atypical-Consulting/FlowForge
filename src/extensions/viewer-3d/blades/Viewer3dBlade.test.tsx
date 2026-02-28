@@ -39,13 +39,22 @@ vi.mock("three", () => {
       updateProjectionMatrix: vi.fn(),
     })),
     WebGLRenderer: vi.fn().mockImplementation(() => mockRenderer),
-    AmbientLight: vi.fn().mockImplementation(() => ({ position: { set: vi.fn() } })),
-    DirectionalLight: vi.fn().mockImplementation(() => ({ position: { set: vi.fn() } })),
+    AmbientLight: vi
+      .fn()
+      .mockImplementation(() => ({ position: { set: vi.fn() } })),
+    DirectionalLight: vi
+      .fn()
+      .mockImplementation(() => ({ position: { set: vi.fn() } })),
     GridHelper: vi.fn(),
     Box3: vi.fn().mockImplementation(() => ({
       setFromObject: vi.fn().mockReturnThis(),
       getCenter: vi.fn().mockReturnValue({ x: 0, y: 0, z: 0 }),
-      getSize: vi.fn().mockReturnValue({ x: 1, y: 1, z: 1, length: vi.fn().mockReturnValue(1) }),
+      getSize: vi.fn().mockReturnValue({
+        x: 1,
+        y: 1,
+        z: 1,
+        length: vi.fn().mockReturnValue(1),
+      }),
     })),
     Vector3: vi.fn().mockImplementation(() => ({ x: 0, y: 0, z: 0 })),
     Color: vi.fn(),

@@ -1,8 +1,8 @@
 import { cn } from "@/framework/lib/utils";
-import { useChangelogStore } from "./store";
+import { Button } from "../../../../core/components/ui/button";
 import { useBladeNavigation } from "../../../../core/hooks/useBladeNavigation";
 import { ChangelogPreview } from "./components/ChangelogPreview";
-import { Button } from "../../../../core/components/ui/button";
+import { useChangelogStore } from "./store";
 
 export function ChangelogBlade() {
   const {
@@ -88,11 +88,7 @@ export function ChangelogBlade() {
             </div>
           )}
 
-          <Button
-            onClick={generate}
-            disabled={isGenerating}
-            className="w-full"
-          >
+          <Button onClick={generate} disabled={isGenerating} className="w-full">
             {isGenerating ? "Generating..." : "Generate Changelog"}
           </Button>
         </div>

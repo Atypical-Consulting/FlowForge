@@ -14,7 +14,10 @@ interface BladeBreadcrumbProps {
  * When `navigable` is true (default), clicking a parent segment replaces the
  * current blade with a repo-browser at that directory path.
  */
-export function BladeBreadcrumb({ path, navigable = true }: BladeBreadcrumbProps) {
+export function BladeBreadcrumb({
+  path,
+  navigable = true,
+}: BladeBreadcrumbProps) {
   const { bladeStack, popToIndex, replaceBlade } = useBladeNavigation();
   const segments = path ? path.split("/").filter(Boolean) : [];
 

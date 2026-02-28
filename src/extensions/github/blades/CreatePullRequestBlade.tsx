@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
 import { GitPullRequestCreate } from "lucide-react";
+import { useEffect, useState } from "react";
 import { commands } from "../../../bindings";
 import { Button } from "../../../core/components/ui/button";
+import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";
 import { ToggleSwitch } from "../components/ToggleSwitch";
 import { useCreatePullRequest } from "../hooks/useGitHubMutation";
-import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";
 
 interface CreatePullRequestBladeProps {
   owner: string;
@@ -21,8 +21,13 @@ function branchToTitle(branch: string): string {
   return stripped.charAt(0).toUpperCase() + stripped.slice(1);
 }
 
-export function CreatePullRequestBlade({ owner, repo }: CreatePullRequestBladeProps) {
-  const currentBranch = useRepositoryStore((s) => s.repoStatus?.branchName ?? "");
+export function CreatePullRequestBlade({
+  owner,
+  repo,
+}: CreatePullRequestBladeProps) {
+  const currentBranch = useRepositoryStore(
+    (s) => s.repoStatus?.branchName ?? "",
+  );
 
   const [title, setTitle] = useState("");
   const [base, setBase] = useState("main");
@@ -58,11 +63,14 @@ export function CreatePullRequestBlade({ owner, repo }: CreatePullRequestBladePr
     }
 
     loadBranchInfo();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [currentBranch]);
 
   const isSameBranch = currentBranch === base;
-  const canSubmit = title.trim().length > 0 && !isSameBranch && !mutation.isPending;
+  const canSubmit =
+    title.trim().length > 0 && !isSameBranch && !mutation.isPending;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,7 +113,10 @@ export function CreatePullRequestBlade({ owner, repo }: CreatePullRequestBladePr
 
         {/* Title */}
         <div>
-          <label htmlFor="pr-title" className="block text-xs font-medium text-ctp-subtext1 mb-1">
+          <label
+            htmlFor="pr-title"
+            className="block text-xs font-medium text-ctp-subtext1 mb-1"
+          >
             Title
           </label>
           <input
@@ -113,7 +124,6 @@ export function CreatePullRequestBlade({ owner, repo }: CreatePullRequestBladePr
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            autoFocus
             required
             disabled={isLoadingInfo}
             className="w-full bg-ctp-mantle border border-ctp-surface1 rounded px-3 py-2 text-sm text-ctp-text placeholder:text-ctp-overlay0 focus:outline-none focus:border-ctp-blue"
@@ -123,7 +133,10 @@ export function CreatePullRequestBlade({ owner, repo }: CreatePullRequestBladePr
 
         {/* Description */}
         <div>
-          <label htmlFor="pr-body" className="block text-xs font-medium text-ctp-subtext1 mb-1">
+          <label
+            htmlFor="pr-body"
+            className="block text-xs font-medium text-ctp-subtext1 mb-1"
+          >
             Description
           </label>
           <textarea

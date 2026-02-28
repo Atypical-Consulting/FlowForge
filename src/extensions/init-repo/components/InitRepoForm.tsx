@@ -7,13 +7,13 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { commands } from "../../../bindings";
+import { Button } from "../../../core/components/ui/button";
+import { useBladeNavigation } from "../../../core/hooks/useBladeNavigation";
+import { useRecentRepos } from "../../../core/hooks/useRecentRepos";
 import { getErrorMessage } from "../../../core/lib/errors";
+import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";
 import { composeGitignore } from "../lib/gitignoreComposer";
 import { useInitRepoStore } from "../store";
-import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";
-import { useRecentRepos } from "../../../core/hooks/useRecentRepos";
-import { useBladeNavigation } from "../../../core/hooks/useBladeNavigation";
-import { Button } from "../../../core/components/ui/button";
 import { ProjectDetectionBanner } from "./ProjectDetectionBanner";
 import { TemplateChips } from "./TemplateChips";
 import { TemplatePicker } from "./TemplatePicker";
@@ -200,9 +200,7 @@ export function InitRepoForm({ onCancel, onComplete }: InitRepoFormProps) {
               }`}
             />
             <FileText className="w-4 h-4 text-ctp-subtext0" />
-            <span className="text-sm font-medium text-ctp-text">
-              README.md
-            </span>
+            <span className="text-sm font-medium text-ctp-text">README.md</span>
           </button>
           {readmeOpen && (
             <div className="mt-3 ml-6 space-y-3">

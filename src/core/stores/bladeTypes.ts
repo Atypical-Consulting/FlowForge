@@ -18,7 +18,7 @@ declare module "@/framework/layout/bladeTypes" {
     "topology-graph": Record<string, never>;
     "commit-list-fallback": Record<string, never>;
     "commit-details": { oid: string };
-    "diff": { source: DiffSource };
+    diff: { source: DiffSource };
     "viewer-nupkg": { filePath: string };
     "viewer-image": { filePath: string; oid?: string };
     "viewer-markdown": { filePath: string };
@@ -27,8 +27,8 @@ declare module "@/framework/layout/bladeTypes" {
     "viewer-plaintext": { filePath: string };
     "branch-manager": Record<string, never>;
     "repo-browser": { path?: string };
-    "settings": Record<string, never>;
-    "changelog": Record<string, never>;
+    settings: Record<string, never>;
+    changelog: Record<string, never>;
     "gitflow-cheatsheet": Record<string, never>;
     "init-repo": { directoryPath: string };
     "conventional-commit": { amend?: boolean };
@@ -41,9 +41,9 @@ declare module "@/framework/layout/bladeTypes" {
 // Re-export for backward compatibility
 export type {
   BladePropsMap,
+  BladeType,
   CoreBladeType,
   ExtensionBladeType,
-  BladeType,
   TypedBlade,
 } from "@/framework/layout/bladeTypes";
 export { isCoreBladeType } from "@/framework/layout/bladeTypes";

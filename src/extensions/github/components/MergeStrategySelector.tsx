@@ -1,5 +1,5 @@
-import { GitBranch, GitMerge, Layers } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { GitBranch, GitMerge, Layers } from "lucide-react";
 import { cn } from "@/framework/lib/utils";
 
 export type MergeMethod = "merge" | "squash" | "rebase";
@@ -38,10 +38,16 @@ interface MergeStrategySelectorProps {
   disabled?: boolean;
 }
 
-export function MergeStrategySelector({ value, onChange, disabled }: MergeStrategySelectorProps) {
+export function MergeStrategySelector({
+  value,
+  onChange,
+  disabled,
+}: MergeStrategySelectorProps) {
   return (
-    <fieldset role="radiogroup" aria-label="Merge strategy" className="space-y-2">
-      <legend className="text-xs font-medium text-ctp-subtext1 mb-2">Merge method</legend>
+    <fieldset aria-label="Merge strategy" className="space-y-2">
+      <legend className="text-xs font-medium text-ctp-subtext1 mb-2">
+        Merge method
+      </legend>
       {strategies.map((strategy) => {
         const isSelected = value === strategy.value;
         const Icon = strategy.icon;
@@ -72,8 +78,12 @@ export function MergeStrategySelector({ value, onChange, disabled }: MergeStrate
               )}
             />
             <div className="min-w-0">
-              <div className="text-sm font-medium text-ctp-text">{strategy.label}</div>
-              <div className="text-xs text-ctp-overlay0 mt-0.5">{strategy.description}</div>
+              <div className="text-sm font-medium text-ctp-text">
+                {strategy.label}
+              </div>
+              <div className="text-xs text-ctp-overlay0 mt-0.5">
+                {strategy.description}
+              </div>
             </div>
           </label>
         );

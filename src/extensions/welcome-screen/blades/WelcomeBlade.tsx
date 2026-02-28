@@ -9,7 +9,8 @@ export function WelcomeBlade() {
   // (e.g. Settings, Extension Manager from command palette or toolbar)
   const actorRef = useNavigationActorRef();
   const bladeStack = useSelector(actorRef, selectBladeStack);
-  const pushedBlade = bladeStack.length > 1 ? bladeStack[bladeStack.length - 1] : null;
+  const pushedBlade =
+    bladeStack.length > 1 ? bladeStack[bladeStack.length - 1] : null;
 
   // Show blades pushed via command palette / toolbar while on WelcomeView
   if (pushedBlade) {

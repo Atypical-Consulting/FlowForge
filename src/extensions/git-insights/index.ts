@@ -1,6 +1,6 @@
-import { lazy } from "react";
-import { BarChart3 } from "lucide-react";
 import { listen } from "@tauri-apps/api/event";
+import { BarChart3 } from "lucide-react";
+import { lazy } from "react";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { openBlade } from "@/framework/layout/bladeOpener";
 import { useGitOpsStore } from "../../core/stores/domain/git-ops";

@@ -1,8 +1,18 @@
-import { AlertTriangle, BookOpen, Flag, GitBranch, Play, Square, X } from "lucide-react";
+import {
+  AlertTriangle,
+  BookOpen,
+  Flag,
+  GitBranch,
+  Play,
+  Square,
+  X,
+} from "lucide-react";
 import { useEffect, useState } from "react";
-import { useGitOpsStore as useBranchStore } from "../../../core/stores/domain/git-ops";
-import { useGitOpsStore as useGitflowStore } from "../../../core/stores/domain/git-ops";
 import { useBladeNavigation } from "../../../core/hooks/useBladeNavigation";
+import {
+  useGitOpsStore as useBranchStore,
+  useGitOpsStore as useGitflowStore,
+} from "../../../core/stores/domain/git-ops";
 import { useGitflowWorkflow } from "../hooks/useGitflowWorkflow";
 import { FinishFlowDialog } from "./FinishFlowDialog";
 import { InitGitflowDialog } from "./InitGitflowDialog";
@@ -11,11 +21,16 @@ import { StartFlowDialog } from "./StartFlowDialog";
 type FlowType = "feature" | "release" | "hotfix";
 
 export function GitflowPanel() {
-  const { gitflowStatus: status, gitflowIsLoading: isLoading, gitflowError: error, refreshGitflow: refresh, clearGitflowError: clearError } =
-    useGitflowStore();
+  const {
+    gitflowStatus: status,
+    gitflowIsLoading: isLoading,
+    gitflowError: error,
+    refreshGitflow: refresh,
+    clearGitflowError: clearError,
+  } = useGitflowStore();
   const { abortGitflow: abort, isBusy: machineIsBusy } = useGitflowWorkflow();
   const { openBlade } = useBladeNavigation();
-  const branches = useBranchStore((s) => s.branchList);
+  const _branches = useBranchStore((s) => s.branchList);
   const [showStartDialog, setShowStartDialog] = useState<FlowType | null>(null);
   const [showFinishDialog, setShowFinishDialog] = useState<FlowType | null>(
     null,
@@ -25,7 +40,7 @@ export function GitflowPanel() {
   // Refresh gitflow status when branches change (includes checkout, create, delete)
   useEffect(() => {
     refresh();
-  }, [refresh, branches]);
+  }, [refresh]);
 
   if (!status) {
     return (
@@ -205,7 +220,9 @@ export function GitflowPanel() {
       <div className="pt-1.5 border-t border-ctp-surface0">
         <button
           type="button"
-          onClick={() => openBlade("gitflow-cheatsheet", {} as Record<string, never>)}
+          onClick={() =>
+            openBlade("gitflow-cheatsheet", {} as Record<string, never>)
+          }
           className="w-full flex items-center gap-2 px-2.5 py-1.5 text-sm text-left rounded hover:bg-ctp-surface0 transition-colors text-ctp-subtext1"
         >
           <BookOpen className="w-3.5 h-3.5" />

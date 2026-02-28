@@ -1,16 +1,16 @@
 import {
-  GitBranch,
-  ArrowUp,
-  ArrowDown,
   AlertTriangle,
+  ArrowDown,
+  ArrowUp,
   CheckCircle2,
-  Trash2,
   ExternalLink,
+  GitBranch,
+  Trash2,
 } from "lucide-react";
-import type { BranchHealthInfo } from "../types";
-import { commands } from "../../../bindings";
 import { toast } from "@/framework/stores/toast";
+import { commands } from "../../../bindings";
 import { useInsightsStore } from "../insightsStore";
+import type { BranchHealthInfo } from "../types";
 
 interface Props {
   branches: BranchHealthInfo[];
@@ -69,9 +69,7 @@ async function handleDelete(name: string) {
     toast.success(`Deleted branch ${name}`);
     useInsightsStore.getState().loadBranchHealth();
   } catch (e) {
-    toast.error(
-      `Delete failed: ${e instanceof Error ? e.message : String(e)}`,
-    );
+    toast.error(`Delete failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 }
 
@@ -122,9 +120,7 @@ export function BranchHealthOverview({ branches }: Props) {
                 )}
               </div>
               <div className="mt-0.5 flex items-center gap-2 text-[10px] text-ctp-subtext0">
-                <span>
-                  {formatRelativeDate(branch.lastCommitTimestampMs)}
-                </span>
+                <span>{formatRelativeDate(branch.lastCommitTimestampMs)}</span>
                 {(branch.ahead > 0 || branch.behind > 0) && (
                   <span className="flex items-center gap-1">
                     {branch.ahead > 0 && (

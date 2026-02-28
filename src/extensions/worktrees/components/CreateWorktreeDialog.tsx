@@ -1,8 +1,6 @@
 import { open } from "@tauri-apps/plugin-dialog";
 import { Folder } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useGitOpsStore as useBranchStore } from "../../../core/stores/domain/git-ops";
-import { useGitOpsStore as useWorktreeStore } from "../../../core/stores/domain/git-ops";
 import { Button } from "../../../core/components/ui/button";
 import {
   Dialog,
@@ -12,6 +10,10 @@ import {
   DialogTitle,
 } from "../../../core/components/ui/dialog";
 import { Input } from "../../../core/components/ui/input";
+import {
+  useGitOpsStore as useBranchStore,
+  useGitOpsStore as useWorktreeStore,
+} from "../../../core/stores/domain/git-ops";
 
 interface CreateWorktreeDialogProps {
   open: boolean;
@@ -23,7 +25,12 @@ export function CreateWorktreeDialog({
   onOpenChange,
 }: CreateWorktreeDialogProps) {
   const { branchList: branches, loadBranches } = useBranchStore();
-  const { createWorktree, worktreeIsLoading: isLoading, worktreeError: error, clearWorktreeError: clearError } = useWorktreeStore();
+  const {
+    createWorktree,
+    worktreeIsLoading: isLoading,
+    worktreeError: error,
+    clearWorktreeError: clearError,
+  } = useWorktreeStore();
 
   const [name, setName] = useState("");
   const [path, setPath] = useState("");
@@ -73,7 +80,9 @@ export function CreateWorktreeDialog({
     const result = await createWorktree({
       name: name.trim(),
       path: path.trim(),
-      branch: createNewBranch ? newBranchName.trim() || null : selectedBranch || null,
+      branch: createNewBranch
+        ? newBranchName.trim() || null
+        : selectedBranch || null,
       createBranch: createNewBranch,
     });
 
