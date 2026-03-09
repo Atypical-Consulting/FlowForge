@@ -555,8 +555,8 @@ pub async fn batch_delete_branches(
                     return Err("Cannot delete the current branch".to_string());
                 }
 
-                if !force {
-                    if let Some(ref head) = head_commit {
+                if !force
+                    && let Some(ref head) = head_commit {
                         let branch_commit = branch
                             .get()
                             .peel_to_commit()
@@ -568,7 +568,6 @@ pub async fn batch_delete_branches(
                             return Err(format!("Branch '{}' is not fully merged", name));
                         }
                     }
-                }
 
                 branch.delete().map_err(|e| e.message().to_string())?;
                 Ok(())

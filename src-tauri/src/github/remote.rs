@@ -37,9 +37,9 @@ pub fn parse_github_url(url: &str) -> Option<(String, String)> {
         .or_else(|| url.strip_prefix("git@GitHub.com:"))?;
 
     let clean = path.trim_end_matches(".git").trim_end_matches('/');
-    let mut parts = clean.splitn(2, '/');
-    let owner = parts.next()?;
-    let repo = parts.next()?;
+    let (owner, repo) = clean.split_once('/')?;
+    
+    
 
     if owner.is_empty() || repo.is_empty() {
         return None;
@@ -74,9 +74,9 @@ pub async fn github_detect_remotes(
         let mut github_remotes = Vec::new();
 
         for name in remotes.iter().flatten() {
-            if let Ok(remote) = repo.find_remote(name) {
-                if let Some(url) = remote.url() {
-                    if let Some((owner, repo_name)) = parse_github_url(url) {
+            if let Ok(remote) = repo.find_remote(name)
+                && let Some(url) = remote.url()
+                    && let Some((owner, repo_name)) = parse_github_url(url) {
                         github_remotes.push(GitHubRemoteInfo {
                             remote_name: name.to_string(),
                             owner,
@@ -84,8 +84,6 @@ pub async fn github_detect_remotes(
                             url: url.to_string(),
                         });
                     }
-                }
-            }
         }
 
         Ok(github_remotes)

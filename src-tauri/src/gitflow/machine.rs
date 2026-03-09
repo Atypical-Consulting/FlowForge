@@ -8,8 +8,10 @@ use crate::gitflow::error::GitflowError;
 /// The current state of the Gitflow workflow.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(tag = "type", content = "data")]
+#[derive(Default)]
 pub enum GitflowState {
     /// No active workflow (on main, develop, or other)
+    #[default]
     Idle,
     /// Working on a feature branch
     Feature { name: String },
@@ -19,11 +21,6 @@ pub enum GitflowState {
     Hotfix { name: String },
 }
 
-impl Default for GitflowState {
-    fn default() -> Self {
-        GitflowState::Idle
-    }
-}
 
 /// Events that trigger state transitions.
 #[allow(dead_code)]

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use specta::Type;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -81,8 +81,8 @@ impl RepositoryState {
     }
 
     /// Internal status fetch - always runs in spawn_blocking.
-    async fn get_status_internal(&self, path: &PathBuf) -> Result<RepoStatus, GitError> {
-        let path = path.clone();
+    async fn get_status_internal(&self, path: &Path) -> Result<RepoStatus, GitError> {
+        let path = path.to_path_buf();
 
         tokio::task::spawn_blocking(move || {
             let repo = git2::Repository::open(&path)?;
