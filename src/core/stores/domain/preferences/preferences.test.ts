@@ -21,7 +21,7 @@ vi.mock("../../toast", () => ({
   },
 }));
 
-import { resetAllStores } from "../../registry";
+import { resetAllStores } from "@/framework/stores/registry";
 import { usePreferencesStore } from "./index";
 import { DEFAULT_CHECKLIST } from "./review-checklist.slice";
 
