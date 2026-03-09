@@ -159,11 +159,10 @@ pub async fn start_release(
         // Check no active release
         for branch in repo.branches(Some(BranchType::Local))? {
             let (branch, _) = branch?;
-            if let Some(name) = branch.name()? {
-                if name.starts_with("release/") {
+            if let Some(name) = branch.name()?
+                && name.starts_with("release/") {
                     return Err(GitflowError::ReleaseInProgress(name.to_string()));
                 }
-            }
         }
 
         let branch_name = format!("release/{}", version);
@@ -279,11 +278,10 @@ pub async fn start_hotfix(
         // Check no active hotfix
         for branch in repo.branches(Some(BranchType::Local))? {
             let (branch, _) = branch?;
-            if let Some(bname) = branch.name()? {
-                if bname.starts_with("hotfix/") {
+            if let Some(bname) = branch.name()?
+                && bname.starts_with("hotfix/") {
                     return Err(GitflowError::HotfixInProgress(bname.to_string()));
                 }
-            }
         }
 
         let branch_name = format!("hotfix/{}", name);

@@ -83,8 +83,7 @@ fn branch_name_to_title(branch: &str) -> String {
 
     // Replace separators with spaces and capitalize first letter
     let title: String = stripped
-        .replace('-', " ")
-        .replace('_', " ");
+        .replace(['-', '_'], " ");
 
     let mut chars = title.chars();
     match chars.next() {
@@ -129,11 +128,10 @@ fn collect_commits_ahead(
         if oid == merge_base {
             break;
         }
-        if let Ok(commit) = repo.find_commit(oid) {
-            if let Some(summary) = commit.summary() {
+        if let Ok(commit) = repo.find_commit(oid)
+            && let Some(summary) = commit.summary() {
                 messages.push(summary.to_string());
             }
-        }
     }
 
     Ok(messages)

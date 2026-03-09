@@ -135,14 +135,12 @@ async fn get_commit_graph_impl(
 
         for branch_result in repo.branches(Some(git2::BranchType::Local))? {
             let (branch, _) = branch_result?;
-            if let Some(name) = branch.name()? {
-                if let Ok(reference) = branch.get().resolve() {
-                    if let Some(oid) = reference.target() {
+            if let Some(name) = branch.name()?
+                && let Ok(reference) = branch.get().resolve()
+                    && let Some(oid) = reference.target() {
                         branch_map.entry(oid).or_default().push(name.to_string());
                         branch_tips.push((oid, name.to_string()));
                     }
-                }
-            }
         }
 
         // ── 2. Identify HEAD and first-parent ancestors ──
@@ -188,8 +186,8 @@ async fn get_commit_graph_impl(
                 break;
             }
 
-            if let Ok(oid) = oid_result {
-                if let Ok(commit) = repo.find_commit(oid) {
+            if let Ok(oid) = oid_result
+                && let Ok(commit) = repo.find_commit(oid) {
                     let author = commit.author();
                     let parent_oids: Vec<String> =
                         commit.parent_ids().map(|id| id.to_string()).collect();
@@ -219,7 +217,6 @@ async fn get_commit_graph_impl(
                         ideological_branch: String::new(), // Will be set below
                     });
                 }
-            }
         }
 
         // ── 4. Ideological branch assignment (Ungit-style) ──

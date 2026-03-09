@@ -42,20 +42,18 @@ pub async fn list_conflict_files(
         let index = repo.index()?;
 
         let mut paths = Vec::new();
-        for conflict in index.conflicts()? {
-            if let Ok(conflict) = conflict {
-                // Prefer our path, then their, then ancestor
-                let path = conflict
-                    .our
-                    .as_ref()
-                    .or(conflict.their.as_ref())
-                    .or(conflict.ancestor.as_ref())
-                    .and_then(|entry| std::str::from_utf8(&entry.path).ok())
-                    .map(|s| s.to_string());
+        for conflict in index.conflicts()?.flatten() {
+            // Prefer our path, then their, then ancestor
+            let path = conflict
+                .our
+                .as_ref()
+                .or(conflict.their.as_ref())
+                .or(conflict.ancestor.as_ref())
+                .and_then(|entry| std::str::from_utf8(&entry.path).ok())
+                .map(|s| s.to_string());
 
-                if let Some(p) = path {
-                    paths.push(p);
-                }
+            if let Some(p) = path {
+                paths.push(p);
             }
         }
 

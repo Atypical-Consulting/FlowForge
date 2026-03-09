@@ -89,6 +89,7 @@ pub struct ChangelogCommit {
 /// Errors that can occur during changelog generation.
 #[derive(Debug, Error, Clone, Serialize, Deserialize, Type)]
 #[serde(tag = "type", content = "message")]
+#[allow(clippy::enum_variant_names)]
 pub enum ChangelogError {
     #[error("Git error: {0}")]
     GitError(String),
@@ -195,24 +196,21 @@ struct ParsedCommitInfo {
 /// Resolve a reference (tag, branch, or commit) to an Oid.
 fn resolve_ref(repo: &Repository, reference: &str) -> Result<Oid, ChangelogError> {
     // Try as tag first
-    if let Ok(tag_ref) = repo.find_reference(&format!("refs/tags/{}", reference)) {
-        if let Some(target) = tag_ref.target() {
+    if let Ok(tag_ref) = repo.find_reference(&format!("refs/tags/{}", reference))
+        && let Some(target) = tag_ref.target() {
             // Could be annotated tag, need to peel
-            if let Ok(obj) = repo.find_object(target, None) {
-                if let Ok(commit) = obj.peel_to_commit() {
+            if let Ok(obj) = repo.find_object(target, None)
+                && let Ok(commit) = obj.peel_to_commit() {
                     return Ok(commit.id());
                 }
-            }
             return Ok(target);
         }
-    }
 
     // Try as branch
-    if let Ok(branch_ref) = repo.find_reference(&format!("refs/heads/{}", reference)) {
-        if let Some(target) = branch_ref.target() {
+    if let Ok(branch_ref) = repo.find_reference(&format!("refs/heads/{}", reference))
+        && let Some(target) = branch_ref.target() {
             return Ok(target);
         }
-    }
 
     // Try as direct commit OID
     if let Ok(oid) = Oid::from_str(reference) {
@@ -220,11 +218,10 @@ fn resolve_ref(repo: &Repository, reference: &str) -> Result<Oid, ChangelogError
     }
 
     // Try revparse
-    if let Ok(obj) = repo.revparse_single(reference) {
-        if let Ok(commit) = obj.peel_to_commit() {
+    if let Ok(obj) = repo.revparse_single(reference)
+        && let Ok(commit) = obj.peel_to_commit() {
             return Ok(commit.id());
         }
-    }
 
     Err(ChangelogError::GitError(format!(
         "Could not resolve reference: {}",
@@ -261,11 +258,10 @@ fn get_commits_in_range(
         let oid = oid_result?;
 
         // Stop if we've reached the 'from' commit
-        if let Some(from_id) = from_oid {
-            if oid == from_id {
+        if let Some(from_id) = from_oid
+            && oid == from_id {
                 break;
             }
-        }
 
         // Safety limit
         count += 1;
@@ -323,18 +319,15 @@ pub fn find_previous_tag(repo: &Repository, current: &str) -> Option<String> {
 
     for name in tag_names.iter().flatten() {
         let ref_name = format!("refs/tags/{}", name);
-        if let Ok(reference) = repo.find_reference(&ref_name) {
-            if let Some(target) = reference.target() {
-                if let Ok(obj) = repo.find_object(target, None) {
-                    if let Ok(commit) = obj.peel_to_commit() {
+        if let Ok(reference) = repo.find_reference(&ref_name)
+            && let Some(target) = reference.target()
+                && let Ok(obj) = repo.find_object(target, None)
+                    && let Ok(commit) = obj.peel_to_commit() {
                         let time = commit.time().seconds();
                         if time < current_time {
                             tags_with_time.push((name.to_string(), time));
                         }
                     }
-                }
-            }
-        }
     }
 
     // Sort by time descending and get the most recent one before current

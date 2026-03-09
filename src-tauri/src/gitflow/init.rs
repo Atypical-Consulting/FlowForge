@@ -178,15 +178,14 @@ pub async fn init_gitflow(
             match repo.find_branch(&config.develop_branch, git2::BranchType::Local) {
                 Ok(_) => {
                     // Develop exists - check if there's a different develop branch configured
-                    if let Some(existing_config) = get_gitflow_config(&repo) {
-                        if existing_config.develop_branch != config.develop_branch {
+                    if let Some(existing_config) = get_gitflow_config(&repo)
+                        && existing_config.develop_branch != config.develop_branch {
                             return Err(GitflowError::Git(format!(
                             "Gitflow already initialized with develop branch '{}', cannot change to '{}'",
                             existing_config.develop_branch,
                             config.develop_branch
                         )));
                         }
-                    }
                     false // Branch exists, not created
                 }
                 Err(_) => {

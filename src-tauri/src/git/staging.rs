@@ -702,13 +702,12 @@ pub async fn stage_lines(
                         }
                         crate::git::diff::DiffLineOrigin::Addition => {
                             // Include addition only if its new_lineno is in selected ranges
-                            if let Some(new_no) = line.new_lineno {
-                                if selected_new_lines.contains(&new_no) {
+                            if let Some(new_no) = line.new_lineno
+                                && selected_new_lines.contains(&new_no) {
                                     result_lines.push(
                                         line.content.trim_end_matches('\n').to_string(),
                                     );
                                 }
-                            }
                         }
                         crate::git::diff::DiffLineOrigin::Deletion => {
                             // Remove from output (stage deletion) only if old_lineno is in range
@@ -886,26 +885,24 @@ pub async fn unstage_lines(
                         crate::git::diff::DiffLineOrigin::Addition => {
                             // If new_lineno is in selected ranges, REVERT (don't include)
                             // Otherwise keep it staged
-                            if let Some(new_no) = line.new_lineno {
-                                if !selected_lines.contains(&new_no) {
+                            if let Some(new_no) = line.new_lineno
+                                && !selected_lines.contains(&new_no) {
                                     result_lines.push(
                                         line.content.trim_end_matches('\n').to_string(),
                                     );
                                 }
-                            }
                         }
                         crate::git::diff::DiffLineOrigin::Deletion => {
                             // If old_lineno is in selected ranges, REVERT (put line back)
                             // Otherwise keep it deleted (staged)
-                            if let Some(old_no) = line.old_lineno {
-                                if selected_lines.contains(&old_no) {
+                            if let Some(old_no) = line.old_lineno
+                                && selected_lines.contains(&old_no) {
                                     // Revert the deletion: restore original line
                                     if old_line_idx < head_lines.len() {
                                         result_lines
                                             .push(head_lines[old_line_idx].to_string());
                                     }
                                 }
-                            }
                             old_line_idx += 1;
                         }
                     }
