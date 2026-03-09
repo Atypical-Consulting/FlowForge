@@ -8,11 +8,11 @@ const mockStore = vi.hoisted(() => ({
   save: vi.fn(() => Promise.resolve()),
 }));
 
-vi.mock("../../../lib/store", () => ({
+vi.mock("@/framework/stores/persistence/tauri", () => ({
   getStore: vi.fn(() => Promise.resolve(mockStore)),
 }));
 
-vi.mock("../../toast", () => ({
+vi.mock("@/framework/stores/toast", () => ({
   toast: {
     error: vi.fn(),
     warning: vi.fn(),
@@ -21,7 +21,7 @@ vi.mock("../../toast", () => ({
   },
 }));
 
-import { resetAllStores } from "../../registry";
+import { resetAllStores } from "@/framework/stores/registry";
 import { usePreferencesStore } from "./index";
 import { DEFAULT_CHECKLIST } from "./review-checklist.slice";
 
