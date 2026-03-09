@@ -4,15 +4,15 @@
 @import "@fontsource-variable/geist";
 
 @theme {
-    --font-sans:
-        "Geist Variable", system-ui, -apple-system, BlinkMacSystemFont,
-        "Segoe UI", Roboto, sans-serif;
-    --font-mono:
-        "JetBrains Mono Variable", ui-monospace, "SF Mono", "Monaco",
-        "Cascadia Code", "Consolas", monospace;
-    --animate-dirty-pulse: dirty-pulse 2s ease-in-out infinite;
-    --animate-gentle-pulse: gentle-pulse 3s ease-in-out infinite;
-    --animate-stage-flash: stage-flash 0.3s ease-out;
+  --font-sans:
+    "Geist Variable", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
+  --font-mono:
+    "JetBrains Mono Variable", ui-monospace, "SF Mono", "Monaco",
+    "Cascadia Code", "Consolas", monospace;
+  --animate-dirty-pulse: dirty-pulse 2s ease-in-out infinite;
+  --animate-gentle-pulse: gentle-pulse 3s ease-in-out infinite;
+  --animate-stage-flash: stage-flash 0.3s ease-out;
 }
 
 /*
