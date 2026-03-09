@@ -134,22 +134,19 @@ pub async fn merge_branch(
         let index = repo.index()?;
         if index.has_conflicts() {
             let mut conflicted_files = Vec::new();
-            for conflict in index.conflicts()? {
-                if let Ok(conflict) = conflict {
-                    if let Some(ancestor) = conflict.ancestor {
-                        if let Some(path) = std::str::from_utf8(&ancestor.path).ok() {
-                            conflicted_files.push(path.to_string());
-                        }
-                    } else if let Some(our) = conflict.our {
-                        if let Some(path) = std::str::from_utf8(&our.path).ok() {
-                            conflicted_files.push(path.to_string());
-                        }
-                    } else if let Some(their) = conflict.their {
-                        if let Some(path) = std::str::from_utf8(&their.path).ok() {
-                            conflicted_files.push(path.to_string());
-                        }
+            for conflict in (index.conflicts()?).flatten() {
+                if let Some(ancestor) = conflict.ancestor {
+                    if let Ok(path) = std::str::from_utf8(&ancestor.path) {
+                        conflicted_files.push(path.to_string());
                     }
-                }
+                } else if let Some(our) = conflict.our {
+                    if let Ok(path) = std::str::from_utf8(&our.path) {
+                        conflicted_files.push(path.to_string());
+                    }
+                } else if let Some(their) = conflict.their
+                    && let Ok(path) = std::str::from_utf8(&their.path) {
+                        conflicted_files.push(path.to_string());
+                    }
             }
 
             return Ok(MergeResult {
@@ -219,13 +216,11 @@ pub async fn get_merge_status(state: State<'_, RepositoryState>) -> Result<Merge
         if in_progress {
             let index = repo.index()?;
             for conflict in index.conflicts()? {
-                if let Ok(conflict) = conflict {
-                    if let Some(our) = conflict.our {
-                        if let Some(path) = std::str::from_utf8(&our.path).ok() {
+                if let Ok(conflict) = conflict
+                    && let Some(our) = conflict.our
+                        && let Ok(path) = std::str::from_utf8(&our.path) {
                             conflicted_files.push(path.to_string());
                         }
-                    }
-                }
             }
         }
 

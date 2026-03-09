@@ -16,6 +16,7 @@ pub struct GitHubUserRef {
 
 /// Label as returned by GitHub API.
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct GitHubLabel {
     pub id: u64,
     pub name: String,
@@ -342,6 +343,7 @@ pub struct AuthResult {
 /// Internal struct for deserializing GitHub /user API response.
 /// Not exposed to the frontend (no Type derive).
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct GitHubUser {
     pub login: String,
     pub avatar_url: String,

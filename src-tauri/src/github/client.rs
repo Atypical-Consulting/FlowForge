@@ -202,6 +202,7 @@ pub fn parse_next_page(link_header: &str) -> Option<u32> {
 /// Extract rate limit information from response headers.
 ///
 /// Returns `(remaining, limit)` as `(Option<u32>, Option<u32>)`.
+#[allow(dead_code)]
 pub fn extract_rate_limit(resp: &reqwest::Response) -> (Option<u32>, Option<u32>) {
     let remaining = resp
         .headers()

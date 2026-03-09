@@ -124,23 +124,15 @@ pub async fn fetch_nuget_info(package_id: String) -> Result<NugetPackageInfo, Gi
         .timeout(Duration::from_secs(5))
         .send()
         .await
-    {
-        if reg_resp.status().is_success() {
-            if let Ok(reg_data) = reg_resp.json::<RegistrationIndex>().await {
-                if let Some(pages) = reg_data.items {
-                    if let Some(page) = pages.first() {
-                        if let Some(items) = &page.items {
-                            if let Some(leaf) = items.last() {
-                                if let Some(entry) = &leaf.catalog_entry {
+        && reg_resp.status().is_success()
+            && let Ok(reg_data) = reg_resp.json::<RegistrationIndex>().await
+                && let Some(pages) = reg_data.items
+                    && let Some(page) = pages.first()
+                        && let Some(items) = &page.items
+                            && let Some(leaf) = items.last()
+                                && let Some(entry) = &leaf.catalog_entry {
                                     published = entry.published.clone().unwrap_or_default();
                                 }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     // Parse authors (can be string or array in NuGet API)
     let authors = match pkg.authors {

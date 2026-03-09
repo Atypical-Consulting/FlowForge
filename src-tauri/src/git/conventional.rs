@@ -560,12 +560,11 @@ pub fn extract_scopes_from_history(
 
     for commit in commits {
         // Try to parse each commit message
-        if let Ok(parsed) = git_conventional::Commit::parse(&commit.message_subject) {
-            if let Some(scope) = parsed.scope() {
+        if let Ok(parsed) = git_conventional::Commit::parse(&commit.message_subject)
+            && let Some(scope) = parsed.scope() {
                 let scope_str = scope.to_string();
                 *scope_counts.entry(scope_str).or_insert(0) += 1;
             }
-        }
     }
 
     // Filter out scopes with count < 2 (likely typos)

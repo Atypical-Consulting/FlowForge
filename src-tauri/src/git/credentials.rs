@@ -32,11 +32,10 @@ pub fn create_credentials_callback(
         // Try credential helper from git config
         if allowed_types.contains(git2::CredentialType::USER_PASS_PLAINTEXT) && !tried_cred_helper {
             tried_cred_helper = true;
-            if let Ok(cfg) = git2::Config::open_default() {
-                if let Ok(cred) = git2::Cred::credential_helper(&cfg, url, username) {
+            if let Ok(cfg) = git2::Config::open_default()
+                && let Ok(cred) = git2::Cred::credential_helper(&cfg, url, username) {
                     return Ok(cred);
                 }
-            }
         }
 
         // Fallback: shell out to `git credential fill`

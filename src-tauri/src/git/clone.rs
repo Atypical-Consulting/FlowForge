@@ -49,16 +49,16 @@ fn extract_repo_name(url: &str) -> Option<String> {
     // Handle SSH format: git@host:user/repo.git
     let path_part = if url.contains('@') && url.contains(':') && !url.contains("://") {
         // SSH format
-        url.split(':').last()?
+        url.split(':').next_back()?
     } else {
         // HTTPS or other URL formats
-        url.split('/').last()?
+        url.split('/').next_back()?
     };
 
     // Get the repo name (last segment) and strip .git suffix
     let repo_name = path_part
         .split('/')
-        .last()
+        .next_back()
         .unwrap_or(path_part)
         .trim_end_matches(".git");
 
@@ -119,13 +119,12 @@ pub async fn clone_repository(
         }
     } else {
         // Create parent directories if they don't exist
-        if let Some(parent) = dest_path.parent() {
-            if !parent.exists() {
+        if let Some(parent) = dest_path.parent()
+            && !parent.exists() {
                 std::fs::create_dir_all(parent).map_err(|e| {
                     GitError::OperationFailed(format!("Failed to create parent directories: {}", e))
                 })?;
             }
-        }
     }
 
     // Send started event

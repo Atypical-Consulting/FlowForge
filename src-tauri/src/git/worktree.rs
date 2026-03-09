@@ -165,11 +165,10 @@ pub fn list_worktrees_internal(repo_path: &Path) -> Result<Vec<WorktreeInfo>, Gi
     // Add linked worktrees
     if let Ok(wt_names) = repo.worktrees() {
         for name in wt_names.iter().flatten() {
-            if let Ok(wt) = repo.find_worktree(name) {
-                if let Ok(info) = get_worktree_info(&repo, &wt) {
+            if let Ok(wt) = repo.find_worktree(name)
+                && let Ok(info) = get_worktree_info(&repo, &wt) {
                     worktrees.push(info);
                 }
-            }
         }
     }
 
@@ -242,14 +241,13 @@ pub fn delete_worktree_internal(
     };
 
     // Check if worktree is dirty (unless forcing)
-    if !force {
-        if let Ok(wt_repo) = git2::Repository::open(worktree.path()) {
+    if !force
+        && let Ok(wt_repo) = git2::Repository::open(worktree.path()) {
             let status = get_worktree_status(&wt_repo);
             if status == WorktreeStatus::Dirty || status == WorktreeStatus::Conflicts {
                 return Err(GitError::DirtyWorkingDirectory);
             }
         }
-    }
 
     // Prune worktree
     let mut prune_opts = git2::WorktreePruneOptions::new();
@@ -260,12 +258,11 @@ pub fn delete_worktree_internal(
     worktree.prune(Some(&mut prune_opts))?;
 
     // Delete branch if requested
-    if let Some(branch_name) = branch_to_delete {
-        if let Ok(mut branch) = repo.find_branch(&branch_name, git2::BranchType::Local) {
+    if let Some(branch_name) = branch_to_delete
+        && let Ok(mut branch) = repo.find_branch(&branch_name, git2::BranchType::Local) {
             // Silent fail is OK, branch might not be merged or might be checked out elsewhere
             let _ = branch.delete();
         }
-    }
 
     Ok(())
 }

@@ -49,8 +49,8 @@ pub async fn list_repo_files(
         let mut files = Vec::new();
 
         // 1. Collect entries from HEAD tree (if it exists)
-        if let Ok(head) = repo.head() {
-            if let Ok(root_tree) = head.peel_to_tree() {
+        if let Ok(head) = repo.head()
+            && let Ok(root_tree) = head.peel_to_tree() {
                 let target_tree_opt = if path.is_empty() {
                     Some(root_tree)
                 } else {
@@ -101,7 +101,6 @@ pub async fn list_repo_files(
                     }
                 }
             }
-        }
 
         // 2. Merge in working-directory entries not already in the tree
         if let Some(workdir) = repo.workdir() {
@@ -111,8 +110,8 @@ pub async fn list_repo_files(
                 workdir.join(&path)
             };
 
-            if dir_to_scan.is_dir() {
-                if let Ok(read_dir) = std::fs::read_dir(&dir_to_scan) {
+            if dir_to_scan.is_dir()
+                && let Ok(read_dir) = std::fs::read_dir(&dir_to_scan) {
                     for dir_entry in read_dir.flatten() {
                         let name = dir_entry.file_name().to_string_lossy().into_owned();
                         // Skip hidden files/dirs (like .git) and already-known entries
@@ -124,7 +123,7 @@ pub async fn list_repo_files(
                         } else {
                             format!("{}/{}", path, name)
                         };
-                        let is_dir = dir_entry.file_type().map_or(false, |t| t.is_dir());
+                        let is_dir = dir_entry.file_type().is_ok_and(|t| t.is_dir());
                         let size = if is_dir {
                             0
                         } else {
@@ -138,7 +137,6 @@ pub async fn list_repo_files(
                         }
                     }
                 }
-            }
         }
 
         // Sort: dirs first alphabetically, then files alphabetically

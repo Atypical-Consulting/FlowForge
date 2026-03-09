@@ -170,7 +170,7 @@ pub async fn create_commit(
                 }
                 Err(e) if e.code() == git2::ErrorCode::UnbornBranch => {
                     // First commit - check if tree has any entries
-                    tree.len() > 0
+                    !tree.is_empty()
                 }
                 Err(e) => return Err(e.into()),
             }
