@@ -58,6 +58,7 @@ export function WorkflowNavigation({ className }: WorkflowNavigationProps) {
         const Icon = WORKFLOW_ICONS[id] ?? Files;
         return (
           <button
+            type="button"
             key={id}
             onClick={() =>
               actorRef.send({ type: "SWITCH_WORKFLOW", workflow: id })

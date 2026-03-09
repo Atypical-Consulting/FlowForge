@@ -40,7 +40,10 @@ function AheadBehindBadge({
       gitHookBus.onDid("fetch", bump, "ahead-behind-badge"),
       gitHookBus.onDid("pull", bump, "ahead-behind-badge"),
     ];
-    return () => unsubs.forEach((u) => u());
+    return () =>
+      unsubs.forEach((u) => {
+        u();
+      });
   }, [isRemote]);
 
   if (!counts || (counts.ahead === 0 && counts.behind === 0)) return null;
