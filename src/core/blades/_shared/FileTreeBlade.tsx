@@ -173,7 +173,7 @@ function TreeView({
         <FileRow
           key={fileNode.path}
           file={fileNode.file!}
-          onSelect={() => onSelectFile(fileNode.file?.path)}
+          onSelect={() => onSelectFile(fileNode.file?.path ?? "")}
           isSelected={selectedFile === fileNode.file?.path}
         />
       ))}

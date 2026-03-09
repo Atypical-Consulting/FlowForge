@@ -72,9 +72,9 @@ function AheadBehindBadge({
 
 interface BranchItemProps {
   branch: EnrichedBranch;
-  onCheckout: () => Promise<unknown> | undefined;
-  onDelete: () => Promise<unknown> | undefined;
-  onMerge: () => Promise<unknown> | undefined;
+  onCheckout: () => Promise<unknown> | void;
+  onDelete: () => Promise<unknown> | void;
+  onMerge: () => Promise<unknown> | void;
   onTogglePin?: () => void;
   disabled?: boolean;
 }
@@ -94,7 +94,7 @@ export function BranchItem({
 
   const handleAction = async (
     action: "checkout" | "merge" | "delete",
-    fn: () => Promise<unknown> | undefined,
+    fn: () => Promise<unknown> | void,
   ) => {
     setLoadingAction(action);
     try {
