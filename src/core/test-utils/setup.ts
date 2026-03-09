@@ -23,6 +23,26 @@ if (!globalThis.crypto?.randomUUID) {
   });
 }
 
+// Polyfill document.queryCommandSupported for jsdom (used by Monaco editor clipboard)
+if (typeof document !== "undefined" && !document.queryCommandSupported) {
+  document.queryCommandSupported = () => false;
+}
+
+// Polyfill matchMedia for jsdom (used by Monaco editor theme detection)
+if (typeof window !== "undefined" && !window.matchMedia) {
+  window.matchMedia = (query: string) =>
+    ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }) as MediaQueryList;
+}
+
 // Polyfill ResizeObserver for jsdom (used by react-resizable-panels)
 if (!globalThis.ResizeObserver) {
   globalThis.ResizeObserver = class ResizeObserver {
