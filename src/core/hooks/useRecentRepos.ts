@@ -15,12 +15,7 @@ export function useRecentRepos() {
   const [recentRepos, setRecentRepos] = useState<RecentRepo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load recent repos on mount
-  useEffect(() => {
-    loadRecentRepos();
-  }, [loadRecentRepos]);
-
-  const loadRecentRepos = async () => {
+  const loadRecentRepos = useCallback(async () => {
     try {
       const store = await getStore();
       const repos = await store.get<RecentRepo[]>(RECENT_REPOS_KEY);
@@ -31,7 +26,12 @@ export function useRecentRepos() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  // Load recent repos on mount
+  useEffect(() => {
+    loadRecentRepos();
+  }, [loadRecentRepos]);
 
   const addRecentRepo = useCallback(async (path: string, name?: string) => {
     try {

@@ -52,8 +52,8 @@ export function BranchList({
   const {
     mergeResult: lastMergeResult,
     startMerge,
-    abort: abortMerge,
-    isMerging: mergeIsLoading,
+    abort: _abortMerge,
+    isMerging: _mergeIsLoading,
   } = useMergeWorkflow();
   const [mergingBranch, setMergingBranch] = useState<string | null>(null);
 
