@@ -1,57 +1,131 @@
-import { listen } from "@tauri-apps/api/event";
 import { useQueryClient } from "@tanstack/react-query";
+import { listen } from "@tauri-apps/api/event";
 import { useSelector } from "@xstate/react";
 import { Suspense, useCallback, useEffect } from "react";
 import "./core/workflows";
 import "./core/commands";
 import "./core/commands/toolbar-actions";
 import "./core/blades/_discovery";
+import { gitHookBus } from "@/core/services/gitHookBus";
 import { CommandPalette } from "@/framework/command-palette/components";
+import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
+import { BladeRenderer } from "@/framework/layout/BladeRenderer";
+import { useBladeRegistry } from "@/framework/layout/bladeRegistry";
+import {
+  getNavigationActor,
+  NavigationProvider,
+  useNavigationActorRef,
+} from "@/framework/layout/navigation/context";
+import { selectBladeStack } from "@/framework/layout/navigation/selectors";
+import { commands as tauriCommands } from "./bindings";
 import { Header } from "./core/components/Header";
 import { RepositoryView } from "./core/components/RepositoryView";
 import { ContextMenuPortal } from "./core/components/ui/ContextMenu";
 import { StatusBar } from "./core/components/ui/StatusBar";
 import { ToastContainer } from "./core/components/ui/ToastContainer";
 import { useKeyboardShortcuts } from "./core/hooks/useKeyboardShortcuts";
-import { BladeRenderer } from "@/framework/layout/BladeRenderer";
-import { getNavigationActor, NavigationProvider, useNavigationActorRef } from "@/framework/layout/navigation/context";
-import { selectBladeStack } from "@/framework/layout/navigation/selectors";
-import { usePreferencesStore as useBranchMetadataStore } from "./core/stores/domain/preferences";
-import { usePreferencesStore as useNavigationStore } from "./core/stores/domain/preferences";
-import { useGitOpsStore } from "./core/stores/domain/git-ops";
-import { useGitOpsStore as useRepositoryStore } from "./core/stores/domain/git-ops";
-import { usePreferencesStore as useReviewChecklistStore } from "./core/stores/domain/preferences";
-import { usePreferencesStore as useSettingsStore } from "./core/stores/domain/preferences";
-import { usePreferencesStore as useThemeStore } from "./core/stores/domain/preferences";
-import { useGitOpsStore as useUndoStore } from "./core/stores/domain/git-ops";
-import { useBladeRegistry } from "@/framework/layout/bladeRegistry";
 import { modKeyLabel } from "./core/lib/platform";
-import { useExtensionHost, configureExtensionHost } from "./extensions";
-import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
-import { gitHookBus } from "@/core/services/gitHookBus";
-import { commands as tauriCommands } from "./bindings";
-import { onActivate as viewerCodeActivate, onDeactivate as viewerCodeDeactivate } from "./extensions/viewer-code";
-import { onActivate as viewerMarkdownActivate, onDeactivate as viewerMarkdownDeactivate } from "./extensions/viewer-markdown";
-import { onActivate as viewer3dActivate, onDeactivate as viewer3dDeactivate } from "./extensions/viewer-3d";
-import { onActivate as ccActivate, onDeactivate as ccDeactivate } from "./extensions/conventional-commits";
-import { onActivate as gitflowActivate, onDeactivate as gitflowDeactivate } from "./extensions/gitflow";
-import { onActivate as worktreesActivate, onDeactivate as worktreesDeactivate } from "./extensions/worktrees";
-import { onActivate as githubActivate, onDeactivate as githubDeactivate } from "./extensions/github";
-import { onActivate as initRepoActivate, onDeactivate as initRepoDeactivate } from "./extensions/init-repo";
-import { onActivate as viewerImageActivate, onDeactivate as viewerImageDeactivate } from "./extensions/viewer-image";
-import { onActivate as viewerNupkgActivate, onDeactivate as viewerNupkgDeactivate } from "./extensions/viewer-nupkg";
-import { onActivate as viewerPlaintextActivate, onDeactivate as viewerPlaintextDeactivate } from "./extensions/viewer-plaintext";
-import { onActivate as welcomeActivate, onDeactivate as welcomeDeactivate } from "./extensions/welcome-screen";
-import { onActivate as topologyActivate, onDeactivate as topologyDeactivate } from "./extensions/topology";
-import { onActivate as conflictActivate, onDeactivate as conflictDeactivate } from "./extensions/conflict-resolution";
-import { onActivate as insightsActivate, onDeactivate as insightsDeactivate } from "./extensions/git-insights";
-import { onActivate as repositoryExtActivate, onDeactivate as repositoryExtDeactivate } from "./extensions/repository";
-import { onActivate as branchesExtActivate, onDeactivate as branchesExtDeactivate } from "./extensions/branches";
-import { onActivate as syncExtActivate, onDeactivate as syncExtDeactivate } from "./extensions/sync";
-import { onActivate as diffExtActivate, onDeactivate as diffExtDeactivate } from "./extensions/diff";
-import { onActivate as commitsExtActivate, onDeactivate as commitsExtDeactivate } from "./extensions/commits";
-import { onActivate as stashExtActivate, onDeactivate as stashExtDeactivate } from "./extensions/stash";
-import { onActivate as tagsExtActivate, onDeactivate as tagsExtDeactivate } from "./extensions/tags";
+import {
+  useGitOpsStore,
+  useGitOpsStore as useRepositoryStore,
+  useGitOpsStore as useUndoStore,
+} from "./core/stores/domain/git-ops";
+import {
+  usePreferencesStore as useBranchMetadataStore,
+  usePreferencesStore as useNavigationStore,
+  usePreferencesStore as useReviewChecklistStore,
+  usePreferencesStore as useSettingsStore,
+  usePreferencesStore as useThemeStore,
+} from "./core/stores/domain/preferences";
+import { configureExtensionHost, useExtensionHost } from "./extensions";
+import {
+  onActivate as branchesExtActivate,
+  onDeactivate as branchesExtDeactivate,
+} from "./extensions/branches";
+import {
+  onActivate as commitsExtActivate,
+  onDeactivate as commitsExtDeactivate,
+} from "./extensions/commits";
+import {
+  onActivate as conflictActivate,
+  onDeactivate as conflictDeactivate,
+} from "./extensions/conflict-resolution";
+import {
+  onActivate as ccActivate,
+  onDeactivate as ccDeactivate,
+} from "./extensions/conventional-commits";
+import {
+  onActivate as diffExtActivate,
+  onDeactivate as diffExtDeactivate,
+} from "./extensions/diff";
+import {
+  onActivate as insightsActivate,
+  onDeactivate as insightsDeactivate,
+} from "./extensions/git-insights";
+import {
+  onActivate as gitflowActivate,
+  onDeactivate as gitflowDeactivate,
+} from "./extensions/gitflow";
+import {
+  onActivate as githubActivate,
+  onDeactivate as githubDeactivate,
+} from "./extensions/github";
+import {
+  onActivate as initRepoActivate,
+  onDeactivate as initRepoDeactivate,
+} from "./extensions/init-repo";
+import {
+  onActivate as repositoryExtActivate,
+  onDeactivate as repositoryExtDeactivate,
+} from "./extensions/repository";
+import {
+  onActivate as stashExtActivate,
+  onDeactivate as stashExtDeactivate,
+} from "./extensions/stash";
+import {
+  onActivate as syncExtActivate,
+  onDeactivate as syncExtDeactivate,
+} from "./extensions/sync";
+import {
+  onActivate as tagsExtActivate,
+  onDeactivate as tagsExtDeactivate,
+} from "./extensions/tags";
+import {
+  onActivate as topologyActivate,
+  onDeactivate as topologyDeactivate,
+} from "./extensions/topology";
+import {
+  onActivate as viewer3dActivate,
+  onDeactivate as viewer3dDeactivate,
+} from "./extensions/viewer-3d";
+import {
+  onActivate as viewerCodeActivate,
+  onDeactivate as viewerCodeDeactivate,
+} from "./extensions/viewer-code";
+import {
+  onActivate as viewerImageActivate,
+  onDeactivate as viewerImageDeactivate,
+} from "./extensions/viewer-image";
+import {
+  onActivate as viewerMarkdownActivate,
+  onDeactivate as viewerMarkdownDeactivate,
+} from "./extensions/viewer-markdown";
+import {
+  onActivate as viewerNupkgActivate,
+  onDeactivate as viewerNupkgDeactivate,
+} from "./extensions/viewer-nupkg";
+import {
+  onActivate as viewerPlaintextActivate,
+  onDeactivate as viewerPlaintextDeactivate,
+} from "./extensions/viewer-plaintext";
+import {
+  onActivate as welcomeActivate,
+  onDeactivate as welcomeDeactivate,
+} from "./extensions/welcome-screen";
+import {
+  onActivate as worktreesActivate,
+  onDeactivate as worktreesDeactivate,
+} from "./extensions/worktrees";
 
 // Configure ExtensionHost with Tauri-specific discovery
 configureExtensionHost({
@@ -68,12 +142,17 @@ function WelcomeFallback() {
   const { openRepository } = useGitOpsStore();
   const actorRef = useNavigationActorRef();
   const bladeStack = useSelector(actorRef, selectBladeStack);
-  const pushedBlade = bladeStack.length > 1 ? bladeStack[bladeStack.length - 1] : null;
+  const pushedBlade =
+    bladeStack.length > 1 ? bladeStack[bladeStack.length - 1] : null;
 
   const openDialog = useCallback(async () => {
     const { open } = await import("@tauri-apps/plugin-dialog");
     const { commands } = await import("./bindings");
-    const selected = await open({ directory: true, multiple: false, title: "Open Git Repository" });
+    const selected = await open({
+      directory: true,
+      multiple: false,
+      title: "Open Git Repository",
+    });
     if (selected && typeof selected === "string") {
       const isRepo = await commands.isGitRepository(selected);
       if (isRepo.status === "ok" && isRepo.data) {
@@ -85,7 +164,8 @@ function WelcomeFallback() {
   useEffect(() => {
     const handler = () => openDialog();
     document.addEventListener("open-repository-dialog", handler);
-    return () => document.removeEventListener("open-repository-dialog", handler);
+    return () =>
+      document.removeEventListener("open-repository-dialog", handler);
   }, [openDialog]);
 
   // Render blades pushed via command palette / toolbar (e.g. Extension Manager, Settings)
@@ -161,7 +241,10 @@ function App() {
         (defaultTab === "topology" || defaultTab === "history") &&
         useBladeRegistry.getState().items.has("topology-graph")
       ) {
-        getNavigationActor().send({ type: "SWITCH_WORKFLOW", workflow: "topology" });
+        getNavigationActor().send({
+          type: "SWITCH_WORKFLOW",
+          workflow: "topology",
+        });
       }
     });
     initNavigation();
@@ -344,7 +427,14 @@ function App() {
       activate: tagsExtActivate,
       deactivate: tagsExtDeactivate,
     });
-  }, [initTheme, initSettings, initNavigation, initMetadata, initChecklist, registerBuiltIn]);
+  }, [
+    initTheme,
+    initSettings,
+    initNavigation,
+    initMetadata,
+    initChecklist,
+    registerBuiltIn,
+  ]);
 
   // Discover and activate extensions when a repository is opened
   useEffect(() => {

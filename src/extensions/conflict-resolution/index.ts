@@ -1,9 +1,9 @@
-import { lazy } from "react";
 import { AlertTriangle } from "lucide-react";
+import { lazy } from "react";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { openBlade } from "@/framework/layout/bladeOpener";
-import { useConflictStore } from "./store";
 import { useGitOpsStore } from "../../core/stores/domain/git-ops";
+import { useConflictStore } from "./store";
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {
   const ConflictResolutionBlade = lazy(() =>

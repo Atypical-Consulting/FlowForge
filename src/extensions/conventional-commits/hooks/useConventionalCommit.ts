@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { debounce } from "../../../core/lib/utils";
 import {
-  COMMIT_TYPES,
   COMMIT_TYPE_LABELS,
+  COMMIT_TYPES,
   type CommitType,
   useConventionalStore,
 } from "../store";

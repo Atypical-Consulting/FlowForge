@@ -1,6 +1,9 @@
 import { DiffEditor, type DiffOnMount } from "@monaco-editor/react";
 import { useEffect, useMemo, useRef } from "react";
-import { MONACO_COMMON_OPTIONS, MONACO_THEME } from "../../../../core/lib/monacoConfig";
+import {
+  MONACO_COMMON_OPTIONS,
+  MONACO_THEME,
+} from "../../../../core/lib/monacoConfig";
 import "../../../../core/lib/monacoTheme";
 
 interface ConflictDiffViewProps {

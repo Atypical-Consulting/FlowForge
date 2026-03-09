@@ -5,8 +5,8 @@ import {
   Home,
   Trash2,
 } from "lucide-react";
-import type { WorktreeInfo } from "../../../bindings";
 import { cn } from "@/framework/lib/utils";
+import type { WorktreeInfo } from "../../../bindings";
 
 interface WorktreeItemProps {
   worktree: WorktreeInfo;

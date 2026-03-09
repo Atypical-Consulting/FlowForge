@@ -1,10 +1,10 @@
 import { ParentSize } from "@visx/responsive";
 import {
-  XYChart,
   AnimatedBarSeries,
   AnimatedGrid,
   Axis,
   Tooltip,
+  XYChart,
 } from "@visx/xychart";
 import { BarChart3 } from "lucide-react";
 import { insightsChartTheme } from "../lib/chartTheme";
@@ -89,12 +89,7 @@ export function CommitActivityChart({ data }: Props) {
               tickFormat={formatDate}
               hideTicks
             />
-            <Axis
-              orientation="left"
-              numTicks={4}
-              hideTicks
-              hideAxisLine
-            />
+            <Axis orientation="left" numTicks={4} hideTicks hideAxisLine />
             <Tooltip
               snapTooltipToDatumX
               snapTooltipToDatumY

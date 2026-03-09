@@ -1,4 +1,4 @@
-import type { DiffHunkDetail, DiffHunk } from "../../../../bindings";
+import type { DiffHunk, DiffHunkDetail } from "../../../../bindings";
 
 /**
  * Find which hunk a given line number belongs to (in the modified/new editor).

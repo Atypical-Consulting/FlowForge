@@ -1,22 +1,22 @@
+import { useQuery } from "@tanstack/react-query";
 import { Loader2, Maximize2, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { commands } from "../../../bindings";
-import { cn } from "../../lib/utils";
-import { useCommitExecution } from "../../hooks/useCommitExecution";
+import { useExtensionHost } from "../../../extensions";
+import { ConventionalCommitForm } from "../../../extensions/conventional-commits/components/ConventionalCommitForm";
 import { useAmendPrefill } from "../../../extensions/conventional-commits/hooks/useAmendPrefill";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
-import { useExtensionHost } from "../../../extensions";
-import { ShortcutTooltip } from "../ui/ShortcutTooltip";
+import { useCommitExecution } from "../../hooks/useCommitExecution";
+import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
-import { ConventionalCommitForm } from "../../../extensions/conventional-commits/components/ConventionalCommitForm";
+import { ShortcutTooltip } from "../ui/ShortcutTooltip";
 
 export function CommitForm() {
   const [useConventional, setUseConventional] = useState(false);
   const [message, setMessage] = useState("");
   const { bladeStack, openBlade } = useBladeNavigation();
   const isCCActive = useExtensionHost(
-    (s) => s.extensions.get("conventional-commits")?.status === "active"
+    (s) => s.extensions.get("conventional-commits")?.status === "active",
   );
   const isCCBladeOpen = bladeStack.some(
     (b) => b.type === "conventional-commit",

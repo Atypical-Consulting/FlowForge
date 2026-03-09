@@ -1,10 +1,10 @@
 import { FileText } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { useRepoFile } from "../../../core/hooks/useRepoFile";
-import { BladeContentLoading } from "../../../core/blades/_shared/BladeContentLoading";
-import { BladeContentError } from "../../../core/blades/_shared/BladeContentError";
 import { BladeContentEmpty } from "../../../core/blades/_shared/BladeContentEmpty";
+import { BladeContentError } from "../../../core/blades/_shared/BladeContentError";
+import { BladeContentLoading } from "../../../core/blades/_shared/BladeContentLoading";
 import { MarkdownRenderer } from "../../../core/components/markdown/MarkdownRenderer";
+import { useRepoFile } from "../../../core/hooks/useRepoFile";
 
 interface ViewerMarkdownBladeProps {
   filePath: string;
@@ -18,7 +18,7 @@ export function ViewerMarkdownBlade({ filePath }: ViewerMarkdownBladeProps) {
   // move focus to the content container for keyboard users.
   useEffect(() => {
     containerRef.current?.focus();
-  }, [filePath]);
+  }, []);
 
   if (isLoading) {
     return <BladeContentLoading />;
@@ -51,10 +51,7 @@ export function ViewerMarkdownBlade({ filePath }: ViewerMarkdownBladeProps) {
       className="flex-1 overflow-y-auto h-full bg-ctp-base outline-none"
     >
       <div className="p-6 max-w-3xl mx-auto">
-        <MarkdownRenderer
-          content={data.content}
-          currentFilePath={filePath}
-        />
+        <MarkdownRenderer content={data.content} currentFilePath={filePath} />
       </div>
     </div>
   );

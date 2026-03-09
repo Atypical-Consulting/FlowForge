@@ -1,13 +1,13 @@
 import { Archive, Download, Loader2, Play, Trash2 } from "lucide-react";
 import { useState } from "react";
-import type { StashEntry } from "../../../bindings";
 import { parseStashMessage } from "@/core/lib/stash-utils";
+import type { StashEntry } from "../../../bindings";
 
 interface StashItemProps {
   stash: StashEntry;
-  onApply: () => Promise<unknown> | void;
-  onPop: () => Promise<unknown> | void;
-  onDrop: () => Promise<unknown> | void;
+  onApply: () => Promise<unknown> | undefined;
+  onPop: () => Promise<unknown> | undefined;
+  onDrop: () => Promise<unknown> | undefined;
   disabled?: boolean;
 }
 
@@ -25,7 +25,7 @@ export function StashItem({
 
   const handleAction = async (
     action: "apply" | "pop" | "drop",
-    fn: () => Promise<unknown> | void,
+    fn: () => Promise<unknown> | undefined,
   ) => {
     setLoadingAction(action);
     try {
@@ -44,7 +44,7 @@ export function StashItem({
         <div className="min-w-0">
           <p className="truncate text-sm text-ctp-text">{parsed.description}</p>
           <span className="text-xs text-ctp-overlay0">
-            stash@{"{" + stash.index + "}"}
+            stash@{`{${stash.index}}`}
             {parsed.branch && (
               <span className="text-ctp-overlay1"> on {parsed.branch}</span>
             )}

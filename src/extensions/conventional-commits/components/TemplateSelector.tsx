@@ -1,16 +1,16 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  Sparkles,
-  Bug,
   AlertTriangle,
-  Package,
+  Bug,
   FileText,
+  Package,
   RefreshCw,
+  Sparkles,
   Workflow,
 } from "lucide-react";
-import type { CommitTemplate } from "../store";
-import { BUILTIN_TEMPLATES } from "../lib/commit-templates";
 import { cn } from "@/framework/lib/utils";
+import { BUILTIN_TEMPLATES } from "../lib/commit-templates";
+import type { CommitTemplate } from "../store";
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Sparkles,

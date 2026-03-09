@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getGravatarUrl } from "../lib/gravatar";
 
 interface GravatarAvatarProps {
@@ -15,7 +15,12 @@ const SIZE_CLASSES = {
 
 const SIZE_PX = { sm: 24, md: 32 } as const;
 
-export function GravatarAvatar({ email, name, size = "sm", className = "" }: GravatarAvatarProps) {
+export function GravatarAvatar({
+  email,
+  name,
+  size = "sm",
+  className = "",
+}: GravatarAvatarProps) {
   const [url, setUrl] = useState<string | null>(null);
   const [hasError, setHasError] = useState(false);
 
@@ -24,7 +29,9 @@ export function GravatarAvatar({ email, name, size = "sm", className = "" }: Gra
     getGravatarUrl(email, SIZE_PX[size] * 2).then((u) => {
       if (!cancelled) setUrl(u);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [email, size]);
 
   const sizeClass = SIZE_CLASSES[size];

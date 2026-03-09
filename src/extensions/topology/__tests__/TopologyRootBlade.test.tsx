@@ -16,15 +16,25 @@ vi.mock("../../../bindings", () => ({
 }));
 
 vi.mock("@xyflow/react", () => ({
-  ReactFlow: ({ children }: { children?: React.ReactNode }) => <div data-testid="mock-reactflow">{children}</div>,
+  ReactFlow: ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="mock-reactflow">{children}</div>
+  ),
   Background: () => null,
   Controls: () => null,
   MiniMap: () => null,
-  Panel: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  Panel: ({ children }: { children?: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   useNodesState: () => [[], vi.fn(), vi.fn()],
   useEdgesState: () => [[], vi.fn(), vi.fn()],
-  useReactFlow: () => ({ fitView: vi.fn(), getNodes: () => [], setCenter: vi.fn() }),
-  ReactFlowProvider: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  useReactFlow: () => ({
+    fitView: vi.fn(),
+    getNodes: () => [],
+    setCenter: vi.fn(),
+  }),
+  ReactFlowProvider: ({ children }: { children?: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   Position: { Top: "top", Bottom: "bottom", Left: "left", Right: "right" },
   MarkerType: { Arrow: "arrow", ArrowClosed: "arrowclosed" },
   Handle: () => null,

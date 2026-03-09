@@ -1,30 +1,27 @@
 export {
-  type CoreCommandCategory,
-  type CommandCategory,
   type Command,
-  getEnabled,
+  type CommandCategory,
+  type CoreCommandCategory,
+  executeCommand,
   getById,
+  getCommandById,
+  getCommands,
+  getEnabled,
+  getEnabledCommands,
+  getOrderedCategories,
   getOrderedCommandCategories,
-  useCommandRegistry,
   registerCommand,
   unregisterCommand,
   unregisterCommandsBySource,
-  getCommands,
-  getEnabledCommands,
-  getCommandById,
-  executeCommand,
-  getOrderedCategories,
+  useCommandRegistry,
 } from "./commandRegistry";
-
+export { CommandPalette } from "./components";
+export { formatShortcut } from "./formatShortcut";
 export {
-  type ScoredCommand,
-  searchCommands,
   fuzzyMatch,
   highlightMatches,
+  type ScoredCommand,
+  searchCommands,
 } from "./fuzzySearch";
 
-export { CommandPalette } from "./components";
-
-export { formatShortcut } from "./formatShortcut";
-
-export { usePaletteStore, type PaletteState } from "./paletteStore";
+export { type PaletteState, usePaletteStore } from "./paletteStore";

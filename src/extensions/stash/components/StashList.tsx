@@ -1,7 +1,7 @@
 import { Archive } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useGitOpsStore as useStashStore } from "@/core/stores/domain/git-ops";
+import { useEffect } from "react";
 import { EmptyState } from "@/core/components/ui/EmptyState";
+import { useGitOpsStore as useStashStore } from "@/core/stores/domain/git-ops";
 import { StashDialog } from "./StashDialog";
 import { StashItem } from "./StashItem";
 

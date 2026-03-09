@@ -7,7 +7,11 @@ interface CreateBranchDialogProps {
 }
 
 export function CreateBranchDialog({ onClose }: CreateBranchDialogProps) {
-  const { createBranch, branchIsLoading: isLoading, branchError: error } = useBranchStore();
+  const {
+    createBranch,
+    branchIsLoading: isLoading,
+    branchError: error,
+  } = useBranchStore();
   const [name, setName] = useState("");
   const [checkout, setCheckout] = useState(true);
 
@@ -49,7 +53,6 @@ export function CreateBranchDialog({ onClose }: CreateBranchDialogProps) {
               onChange={(e) => setName(e.target.value)}
               placeholder="feature/my-feature"
               className="w-full px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 rounded focus:outline-none focus:border-ctp-blue"
-              autoFocus
             />
           </div>
 

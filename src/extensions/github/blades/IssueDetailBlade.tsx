@@ -7,15 +7,15 @@
  */
 
 import { ExternalLink } from "lucide-react";
-import { useIssueDetail } from "../hooks/useGitHubQuery";
 import { BladeContentError } from "../../../core/blades/_shared/BladeContentError";
 import { BladeContentLoading } from "../../../core/blades/_shared/BladeContentLoading";
 import { MarkdownRenderer } from "../../../core/components/markdown/MarkdownRenderer";
-import { StatusBadge } from "../components/StatusBadge";
-import { LabelPill } from "../components/LabelPill";
-import { UserAvatar } from "../components/UserAvatar";
-import { TimeAgo } from "../components/TimeAgo";
 import { CommentCard } from "../components/CommentCard";
+import { LabelPill } from "../components/LabelPill";
+import { StatusBadge } from "../components/StatusBadge";
+import { TimeAgo } from "../components/TimeAgo";
+import { UserAvatar } from "../components/UserAvatar";
+import { useIssueDetail } from "../hooks/useGitHubQuery";
 
 interface IssueDetailBladeProps {
   owner: string;
@@ -23,8 +23,16 @@ interface IssueDetailBladeProps {
   number: number;
 }
 
-export function IssueDetailBlade({ owner, repo, number }: IssueDetailBladeProps) {
-  const { data, isLoading, error, refetch } = useIssueDetail(owner, repo, number);
+export function IssueDetailBlade({
+  owner,
+  repo,
+  number,
+}: IssueDetailBladeProps) {
+  const { data, isLoading, error, refetch } = useIssueDetail(
+    owner,
+    repo,
+    number,
+  );
 
   if (isLoading) return <BladeContentLoading />;
 
@@ -56,7 +64,11 @@ export function IssueDetailBlade({ owner, repo, number }: IssueDetailBladeProps)
         {data.labels.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
             {data.labels.map((label) => (
-              <LabelPill key={label.name} name={label.name} color={label.color} />
+              <LabelPill
+                key={label.name}
+                name={label.name}
+                color={label.color}
+              />
             ))}
           </div>
         )}
@@ -73,7 +85,9 @@ export function IssueDetailBlade({ owner, repo, number }: IssueDetailBladeProps)
                     avatarUrl={assignee.avatarUrl}
                     size="sm"
                   />
-                  <span className="text-xs text-ctp-subtext1">{assignee.login}</span>
+                  <span className="text-xs text-ctp-subtext1">
+                    {assignee.login}
+                  </span>
                 </div>
               ))}
             </div>
@@ -96,7 +110,9 @@ export function IssueDetailBlade({ owner, repo, number }: IssueDetailBladeProps)
         {data.body ? (
           <MarkdownRenderer content={data.body} />
         ) : (
-          <p className="text-sm text-ctp-overlay0 italic">No description provided.</p>
+          <p className="text-sm text-ctp-overlay0 italic">
+            No description provided.
+          </p>
         )}
       </div>
 

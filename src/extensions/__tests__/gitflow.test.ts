@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
+import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
 import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
 import { useSidebarPanelRegistry } from "@/framework/layout/sidebarPanelRegistry";
-import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
 import { onActivate, onDeactivate } from "../gitflow";
 
 describe("gitflow extension", () => {
@@ -24,7 +24,9 @@ describe("gitflow extension", () => {
     await onActivate(api);
 
     // Should NOT be namespaced
-    expect(getBladeRegistration("ext:gitflow:gitflow-cheatsheet")).toBeUndefined();
+    expect(
+      getBladeRegistration("ext:gitflow:gitflow-cheatsheet"),
+    ).toBeUndefined();
 
     api.cleanup();
   });
@@ -60,7 +62,9 @@ describe("gitflow extension", () => {
   it("sidebar panel has priority 65 and defaultOpen false", async () => {
     await onActivate(api);
 
-    const panel = useSidebarPanelRegistry.getState().items.get("ext:gitflow:gitflow-panel");
+    const panel = useSidebarPanelRegistry
+      .getState()
+      .items.get("ext:gitflow:gitflow-panel");
     expect(panel?.priority).toBe(65);
     expect(panel?.defaultOpen).toBe(false);
 
@@ -81,8 +85,12 @@ describe("gitflow extension", () => {
     api.cleanup();
 
     expect(getBladeRegistration("gitflow-cheatsheet")).toBeUndefined();
-    expect(useSidebarPanelRegistry.getState().items.has("ext:gitflow:gitflow-panel")).toBe(false);
-    expect(useToolbarRegistry.getState().items.has("ext:gitflow:gitflow-guide")).toBe(false);
+    expect(
+      useSidebarPanelRegistry.getState().items.has("ext:gitflow:gitflow-panel"),
+    ).toBe(false);
+    expect(
+      useToolbarRegistry.getState().items.has("ext:gitflow:gitflow-guide"),
+    ).toBe(false);
   });
 
   it("onDeactivate is a no-op (cleanup handled by ExtensionAPI)", () => {

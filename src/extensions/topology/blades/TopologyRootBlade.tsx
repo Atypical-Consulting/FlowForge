@@ -10,7 +10,8 @@ type TopologyView = "graph" | "history";
 export function TopologyRootBlade() {
   const [view, setView] = useState<TopologyView>("graph");
   const { openBlade } = useBladeNavigation();
-  const openCommitDetails = (oid: string) => openBlade("commit-details", { oid });
+  const openCommitDetails = (oid: string) =>
+    openBlade("commit-details", { oid });
 
   return (
     <div className="flex flex-col h-full">

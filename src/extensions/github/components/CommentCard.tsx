@@ -6,8 +6,8 @@
  */
 
 import { MarkdownRenderer } from "../../../core/components/markdown/MarkdownRenderer";
-import { UserAvatar } from "./UserAvatar";
 import { TimeAgo } from "./TimeAgo";
+import { UserAvatar } from "./UserAvatar";
 
 interface CommentCardProps {
   /** GitHub username of the comment author */

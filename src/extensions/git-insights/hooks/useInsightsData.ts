@@ -8,12 +8,12 @@ import { useInsightsStore } from "../insightsStore";
 export function useInsightsData() {
   const loadInsights = useInsightsStore((s) => s.loadInsights);
   const loadBranchHealth = useInsightsStore((s) => s.loadBranchHealth);
-  const timeRange = useInsightsStore((s) => s.timeRange);
+  const _timeRange = useInsightsStore((s) => s.timeRange);
 
   useEffect(() => {
     loadInsights();
     loadBranchHealth();
-  }, [loadInsights, loadBranchHealth, timeRange]);
+  }, [loadInsights, loadBranchHealth]);
 
   return useInsightsStore();
 }

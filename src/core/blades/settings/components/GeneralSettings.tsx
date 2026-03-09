@@ -30,7 +30,11 @@ export function GeneralSettings() {
                     key={option.value}
                     type="button"
                     disabled={disabled}
-                    title={disabled ? "Enable the Topology extension to use this option" : undefined}
+                    title={
+                      disabled
+                        ? "Enable the Topology extension to use this option"
+                        : undefined
+                    }
                     onClick={() =>
                       updateSetting("general", "defaultTab", option.value)
                     }

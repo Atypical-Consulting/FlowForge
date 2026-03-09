@@ -1,12 +1,12 @@
 import { GitCommit } from "lucide-react";
 import { memo } from "react";
+import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
+import { cn } from "@/framework/lib/utils";
 import type { GraphNode } from "../../../bindings";
 import {
   COMMIT_TYPE_THEME,
   type ConventionalCommitType,
 } from "../../conventional-commits/lib/commit-type-theme";
-import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
-import { cn } from "@/framework/lib/utils";
 import {
   BRANCH_BADGE_STYLES,
   BRANCH_RING_COLORS,
@@ -38,11 +38,12 @@ export const CommitBadge = memo(
         onClick={onClick}
         onContextMenu={(e) => {
           e.preventDefault();
-          useContextMenuRegistry.getState().showMenu(
-            { x: e.clientX, y: e.clientY },
-            "commit-list",
-            { location: "commit-list", commitOid: node.oid },
-          );
+          useContextMenuRegistry
+            .getState()
+            .showMenu({ x: e.clientX, y: e.clientY }, "commit-list", {
+              location: "commit-list",
+              commitOid: node.oid,
+            });
         }}
         className={cn(
           "px-2 py-1 rounded-md border cursor-pointer transition-all",

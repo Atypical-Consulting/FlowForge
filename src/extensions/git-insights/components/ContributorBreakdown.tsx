@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import { Users } from "lucide-react";
+import { useInsightsStore } from "../insightsStore";
 import type { ContributorStats } from "../types";
 import { GravatarAvatar } from "./GravatarAvatar";
-import { useInsightsStore } from "../insightsStore";
 
 interface Props {
   contributors: ContributorStats[];

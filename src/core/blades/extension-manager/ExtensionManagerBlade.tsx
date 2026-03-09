@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import type { LucideIcon } from "lucide-react";
 import {
   Eye,
   FolderOpen,
@@ -9,19 +9,19 @@ import {
   Search,
   Workflow,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useExtensionHost } from "@/framework/extension-system/ExtensionHost";
-import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
-import { commands } from "../../../bindings";
 import { toast } from "@/framework/stores/toast";
+import { commands } from "../../../bindings";
+import {
+  type ExtensionCategory,
+  getCategoryMeta,
+  groupExtensionsByCategory,
+} from "../../../extensions/extensionCategories";
 import { Button } from "../../components/ui/button";
+import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
 import { ExtensionCard } from "./components/ExtensionCard";
 import { InstallExtensionDialog } from "./components/InstallExtensionDialog";
-import {
-  groupExtensionsByCategory,
-  getCategoryMeta,
-  type ExtensionCategory,
-} from "../../../extensions/extensionCategories";
 
 const CATEGORY_ICONS: Record<ExtensionCategory, LucideIcon> = {
   "source-control": GitBranch,
@@ -38,7 +38,7 @@ export function ExtensionManagerBlade() {
   const discoverExtensions = useExtensionHost((s) => s.discoverExtensions);
   const repoPath = useRepositoryStore((s) => s.repoStatus?.repoPath ?? "");
 
-  const extensionsDir = repoPath ? repoPath + "/.flowforge/extensions" : "";
+  const extensionsDir = repoPath ? `${repoPath}/.flowforge/extensions` : "";
 
   // Convert Map to sorted array, filtered by search, grouped by category
   const { categorizedBuiltIn, installedExts } = useMemo(() => {
@@ -53,7 +53,9 @@ export function ExtensionManagerBlade() {
       : all;
 
     const builtIn = filtered.filter((ext) => ext.builtIn);
-    const installed = filtered.filter((ext) => !ext.builtIn).sort((a, b) => a.name.localeCompare(b.name));
+    const installed = filtered
+      .filter((ext) => !ext.builtIn)
+      .sort((a, b) => a.name.localeCompare(b.name));
 
     return {
       categorizedBuiltIn: groupExtensionsByCategory(builtIn),
@@ -64,7 +66,10 @@ export function ExtensionManagerBlade() {
   const handleUninstall = async (extensionId: string) => {
     if (!extensionsDir) return;
     try {
-      const result = await commands.extensionUninstall(extensionId, extensionsDir);
+      const result = await commands.extensionUninstall(
+        extensionId,
+        extensionsDir,
+      );
       if (result.status === "error") {
         toast.error(`Uninstall failed: ${result.error}`);
         return;
@@ -75,7 +80,9 @@ export function ExtensionManagerBlade() {
         await discoverExtensions(repoPath);
       }
     } catch (e) {
-      toast.error(`Uninstall failed: ${e instanceof Error ? e.message : String(e)}`);
+      toast.error(
+        `Uninstall failed: ${e instanceof Error ? e.message : String(e)}`,
+      );
     }
   };
 
@@ -160,7 +167,9 @@ export function ExtensionManagerBlade() {
           <div className="flex flex-col items-center justify-center py-12 text-ctp-overlay0">
             <Puzzle className="w-10 h-10 mb-3 opacity-50" />
             <p className="text-sm">
-              {searchQuery ? "No extensions match your search" : "No extensions found"}
+              {searchQuery
+                ? "No extensions match your search"
+                : "No extensions found"}
             </p>
           </div>
         )}

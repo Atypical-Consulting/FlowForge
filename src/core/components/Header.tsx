@@ -1,17 +1,19 @@
 import { useCallback, useState } from "react";
-import { useRecentRepos } from "../hooks/useRecentRepos";
-import { useGitOpsStore as useBranchStore } from "../stores/domain/git-ops";
 import { getNavigationActor } from "@/framework/layout/navigation/context";
-import { usePreferencesStore as useNavigationStore } from "../stores/domain/preferences";
-import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
-import { useGitOpsStore as useStashStore } from "../stores/domain/git-ops";
-import { useGitOpsStore as useTagStore } from "../stores/domain/git-ops";
 import { toast } from "@/framework/stores/toast";
-import { useGitOpsStore as useUndoStore } from "../stores/domain/git-ops";
-import { WorkflowNavigation } from "../blades/_shared";
-import { MenuBar } from "./menu-bar";
 import { BranchSwitcher } from "../../extensions/branches/components/BranchSwitcher";
 import { RepoSwitcher } from "../../extensions/repository/components/RepoSwitcher";
+import { WorkflowNavigation } from "../blades/_shared";
+import { useRecentRepos } from "../hooks/useRecentRepos";
+import {
+  useGitOpsStore as useBranchStore,
+  useGitOpsStore as useRepositoryStore,
+  useGitOpsStore as useStashStore,
+  useGitOpsStore as useTagStore,
+  useGitOpsStore as useUndoStore,
+} from "../stores/domain/git-ops";
+import { usePreferencesStore as useNavigationStore } from "../stores/domain/preferences";
+import { MenuBar } from "./menu-bar";
 import { Toolbar } from "./toolbar/Toolbar";
 import { Button } from "./ui/button";
 
@@ -21,9 +23,13 @@ interface StashConfirmTarget {
 }
 
 export function Header() {
-  const { repoStatus: status, openRepository, refreshRepoStatus: refreshStatus } =
-    useRepositoryStore();
-  const { loadBranches, checkoutBranch, checkoutRemoteBranch } = useBranchStore();
+  const {
+    repoStatus: status,
+    openRepository,
+    refreshRepoStatus: refreshStatus,
+  } = useRepositoryStore();
+  const { loadBranches, checkoutBranch, checkoutRemoteBranch } =
+    useBranchStore();
   const { loadStashes, saveStash } = useStashStore();
   const { loadTags } = useTagStore();
   const { loadUndoInfo } = useUndoStore();
@@ -71,7 +77,17 @@ export function Header() {
         );
       }
     },
-    [status, navigationStore, openRepository, addRecentRepo, checkoutBranch, loadBranches, loadStashes, loadTags, loadUndoInfo],
+    [
+      status,
+      navigationStore,
+      openRepository,
+      addRecentRepo,
+      checkoutBranch,
+      loadBranches,
+      loadStashes,
+      loadTags,
+      loadUndoInfo,
+    ],
   );
 
   // Perform the actual branch switch (local or remote)
@@ -83,9 +99,14 @@ export function Header() {
           : await checkoutBranch(branchName);
 
         if (success) {
-          const localName = isRemote ? branchName.replace(/^[^/]+\//, "") : branchName;
+          const localName = isRemote
+            ? branchName.replace(/^[^/]+\//, "")
+            : branchName;
           if (status) {
-            await navigationStore.addNavRecentBranch(status.repoPath, localName);
+            await navigationStore.addNavRecentBranch(
+              status.repoPath,
+              localName,
+            );
           }
           await refreshStatus();
           toast.info(`Switched to ${localName}`);
@@ -96,7 +117,13 @@ export function Header() {
         );
       }
     },
-    [checkoutBranch, checkoutRemoteBranch, status, navigationStore, refreshStatus],
+    [
+      checkoutBranch,
+      checkoutRemoteBranch,
+      status,
+      navigationStore,
+      refreshStatus,
+    ],
   );
 
   // Branch switching: check dirty state first
@@ -117,7 +144,10 @@ export function Header() {
     const { branchName, isRemote } = stashConfirmTarget;
     setStashConfirmTarget(null);
 
-    const stashed = await saveStash(`Auto-stash before switching to ${branchName}`, true);
+    const stashed = await saveStash(
+      `Auto-stash before switching to ${branchName}`,
+      true,
+    );
     if (stashed) {
       await performBranchSwitch(branchName, isRemote);
     } else {

@@ -1,5 +1,5 @@
+import type { GitHookContext, GitOperation } from "@/core/services/gitHookBus";
 import { OperationBus } from "@/framework/extension-system/operationBus";
-import type { GitOperation, GitHookContext } from "@/core/services/gitHookBus";
 
 describe("GitHookBus (OperationBus)", () => {
   let bus: OperationBus<GitOperation, GitHookContext>;

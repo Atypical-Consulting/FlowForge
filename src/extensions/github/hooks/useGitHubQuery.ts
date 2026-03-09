@@ -11,7 +11,7 @@
  * Details use useQuery for single resource fetching.
  */
 
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { commands } from "../../../bindings";
 
 const PER_PAGE = 30;
@@ -21,10 +21,16 @@ const PER_PAGE = 30;
  */
 function extractErrorMessage(error: unknown): string {
   if (error && typeof error === "object") {
-    if ("message" in error && typeof (error as Record<string, unknown>).message === "string") {
+    if (
+      "message" in error &&
+      typeof (error as Record<string, unknown>).message === "string"
+    ) {
       return (error as Record<string, string>).message;
     }
-    if ("type" in error && typeof (error as Record<string, unknown>).type === "string") {
+    if (
+      "type" in error &&
+      typeof (error as Record<string, unknown>).type === "string"
+    ) {
       return (error as Record<string, string>).type;
     }
   }
@@ -124,11 +130,7 @@ export function useIssueList(
 /**
  * Fetch detailed issue information including comments.
  */
-export function useIssueDetail(
-  owner: string,
-  repo: string,
-  number: number,
-) {
+export function useIssueDetail(owner: string, repo: string, number: number) {
   return useQuery({
     queryKey: ["ext:github", "issue", owner, repo, number],
     queryFn: async () => {

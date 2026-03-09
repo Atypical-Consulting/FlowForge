@@ -2,7 +2,7 @@
 // This file demonstrates HOW to test machines with guards and transitions.
 // Phase 26 will replace this with the actual navigation FSM tests.
 
-import { setup, assign, createActor } from "xstate";
+import { assign, createActor, setup } from "xstate";
 
 const navigationMachine = setup({
   types: {
@@ -117,9 +117,7 @@ describe("XState navigation machine (example)", () => {
     actor.send({ type: "PUSH_BLADE", bladeType: "diff" });
     actor.send({ type: "POP_BLADE" });
 
-    expect(actor.getSnapshot().context.bladeStack).toEqual([
-      "staging-changes",
-    ]);
+    expect(actor.getSnapshot().context.bladeStack).toEqual(["staging-changes"]);
 
     actor.stop();
   });
@@ -131,9 +129,7 @@ describe("XState navigation machine (example)", () => {
     actor.send({ type: "OPEN_REPO", path: "/test/repo" });
     actor.send({ type: "POP_BLADE" });
 
-    expect(actor.getSnapshot().context.bladeStack).toEqual([
-      "staging-changes",
-    ]);
+    expect(actor.getSnapshot().context.bladeStack).toEqual(["staging-changes"]);
 
     actor.stop();
   });

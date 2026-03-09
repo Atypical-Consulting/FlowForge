@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { WorktreePanel } from "./WorktreePanel";
 import { CreateWorktreeDialog } from "./CreateWorktreeDialog";
 import { DeleteWorktreeDialog } from "./DeleteWorktreeDialog";
+import { WorktreePanel } from "./WorktreePanel";
 
 export function WorktreeSidebarPanel() {
   const [showCreate, setShowCreate] = useState(false);
@@ -11,16 +11,14 @@ export function WorktreeSidebarPanel() {
   useEffect(() => {
     const handler = () => setShowCreate(true);
     document.addEventListener("worktree:open-create-dialog", handler);
-    return () => document.removeEventListener("worktree:open-create-dialog", handler);
+    return () =>
+      document.removeEventListener("worktree:open-create-dialog", handler);
   }, []);
 
   return (
     <>
       <WorktreePanel onOpenDeleteDialog={setDeleteTarget} />
-      <CreateWorktreeDialog
-        open={showCreate}
-        onOpenChange={setShowCreate}
-      />
+      <CreateWorktreeDialog open={showCreate} onOpenChange={setShowCreate} />
       <DeleteWorktreeDialog
         worktreeName={deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}

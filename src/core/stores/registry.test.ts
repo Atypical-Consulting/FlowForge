@@ -1,12 +1,17 @@
 import { create } from "zustand";
-import { resetAllStores, registerStoreForReset } from "@/framework/stores/registry";
+import {
+  registerStoreForReset,
+  resetAllStores,
+} from "@/framework/stores/registry";
 
 describe("Store Registry", () => {
   it("resetAllStores resets a registered store to initial state", () => {
-    const useStore = create<{ count: number; increment: () => void }>((set) => ({
-      count: 0,
-      increment: () => set((s) => ({ count: s.count + 1 })),
-    }));
+    const useStore = create<{ count: number; increment: () => void }>(
+      (set) => ({
+        count: 0,
+        increment: () => set((s) => ({ count: s.count + 1 })),
+      }),
+    );
     registerStoreForReset(useStore);
 
     useStore.getState().increment();
@@ -18,14 +23,18 @@ describe("Store Registry", () => {
   });
 
   it("resetAllStores resets multiple registered stores", () => {
-    const useStoreA = create<{ value: string; setValue: (v: string) => void }>((set) => ({
-      value: "initial",
-      setValue: (v) => set({ value: v }),
-    }));
-    const useStoreB = create<{ count: number; increment: () => void }>((set) => ({
-      count: 0,
-      increment: () => set((s) => ({ count: s.count + 1 })),
-    }));
+    const useStoreA = create<{ value: string; setValue: (v: string) => void }>(
+      (set) => ({
+        value: "initial",
+        setValue: (v) => set({ value: v }),
+      }),
+    );
+    const useStoreB = create<{ count: number; increment: () => void }>(
+      (set) => ({
+        count: 0,
+        increment: () => set((s) => ({ count: s.count + 1 })),
+      }),
+    );
     registerStoreForReset(useStoreA);
     registerStoreForReset(useStoreB);
 
@@ -38,10 +47,12 @@ describe("Store Registry", () => {
   });
 
   it("unregistered stores are not affected by resetAllStores", () => {
-    const useStore = create<{ count: number; increment: () => void }>((set) => ({
-      count: 0,
-      increment: () => set((s) => ({ count: s.count + 1 })),
-    }));
+    const useStore = create<{ count: number; increment: () => void }>(
+      (set) => ({
+        count: 0,
+        increment: () => set((s) => ({ count: s.count + 1 })),
+      }),
+    );
     // Do NOT register
 
     useStore.getState().increment();

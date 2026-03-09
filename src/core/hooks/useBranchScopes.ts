@@ -1,11 +1,14 @@
 import { useMemo } from "react";
-import { useBranches } from "./useBranches";
+import { getPrimaryScopes, getScope } from "../lib/branchScopes";
 import { usePreferencesStore as useBranchMetadataStore } from "../stores/domain/preferences";
-import { getScope, getPrimaryScopes } from "../lib/branchScopes";
+import { useBranches } from "./useBranches";
 
 export function useBranchScopes() {
   const { branches, repoPath, ...rest } = useBranches();
-  const { getMetaScopePreference: getScopePreference, setMetaScopePreference: setScopePreference } = useBranchMetadataStore();
+  const {
+    getMetaScopePreference: getScopePreference,
+    setMetaScopePreference: setScopePreference,
+  } = useBranchMetadataStore();
 
   const activeScopeId = getScopePreference(repoPath) || "local";
   const activeScope = getScope(activeScopeId);

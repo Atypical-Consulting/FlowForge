@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ScopeSuggestion } from "../../../bindings";
 import { cn } from "@/framework/lib/utils";
+import type { ScopeSuggestion } from "../../../bindings";
 
 interface ScopeAutocompleteProps {
   value: string;
@@ -29,7 +29,7 @@ export function ScopeAutocomplete({
   // Reset highlighted index when suggestions change
   useEffect(() => {
     setHighlightedIndex(-1);
-  }, [suggestions]);
+  }, []);
 
   // Handle keyboard navigation
   const handleKeyDown = useCallback(

@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import { FolderGit2, GitBranch, Info, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { commands } from "../../../bindings";
 import { fadeInUp } from "@/framework/theme/animations";
+import { commands } from "../../../bindings";
 import { Button } from "../../../core/components/ui/button";
 
 interface GitInitFallbackBannerProps {
@@ -16,8 +16,7 @@ export function GitInitFallbackBanner({
   onDismiss,
   onComplete,
 }: GitInitFallbackBannerProps) {
-  const folderName =
-    path.split("/").pop() || path.split("\\").pop() || path;
+  const folderName = path.split("/").pop() || path.split("\\").pop() || path;
 
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +32,9 @@ export function GitInitFallbackBanner({
       }
       onComplete(path);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to initialize repository");
+      setError(
+        e instanceof Error ? e.message : "Failed to initialize repository",
+      );
     } finally {
       setIsInitializing(false);
     }
@@ -60,9 +61,7 @@ export function GitInitFallbackBanner({
         </div>
       </div>
 
-      {error && (
-        <div className="ml-8 text-sm text-ctp-red">{error}</div>
-      )}
+      {error && <div className="ml-8 text-sm text-ctp-red">{error}</div>}
 
       <div className="ml-8 flex gap-2">
         <Button
@@ -84,7 +83,12 @@ export function GitInitFallbackBanner({
             </>
           )}
         </Button>
-        <Button variant="ghost" size="sm" onClick={onDismiss} disabled={isInitializing}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onDismiss}
+          disabled={isInitializing}
+        >
           Dismiss
         </Button>
       </div>

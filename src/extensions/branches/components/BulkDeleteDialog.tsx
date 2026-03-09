@@ -1,6 +1,6 @@
 import { AlertTriangle, GitBranch, Loader2, Shield, X } from "lucide-react";
-import type { EnrichedBranch } from "../../../core/lib/branchClassifier";
 import { cn } from "@/framework/lib/utils";
+import type { EnrichedBranch } from "../../../core/lib/branchClassifier";
 
 interface BulkDeleteDialogProps {
   branches: EnrichedBranch[];

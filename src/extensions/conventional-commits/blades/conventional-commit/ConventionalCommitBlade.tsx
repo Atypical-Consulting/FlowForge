@@ -1,24 +1,24 @@
-import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, Check, RotateCcw } from "lucide-react";
-import { useConventionalCommit } from "../../hooks/useConventionalCommit";
-import { useCommitExecution } from "../../../../core/hooks/useCommitExecution";
-import { useAmendPrefill } from "../../hooks/useAmendPrefill";
-import { useBladeFormGuard } from "./hooks/useBladeFormGuard";
-import { useConventionalStore } from "../../store";
-import { useBladeNavigation } from "../../../../core/hooks/useBladeNavigation";
+import { useEffect, useRef, useState } from "react";
 import { SplitPaneLayout } from "@/framework/layout/SplitPaneLayout";
-import { TypeSelector } from "../../components/TypeSelector";
-import { ScopeAutocomplete } from "../../components/ScopeAutocomplete";
+import { cn } from "@/framework/lib/utils";
+import { useBladeNavigation } from "../../../../core/hooks/useBladeNavigation";
+import { useCommitExecution } from "../../../../core/hooks/useCommitExecution";
 import { BreakingChangeSection } from "../../components/BreakingChangeSection";
 import { CharacterProgress } from "../../components/CharacterProgress";
-import { ValidationErrors } from "../../components/ValidationErrors";
-import { CommitPreview } from "../../components/CommitPreview";
 import { CommitActionBar } from "../../components/CommitActionBar";
-import { TemplateSelector } from "../../components/TemplateSelector";
+import { CommitPreview } from "../../components/CommitPreview";
+import { ScopeAutocomplete } from "../../components/ScopeAutocomplete";
 import { ScopeFrequencyChart } from "../../components/ScopeFrequencyChart";
+import { TemplateSelector } from "../../components/TemplateSelector";
+import { TypeSelector } from "../../components/TypeSelector";
+import { ValidationErrors } from "../../components/ValidationErrors";
+import { useAmendPrefill } from "../../hooks/useAmendPrefill";
+import { useConventionalCommit } from "../../hooks/useConventionalCommit";
 import type { CommitTemplate } from "../../store";
-import { cn } from "@/framework/lib/utils";
+import { useConventionalStore } from "../../store";
+import { useBladeFormGuard } from "./hooks/useBladeFormGuard";
 
 const MAX_DESCRIPTION_LENGTH = 72;
 const BLADE_ID = "conventional-commit-blade";
@@ -70,8 +70,8 @@ export function ConventionalCommitBlade({
     mode: "conventional",
   });
 
-  const { commit, commitAndPush, isCommitting, isPushing } =
-    useCommitExecution({
+  const { commit, commitAndPush, isCommitting, isPushing } = useCommitExecution(
+    {
       onCommitSuccess: () => {
         setCommitSuccess(true);
         reset();
@@ -83,7 +83,8 @@ export function ConventionalCommitBlade({
           }, 1500);
         }
       },
-    });
+    },
+  );
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -103,7 +104,7 @@ export function ConventionalCommitBlade({
       store.getState().setIsAmend(true);
       prefillConventional(store.getState());
     }
-  }, [initialAmend, store, prefillConventional]);
+  }, [initialAmend, prefillConventional]);
 
   // Dirty form guard: mark dirty when form has content
   useEffect(() => {
@@ -121,7 +122,7 @@ export function ConventionalCommitBlade({
   // Fetch scope frequencies on mount
   useEffect(() => {
     store.getState().fetchScopeFrequencies();
-  }, [store]);
+  }, []);
 
   const isFormEmpty = !commitType && !description;
 
@@ -211,9 +212,7 @@ export function ConventionalCommitBlade({
           <AlertTriangle className="w-4 h-4 text-ctp-peach shrink-0" />
           <span className="text-ctp-peach">
             Amending previous commit
-            {originalMessage
-              ? `: "${originalMessage.split("\n")[0]}"`
-              : ""}
+            {originalMessage ? `: "${originalMessage.split("\n")[0]}"` : ""}
           </span>
         </div>
       )}

@@ -7,9 +7,7 @@ export function TemplateChips() {
 
   if (selectedTemplates.length === 0) {
     return (
-      <p className="text-sm text-ctp-subtext0 italic">
-        No templates selected
-      </p>
+      <p className="text-sm text-ctp-subtext0 italic">No templates selected</p>
     );
   }
 

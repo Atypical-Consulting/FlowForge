@@ -1,13 +1,21 @@
 import { useMemo } from "react";
-import { useGitOpsStore as useBranchStore } from "../stores/domain/git-ops";
-import { usePreferencesStore as useBranchMetadataStore } from "../stores/domain/preferences";
-import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { classifyBranch, type EnrichedBranch } from "../lib/branchClassifier";
+import {
+  useGitOpsStore as useBranchStore,
+  useGitOpsStore as useRepositoryStore,
+} from "../stores/domain/git-ops";
+import { usePreferencesStore as useBranchMetadataStore } from "../stores/domain/preferences";
 
 export function useBranches() {
   const repoPath = useRepositoryStore((s) => s.repoStatus?.repoPath ?? "");
-  const { branchList: branches, branchAllList: allBranches, branchIsLoading: isLoading, branchError: error, loadBranches, loadAllBranches } =
-    useBranchStore();
+  const {
+    branchList: branches,
+    branchAllList: allBranches,
+    branchIsLoading: isLoading,
+    branchError: error,
+    loadBranches,
+    loadAllBranches,
+  } = useBranchStore();
   const metadata = useBranchMetadataStore();
 
   const enriched = useMemo((): EnrichedBranch[] => {
@@ -27,7 +35,12 @@ export function useBranches() {
         lastVisited: recentMap.get(bareName) ?? null,
       };
     });
-  }, [allBranches, metadata.metaPinnedBranches, metadata.metaRecentBranches, repoPath]);
+  }, [
+    allBranches,
+    metadata.metaPinnedBranches,
+    metadata.metaRecentBranches,
+    repoPath,
+  ]);
 
   return {
     branches: enriched,

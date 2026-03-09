@@ -54,11 +54,7 @@ export const usePaletteStore = create<PaletteState>()(
           "palette/setQuery",
         ),
       setPaletteSelectedIndex: (index) =>
-        set(
-          { paletteSelectedIndex: index },
-          false,
-          "palette/setSelectedIndex",
-        ),
+        set({ paletteSelectedIndex: index }, false, "palette/setSelectedIndex"),
     }),
     { name: "command-palette", enabled: import.meta.env.DEV },
   ),

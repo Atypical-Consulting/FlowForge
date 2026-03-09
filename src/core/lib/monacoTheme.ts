@@ -1,6 +1,6 @@
 import "./monacoWorkers";
-import * as monaco from "monaco-editor";
 import { loader } from "@monaco-editor/react";
+import * as monaco from "monaco-editor";
 
 // Tell @monaco-editor/react to use locally bundled Monaco
 loader.config({ monaco });

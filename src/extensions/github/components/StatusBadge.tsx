@@ -7,15 +7,15 @@
  * backgrounds for a subtle, consistent look.
  */
 
+import type { LucideIcon } from "lucide-react";
 import {
+  CheckCircle2,
+  CircleDot,
+  GitMerge,
   GitPullRequest,
   GitPullRequestClosed,
   GitPullRequestDraft,
-  GitMerge,
-  CircleDot,
-  CheckCircle2,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 
 interface StatusBadgeProps {
   state: string;
@@ -31,7 +31,11 @@ interface BadgeConfig {
   text: string;
 }
 
-function resolvePrConfig(state: string, merged?: boolean, draft?: boolean): BadgeConfig {
+function resolvePrConfig(
+  state: string,
+  merged?: boolean,
+  draft?: boolean,
+): BadgeConfig {
   if (merged) {
     return {
       icon: GitMerge,
@@ -83,7 +87,12 @@ function resolveIssueConfig(state: string): BadgeConfig {
   };
 }
 
-export function StatusBadge({ state, merged, draft, type = "pr" }: StatusBadgeProps) {
+export function StatusBadge({
+  state,
+  merged,
+  draft,
+  type = "pr",
+}: StatusBadgeProps) {
   const config =
     type === "issue"
       ? resolveIssueConfig(state)

@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react";
 import {
   ArrowDown,
   ArrowUp,
@@ -22,7 +23,6 @@ import {
   Sun,
   X,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 
 export interface MenuItemDef {
   type: "action";

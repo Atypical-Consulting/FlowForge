@@ -20,8 +20,7 @@ export function DiffPreviewHeader({
 }: DiffPreviewHeaderProps) {
   const lastSlash = filePath.lastIndexOf("/");
   const dir = lastSlash >= 0 ? filePath.slice(0, lastSlash + 1) : "";
-  const filename =
-    lastSlash >= 0 ? filePath.slice(lastSlash + 1) : filePath;
+  const filename = lastSlash >= 0 ? filePath.slice(lastSlash + 1) : filePath;
 
   return (
     <div className="flex items-center gap-2 px-3 py-1.5 border-b border-ctp-surface0 bg-ctp-crust shrink-0">

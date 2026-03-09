@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { FolderOpen } from "lucide-react";
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
-import { commands } from "../../../bindings";
-import type { RepoFileEntry } from "../../../bindings";
-import { bladeTypeForFile } from "../../../core/lib/fileDispatch";
 import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
-import { useBladeNavigation } from "../../../core/hooks/useBladeNavigation";
-import { FileTypeIcon } from "../../../core/components/icons/FileTypeIcon";
-import { BladeContentLoading } from "../../../core/blades/_shared/BladeContentLoading";
-import { BladeContentError } from "../../../core/blades/_shared/BladeContentError";
+import type { RepoFileEntry } from "../../../bindings";
+import { commands } from "../../../bindings";
 import { BladeContentEmpty } from "../../../core/blades/_shared/BladeContentEmpty";
+import { BladeContentError } from "../../../core/blades/_shared/BladeContentError";
+import { BladeContentLoading } from "../../../core/blades/_shared/BladeContentLoading";
+import { FileTypeIcon } from "../../../core/components/icons/FileTypeIcon";
+import { useBladeNavigation } from "../../../core/hooks/useBladeNavigation";
+import { bladeTypeForFile } from "../../../core/lib/fileDispatch";
 
 interface RepoBrowserBladeProps {
   path?: string;
@@ -40,12 +40,12 @@ export function RepoBrowserBlade({ path = "" }: RepoBrowserBladeProps) {
   // Reset focus when path changes
   useEffect(() => {
     setFocusedIndex(0);
-  }, [path]);
+  }, []);
 
   // Focus the item when focusedIndex changes
   useEffect(() => {
     itemRefs.current[focusedIndex]?.focus();
-  }, [focusedIndex, entries]);
+  }, [focusedIndex]);
 
   const navigateToDirectory = useCallback(
     (dirPath: string) => {
@@ -69,7 +69,9 @@ export function RepoBrowserBlade({ path = "" }: RepoBrowserBladeProps) {
       const title = entry.name;
       // Fall back to viewer-plaintext if the dispatched blade type is not registered
       // (e.g., content-viewers extension is disabled)
-      const bladeType = getBladeRegistration(dispatched) ? dispatched : "viewer-plaintext";
+      const bladeType = getBladeRegistration(dispatched)
+        ? dispatched
+        : "viewer-plaintext";
       pushBlade({ type: bladeType, title, props: { filePath: entry.path } });
     },
     [pushBlade, navigateToDirectory],
@@ -173,43 +175,39 @@ interface FileRowProps {
   onFocus: () => void;
 }
 
-const FileRow = forwardRef<HTMLButtonElement, FileRowProps>(
-  function FileRow({ entry, isFocused, onClick, onFocus }, ref) {
-    return (
-      <button
-        ref={ref}
-        type="button"
-        role="option"
-        aria-selected={false}
-        onClick={onClick}
-        onFocus={onFocus}
-        tabIndex={isFocused ? 0 : -1}
-        className={`
+const FileRow = forwardRef<HTMLButtonElement, FileRowProps>(function FileRow(
+  { entry, isFocused, onClick, onFocus },
+  ref,
+) {
+  return (
+    <button
+      ref={ref}
+      type="button"
+      role="option"
+      aria-selected={false}
+      onClick={onClick}
+      onFocus={onFocus}
+      tabIndex={isFocused ? 0 : -1}
+      className={`
           w-full flex items-center gap-2.5 px-3 py-1.5 text-left text-sm
           hover:bg-ctp-surface0/50 transition-colors
           focus:bg-ctp-surface0/50 focus:outline-none focus:ring-1 focus:ring-ctp-blue/50 focus:ring-inset
           ${isFocused ? "bg-ctp-surface0/30" : ""}
         `}
-      >
-        <FileTypeIcon
-          path={entry.name}
-          isDirectory={entry.isDir}
-        />
-        <span className="flex-1 truncate text-ctp-text">
-          {entry.name}
-          {entry.isDir && (
-            <span className="text-ctp-overlay0">/</span>
-          )}
+    >
+      <FileTypeIcon path={entry.name} isDirectory={entry.isDir} />
+      <span className="flex-1 truncate text-ctp-text">
+        {entry.name}
+        {entry.isDir && <span className="text-ctp-overlay0">/</span>}
+      </span>
+      {!entry.isDir && entry.size > 0 && (
+        <span className="text-xs text-ctp-overlay0 tabular-nums shrink-0">
+          {formatFileSize(entry.size)}
         </span>
-        {!entry.isDir && entry.size > 0 && (
-          <span className="text-xs text-ctp-overlay0 tabular-nums shrink-0">
-            {formatFileSize(entry.size)}
-          </span>
-        )}
-      </button>
-    );
-  },
-);
+      )}
+    </button>
+  );
+});
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;

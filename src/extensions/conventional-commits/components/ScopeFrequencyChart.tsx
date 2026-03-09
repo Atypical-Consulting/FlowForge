@@ -1,7 +1,7 @@
-import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import type { ScopeSuggestion } from "../../../bindings";
+import { useState } from "react";
 import { cn } from "@/framework/lib/utils";
+import type { ScopeSuggestion } from "../../../bindings";
 
 const BAR_COLORS = [
   "bg-ctp-blue",
@@ -74,10 +74,7 @@ export function ScopeFrequencyChart({
       {expanded && (
         <div className="space-y-1.5">
           {displayed.map((item, index) => {
-            const barWidth = Math.max(
-              (item.usageCount / maxCount) * 100,
-              8,
-            );
+            const barWidth = Math.max((item.usageCount / maxCount) * 100, 8);
             const color = BAR_COLORS[index % BAR_COLORS.length];
 
             return (

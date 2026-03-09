@@ -1,6 +1,6 @@
+import type { StoreApi, UseBoundStore } from "zustand";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import type { UseBoundStore, StoreApi } from "zustand";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -77,7 +77,9 @@ export function createRegistry<TItem extends RegistryItem>(
  */
 export function createRegistry<TItem extends RegistryItem>(
   options: CreateRegistryOptions<TItem>,
-): UseBoundStore<StoreApi<BaseRegistryState<TItem> & Partial<VisibilityMixin>>> {
+): UseBoundStore<
+  StoreApi<BaseRegistryState<TItem> & Partial<VisibilityMixin>>
+> {
   const {
     name,
     getKey = (item: TItem) => (item as TItem & { id: string }).id,

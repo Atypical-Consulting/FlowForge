@@ -16,7 +16,7 @@
  */
 
 /** Base blade props map — apps extend via module augmentation */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+// biome-ignore lint/suspicious/noEmptyInterface: extended via module augmentation
 export interface BladePropsMap {}
 
 /** Core blade types derived from the map */
@@ -43,4 +43,9 @@ export type TypedBlade =
         props: BladePropsMap[K];
       };
     }[CoreBladeType]
-  | { id: string; type: ExtensionBladeType; title: string; props: Record<string, unknown> };
+  | {
+      id: string;
+      type: ExtensionBladeType;
+      title: string;
+      props: Record<string, unknown>;
+    };

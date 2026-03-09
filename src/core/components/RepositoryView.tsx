@@ -1,24 +1,28 @@
-import {
-  Archive,
-  GitBranch,
-  Plus,
-  Tag,
-} from "lucide-react";
-import { Component, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Archive, GitBranch, Plus, Tag } from "lucide-react";
 import type { ErrorInfo, ReactNode } from "react";
-import { useGroupRef, usePanelRef } from "react-resizable-panels";
+import {
+  Component,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { Layout } from "react-resizable-panels";
-import { useSidebarPanelRegistry, getVisiblePanels } from "@/framework/layout/sidebarPanelRegistry";
+import { useGroupRef, usePanelRef } from "react-resizable-panels";
 import { getPresetById } from "@/framework/layout/layoutPresets";
-import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
-import { usePreferencesStore } from "../stores/domain/preferences";
-import { BladeContainer } from "../blades/_shared";
+import {
+  getVisiblePanels,
+  useSidebarPanelRegistry,
+} from "@/framework/layout/sidebarPanelRegistry";
 import { BranchList } from "../../extensions/branches/components/BranchList";
-import { CommitForm } from "./commit/CommitForm";
-import { ResizablePanelLayout, ResizablePanel, ResizeHandle } from "./layout";
 import { StashList } from "../../extensions/stash/components/StashList";
 import { TagList } from "../../extensions/tags/components/TagList";
-
+import { BladeContainer } from "../blades/_shared";
+import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
+import { usePreferencesStore } from "../stores/domain/preferences";
+import { CommitForm } from "./commit/CommitForm";
+import { ResizablePanel, ResizablePanelLayout, ResizeHandle } from "./layout";
 
 // Minimal error boundary for extension panels (react-error-boundary not in deps)
 class ExtensionPanelErrorBoundary extends Component<
@@ -48,13 +52,10 @@ class ExtensionPanelErrorBoundary extends Component<
 }
 
 function DynamicSidebarPanels() {
-  const panels = useSidebarPanelRegistry((s) => s.items);
-  const visibilityTick = useSidebarPanelRegistry((s) => s.visibilityTick);
+  const _panels = useSidebarPanelRegistry((s) => s.items);
+  const _visibilityTick = useSidebarPanelRegistry((s) => s.visibilityTick);
 
-  const visiblePanels = useMemo(
-    () => getVisiblePanels(),
-    [panels, visibilityTick],
-  );
+  const visiblePanels = useMemo(() => getVisiblePanels(), []);
 
   if (visiblePanels.length === 0) return null;
 
@@ -69,15 +70,16 @@ function DynamicSidebarPanels() {
           <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
             <panel.icon className="w-4 h-4" />
             <span className="font-semibold text-sm flex-1">{panel.title}</span>
-            {panel.badge && (() => {
-              const value = panel.badge!();
-              if (value == null || value === 0 || value === '') return null;
-              return (
-                <span className="bg-ctp-blue text-ctp-base text-[10px] font-medium px-1.5 min-w-[18px] text-center rounded-full">
-                  {value}
-                </span>
-              );
-            })()}
+            {panel.badge &&
+              (() => {
+                const value = panel.badge?.();
+                if (value == null || value === 0 || value === "") return null;
+                return (
+                  <span className="bg-ctp-blue text-ctp-base text-[10px] font-medium px-1.5 min-w-[18px] text-center rounded-full">
+                    {value}
+                  </span>
+                );
+              })()}
             {panel.renderAction?.()}
           </summary>
           <ExtensionPanelErrorBoundary>
@@ -158,7 +160,15 @@ export function RepositoryView() {
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [layoutState.focusedPanel]);
+  }, [
+    layoutState.focusedPanel,
+    groupRef.current,
+    layoutState.activePreset,
+    layoutState.hiddenPanels.includes,
+    layoutState.panelSizes,
+    sidebarRef.current?.collapse,
+    sidebarRef.current?.expand,
+  ]);
 
   // Handle sidebar toggle via hiddenPanels
   useEffect(() => {
@@ -190,126 +200,126 @@ export function RepositoryView() {
   if (!status) return null;
 
   return (
-    <>
-      <ResizablePanelLayout
-        autoSaveId="repo-layout"
-        direction="horizontal"
-        groupRef={groupRef}
-        onLayoutChanged={handleLayoutChanged}
+    <ResizablePanelLayout
+      autoSaveId="repo-layout"
+      direction="horizontal"
+      groupRef={groupRef}
+      onLayoutChanged={handleLayoutChanged}
+    >
+      {/* Left sidebar - Branches, Stash, Tags */}
+      <ResizablePanel
+        id="sidebar"
+        defaultSize={20}
+        minSize={15}
+        maxSize={30}
+        panelRef={sidebarRef}
+        collapsible
+        collapsedSize={0}
       >
-        {/* Left sidebar - Branches, Stash, Tags */}
-        <ResizablePanel
-          id="sidebar"
-          defaultSize={20}
-          minSize={15}
-          maxSize={30}
-          panelRef={sidebarRef}
-          collapsible
-          collapsedSize={0}
-        >
-          <div className="h-full border-r border-ctp-surface0 bg-ctp-base flex flex-col">
-            {/* Scrollable sections container */}
-            <div className="flex-1 overflow-y-auto">
-              {/* Branches section */}
-              <details open className="border-b border-ctp-surface0">
-                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
-                  <GitBranch className="w-4 h-4" />
-                  <span className="font-semibold text-sm flex-1">Branches</span>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setShowBranchDialog(true);
-                    }}
-                    className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
-                    title="Create new branch"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </button>
-                </summary>
-                <BranchList
-                  showCreateDialog={showBranchDialog}
-                  onCloseCreateDialog={() => setShowBranchDialog(false)}
-                />
-              </details>
+        <div className="h-full border-r border-ctp-surface0 bg-ctp-base flex flex-col">
+          {/* Scrollable sections container */}
+          <div className="flex-1 overflow-y-auto">
+            {/* Branches section */}
+            <details open className="border-b border-ctp-surface0">
+              <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
+                <GitBranch className="w-4 h-4" />
+                <span className="font-semibold text-sm flex-1">Branches</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowBranchDialog(true);
+                  }}
+                  className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
+                  title="Create new branch"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </summary>
+              <BranchList
+                showCreateDialog={showBranchDialog}
+                onCloseCreateDialog={() => setShowBranchDialog(false)}
+              />
+            </details>
 
-              {/* Stash section */}
-              <details className="border-b border-ctp-surface0">
-                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
-                  <Archive className="w-4 h-4" />
-                  <span className="font-semibold text-sm flex-1">Stashes</span>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setShowStashDialog(true);
-                    }}
-                    className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
-                    title="Save new stash"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </button>
-                </summary>
-                <StashList
-                  showSaveDialog={showStashDialog}
-                  onCloseSaveDialog={() => setShowStashDialog(false)}
-                />
-              </details>
+            {/* Stash section */}
+            <details className="border-b border-ctp-surface0">
+              <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
+                <Archive className="w-4 h-4" />
+                <span className="font-semibold text-sm flex-1">Stashes</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowStashDialog(true);
+                  }}
+                  className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
+                  title="Save new stash"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </summary>
+              <StashList
+                showSaveDialog={showStashDialog}
+                onCloseSaveDialog={() => setShowStashDialog(false)}
+              />
+            </details>
 
-              {/* Tags section */}
-              <details className="border-b border-ctp-surface0">
-                <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
-                  <Tag className="w-4 h-4" />
-                  <span className="font-semibold text-sm flex-1">Tags</span>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setShowTagDialog(true);
-                    }}
-                    className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
-                    title="Create new tag"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </button>
-                </summary>
-                <TagList
-                  showCreateDialog={showTagDialog}
-                  onCloseCreateDialog={() => setShowTagDialog(false)}
-                  onOpenCreateDialog={() => setShowTagDialog(true)}
-                />
-              </details>
+            {/* Tags section */}
+            <details className="border-b border-ctp-surface0">
+              <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
+                <Tag className="w-4 h-4" />
+                <span className="font-semibold text-sm flex-1">Tags</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowTagDialog(true);
+                  }}
+                  className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
+                  title="Create new tag"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </summary>
+              <TagList
+                showCreateDialog={showTagDialog}
+                onCloseCreateDialog={() => setShowTagDialog(false)}
+                onOpenCreateDialog={() => setShowTagDialog(true)}
+              />
+            </details>
 
-              {/* Extension-contributed sidebar panels */}
-              <DynamicSidebarPanels />
-            </div>
-
-            {/* Commit form at bottom of left panel */}
-            <div className="shrink-0 border-t border-ctp-surface0">
-              <CommitForm />
-            </div>
+            {/* Extension-contributed sidebar panels */}
+            <DynamicSidebarPanels />
           </div>
-        </ResizablePanel>
 
-        <ResizeHandle />
+          {/* Commit form at bottom of left panel */}
+          <div className="shrink-0 border-t border-ctp-surface0">
+            <CommitForm />
+          </div>
+        </div>
+      </ResizablePanel>
 
-        {/* Main area - Blade Container */}
-        <ResizablePanel id="blades" defaultSize={80}>
-          <BladeContainer
-            isFocusMode={layoutState.focusedPanel !== null}
-            onToggleFocusMode={() => {
-              const { layoutState: ls, enterFocusMode, exitFocusMode } =
-                usePreferencesStore.getState();
-              if (ls.focusedPanel) {
-                exitFocusMode();
-              } else {
-                enterFocusMode("blades");
-              }
-            }}
-          />
-        </ResizablePanel>
-      </ResizablePanelLayout>
+      <ResizeHandle />
 
-    </>
+      {/* Main area - Blade Container */}
+      <ResizablePanel id="blades" defaultSize={80}>
+        <BladeContainer
+          isFocusMode={layoutState.focusedPanel !== null}
+          onToggleFocusMode={() => {
+            const {
+              layoutState: ls,
+              enterFocusMode,
+              exitFocusMode,
+            } = usePreferencesStore.getState();
+            if (ls.focusedPanel) {
+              exitFocusMode();
+            } else {
+              enterFocusMode("blades");
+            }
+          }}
+        />
+      </ResizablePanel>
+    </ResizablePanelLayout>
   );
 }

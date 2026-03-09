@@ -23,10 +23,12 @@ export function BladeStrip({ title, isDirty, onExpand }: BladeStripProps) {
       {isDirty && (
         <Circle className="w-2 h-2 fill-ctp-yellow text-ctp-yellow shrink-0 motion-safe:animate-pulse" />
       )}
-      <span className={cn(
-        "text-xs [writing-mode:vertical-lr] rotate-180",
-        isDirty ? "text-ctp-yellow" : "text-ctp-subtext0",
-      )}>
+      <span
+        className={cn(
+          "text-xs [writing-mode:vertical-lr] rotate-180",
+          isDirty ? "text-ctp-yellow" : "text-ctp-subtext0",
+        )}
+      >
         {title}
       </span>
     </button>

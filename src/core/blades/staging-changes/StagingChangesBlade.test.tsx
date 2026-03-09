@@ -7,7 +7,14 @@ const mockCommands = vi.hoisted(() => ({
   }),
   getFileDiff: vi.fn().mockResolvedValue({
     status: "ok",
-    data: { path: "", oldContent: "", newContent: "", hunks: [], isBinary: false, language: "text" },
+    data: {
+      path: "",
+      oldContent: "",
+      newContent: "",
+      hunks: [],
+      isBinary: false,
+      language: "text",
+    },
   }),
   stageFile: vi.fn().mockResolvedValue({ status: "ok", data: null }),
   unstageFile: vi.fn().mockResolvedValue({ status: "ok", data: null }),

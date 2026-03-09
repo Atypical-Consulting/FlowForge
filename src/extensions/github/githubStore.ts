@@ -9,9 +9,9 @@
 
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { commands } from "../../bindings";
-import { toast } from "@/framework/stores/toast";
 import { openBlade } from "@/framework/layout/bladeOpener";
+import { toast } from "@/framework/stores/toast";
+import { commands } from "../../bindings";
 import type { AuthStep } from "./types";
 
 // Deduplication guard: prevents duplicate "Linked to" toast
@@ -114,7 +114,10 @@ export const useGitHubStore = create<GitHubState>()(
         try {
           const result = await commands.githubStartDeviceFlow(selectedScopes);
           if (result.status === "error") {
-            const errMsg = "message" in result.error ? result.error.message : result.error.type;
+            const errMsg =
+              "message" in result.error
+                ? result.error.message
+                : result.error.type;
             set(
               { authError: errMsg, authStep: "error", isAuthenticating: false },
               false,
@@ -158,7 +161,10 @@ export const useGitHubStore = create<GitHubState>()(
         if (!deviceCode) return;
 
         try {
-          const result = await commands.githubPollAuth(deviceCode, pollInterval);
+          const result = await commands.githubPollAuth(
+            deviceCode,
+            pollInterval,
+          );
 
           if (result.status === "error") {
             const err = result.error;
@@ -285,7 +291,10 @@ export const useGitHubStore = create<GitHubState>()(
         try {
           const result = await commands.githubSignOut();
           if (result.status === "error") {
-            const errMsg = "message" in result.error ? result.error.message : result.error.type;
+            const errMsg =
+              "message" in result.error
+                ? result.error.message
+                : result.error.type;
             toast.error(`Sign out failed: ${errMsg}`);
             return;
           }
@@ -311,7 +320,9 @@ export const useGitHubStore = create<GitHubState>()(
 
           toast.success("Signed out of GitHub");
         } catch (e) {
-          toast.error(`Sign out failed: ${e instanceof Error ? e.message : String(e)}`);
+          toast.error(
+            `Sign out failed: ${e instanceof Error ? e.message : String(e)}`,
+          );
         }
       },
 
@@ -346,11 +357,7 @@ export const useGitHubStore = create<GitHubState>()(
           const result = await commands.githubCheckRateLimit();
           if (result.status === "error") return;
 
-          set(
-            { rateLimit: result.data },
-            false,
-            "github/rate-limit-updated",
-          );
+          set({ rateLimit: result.data }, false, "github/rate-limit-updated");
 
           get().checkRateLimitWarning();
         } catch {
@@ -412,11 +419,19 @@ export const useGitHubStore = create<GitHubState>()(
 
       resetRemotes: () => {
         lastLinkedToastRepo = null;
-        set({ detectedRemotes: [], selectedRemoteIndex: 0 }, false, "github/reset-remotes");
+        set(
+          { detectedRemotes: [], selectedRemoteIndex: 0 },
+          false,
+          "github/reset-remotes",
+        );
       },
 
       setSelectedRemote: (index: number) => {
-        set({ selectedRemoteIndex: index }, false, "github/set-selected-remote");
+        set(
+          { selectedRemoteIndex: index },
+          false,
+          "github/set-selected-remote",
+        );
       },
     }),
     { name: "github-auth", enabled: import.meta.env.DEV },

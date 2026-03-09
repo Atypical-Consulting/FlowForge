@@ -1,5 +1,5 @@
-import { lazy } from "react";
 import { GitBranch, GitMerge } from "lucide-react";
+import { lazy } from "react";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { openBlade } from "@/framework/layout/bladeOpener";
 import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
@@ -10,7 +10,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
   const GitflowCheatsheetBlade = lazy(() =>
     import("./blades/GitflowCheatsheetBlade").then((m) => ({
       default: m.GitflowCheatsheetBlade,
-    }))
+    })),
   );
 
   // Register blade type with coreOverride to preserve existing blade type name
@@ -53,7 +53,14 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     description: "Open the Gitflow workflow guide",
     category: "Navigation",
     icon: GitBranch,
-    keywords: ["gitflow", "workflow", "guide", "branching", "reference", "cheatsheet"],
+    keywords: [
+      "gitflow",
+      "workflow",
+      "guide",
+      "branching",
+      "reference",
+      "cheatsheet",
+    ],
     action: () => {
       openBlade("gitflow-cheatsheet", {} as Record<string, never>);
     },

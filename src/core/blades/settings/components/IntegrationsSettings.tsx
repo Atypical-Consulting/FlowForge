@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
-import { usePreferencesStore as useSettingsStore } from "../../../stores/domain/preferences";
 import {
   type AppOption,
   getEditorOptions,
   getTerminalOptions,
 } from "../../../lib/integrations-options";
+import { usePreferencesStore as useSettingsStore } from "../../../stores/domain/preferences";
 import { SettingsField } from "./SettingsField";
 
 const CUSTOM_SENTINEL = "__custom__";
@@ -107,9 +107,7 @@ export function IntegrationsSettings() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-ctp-text mb-1">
-          Integrations
-        </h3>
+        <h3 className="text-lg font-medium text-ctp-text mb-1">Integrations</h3>
         <p className="text-sm text-ctp-subtext0 mb-4">
           Configure which external editor and terminal to open from FlowForge.
         </p>

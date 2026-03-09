@@ -12,7 +12,11 @@ export function searchCommands(
 ): ScoredCommand[] {
   const trimmed = query.trim();
   if (!trimmed) {
-    return commands.map((command) => ({ command, score: 0, matchedRanges: [] }));
+    return commands.map((command) => ({
+      command,
+      score: 0,
+      matchedRanges: [],
+    }));
   }
 
   const q = trimmed.toLowerCase();
@@ -60,9 +64,7 @@ export function searchCommands(
     }
 
     // Keywords match
-    if (
-      command.keywords?.some((kw) => kw.toLowerCase().includes(q))
-    ) {
+    if (command.keywords?.some((kw) => kw.toLowerCase().includes(q))) {
       results.push({ command, score: 35, matchedRanges: [] });
       continue;
     }
@@ -71,7 +73,6 @@ export function searchCommands(
     const ranges = fuzzyMatch(q, command.title);
     if (ranges) {
       results.push({ command, score: 20, matchedRanges: ranges });
-      continue;
     }
   }
 
@@ -104,7 +105,10 @@ export function fuzzyMatch(
 
   // Close any open range
   if (rangeStart !== -1) {
-    ranges.push([rangeStart, rangeStart + (qi - ranges.reduce((sum, r) => sum + (r[1] - r[0]), 0))]);
+    ranges.push([
+      rangeStart,
+      rangeStart + (qi - ranges.reduce((sum, r) => sum + (r[1] - r[0]), 0)),
+    ]);
   }
 
   return ranges;

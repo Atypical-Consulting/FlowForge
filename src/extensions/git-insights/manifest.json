@@ -7,8 +7,21 @@
   "main": "index.ts",
   "contributes": {
     "blades": [{ "type": "insights-dashboard", "title": "Insights" }],
-    "commands": [{ "id": "show-insights", "title": "Show Insights", "category": "Navigation" }],
-    "toolbar": [{ "id": "insights", "label": "Insights", "group": "views", "priority": 40 }]
+    "commands": [
+      {
+        "id": "show-insights",
+        "title": "Show Insights",
+        "category": "Navigation"
+      }
+    ],
+    "toolbar": [
+      {
+        "id": "insights",
+        "label": "Insights",
+        "group": "views",
+        "priority": 40
+      }
+    ]
   },
   "trustLevel": "built-in"
 }

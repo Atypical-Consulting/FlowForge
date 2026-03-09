@@ -2,8 +2,8 @@ import type { StateCreator } from "zustand";
 import type { StashEntry } from "../../../../bindings";
 import { commands } from "../../../../bindings";
 import { getErrorMessage } from "../../../lib/errors";
-import type { GitOpsMiddleware } from "./types";
 import type { GitOpsStore } from "./index";
+import type { GitOpsMiddleware } from "./types";
 
 export interface StashSlice {
   stashList: StashEntry[];
@@ -11,7 +11,10 @@ export interface StashSlice {
   stashError: string | null;
 
   loadStashes: () => Promise<void>;
-  saveStash: (message: string | null, includeUntracked: boolean) => Promise<boolean>;
+  saveStash: (
+    message: string | null,
+    includeUntracked: boolean,
+  ) => Promise<boolean>;
   applyStash: (index: number) => Promise<boolean>;
   popStash: (index: number) => Promise<boolean>;
   dropStash: (index: number) => Promise<boolean>;
@@ -29,17 +32,29 @@ export const createStashSlice: StateCreator<
   stashError: null,
 
   loadStashes: async () => {
-    set({ stashIsLoading: true, stashError: null }, undefined, "gitOps:stash/load");
+    set(
+      { stashIsLoading: true, stashError: null },
+      undefined,
+      "gitOps:stash/load",
+    );
     const result = await commands.listStashes();
     if (result.status === "ok") {
-      set({ stashList: result.data, stashIsLoading: false }, undefined, "gitOps:stash/loadOk");
+      set(
+        { stashList: result.data, stashIsLoading: false },
+        undefined,
+        "gitOps:stash/loadOk",
+      );
     } else {
       set({ stashError: getErrorMessage(result.error), stashIsLoading: false });
     }
   },
 
   saveStash: async (message, includeUntracked) => {
-    set({ stashIsLoading: true, stashError: null }, undefined, "gitOps:stash/save");
+    set(
+      { stashIsLoading: true, stashError: null },
+      undefined,
+      "gitOps:stash/save",
+    );
     const result = await commands.stashSave(message, includeUntracked);
     if (result.status === "ok") {
       await get().loadStashes();
@@ -50,7 +65,11 @@ export const createStashSlice: StateCreator<
   },
 
   applyStash: async (index) => {
-    set({ stashIsLoading: true, stashError: null }, undefined, "gitOps:stash/apply");
+    set(
+      { stashIsLoading: true, stashError: null },
+      undefined,
+      "gitOps:stash/apply",
+    );
     const result = await commands.stashApply(index);
     if (result.status === "ok") {
       set({ stashIsLoading: false }, undefined, "gitOps:stash/applyOk");
@@ -61,7 +80,11 @@ export const createStashSlice: StateCreator<
   },
 
   popStash: async (index) => {
-    set({ stashIsLoading: true, stashError: null }, undefined, "gitOps:stash/pop");
+    set(
+      { stashIsLoading: true, stashError: null },
+      undefined,
+      "gitOps:stash/pop",
+    );
     const result = await commands.stashPop(index);
     if (result.status === "ok") {
       await get().loadStashes();
@@ -72,7 +95,11 @@ export const createStashSlice: StateCreator<
   },
 
   dropStash: async (index) => {
-    set({ stashIsLoading: true, stashError: null }, undefined, "gitOps:stash/drop");
+    set(
+      { stashIsLoading: true, stashError: null },
+      undefined,
+      "gitOps:stash/drop",
+    );
     const result = await commands.stashDrop(index);
     if (result.status === "ok") {
       await get().loadStashes();
@@ -82,5 +109,6 @@ export const createStashSlice: StateCreator<
     return false;
   },
 
-  clearStashError: () => set({ stashError: null }, undefined, "gitOps:stash/clearError"),
+  clearStashError: () =>
+    set({ stashError: null }, undefined, "gitOps:stash/clearError"),
 });

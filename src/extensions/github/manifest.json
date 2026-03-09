@@ -18,15 +18,43 @@
     "commands": [
       { "id": "sign-in", "title": "Sign in to GitHub", "category": "GitHub" },
       { "id": "sign-out", "title": "Sign out of GitHub", "category": "GitHub" },
-      { "id": "open-pull-requests", "title": "View Pull Requests", "category": "GitHub" },
+      {
+        "id": "open-pull-requests",
+        "title": "View Pull Requests",
+        "category": "GitHub"
+      },
       { "id": "open-issues", "title": "View Issues", "category": "GitHub" },
-      { "id": "create-pull-request", "title": "Create Pull Request", "category": "GitHub" }
+      {
+        "id": "create-pull-request",
+        "title": "Create Pull Request",
+        "category": "GitHub"
+      }
     ],
     "toolbar": [
-      { "id": "github-status", "label": "GitHub", "group": "app", "priority": 60 },
-      { "id": "open-pull-requests", "label": "Pull Requests", "group": "views", "priority": 50 },
-      { "id": "open-issues", "label": "Issues", "group": "views", "priority": 45 },
-      { "id": "create-pr", "label": "Create Pull Request", "group": "views", "priority": 55 }
+      {
+        "id": "github-status",
+        "label": "GitHub",
+        "group": "app",
+        "priority": 60
+      },
+      {
+        "id": "open-pull-requests",
+        "label": "Pull Requests",
+        "group": "views",
+        "priority": 50
+      },
+      {
+        "id": "open-issues",
+        "label": "Issues",
+        "group": "views",
+        "priority": 45
+      },
+      {
+        "id": "create-pr",
+        "label": "Create Pull Request",
+        "group": "views",
+        "priority": 55
+      }
     ]
   },
   "permissions": null,

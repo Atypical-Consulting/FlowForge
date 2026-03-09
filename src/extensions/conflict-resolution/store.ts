@@ -1,7 +1,8 @@
 import { create } from "zustand";
+import { registerStoreForReset } from "@/framework/stores/registry";
 import { toast } from "@/framework/stores/toast";
 import { commands } from "../../bindings";
-import { registerStoreForReset } from "@/framework/stores/registry";
+import { buildResolvedContent } from "./lib/conflictParser";
 import type {
   ConflictFile,
   ConflictHunk,
@@ -9,7 +10,6 @@ import type {
   ResolutionChoice,
   UndoEntry,
 } from "./types";
-import { buildResolvedContent, parseConflictMarkers } from "./lib/conflictParser";
 
 function deriveStatus(hunks: ConflictHunk[]): FileResolutionStatus {
   const resolved = hunks.filter((h) => h.resolution !== null).length;
@@ -25,7 +25,11 @@ interface ConflictStore {
   // Actions
   loadConflictFiles: () => Promise<void>;
   openConflictFile: (path: string) => Promise<void>;
-  resolveHunk: (filePath: string, hunkId: string, choice: ResolutionChoice) => void;
+  resolveHunk: (
+    filePath: string,
+    hunkId: string,
+    choice: ResolutionChoice,
+  ) => void;
   undoHunkResolution: (filePath: string) => void;
   updateResultContent: (filePath: string, content: string) => void;
   resetFile: (filePath: string) => void;
@@ -164,7 +168,7 @@ export const useConflictStore = create<ConflictStore>()((set, get) => ({
           newResultContent = hunk.theirsContent;
           break;
         case "both":
-          newResultContent = hunk.oursContent + "\n" + hunk.theirsContent;
+          newResultContent = `${hunk.oursContent}\n${hunk.theirsContent}`;
           break;
         case "custom":
           newResultContent = file.resultContent;
@@ -174,7 +178,10 @@ export const useConflictStore = create<ConflictStore>()((set, get) => ({
       }
     } else {
       // Multi-hunk — rebuild from original with all resolved hunks
-      newResultContent = buildResolvedContent(file.oursFullContent, updatedHunks);
+      newResultContent = buildResolvedContent(
+        file.oursFullContent,
+        updatedHunks,
+      );
     }
 
     const updatedFile: ConflictFile = {
@@ -247,7 +254,10 @@ export const useConflictStore = create<ConflictStore>()((set, get) => ({
     const file = get().files.get(filePath);
     if (!file) return false;
 
-    const result = await commands.resolveConflictFile(filePath, file.resultContent);
+    const result = await commands.resolveConflictFile(
+      filePath,
+      file.resultContent,
+    );
     if (result.status === "error") {
       toast.error(`Failed to resolve: ${filePath}`);
       console.error("Failed to resolve conflict:", result.error);

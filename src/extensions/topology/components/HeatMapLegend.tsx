@@ -19,11 +19,7 @@ function formatDate(date: Date): string {
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
 
-  const dateDay = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-  );
+  const dateDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
   if (dateDay.getTime() === today.getTime()) {
     return "Today";

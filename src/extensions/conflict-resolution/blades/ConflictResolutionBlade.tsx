@@ -1,16 +1,19 @@
 import { Check, GitMerge, Loader2, RotateCcw } from "lucide-react";
 import { useCallback, useEffect } from "react";
 import {
-  ResizablePanelLayout,
   ResizablePanel,
+  ResizablePanelLayout,
   ResizeHandle,
 } from "@/framework/layout/ResizablePanelLayout";
+import {
+  useConflictFileContent,
+  useConflictFiles,
+} from "../hooks/useConflictQuery";
 import { useConflictStore } from "../store";
-import { useConflictFiles, useConflictFileContent } from "../hooks/useConflictQuery";
-import { ConflictFileList } from "./components/ConflictFileList";
 import { ConflictDiffView } from "./components/ConflictDiffView";
-import { ConflictResultEditor } from "./components/ConflictResultEditor";
+import { ConflictFileList } from "./components/ConflictFileList";
 import { ConflictHunkActions } from "./components/ConflictHunkActions";
+import { ConflictResultEditor } from "./components/ConflictResultEditor";
 
 const EXT_LANGUAGE_MAP: Record<string, string> = {
   ts: "typescript",
@@ -64,7 +67,8 @@ export function ConflictResolutionBlade({
   } = useConflictStore();
 
   const { isLoading: isLoadingFiles } = useConflictFiles();
-  const { isLoading: isLoadingContent } = useConflictFileContent(activeFilePath);
+  const { isLoading: isLoadingContent } =
+    useConflictFileContent(activeFilePath);
 
   // Auto-select file from props on mount
   useEffect(() => {
@@ -124,7 +128,9 @@ export function ConflictResolutionBlade({
   }, [activeFilePath, markFileResolved]);
 
   const activeFile = activeFilePath ? files.get(activeFilePath) : undefined;
-  const canResolve = activeFilePath ? isFileFullyResolved(activeFilePath) : false;
+  const canResolve = activeFilePath
+    ? isFileFullyResolved(activeFilePath)
+    : false;
   const language = activeFilePath
     ? getLanguageFromPath(activeFilePath)
     : "plaintext";
@@ -185,11 +191,7 @@ export function ConflictResolutionBlade({
               direction="vertical"
             >
               {/* Diff view: ours vs theirs */}
-              <ResizablePanel
-                id="conflict-diff"
-                defaultSize={45}
-                minSize={20}
-              >
+              <ResizablePanel id="conflict-diff" defaultSize={45} minSize={20}>
                 <ConflictDiffView
                   oursContent={activeFile.oursFullContent}
                   theirsContent={activeFile.theirsFullContent}

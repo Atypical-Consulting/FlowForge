@@ -7,7 +7,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
   const DiffBlade = lazy(() =>
     import("./blades/DiffBlade").then((m) => ({
       default: m.DiffBlade,
-    }))
+    })),
   );
 
   api.registerBlade({

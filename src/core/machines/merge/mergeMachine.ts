@@ -1,8 +1,8 @@
-import { setup, assign } from "xstate";
-import type { MergeResult } from "../../../bindings";
+import { assign, setup } from "xstate";
 import { gitHookBus } from "@/core/services/gitHookBus";
+import type { MergeResult } from "../../../bindings";
+import { abortMergeActor, executeMerge } from "./actors";
 import type { MergeContext, MergeEvent } from "./types";
-import { executeMerge, abortMergeActor } from "./actors";
 
 export const mergeMachine = setup({
   types: {
@@ -90,9 +90,10 @@ export const mergeMachine = setup({
         onError: {
           target: "error",
           actions: assign(({ event }) => ({
-            error: event.error instanceof Error
-              ? event.error.message
-              : "Unknown error",
+            error:
+              event.error instanceof Error
+                ? event.error.message
+                : "Unknown error",
           })),
         },
       },
@@ -112,9 +113,10 @@ export const mergeMachine = setup({
         onError: {
           target: "error",
           actions: assign(({ event }) => ({
-            error: event.error instanceof Error
-              ? event.error.message
-              : "Unknown error",
+            error:
+              event.error instanceof Error
+                ? event.error.message
+                : "Unknown error",
           })),
         },
       },

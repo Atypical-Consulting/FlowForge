@@ -1,13 +1,13 @@
 import { useSelector } from "@xstate/react";
 import { getMergeActor } from "../machines/merge/context";
 import {
-  selectMergeState,
   selectConflicts,
+  selectIsAborting,
+  selectIsConflicted,
+  selectIsMerging,
   selectMergeError,
   selectMergeResult,
-  selectIsMerging,
-  selectIsConflicted,
-  selectIsAborting,
+  selectMergeState,
   selectSourceBranch,
 } from "../machines/merge/selectors";
 

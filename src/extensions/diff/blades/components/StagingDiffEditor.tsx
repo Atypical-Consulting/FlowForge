@@ -1,10 +1,7 @@
 import { DiffEditor, type DiffOnMount } from "@monaco-editor/react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { MONACO_COMMON_OPTIONS, MONACO_THEME } from "@/core/lib/monacoConfig";
 import type { DiffHunkDetail } from "../../../../bindings";
-import {
-  MONACO_COMMON_OPTIONS,
-  MONACO_THEME,
-} from "@/core/lib/monacoConfig";
 import "@/core/lib/monacoTheme";
 import { findHunkForLine, isChangedLine } from "../lib/diffUtils";
 
@@ -46,18 +43,25 @@ export function StagingDiffEditor({
   lineSelection,
 }: StagingDiffEditorProps) {
   const editorRef = useRef<Parameters<DiffOnMount>[0] | null>(null);
-  const modelsRef = useRef<ReturnType<Parameters<DiffOnMount>[0]["getModel"]>>(null);
+  const modelsRef =
+    useRef<ReturnType<Parameters<DiffOnMount>[0]["getModel"]>>(null);
   const viewZoneIdsRef = useRef<string[]>([]);
-  const hunkDecorationRef = useRef<ReturnType<
-    Parameters<DiffOnMount>[0]["getModifiedEditor"]
-  >["createDecorationsCollection"] extends (...args: any) => infer R
-    ? R
-    : null>(null);
-  const lineDecorationRef = useRef<ReturnType<
-    Parameters<DiffOnMount>[0]["getModifiedEditor"]
-  >["createDecorationsCollection"] extends (...args: any) => infer R
-    ? R
-    : null>(null);
+  const hunkDecorationRef =
+    useRef<
+      ReturnType<
+        Parameters<DiffOnMount>[0]["getModifiedEditor"]
+      >["createDecorationsCollection"] extends (...args: any) => infer R
+        ? R
+        : null
+    >(null);
+  const lineDecorationRef =
+    useRef<
+      ReturnType<
+        Parameters<DiffOnMount>[0]["getModifiedEditor"]
+      >["createDecorationsCollection"] extends (...args: any) => infer R
+        ? R
+        : null
+    >(null);
   const announcementRef = useRef<HTMLDivElement>(null);
 
   // Store callbacks in refs so ViewZone DOM nodes always have current values
@@ -216,7 +220,7 @@ export function StagingDiffEditor({
         button.addEventListener("click", () => {
           if (isOperationPendingRef.current) return;
           const ls = lineSelectionRef.current;
-          if (ls && ls.hasSelection && selectedLinesInHunk(hunkIndex) > 0) {
+          if (ls?.hasSelection && selectedLinesInHunk(hunkIndex) > 0) {
             ls.stageSelectedLines();
             if (announcementRef.current) {
               const count = selectedLinesInHunk(hunkIndex);
@@ -279,8 +283,18 @@ export function StagingDiffEditor({
 
     const modifiedEditor = diffEditor.getModifiedEditor();
     const decorations: Array<{
-      range: { startLineNumber: number; startColumn: number; endLineNumber: number; endColumn: number };
-      options: { isWholeLine: boolean; className?: string; glyphMarginClassName?: string; glyphMarginHoverMessage?: { value: string } };
+      range: {
+        startLineNumber: number;
+        startColumn: number;
+        endLineNumber: number;
+        endColumn: number;
+      };
+      options: {
+        isWholeLine: boolean;
+        className?: string;
+        glyphMarginClassName?: string;
+        glyphMarginHoverMessage?: { value: string };
+      };
     }> = [];
 
     // Add glyph margin checkbox decorations for all changed lines
@@ -382,7 +396,7 @@ export function StagingDiffEditor({
     });
 
     return () => disposable.dispose();
-  }, [hunks]);
+  }, []);
 
   // Register keyboard actions on the modified editor
   useEffect(() => {
@@ -429,9 +443,7 @@ export function StagingDiffEditor({
           const currentHunks = hunksRef.current;
           if (currentHunks.length === 0) return;
           const cursorLine = modifiedEditor.getPosition()?.lineNumber ?? 0;
-          const prevHunks = currentHunks.filter(
-            (h) => h.newStart < cursorLine,
-          );
+          const prevHunks = currentHunks.filter((h) => h.newStart < cursorLine);
           const target =
             prevHunks.length > 0
               ? prevHunks[prevHunks.length - 1]
@@ -456,12 +468,11 @@ export function StagingDiffEditor({
         ],
         run: () => {
           const ls = lineSelectionRef.current;
-          if (ls && ls.hasSelection) {
+          if (ls?.hasSelection) {
             ls.stageSelectedLines();
           } else {
             // Stage hunk at cursor
-            const cursorLine =
-              modifiedEditor.getPosition()?.lineNumber ?? 0;
+            const cursorLine = modifiedEditor.getPosition()?.lineNumber ?? 0;
             const hunkIndex = findHunkForLine(hunksRef.current, cursorLine);
             if (hunkIndex >= 0) {
               onToggleHunkRef.current(hunkIndex);
@@ -482,11 +493,10 @@ export function StagingDiffEditor({
         ],
         run: () => {
           const ls = lineSelectionRef.current;
-          if (ls && ls.hasSelection) {
+          if (ls?.hasSelection) {
             ls.stageSelectedLines();
           } else {
-            const cursorLine =
-              modifiedEditor.getPosition()?.lineNumber ?? 0;
+            const cursorLine = modifiedEditor.getPosition()?.lineNumber ?? 0;
             const hunkIndex = findHunkForLine(hunksRef.current, cursorLine);
             if (hunkIndex >= 0) {
               onToggleHunkRef.current(hunkIndex);
@@ -508,7 +518,7 @@ export function StagingDiffEditor({
         precondition: undefined,
         run: () => {
           const ls = lineSelectionRef.current;
-          if (ls && ls.hasSelection) {
+          if (ls?.hasSelection) {
             ls.clearSelection();
           }
         },

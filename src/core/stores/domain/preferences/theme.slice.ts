@@ -50,7 +50,11 @@ export const createThemeSlice: StateCreator<
       applyTheme(resolved);
 
       set(
-        { themePreference: theme, themeResolved: resolved, themeIsLoading: false },
+        {
+          themePreference: theme,
+          themeResolved: resolved,
+          themeIsLoading: false,
+        },
         false,
         "preferences:theme/init",
       );

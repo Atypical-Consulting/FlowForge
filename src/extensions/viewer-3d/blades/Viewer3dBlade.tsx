@@ -1,13 +1,13 @@
-import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { Box, Info, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { commands } from "../../../bindings";
-import { getErrorMessage } from "../../../core/lib/errors";
-import { BladeContentLoading } from "../../../core/blades/_shared/BladeContentLoading";
-import { BladeContentError } from "../../../core/blades/_shared/BladeContentError";
 import { BladeContentEmpty } from "../../../core/blades/_shared/BladeContentEmpty";
+import { BladeContentError } from "../../../core/blades/_shared/BladeContentError";
+import { BladeContentLoading } from "../../../core/blades/_shared/BladeContentLoading";
+import { getErrorMessage } from "../../../core/lib/errors";
 
 interface Viewer3dBladeProps {
   filePath: string;
@@ -53,7 +53,9 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
       const gl =
         testCanvas.getContext("webgl2") || testCanvas.getContext("webgl");
       if (!gl) {
-        console.error("[Viewer3dBlade] WebGL not supported — neither webgl2 nor webgl context available");
+        console.error(
+          "[Viewer3dBlade] WebGL not supported — neither webgl2 nor webgl context available",
+        );
         if (myVersion === loadVersionRef.current) {
           setFetchError("WebGL is not supported by your browser or GPU");
           setLoading(false);
@@ -61,9 +63,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
         return;
       }
     } catch {
-      console.warn(
-        "[Viewer3dBlade] WebGL detection failed, proceeding anyway",
-      );
+      console.warn("[Viewer3dBlade] WebGL detection failed, proceeding anyway");
     }
 
     try {
@@ -80,7 +80,11 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
 
       const { content, isBinary, size } = result.data;
       setFileSize(size);
-      console.log("[Viewer3dBlade] readRepoFile OK:", { isBinary, size, contentLength: content.length });
+      console.log("[Viewer3dBlade] readRepoFile OK:", {
+        isBinary,
+        size,
+        contentLength: content.length,
+      });
 
       let arrayBuffer: ArrayBuffer;
 
@@ -93,7 +97,10 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
             bytes[i] = binaryString.charCodeAt(i);
           }
           arrayBuffer = bytes.buffer as ArrayBuffer;
-          console.log("[Viewer3dBlade] Base64 decode OK, arrayBuffer byteLength:", arrayBuffer.byteLength);
+          console.log(
+            "[Viewer3dBlade] Base64 decode OK, arrayBuffer byteLength:",
+            arrayBuffer.byteLength,
+          );
         } catch (decodeErr) {
           console.error("[Viewer3dBlade] Base64 decode failed:", decodeErr);
           setFetchError(
@@ -106,8 +113,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
         }
       } else {
         // Text (.gltf) — encode to ArrayBuffer
-        arrayBuffer = new TextEncoder().encode(content)
-          .buffer as ArrayBuffer;
+        arrayBuffer = new TextEncoder().encode(content).buffer as ArrayBuffer;
       }
 
       // Store the buffer for the Three.js effect to pick up
@@ -139,7 +145,10 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
 
     let disposed = false;
     const arrayBuffer = bufferRef.current;
-    console.log("[Viewer3dBlade] Three.js setup starting, buffer byteLength:", arrayBuffer.byteLength);
+    console.log(
+      "[Viewer3dBlade] Three.js setup starting, buffer byteLength:",
+      arrayBuffer.byteLength,
+    );
 
     // Create renderer
     const renderer = new THREE.WebGLRenderer({
@@ -241,7 +250,9 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
           controls.target.set(0, 0, 0);
           controls.update();
 
-          console.log("[Viewer3dBlade] Model parsed successfully, adding to scene");
+          console.log(
+            "[Viewer3dBlade] Model parsed successfully, adding to scene",
+          );
           setModelReady(true);
 
           // Show interaction hint on first ever load
@@ -255,9 +266,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
           if (disposed) return;
           console.error("[Viewer3dBlade] GLTF parse error:", error);
           setFetchError(
-            error instanceof Error
-              ? error.message
-              : "Failed to parse 3D model",
+            error instanceof Error ? error.message : "Failed to parse 3D model",
           );
         },
       );
@@ -308,7 +317,7 @@ export function Viewer3dBlade({ filePath }: Viewer3dBladeProps) {
       canvas.removeEventListener("webglcontextrestored", handleContextRestored);
       sceneRef.current = null;
     };
-  }, [loading]);
+  }, [loading, fetchError]);
 
   // Auto-hide interaction hint
   useEffect(() => {

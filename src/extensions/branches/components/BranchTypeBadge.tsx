@@ -1,5 +1,9 @@
-import { classifyBranch, BRANCH_BADGE_STYLES, type GitflowBranchType } from "../../../core/lib/branchClassifier";
 import { cn } from "@/framework/lib/utils";
+import {
+  BRANCH_BADGE_STYLES,
+  classifyBranch,
+  type GitflowBranchType,
+} from "../../../core/lib/branchClassifier";
 
 const TEXT_COLORS: Record<GitflowBranchType, string> = {
   main: "text-ctp-blue",
@@ -15,8 +19,12 @@ interface BranchTypeBadgeProps {
   branchName?: string;
 }
 
-export function BranchTypeBadge({ branchType, branchName }: BranchTypeBadgeProps) {
-  const type = branchType ?? (branchName ? classifyBranch(branchName) : "other");
+export function BranchTypeBadge({
+  branchType,
+  branchName,
+}: BranchTypeBadgeProps) {
+  const type =
+    branchType ?? (branchName ? classifyBranch(branchName) : "other");
   if (type === "other") return null;
 
   return (
@@ -24,7 +32,7 @@ export function BranchTypeBadge({ branchType, branchName }: BranchTypeBadgeProps
       className={cn(
         "text-xs px-1.5 py-0.5 rounded border font-medium shrink-0",
         BRANCH_BADGE_STYLES[type],
-        TEXT_COLORS[type]
+        TEXT_COLORS[type],
       )}
       aria-label={`${type} branch`}
     >

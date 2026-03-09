@@ -95,11 +95,7 @@ export const createNavigationSlice: StateCreator<
     } catch (e) {
       console.error("Failed to persist pinned repos:", e);
     }
-    set(
-      { navPinnedRepoPaths: updated },
-      false,
-      "preferences:nav/pinRepo",
-    );
+    set({ navPinnedRepoPaths: updated }, false, "preferences:nav/pinRepo");
   },
 
   unpinRepo: async (path: string) => {
@@ -112,11 +108,7 @@ export const createNavigationSlice: StateCreator<
     } catch (e) {
       console.error("Failed to persist pinned repos:", e);
     }
-    set(
-      { navPinnedRepoPaths: updated },
-      false,
-      "preferences:nav/unpinRepo",
-    );
+    set({ navPinnedRepoPaths: updated }, false, "preferences:nav/unpinRepo");
   },
 
   isRepoPinned: (path: string) => {

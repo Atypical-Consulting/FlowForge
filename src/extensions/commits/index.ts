@@ -1,5 +1,5 @@
-import { lazy } from "react";
 import { Copy } from "lucide-react";
+import { lazy } from "react";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { toast } from "@/framework/stores/toast";
 
@@ -8,7 +8,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
   const CommitDetailsBlade = lazy(() =>
     import("./blades/CommitDetailsBlade").then((m) => ({
       default: m.CommitDetailsBlade,
-    }))
+    })),
   );
 
   // Register blade type with coreOverride to preserve existing blade type name

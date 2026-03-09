@@ -177,8 +177,8 @@
     <h1>FlowForge 3D Viewer Debug</h1>
     <span id="overall-status" class="status pending">Pending</span>
     <span style="flex:1"></span>
-    <button class="secondary" onclick="clearLog()">Clear Log</button>
-    <button class="secondary" onclick="runAllTests()">Run All Tests</button>
+    <button type="button" class="secondary" onclick="clearLog()">Clear Log</button>
+    <button type="button" class="secondary" onclick="runAllTests()">Run All Tests</button>
   </div>
 
   <div class="main">
@@ -227,7 +227,7 @@
         <h2>Load GLB/GLTF File</h2>
         <div class="controls">
           <input type="file" id="file-input" accept=".glb,.gltf" />
-          <button id="btn-load-file" onclick="loadFromFile()" disabled>
+          <button type="button" id="btn-load-file" onclick="loadFromFile()" disabled>
             Test: Direct File Load
           </button>
         </div>
@@ -238,10 +238,10 @@
         <h2>Test Base64 Pipeline (simulates Tauri)</h2>
         <div class="controls">
           <textarea id="base64-input" placeholder="Paste base64-encoded GLB data here, or use 'Load File as Base64' button below..."></textarea>
-          <button id="btn-load-base64" onclick="loadFromBase64()" disabled>
+          <button type="button" id="btn-load-base64" onclick="loadFromBase64()" disabled>
             Test: Base64 Decode + Parse
           </button>
-          <button id="btn-file-to-base64" onclick="fileToBase64()" disabled>
+          <button type="button" id="btn-file-to-base64" onclick="fileToBase64()" disabled>
             Load File as Base64 (round-trip test)
           </button>
         </div>
@@ -251,10 +251,10 @@
       <div class="section">
         <h2>Quick Test</h2>
         <div class="controls">
-          <button onclick="loadSampleCube()">
+          <button type="button" onclick="loadSampleCube()">
             Test: Procedural Cube (no file needed)
           </button>
-          <button onclick="fetchSampleModel()">
+          <button type="button" onclick="fetchSampleModel()">
             Test: Fetch BoxAnimated.glb from GitHub
           </button>
         </div>
@@ -292,8 +292,8 @@
 
   <script type="module">
     import * as THREE from 'three';
-    import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
     import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
     // Make available globally for onclick handlers
     window.THREE = THREE;

@@ -1,39 +1,36 @@
 import type {
-  RepoStatus,
-  StagingStatus,
-  FileChange,
+  BatchDeleteResult,
   BranchInfo,
-  CommitSummary,
-  FileDiff,
+  ChangelogOutput,
   CommitDetails,
-  CommitInfo,
-  TagInfo,
-  StashEntry,
-  RemoteInfo,
   CommitGraph,
-  GitflowStatus,
+  CommitInfo,
+  CommitSummary,
+  FileChange,
+  FileChanged,
+  FileDiff,
+  GitError,
   GitflowContext,
+  GitflowError,
   GitflowInitResult,
+  GitflowStatus,
+  GitGlobalConfig,
+  InitResult,
+  LastCommitMessage,
   MergeResult,
   MergeStatus,
-  WorktreeInfo,
-  SyncResult,
-  UndoInfo,
-  TypeSuggestion,
-  ScopeSuggestion,
-  ChangelogOutput,
-  RepoFileEntry,
+  RemoteInfo,
   RepoFileContent,
-  GitGlobalConfig,
-  LastCommitMessage,
-  ValidationResult,
-  InitResult,
-  BatchDeleteResult,
-  RecentCheckout,
+  RepoStatus,
   Result,
-  GitError,
-  GitflowError,
-  FileChanged,
+  StagingStatus,
+  StashEntry,
+  SyncResult,
+  TagInfo,
+  TypeSuggestion,
+  UndoInfo,
+  ValidationResult,
+  WorktreeInfo,
 } from "../../../bindings";
 
 // Result helpers
@@ -54,9 +51,7 @@ export function gitflowErr(error: GitflowError): Result<never, GitflowError> {
 }
 
 // Factory functions
-export function createRepoStatus(
-  overrides?: Partial<RepoStatus>,
-): RepoStatus {
+export function createRepoStatus(overrides?: Partial<RepoStatus>): RepoStatus {
   return {
     branchName: "main",
     isDirty: false,
@@ -77,9 +72,7 @@ export function createStagingStatus(
   };
 }
 
-export function createFileChange(
-  overrides?: Partial<FileChange>,
-): FileChange {
+export function createFileChange(overrides?: Partial<FileChange>): FileChange {
   return {
     path: "src/main.ts",
     status: "modified",
@@ -89,9 +82,7 @@ export function createFileChange(
   };
 }
 
-export function createBranchInfo(
-  overrides?: Partial<BranchInfo>,
-): BranchInfo {
+export function createBranchInfo(overrides?: Partial<BranchInfo>): BranchInfo {
   return {
     name: "main",
     isHead: true,
@@ -149,9 +140,7 @@ export function createCommitDetails(
   };
 }
 
-export function createCommitInfo(
-  overrides?: Partial<CommitInfo>,
-): CommitInfo {
+export function createCommitInfo(overrides?: Partial<CommitInfo>): CommitInfo {
   return {
     oid: "abc1234567890abcdef1234567890abcdef123456",
     shortOid: "abc1234",
@@ -173,9 +162,7 @@ export function createTagInfo(overrides?: Partial<TagInfo>): TagInfo {
   };
 }
 
-export function createStashEntry(
-  overrides?: Partial<StashEntry>,
-): StashEntry {
+export function createStashEntry(overrides?: Partial<StashEntry>): StashEntry {
   return {
     index: 0,
     message: "WIP: work in progress",
@@ -184,9 +171,7 @@ export function createStashEntry(
   };
 }
 
-export function createRemoteInfo(
-  overrides?: Partial<RemoteInfo>,
-): RemoteInfo {
+export function createRemoteInfo(overrides?: Partial<RemoteInfo>): RemoteInfo {
   return {
     name: "origin",
     url: "https://github.com/test/repo.git",
@@ -237,9 +222,7 @@ export function createMockCommands() {
     getRepositoryStatus: vi.fn().mockResolvedValue(ok(createRepoStatus())),
     isGitRepository: vi.fn().mockResolvedValue(ok(true)),
     closeRepository: vi.fn().mockResolvedValue(ok(null)),
-    getStagingStatus: vi
-      .fn()
-      .mockResolvedValue(ok(createStagingStatus())),
+    getStagingStatus: vi.fn().mockResolvedValue(ok(createStagingStatus())),
     stageFile: vi.fn().mockResolvedValue(ok(null)),
     unstageFile: vi.fn().mockResolvedValue(ok(null)),
     stageFiles: vi.fn().mockResolvedValue(ok(null)),
@@ -259,13 +242,9 @@ export function createMockCommands() {
       } satisfies LastCommitMessage),
     ),
     getCommitHistory: vi.fn().mockResolvedValue(ok([])),
-    getCommitDetails: vi
-      .fn()
-      .mockResolvedValue(ok(createCommitDetails())),
+    getCommitDetails: vi.fn().mockResolvedValue(ok(createCommitDetails())),
     searchCommits: vi.fn().mockResolvedValue(ok([])),
-    getCommitGraph: vi
-      .fn()
-      .mockResolvedValue(ok(createCommitGraph())),
+    getCommitGraph: vi.fn().mockResolvedValue(ok(createCommitGraph())),
     getRemotes: vi.fn().mockResolvedValue(ok([])),
     fetchFromRemote: vi.fn().mockResolvedValue(
       ok({
@@ -333,17 +312,11 @@ export function createMockCommands() {
         switchedToDevelop: true,
       } satisfies GitflowInitResult),
     ),
-    startFeature: vi
-      .fn()
-      .mockResolvedValue(gitflowOk("feature/test")),
+    startFeature: vi.fn().mockResolvedValue(gitflowOk("feature/test")),
     finishFeature: vi.fn().mockResolvedValue(gitflowOk(null)),
-    startRelease: vi
-      .fn()
-      .mockResolvedValue(gitflowOk("release/1.0.0")),
+    startRelease: vi.fn().mockResolvedValue(gitflowOk("release/1.0.0")),
     finishRelease: vi.fn().mockResolvedValue(gitflowOk("v1.0.0")),
-    startHotfix: vi
-      .fn()
-      .mockResolvedValue(gitflowOk("hotfix/fix-bug")),
+    startHotfix: vi.fn().mockResolvedValue(gitflowOk("hotfix/fix-bug")),
     finishHotfix: vi.fn().mockResolvedValue(gitflowOk("v1.0.1")),
     getGitflowStatus: vi.fn().mockResolvedValue(
       gitflowOk({
@@ -389,9 +362,7 @@ export function createMockCommands() {
       } satisfies ChangelogOutput),
     ),
     listWorktrees: vi.fn().mockResolvedValue(ok([])),
-    createWorktree: vi
-      .fn()
-      .mockResolvedValue(ok(createWorktreeInfo())),
+    createWorktree: vi.fn().mockResolvedValue(ok(createWorktreeInfo())),
     deleteWorktree: vi.fn().mockResolvedValue(ok(null)),
     getUndoInfo: vi.fn().mockResolvedValue(
       ok({

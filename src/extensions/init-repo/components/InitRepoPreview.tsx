@@ -1,10 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  FileText,
-  Folder,
-  GitCommitHorizontal,
-  Check,
-} from "lucide-react";
+import { Check, FileText, Folder, GitCommitHorizontal } from "lucide-react";
 import { useMemo } from "react";
 import { composeGitignore } from "../lib/gitignoreComposer";
 import { useInitRepoStore } from "../store";
@@ -126,9 +121,7 @@ function ReadmePreview({
           <h1 className="text-xl font-bold text-ctp-text">
             {name || "Project"}
           </h1>
-          {description && (
-            <p className="text-ctp-subtext1">{description}</p>
-          )}
+          {description && <p className="text-ctp-subtext1">{description}</p>}
         </div>
       ) : (
         <p className="text-sm text-ctp-subtext0 italic">

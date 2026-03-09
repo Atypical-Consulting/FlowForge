@@ -1,16 +1,18 @@
-import { Channel } from "@tauri-apps/api/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Channel } from "@tauri-apps/api/core";
 import { useHotkeys } from "react-hotkeys-hook";
-import { type SyncProgress, commands } from "../../bindings";
+import { executeCommand } from "@/framework/command-palette/commandRegistry";
+import { usePaletteStore as useCommandPaletteStore } from "@/framework/command-palette/paletteStore";
 import { openBlade } from "@/framework/layout/bladeOpener";
 import { useBladeRegistry } from "@/framework/layout/bladeRegistry";
-import { executeCommand } from "@/framework/command-palette/commandRegistry";
 import { getNavigationActor } from "@/framework/layout/navigation/context";
-import { usePaletteStore as useCommandPaletteStore } from "@/framework/command-palette/paletteStore";
-import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
-import { useGitOpsStore as useTopologyStore } from "../stores/domain/git-ops";
-import { usePreferencesStore } from "../stores/domain/preferences";
 import { toast } from "@/framework/stores/toast";
+import { commands, type SyncProgress } from "../../bindings";
+import {
+  useGitOpsStore as useRepositoryStore,
+  useGitOpsStore as useTopologyStore,
+} from "../stores/domain/git-ops";
+import { usePreferencesStore } from "../stores/domain/preferences";
 
 /**
  * Keyboard shortcuts for common Git operations.
@@ -268,7 +270,10 @@ export function useKeyboardShortcuts() {
     (e) => {
       e.preventDefault();
       if (status) {
-        getNavigationActor().send({ type: "SWITCH_WORKFLOW", workflow: "staging" });
+        getNavigationActor().send({
+          type: "SWITCH_WORKFLOW",
+          workflow: "staging",
+        });
       }
     },
     { preventDefault: true, enabled: !!status },
@@ -280,7 +285,10 @@ export function useKeyboardShortcuts() {
     (e) => {
       e.preventDefault();
       if (status && useBladeRegistry.getState().items.has("topology-graph")) {
-        getNavigationActor().send({ type: "SWITCH_WORKFLOW", workflow: "topology" });
+        getNavigationActor().send({
+          type: "SWITCH_WORKFLOW",
+          workflow: "topology",
+        });
       }
     },
     { preventDefault: true, enabled: !!status },
@@ -322,7 +330,9 @@ export function useKeyboardShortcuts() {
         topologyStore.topologySelectedCommit &&
         ctx.bladeStack.length === 1
       ) {
-        openBlade("commit-details", { oid: topologyStore.topologySelectedCommit });
+        openBlade("commit-details", {
+          oid: topologyStore.topologySelectedCommit,
+        });
       }
     },
     { enableOnFormTags: false, enabled: !!status },

@@ -3,7 +3,7 @@ export type TimeRange = 7 | 30 | 90;
 
 // These types match the Rust structs in insights.rs (camelCase via serde)
 export interface DailyCommitCount {
-  date: string;    // "YYYY-MM-DD"
+  date: string; // "YYYY-MM-DD"
   count: number;
 }
 
@@ -29,7 +29,7 @@ export interface BranchHealthInfo {
   name: string;
   isHead: boolean;
   isRemote: boolean;
-  lastCommitDate: string;       // "YYYY-MM-DD"
+  lastCommitDate: string; // "YYYY-MM-DD"
   lastCommitTimestampMs: number;
   lastCommitMessage: string;
   ahead: number;

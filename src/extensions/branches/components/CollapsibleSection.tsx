@@ -1,6 +1,6 @@
-import { useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
+import { type ReactNode, useState } from "react";
 
 interface CollapsibleSectionProps {
   title: string;

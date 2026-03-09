@@ -1,7 +1,7 @@
-import { useCallback, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { commands } from "../../../bindings";
+import { useCallback, useState } from "react";
 import type { CommitType } from "../../../bindings";
+import { commands } from "../../../bindings";
 import { parseConventionalMessage } from "../lib/conventional-utils";
 
 interface UseAmendPrefillOptions {

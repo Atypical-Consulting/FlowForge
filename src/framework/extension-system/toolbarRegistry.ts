@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
 import { createRegistry } from "../stores/createRegistry";
 
 // --- Types ---
@@ -63,7 +63,10 @@ export const useToolbarRegistry = createRegistry<ToolbarAction>({
 
 // --- Standalone query functions ---
 
-export function getGroupedToolbarActions(): Record<ToolbarGroup, ToolbarAction[]> {
+export function getGroupedToolbarActions(): Record<
+  ToolbarGroup,
+  ToolbarAction[]
+> {
   const { items } = useToolbarRegistry.getState();
   const grouped: Record<ToolbarGroup, ToolbarAction[]> = {
     navigation: [],

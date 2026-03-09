@@ -24,9 +24,8 @@ export function ContextMenuPortal() {
   // Focus first menu item on mount
   useEffect(() => {
     if (!activeMenu || !menuRef.current) return;
-    const firstItem = menuRef.current.querySelector<HTMLButtonElement>(
-      '[role="menuitem"]',
-    );
+    const firstItem =
+      menuRef.current.querySelector<HTMLButtonElement>('[role="menuitem"]');
     firstItem?.focus();
   }, [activeMenu]);
 
@@ -37,15 +36,25 @@ export function ContextMenuPortal() {
   for (const item of activeMenu.items) {
     const group = item.group ?? "__default__";
     if (!groupMap.has(group)) groupMap.set(group, []);
-    groupMap.get(group)!.push(item);
+    groupMap.get(group)?.push(item);
   }
   const groups = Array.from(groupMap.entries());
 
   // Clamp position to viewport
   const menuWidth = 200;
-  const menuHeight = Math.min(groups.reduce((acc, [, items]) => acc + items.length * 32, 0) + groups.length * 8, 400);
-  const left = Math.min(activeMenu.position.x, window.innerWidth - menuWidth - 8);
-  const top = Math.min(activeMenu.position.y, window.innerHeight - menuHeight - 8);
+  const menuHeight = Math.min(
+    groups.reduce((acc, [, items]) => acc + items.length * 32, 0) +
+      groups.length * 8,
+    400,
+  );
+  const left = Math.min(
+    activeMenu.position.x,
+    window.innerWidth - menuWidth - 8,
+  );
+  const top = Math.min(
+    activeMenu.position.y,
+    window.innerHeight - menuHeight - 8,
+  );
 
   return createPortal(
     <div

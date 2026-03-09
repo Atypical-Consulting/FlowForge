@@ -1,8 +1,8 @@
 import { Settings, Sun } from "lucide-react";
 import { registerCommand } from "@/framework/command-palette/commandRegistry";
 import { openBlade } from "@/framework/layout/bladeOpener";
-import type { Theme } from "../stores/domain/preferences/theme.slice";
 import { usePreferencesStore as useThemeStore } from "../stores/domain/preferences";
+import type { Theme } from "../stores/domain/preferences/theme.slice";
 
 registerCommand({
   id: "open-settings",

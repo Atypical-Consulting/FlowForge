@@ -1,7 +1,7 @@
-import { create } from "zustand";
-import { devtools } from "zustand/middleware";
 import type { AnyActorRef, AnyStateMachine } from "xstate";
 import { createActor } from "xstate";
+import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 
 export interface MachineRegistryEntry {
   id: string;
@@ -35,7 +35,9 @@ export const useMachineRegistry = create<MachineRegistryState>()(
       register: (entry) => {
         const prev = get().machines;
         if (prev.has(entry.id)) {
-          console.warn(`[MachineRegistry] Machine "${entry.id}" already registered`);
+          console.warn(
+            `[MachineRegistry] Machine "${entry.id}" already registered`,
+          );
           return;
         }
         const next = new Map(prev);

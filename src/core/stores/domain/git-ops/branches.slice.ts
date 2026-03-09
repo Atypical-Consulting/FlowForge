@@ -1,10 +1,10 @@
 import type { StateCreator } from "zustand";
+import { gitHookBus } from "@/core/services/gitHookBus";
 import type { BranchInfo } from "../../../../bindings";
 import { commands } from "../../../../bindings";
 import { getErrorMessage } from "../../../lib/errors";
-import { gitHookBus } from "@/core/services/gitHookBus";
-import type { GitOpsMiddleware } from "./types";
 import type { GitOpsStore } from "./index";
+import type { GitOpsMiddleware } from "./types";
 
 // Merge workflow moved to src/machines/merge/
 
@@ -35,27 +35,53 @@ export const createBranchSlice: StateCreator<
   branchError: null,
 
   loadBranches: async () => {
-    set({ branchIsLoading: true, branchError: null }, undefined, "gitOps:branch/load");
+    set(
+      { branchIsLoading: true, branchError: null },
+      undefined,
+      "gitOps:branch/load",
+    );
     const result = await commands.listBranches();
     if (result.status === "ok") {
-      set({ branchList: result.data, branchIsLoading: false }, undefined, "gitOps:branch/loadOk");
+      set(
+        { branchList: result.data, branchIsLoading: false },
+        undefined,
+        "gitOps:branch/loadOk",
+      );
     } else {
-      set({ branchError: getErrorMessage(result.error), branchIsLoading: false });
+      set({
+        branchError: getErrorMessage(result.error),
+        branchIsLoading: false,
+      });
     }
   },
 
   loadAllBranches: async (includeRemote: boolean) => {
-    set({ branchIsLoading: true, branchError: null }, undefined, "gitOps:branch/loadAll");
+    set(
+      { branchIsLoading: true, branchError: null },
+      undefined,
+      "gitOps:branch/loadAll",
+    );
     const result = await commands.listAllBranches(includeRemote);
     if (result.status === "ok") {
-      set({ branchAllList: result.data, branchIsLoading: false }, undefined, "gitOps:branch/loadAllOk");
+      set(
+        { branchAllList: result.data, branchIsLoading: false },
+        undefined,
+        "gitOps:branch/loadAllOk",
+      );
     } else {
-      set({ branchError: getErrorMessage(result.error), branchIsLoading: false });
+      set({
+        branchError: getErrorMessage(result.error),
+        branchIsLoading: false,
+      });
     }
   },
 
   createBranch: async (name, checkout) => {
-    set({ branchIsLoading: true, branchError: null }, undefined, "gitOps:branch/create");
+    set(
+      { branchIsLoading: true, branchError: null },
+      undefined,
+      "gitOps:branch/create",
+    );
     const result = await commands.createBranch(name, checkout);
     if (result.status === "ok") {
       await get().loadBranches();
@@ -67,7 +93,11 @@ export const createBranchSlice: StateCreator<
   },
 
   checkoutBranch: async (name) => {
-    set({ branchIsLoading: true, branchError: null }, undefined, "gitOps:branch/checkout");
+    set(
+      { branchIsLoading: true, branchError: null },
+      undefined,
+      "gitOps:branch/checkout",
+    );
     const result = await commands.checkoutBranch(name);
     if (result.status === "ok") {
       await get().loadBranches();
@@ -79,7 +109,11 @@ export const createBranchSlice: StateCreator<
   },
 
   checkoutRemoteBranch: async (remoteBranch: string) => {
-    set({ branchIsLoading: true, branchError: null }, undefined, "gitOps:branch/checkoutRemote");
+    set(
+      { branchIsLoading: true, branchError: null },
+      undefined,
+      "gitOps:branch/checkoutRemote",
+    );
     const result = await commands.checkoutRemoteBranch(remoteBranch);
     if (result.status === "ok") {
       await get().loadBranches();
@@ -90,7 +124,11 @@ export const createBranchSlice: StateCreator<
   },
 
   deleteBranch: async (name, force) => {
-    set({ branchIsLoading: true, branchError: null }, undefined, "gitOps:branch/delete");
+    set(
+      { branchIsLoading: true, branchError: null },
+      undefined,
+      "gitOps:branch/delete",
+    );
     const result = await commands.deleteBranch(name, force);
     if (result.status === "ok") {
       await get().loadBranches();
@@ -101,5 +139,6 @@ export const createBranchSlice: StateCreator<
     return false;
   },
 
-  clearBranchError: () => set({ branchError: null }, undefined, "gitOps:branch/clearError"),
+  clearBranchError: () =>
+    set({ branchError: null }, undefined, "gitOps:branch/clearError"),
 });

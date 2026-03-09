@@ -8,7 +8,11 @@ interface CommitSearchProps {
   className?: string;
 }
 
-export function CommitSearch({ value, onChange, className }: CommitSearchProps) {
+export function CommitSearch({
+  value,
+  onChange,
+  className,
+}: CommitSearchProps) {
   const [localValue, setLocalValue] = useState(value);
 
   // Debounce the onChange callback

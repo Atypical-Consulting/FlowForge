@@ -1,8 +1,8 @@
 import { Folder, FolderOpen, Pin, Terminal, X } from "lucide-react";
-import type { RecentRepo } from "../../../core/hooks/useRecentRepos";
 import { Button } from "../../../core/components/ui/button";
-import { HealthDot } from "./HealthDot";
+import type { RecentRepo } from "../../../core/hooks/useRecentRepos";
 import type { RepoHealthStatus } from "../hooks/useRepoHealth";
+import { HealthDot } from "./HealthDot";
 
 interface RepoCardProps {
   repo: RecentRepo;
@@ -79,9 +79,7 @@ export function RepoCard({
         }}
         aria-label={repo.isPinned ? "Unpin repository" : "Pin repository"}
       >
-        <Pin
-          className={`w-4 h-4 ${repo.isPinned ? "rotate-45" : ""}`}
-        />
+        <Pin className={`w-4 h-4 ${repo.isPinned ? "rotate-45" : ""}`} />
       </Button>
       {/* Open button */}
       <Button

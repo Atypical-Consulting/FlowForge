@@ -28,7 +28,9 @@ export const useBladeRegistry = createRegistry<BladeRegistration<any>>({
 
 // --- Standalone query functions ---
 
-export function getRegistration(type: string): BladeRegistration<any> | undefined {
+export function getRegistration(
+  type: string,
+): BladeRegistration<any> | undefined {
   return useBladeRegistry.getState().get(type);
 }
 
@@ -43,9 +45,7 @@ export function isSingleton(type: string): boolean {
 // --- Backward-compatible function exports ---
 // All 26 consumer files continue importing these same functions unchanged.
 
-export function registerBlade<TProps>(
-  config: BladeRegistration<TProps>,
-): void {
+export function registerBlade<TProps>(config: BladeRegistration<TProps>): void {
   useBladeRegistry.getState().register(config);
 }
 

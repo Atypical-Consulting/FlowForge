@@ -1,4 +1,4 @@
-import { useToastStore, toast } from "@/framework/stores/toast";
+import { toast, useToastStore } from "@/framework/stores/toast";
 
 describe("useToastStore", () => {
   it("has correct initial state with empty toasts", () => {

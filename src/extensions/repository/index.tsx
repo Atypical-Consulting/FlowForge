@@ -1,19 +1,12 @@
+import { FolderOpen, FolderTree, GitFork, RefreshCw, X } from "lucide-react";
 import { lazy } from "react";
-import {
-  FolderOpen,
-  FolderTree,
-  GitFork,
-  RefreshCw,
-  X,
-} from "lucide-react";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { openBlade } from "@/framework/layout/bladeOpener";
-import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
 import { BladeBreadcrumb } from "../../core/blades/_shared/BladeBreadcrumb";
+import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
 
 /** Shared repo-open condition. */
-const whenRepoOpen = (): boolean =>
-  !!useRepositoryStore.getState().repoStatus;
+const whenRepoOpen = (): boolean => !!useRepositoryStore.getState().repoStatus;
 
 /** Shared repo-closed condition. */
 const whenRepoNotOpen = (): boolean =>
@@ -143,9 +136,10 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     execute: async () => {
       try {
         const { revealItemInDir } = await import("@tauri-apps/plugin-opener");
-        await revealItemInDir(
-          useRepositoryStore.getState().repoStatus!.repoPath,
-        );
+        const repoPath = useRepositoryStore.getState().repoStatus?.repoPath;
+        if (repoPath) {
+          await revealItemInDir(repoPath);
+        }
       } catch (e) {
         const { toast } = await import("@/framework/stores/toast");
         toast.error(

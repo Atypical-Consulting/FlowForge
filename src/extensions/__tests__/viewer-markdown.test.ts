@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { getBladeRegistration } from "@/framework/layout/bladeRegistry";
 import { onActivate, onDeactivate } from "../viewer-markdown";
@@ -21,7 +21,9 @@ describe("viewer-markdown extension", () => {
   it("registers blade type without ext: namespace (coreOverride)", async () => {
     await onActivate(api);
 
-    expect(getBladeRegistration("ext:viewer-markdown:viewer-markdown")).toBeUndefined();
+    expect(
+      getBladeRegistration("ext:viewer-markdown:viewer-markdown"),
+    ).toBeUndefined();
 
     api.cleanup();
   });

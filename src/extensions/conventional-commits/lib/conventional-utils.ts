@@ -18,7 +18,14 @@ export interface ConventionalMessageParts {
  * Returns an empty string if `commitType` or `description` is falsy.
  */
 export function buildCommitMessage(parts: ConventionalMessageParts): string {
-  const { commitType, scope, description, body, isBreaking, breakingDescription } = parts;
+  const {
+    commitType,
+    scope,
+    description,
+    body,
+    isBreaking,
+    breakingDescription,
+  } = parts;
 
   if (!commitType || !description) {
     return "";

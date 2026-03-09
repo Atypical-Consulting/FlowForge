@@ -3,19 +3,26 @@ import { AlertTriangle, FileCheck, FolderTree, List } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FileChange } from "../../../../bindings";
 import { commands } from "../../../../bindings";
+import { Button } from "../../../components/ui/button";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { Skeleton } from "../../../components/ui/Skeleton";
 import { formatShortcut } from "../../../hooks/useKeyboardShortcuts";
 import { cn } from "../../../lib/utils";
 import { useUIStore as useStagingStore } from "../../../stores/domain/ui-state";
-import { EmptyState } from "../../../components/ui/EmptyState";
-import { Skeleton } from "../../../components/ui/Skeleton";
-import { Button } from "../../../components/ui/button";
 import { FileList } from "./FileList";
 import { FileTreeSearch } from "./FileTreeSearch";
 import { FileTreeView } from "./FileTreeView";
 
 export function StagingPanel() {
   const queryClient = useQueryClient();
-  const { stagingViewMode: viewMode, setStagingViewMode: setViewMode, stagingSelectedFile: selectedFile, selectFile, stagingFileListScrollTop: fileListScrollTop, setStagingFileListScrollTop: setFileListScrollTop } = useStagingStore();
+  const {
+    stagingViewMode: viewMode,
+    setStagingViewMode: setViewMode,
+    stagingSelectedFile: selectedFile,
+    selectFile,
+    stagingFileListScrollTop: fileListScrollTop,
+    setStagingFileListScrollTop: setFileListScrollTop,
+  } = useStagingStore();
   const [searchFilter, setSearchFilter] = useState("");
   const [showConflictsOnly, setShowConflictsOnly] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -69,9 +76,11 @@ export function StagingPanel() {
   }, [result, selectedFile, selectFile]);
 
   // Reconcile selected file after stage/unstage (file moves between sections)
-  const stagedLen = result?.status === "ok" ? result.data.staged.length : 0;
-  const unstagedLen = result?.status === "ok" ? result.data.unstaged.length : 0;
-  const untrackedLen = result?.status === "ok" ? result.data.untracked.length : 0;
+  const _stagedLen = result?.status === "ok" ? result.data.staged.length : 0;
+  const _unstagedLen =
+    result?.status === "ok" ? result.data.unstaged.length : 0;
+  const _untrackedLen =
+    result?.status === "ok" ? result.data.untracked.length : 0;
 
   useEffect(() => {
     if (!selectedFile || !result || result.status !== "ok") return;
@@ -89,14 +98,14 @@ export function StagingPanel() {
     } else if (inUntracked) {
       selectFile(inUntracked, "untracked");
     }
-  }, [stagedLen, unstagedLen, untrackedLen]);
+  }, [result, selectFile, selectedFile]);
 
   // Restore scroll position on mount
   useEffect(() => {
     if (scrollRef.current && fileListScrollTop > 0) {
       scrollRef.current.scrollTop = fileListScrollTop;
     }
-  }, []);
+  }, [fileListScrollTop]);
 
   // Save scroll position on unmount
   useEffect(() => {
@@ -202,7 +211,9 @@ export function StagingPanel() {
               variant={showConflictsOnly ? "secondary" : "ghost"}
               size="sm"
               onClick={() => setShowConflictsOnly(!showConflictsOnly)}
-              title={showConflictsOnly ? "Show all files" : "Show only conflicts"}
+              title={
+                showConflictsOnly ? "Show all files" : "Show only conflicts"
+              }
               className={cn(
                 "h-6 px-1.5 gap-1 text-xs",
                 showConflictsOnly && "text-ctp-red",

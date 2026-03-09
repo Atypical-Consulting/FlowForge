@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   buildCommitMessage,
-  parseConventionalMessage,
   type ConventionalMessageParts,
+  parseConventionalMessage,
 } from "./conventional-utils";
 
 describe("buildCommitMessage", () => {
@@ -128,35 +128,44 @@ describe("parseConventionalMessage", () => {
 
   it("parses all 11 commit types", () => {
     const types = [
-      "feat", "fix", "docs", "style", "refactor",
-      "perf", "test", "chore", "ci", "build", "revert",
+      "feat",
+      "fix",
+      "docs",
+      "style",
+      "refactor",
+      "perf",
+      "test",
+      "chore",
+      "ci",
+      "build",
+      "revert",
     ];
     for (const type of types) {
       const result = parseConventionalMessage(`${type}: some change`);
       expect(result).not.toBeNull();
-      expect(result!.commitType).toBe(type);
-      expect(result!.description).toBe("some change");
+      expect(result?.commitType).toBe(type);
+      expect(result?.description).toBe("some change");
     }
   });
 
   it("parses type with scope", () => {
     const result = parseConventionalMessage("feat(auth): add login flow");
     expect(result).not.toBeNull();
-    expect(result!.commitType).toBe("feat");
-    expect(result!.scope).toBe("auth");
-    expect(result!.description).toBe("add login flow");
+    expect(result?.commitType).toBe("feat");
+    expect(result?.scope).toBe("auth");
+    expect(result?.description).toBe("add login flow");
   });
 
   it("parses type without scope", () => {
     const result = parseConventionalMessage("fix: resolve crash");
     expect(result).not.toBeNull();
-    expect(result!.scope).toBe("");
+    expect(result?.scope).toBe("");
   });
 
   it("parses breaking change with !", () => {
     const result = parseConventionalMessage("feat(api)!: change response");
     expect(result).not.toBeNull();
-    expect(result!.isBreaking).toBe(true);
+    expect(result?.isBreaking).toBe(true);
   });
 
   it("parses body", () => {
@@ -164,7 +173,7 @@ describe("parseConventionalMessage", () => {
       "docs: update README\n\nAdded installation section",
     );
     expect(result).not.toBeNull();
-    expect(result!.body).toBe("Added installation section");
+    expect(result?.body).toBe("Added installation section");
   });
 
   it("parses BREAKING CHANGE footer", () => {
@@ -172,8 +181,8 @@ describe("parseConventionalMessage", () => {
       "feat: new auth\n\nBREAKING CHANGE: Old tokens expired",
     );
     expect(result).not.toBeNull();
-    expect(result!.isBreaking).toBe(true);
-    expect(result!.breakingDescription).toBe("Old tokens expired");
+    expect(result?.isBreaking).toBe(true);
+    expect(result?.breakingDescription).toBe("Old tokens expired");
   });
 
   it("parses BREAKING-CHANGE footer (hyphenated)", () => {
@@ -181,8 +190,8 @@ describe("parseConventionalMessage", () => {
       "feat: new auth\n\nBREAKING-CHANGE: Old tokens expired",
     );
     expect(result).not.toBeNull();
-    expect(result!.isBreaking).toBe(true);
-    expect(result!.breakingDescription).toBe("Old tokens expired");
+    expect(result?.isBreaking).toBe(true);
+    expect(result?.breakingDescription).toBe("Old tokens expired");
   });
 
   it("parses body and breaking change together", () => {
@@ -190,9 +199,9 @@ describe("parseConventionalMessage", () => {
       "feat!: new system\n\nMigrated to v2\n\nBREAKING CHANGE: Old API removed",
     );
     expect(result).not.toBeNull();
-    expect(result!.body).toBe("Migrated to v2");
-    expect(result!.isBreaking).toBe(true);
-    expect(result!.breakingDescription).toBe("Old API removed");
+    expect(result?.body).toBe("Migrated to v2");
+    expect(result?.isBreaking).toBe(true);
+    expect(result?.breakingDescription).toBe("Old API removed");
   });
 
   it("handles ! and BREAKING CHANGE footer together", () => {
@@ -200,8 +209,8 @@ describe("parseConventionalMessage", () => {
       "feat(api)!: change format\n\nBREAKING CHANGE: JSON only now",
     );
     expect(result).not.toBeNull();
-    expect(result!.isBreaking).toBe(true);
-    expect(result!.breakingDescription).toBe("JSON only now");
+    expect(result?.isBreaking).toBe(true);
+    expect(result?.breakingDescription).toBe("JSON only now");
   });
 });
 
@@ -220,11 +229,11 @@ describe("round-trip", () => {
     const parsed = parseConventionalMessage(message);
 
     expect(parsed).not.toBeNull();
-    expect(parsed!.commitType).toBe(original.commitType);
-    expect(parsed!.scope).toBe(original.scope);
-    expect(parsed!.description).toBe(original.description);
-    expect(parsed!.body).toBe(original.body);
-    expect(parsed!.isBreaking).toBe(original.isBreaking);
+    expect(parsed?.commitType).toBe(original.commitType);
+    expect(parsed?.scope).toBe(original.scope);
+    expect(parsed?.description).toBe(original.description);
+    expect(parsed?.body).toBe(original.body);
+    expect(parsed?.isBreaking).toBe(original.isBreaking);
   });
 
   it("round-trips with breaking change", () => {
@@ -241,8 +250,8 @@ describe("round-trip", () => {
     const parsed = parseConventionalMessage(message);
 
     expect(parsed).not.toBeNull();
-    expect(parsed!.isBreaking).toBe(true);
-    expect(parsed!.breakingDescription).toBe(original.breakingDescription);
+    expect(parsed?.isBreaking).toBe(true);
+    expect(parsed?.breakingDescription).toBe(original.breakingDescription);
   });
 
   it("round-trips with body and breaking change", () => {
@@ -259,11 +268,11 @@ describe("round-trip", () => {
     const parsed = parseConventionalMessage(message);
 
     expect(parsed).not.toBeNull();
-    expect(parsed!.commitType).toBe(original.commitType);
-    expect(parsed!.scope).toBe(original.scope);
-    expect(parsed!.description).toBe(original.description);
-    expect(parsed!.body).toBe(original.body);
-    expect(parsed!.isBreaking).toBe(true);
-    expect(parsed!.breakingDescription).toBe(original.breakingDescription);
+    expect(parsed?.commitType).toBe(original.commitType);
+    expect(parsed?.scope).toBe(original.scope);
+    expect(parsed?.description).toBe(original.description);
+    expect(parsed?.body).toBe(original.body);
+    expect(parsed?.isBreaking).toBe(true);
+    expect(parsed?.breakingDescription).toBe(original.breakingDescription);
   });
 });

@@ -61,8 +61,8 @@ export const useCommandRegistry = _useCommandRegistry;
 // --- Standalone query functions ---
 
 export function getEnabled(): Command[] {
-  return Array.from(useCommandRegistry.getState().items.values()).filter((cmd) =>
-    cmd.enabled ? cmd.enabled() : true,
+  return Array.from(useCommandRegistry.getState().items.values()).filter(
+    (cmd) => (cmd.enabled ? cmd.enabled() : true),
   );
 }
 

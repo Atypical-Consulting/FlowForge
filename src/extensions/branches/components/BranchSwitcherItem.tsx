@@ -1,6 +1,6 @@
 import { Check, GitBranch } from "lucide-react";
-import type { BranchInfo } from "../../../bindings";
 import { cn } from "@/framework/lib/utils";
+import type { BranchInfo } from "../../../bindings";
 
 interface BranchSwitcherItemProps {
   branch: BranchInfo;

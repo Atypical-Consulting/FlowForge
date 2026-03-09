@@ -1,7 +1,7 @@
 import type { GraphEdge, GraphNode } from "../../../bindings";
 import {
-  BRANCH_HEX_COLORS,
   BRANCH_BADGE_STYLES,
+  BRANCH_HEX_COLORS,
   BRANCH_RING_COLORS,
 } from "../../../core/lib/branchClassifier";
 import { parseConventionalMessage } from "../../conventional-commits/lib/conventional-utils";

@@ -25,7 +25,12 @@ const mockCommands = vi.hoisted(() => ({
   }),
   getRepositoryStatus: vi.fn().mockResolvedValue({
     status: "ok",
-    data: { branchName: "main", isDirty: false, repoPath: "/test", repoName: "test" },
+    data: {
+      branchName: "main",
+      isDirty: false,
+      repoPath: "/test",
+      repoName: "test",
+    },
   }),
   listBranches: vi.fn().mockResolvedValue({ status: "ok", data: [] }),
 }));

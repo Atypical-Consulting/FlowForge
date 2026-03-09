@@ -1,74 +1,77 @@
-export { CURRENT_API_VERSION, useExtensionHost, configureExtensionHost } from "./ExtensionHost";
+export {
+  type ActiveMenu,
+  type ContextMenuContext,
+  type ContextMenuItem,
+  type ContextMenuLocation,
+  type ContextMenuRegistryState,
+  useContextMenuRegistry,
+} from "./contextMenuRegistry";
 export {
   type BladeNavigationEvent,
-  type ExtensionBladeConfig,
-  type ExtensionCommandConfig,
-  type ExtensionToolbarConfig,
-  type ExtensionContextMenuConfig,
-  type ExtensionSidebarPanelConfig,
-  type ExtensionStatusBarConfig,
-  type ExtensionGitHookConfig,
-  type ExtensionMachineConfig,
   type Disposable,
   ExtensionAPI,
+  type ExtensionBladeConfig,
+  type ExtensionCommandConfig,
+  type ExtensionContextMenuConfig,
+  type ExtensionGitHookConfig,
+  type ExtensionMachineConfig,
+  type ExtensionSidebarPanelConfig,
+  type ExtensionStatusBarConfig,
+  type ExtensionToolbarConfig,
 } from "./ExtensionAPI";
 export {
-  type TrustLevel,
-  type ExtensionStatus,
-  type ExtensionInfo,
-  type BuiltInExtensionConfig,
-} from "./types";
+  CURRENT_API_VERSION,
+  configureExtensionHost,
+  useExtensionHost,
+} from "./ExtensionHost";
 export {
   type EventHandler,
   ExtensionEventBus,
   extensionEventBus,
 } from "./eventBus";
-export { ExtensionSettings } from "./settings";
-
-// Extension manifest types
-export type {
-  ExtensionManifest,
-  ExtensionContributes,
-  ExtensionBladeContribution,
-  ExtensionCommandContribution,
-  ExtensionToolbarContribution,
-} from "./manifest";
-
 // Registry stores (moved from core/lib/)
 export {
-  useMachineRegistry,
-  registerMachine,
-  unregisterMachine,
-  unregisterMachinesBySource,
   getMachineActor,
   type MachineRegistryEntry,
   type MachineRegistryState,
+  registerMachine,
+  unregisterMachine,
+  unregisterMachinesBySource,
+  useMachineRegistry,
 } from "./machineRegistry";
+
+// Extension manifest types
+export type {
+  ExtensionBladeContribution,
+  ExtensionCommandContribution,
+  ExtensionContributes,
+  ExtensionManifest,
+  ExtensionToolbarContribution,
+} from "./manifest";
 export {
-  useToolbarRegistry,
-  type ToolbarAction,
-  type ToolbarGroup,
-  TOOLBAR_GROUP_ORDER,
-  getGroupedToolbarActions,
-} from "./toolbarRegistry";
+  type DidHandler,
+  OperationBus,
+  type WillHandler,
+  type WillHookResult,
+} from "./operationBus";
+export { ExtensionSettings } from "./settings";
 export {
-  useContextMenuRegistry,
-  type ContextMenuItem,
-  type ContextMenuContext,
-  type ContextMenuLocation,
-  type ActiveMenu,
-  type ContextMenuRegistryState,
-} from "./contextMenuRegistry";
-export {
-  useStatusBarRegistry,
-  type StatusBarItem,
-  type StatusBarAlignment,
   getLeftItems,
   getRightItems,
+  type StatusBarAlignment,
+  type StatusBarItem,
+  useStatusBarRegistry,
 } from "./statusBarRegistry";
 export {
-  OperationBus,
-  type WillHookResult,
-  type DidHandler,
-  type WillHandler,
-} from "./operationBus";
+  getGroupedToolbarActions,
+  TOOLBAR_GROUP_ORDER,
+  type ToolbarAction,
+  type ToolbarGroup,
+  useToolbarRegistry,
+} from "./toolbarRegistry";
+export type {
+  BuiltInExtensionConfig,
+  ExtensionInfo,
+  ExtensionStatus,
+  TrustLevel,
+} from "./types";

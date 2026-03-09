@@ -1,7 +1,10 @@
 import { Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useCallback, useState } from "react";
-import { DEFAULT_CHECKLIST, type FlowType } from "../../../stores/domain/preferences/review-checklist.slice";
 import { usePreferencesStore as useReviewChecklistStore } from "../../../stores/domain/preferences";
+import {
+  DEFAULT_CHECKLIST,
+  type FlowType,
+} from "../../../stores/domain/preferences/review-checklist.slice";
 
 const inputClassName =
   "w-full max-w-xs px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 rounded-md text-sm text-ctp-text placeholder-ctp-overlay0 focus:outline-none focus:ring-2 focus:ring-ctp-blue focus:border-transparent";
@@ -12,9 +15,18 @@ const FLOW_TYPES: { type: FlowType; label: string }[] = [
   { type: "hotfix", label: "Hotfix" },
 ];
 
-function FlowSection({ flowType, label }: { flowType: FlowType; label: string }) {
-  const { getChecklistItems: getItems, updateChecklistItems: updateItems, resetChecklistToDefaults: resetToDefaults } =
-    useReviewChecklistStore();
+function FlowSection({
+  flowType,
+  label,
+}: {
+  flowType: FlowType;
+  label: string;
+}) {
+  const {
+    getChecklistItems: getItems,
+    updateChecklistItems: updateItems,
+    resetChecklistToDefaults: resetToDefaults,
+  } = useReviewChecklistStore();
   const items = getItems(flowType);
   const [newLabel, setNewLabel] = useState("");
 

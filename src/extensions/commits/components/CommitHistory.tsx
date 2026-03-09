@@ -1,12 +1,12 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { GitCommit, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { EmptyState } from "../../../core/components/ui/EmptyState";
-import { Skeleton } from "../../../core/components/ui/Skeleton";
 import { Virtuoso } from "react-virtuoso";
-import { type CommitSummary, commands } from "../../../bindings";
 import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
 import { cn } from "@/framework/lib/utils";
+import { type CommitSummary, commands } from "../../../bindings";
+import { EmptyState } from "../../../core/components/ui/EmptyState";
+import { Skeleton } from "../../../core/components/ui/Skeleton";
 import { GravatarAvatar } from "../../git-insights/components/GravatarAvatar";
 import { useInsightsStore } from "../../git-insights/insightsStore";
 import { AuthorFilter } from "./AuthorFilter";
@@ -193,11 +193,12 @@ export function CommitHistory({
                 }}
                 onContextMenu={(e) => {
                   e.preventDefault();
-                  useContextMenuRegistry.getState().showMenu(
-                    { x: e.clientX, y: e.clientY },
-                    "commit-list",
-                    { location: "commit-list", commitOid: commit.oid },
-                  );
+                  useContextMenuRegistry
+                    .getState()
+                    .showMenu({ x: e.clientX, y: e.clientY }, "commit-list", {
+                      location: "commit-list",
+                      commitOid: commit.oid,
+                    });
                 }}
                 className={cn(
                   "w-full text-left px-3 py-2 cursor-pointer border-b border-ctp-surface0",

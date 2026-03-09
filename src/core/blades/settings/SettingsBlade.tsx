@@ -1,14 +1,14 @@
-import { useCallback } from "react";
 import {
   ClipboardCheck,
   GitBranch,
-  PanelTop,
   Palette,
+  PanelTop,
   Settings,
   Wrench,
 } from "lucide-react";
-import type { SettingsCategory } from "../../stores/domain/preferences/settings.slice";
+import { useCallback } from "react";
 import { usePreferencesStore as useSettingsStore } from "../../stores/domain/preferences";
+import type { SettingsCategory } from "../../stores/domain/preferences/settings.slice";
 import { AppearanceSettings } from "./components/AppearanceSettings";
 import { GeneralSettings } from "./components/GeneralSettings";
 import { GitSettings } from "./components/GitSettings";
@@ -63,7 +63,10 @@ const settingsTabs: SettingsTab[] = [
 ];
 
 export function SettingsBlade() {
-  const { settingsActiveCategory: activeCategory, setSettingsCategory: setCategory } = useSettingsStore();
+  const {
+    settingsActiveCategory: activeCategory,
+    setSettingsCategory: setCategory,
+  } = useSettingsStore();
 
   const activeTab =
     settingsTabs.find((t) => t.id === activeCategory) ?? settingsTabs[0];

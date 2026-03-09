@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { commands } from "../../bindings";
-import type { TimeRange, RepoInsights, BranchHealthInfo } from "./types";
+import type { BranchHealthInfo, RepoInsights, TimeRange } from "./types";
 
 interface InsightsState {
   // Data

@@ -1,33 +1,21 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import {
-  createSettingsSlice,
-  type SettingsSlice,
-} from "./settings.slice";
-import {
-  createThemeSlice,
-  type ThemeSlice,
-} from "./theme.slice";
+  type BranchMetadataSlice,
+  createBranchMetadataSlice,
+} from "./branch-metadata.slice";
+import { createDiffSlice, type DiffSlice } from "./diff.slice";
+import { createLayoutSlice, type LayoutSlice } from "./layout.slice";
 import {
   createNavigationSlice,
   type NavigationSlice,
 } from "./navigation.slice";
 import {
-  createBranchMetadataSlice,
-  type BranchMetadataSlice,
-} from "./branch-metadata.slice";
-import {
   createReviewChecklistSlice,
   type ReviewChecklistSlice,
 } from "./review-checklist.slice";
-import {
-  createDiffSlice,
-  type DiffSlice,
-} from "./diff.slice";
-import {
-  createLayoutSlice,
-  type LayoutSlice,
-} from "./layout.slice";
+import { createSettingsSlice, type SettingsSlice } from "./settings.slice";
+import { createThemeSlice, type ThemeSlice } from "./theme.slice";
 
 export type PreferencesStore = SettingsSlice &
   ThemeSlice &

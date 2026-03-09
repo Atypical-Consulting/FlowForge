@@ -1,13 +1,13 @@
-import type { ComponentType } from "react";
 import { motion } from "framer-motion";
-import { BarChart3, GitBranch, Users, Activity } from "lucide-react";
-import { useInsightsData } from "../hooks/useInsightsData";
-import { TimeRangeSelector } from "../components/TimeRangeSelector";
-import { useInsightsStore } from "../insightsStore";
+import { Activity, BarChart3, GitBranch, Users } from "lucide-react";
+import type { ComponentType } from "react";
+import { BranchHealthOverview } from "../components/BranchHealthOverview";
 import { CommitActivityChart } from "../components/CommitActivityChart";
 import { ContributorBreakdown } from "../components/ContributorBreakdown";
-import { BranchHealthOverview } from "../components/BranchHealthOverview";
 import { RepoStatsCards } from "../components/RepoStatsCards";
+import { TimeRangeSelector } from "../components/TimeRangeSelector";
+import { useInsightsData } from "../hooks/useInsightsData";
+import { useInsightsStore } from "../insightsStore";
 
 export function InsightsDashboardBlade() {
   const { insights, branchHealth, isLoading, error } = useInsightsData();

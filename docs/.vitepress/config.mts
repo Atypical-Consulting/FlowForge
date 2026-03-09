@@ -5,7 +5,12 @@ export default defineConfig({
   description: "A visual Git client built with Tauri, React, and TypeScript",
   base: "/FlowForge/",
 
-  head: [["link", { rel: "icon", type: "image/svg+xml", href: "/FlowForge/logo.svg" }]],
+  head: [
+    [
+      "link",
+      { rel: "icon", type: "image/svg+xml", href: "/FlowForge/logo.svg" },
+    ],
+  ],
 
   themeConfig: {
     nav: [
@@ -72,7 +77,10 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: "github", link: "https://github.com/Atypical-Consulting/FlowForge" },
+      {
+        icon: "github",
+        link: "https://github.com/Atypical-Consulting/FlowForge",
+      },
     ],
   },
 

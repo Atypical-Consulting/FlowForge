@@ -19,7 +19,14 @@ const mockCommands = vi.hoisted(() => ({
   }),
   getCommitFileDiff: vi.fn().mockResolvedValue({
     status: "ok",
-    data: { path: "", oldContent: "", newContent: "", hunks: [], isBinary: false, language: "text" },
+    data: {
+      path: "",
+      oldContent: "",
+      newContent: "",
+      hunks: [],
+      isBinary: false,
+      language: "text",
+    },
   }),
 }));
 

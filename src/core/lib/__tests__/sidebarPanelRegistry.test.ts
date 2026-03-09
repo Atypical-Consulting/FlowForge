@@ -1,6 +1,9 @@
-import { useSidebarPanelRegistry, getVisiblePanels } from "@/framework/layout/sidebarPanelRegistry";
-import type { SidebarPanelConfig } from "@/framework/layout/sidebarPanelRegistry";
 import { Folder } from "lucide-react";
+import type { SidebarPanelConfig } from "@/framework/layout/sidebarPanelRegistry";
+import {
+  getVisiblePanels,
+  useSidebarPanelRegistry,
+} from "@/framework/layout/sidebarPanelRegistry";
 
 const makePanel = (
   overrides: Partial<SidebarPanelConfig> & { id: string },
@@ -21,8 +24,7 @@ describe("SidebarPanelRegistry", () => {
   });
 
   it("registers and retrieves panel", () => {
-    const { register } =
-      useSidebarPanelRegistry.getState();
+    const { register } = useSidebarPanelRegistry.getState();
     register(makePanel({ id: "explorer" }));
 
     const panels = getVisiblePanels();
@@ -31,8 +33,7 @@ describe("SidebarPanelRegistry", () => {
   });
 
   it("getVisiblePanels sorts by priority descending", () => {
-    const { register } =
-      useSidebarPanelRegistry.getState();
+    const { register } = useSidebarPanelRegistry.getState();
     register(makePanel({ id: "low", priority: 10 }));
     register(makePanel({ id: "high", priority: 100 }));
 
@@ -42,8 +43,7 @@ describe("SidebarPanelRegistry", () => {
   });
 
   it("getVisiblePanels filters by when() condition", () => {
-    const { register } =
-      useSidebarPanelRegistry.getState();
+    const { register } = useSidebarPanelRegistry.getState();
     register(makePanel({ id: "visible", when: () => true }));
     register(makePanel({ id: "hidden", when: () => false }));
 
@@ -62,8 +62,7 @@ describe("SidebarPanelRegistry", () => {
   });
 
   it("unregisterBySource removes all panels for source", () => {
-    const { register, unregisterBySource } =
-      useSidebarPanelRegistry.getState();
+    const { register, unregisterBySource } = useSidebarPanelRegistry.getState();
     register(makePanel({ id: "ext-a", source: "ext:bar" }));
     register(makePanel({ id: "ext-b", source: "ext:bar" }));
     register(makePanel({ id: "core-a", source: "core" }));

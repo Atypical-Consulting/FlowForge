@@ -1,5 +1,9 @@
-import { useStatusBarRegistry, getLeftItems, getRightItems } from "@/framework/extension-system/statusBarRegistry";
 import type { StatusBarItem } from "@/framework/extension-system/statusBarRegistry";
+import {
+  getLeftItems,
+  getRightItems,
+  useStatusBarRegistry,
+} from "@/framework/extension-system/statusBarRegistry";
 
 const makeItem = (
   overrides: Partial<StatusBarItem> & { id: string },
@@ -65,8 +69,7 @@ describe("StatusBarRegistry", () => {
   });
 
   it("unregisterBySource removes all items for source", () => {
-    const { register, unregisterBySource } =
-      useStatusBarRegistry.getState();
+    const { register, unregisterBySource } = useStatusBarRegistry.getState();
     register(makeItem({ id: "ext-a", source: "ext:baz" }));
     register(makeItem({ id: "ext-b", source: "ext:baz" }));
     register(makeItem({ id: "core-a", source: "core" }));

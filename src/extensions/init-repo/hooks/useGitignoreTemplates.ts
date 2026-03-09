@@ -6,7 +6,8 @@ export function useGitignoreTemplateList() {
     queryKey: ["gitignore-templates"],
     queryFn: async () => {
       const result = await commands.listGitignoreTemplates();
-      if (result.status === "error") throw new Error("Failed to load templates");
+      if (result.status === "error")
+        throw new Error("Failed to load templates");
       return result.data;
     },
     staleTime: Infinity,

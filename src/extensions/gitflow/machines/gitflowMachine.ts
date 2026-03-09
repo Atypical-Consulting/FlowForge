@@ -1,6 +1,6 @@
-import { setup, assign } from "xstate";
+import { assign, setup } from "xstate";
+import { abortGitflowOp, executeGitflowOp, refreshAll } from "./actors";
 import type { GitflowContext, GitflowEvent } from "./types";
-import { executeGitflowOp, abortGitflowOp, refreshAll } from "./actors";
 
 export const gitflowMachine = setup({
   types: {
@@ -100,9 +100,10 @@ export const gitflowMachine = setup({
         onError: {
           target: "error",
           actions: assign(({ event }) => ({
-            error: event.error instanceof Error
-              ? event.error.message
-              : "Unknown error",
+            error:
+              event.error instanceof Error
+                ? event.error.message
+                : "Unknown error",
           })),
         },
       },
@@ -114,9 +115,10 @@ export const gitflowMachine = setup({
         onError: {
           target: "error",
           actions: assign(({ event }) => ({
-            error: event.error instanceof Error
-              ? event.error.message
-              : "Unknown error",
+            error:
+              event.error instanceof Error
+                ? event.error.message
+                : "Unknown error",
           })),
         },
       },

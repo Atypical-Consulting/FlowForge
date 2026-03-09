@@ -85,11 +85,7 @@ export const useContextMenuRegistry = create<ContextMenuRegistryState>()(
             next.delete(id);
           }
         }
-        set(
-          { items: next },
-          false,
-          "context-menu-registry/unregisterBySource",
-        );
+        set({ items: next }, false, "context-menu-registry/unregisterBySource");
       },
 
       getItemsForLocation: (location, context) => {

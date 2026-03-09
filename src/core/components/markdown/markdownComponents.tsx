@@ -1,18 +1,16 @@
-import type { Components } from "react-markdown";
 import type { ReactNode } from "react";
+import type { Components } from "react-markdown";
 import { cn } from "../../lib/utils";
 import { CopyCodeButton } from "./CopyCodeButton";
-import { MarkdownLink } from "./MarkdownLink";
 import { MarkdownImage } from "./MarkdownImage";
+import { MarkdownLink } from "./MarkdownLink";
 
 /**
  * Create Catppuccin-styled component overrides for react-markdown.
  *
  * @param currentFilePath - The file being rendered (for resolving relative links/images)
  */
-export function createMarkdownComponents(
-  currentFilePath: string,
-): Components {
+export function createMarkdownComponents(currentFilePath: string): Components {
   return {
     // Headings
     h1: ({ children, ...props }) => (
@@ -40,17 +38,26 @@ export function createMarkdownComponents(
       </h3>
     ),
     h4: ({ children, ...props }) => (
-      <h4 className="text-base font-semibold text-ctp-subtext1 mt-3 mb-1" {...props}>
+      <h4
+        className="text-base font-semibold text-ctp-subtext1 mt-3 mb-1"
+        {...props}
+      >
         {children}
       </h4>
     ),
     h5: ({ children, ...props }) => (
-      <h5 className="text-sm font-semibold text-ctp-subtext0 mt-3 mb-1" {...props}>
+      <h5
+        className="text-sm font-semibold text-ctp-subtext0 mt-3 mb-1"
+        {...props}
+      >
         {children}
       </h5>
     ),
     h6: ({ children, ...props }) => (
-      <h6 className="text-sm font-medium text-ctp-overlay1 mt-2 mb-1" {...props}>
+      <h6
+        className="text-sm font-medium text-ctp-overlay1 mt-2 mb-1"
+        {...props}
+      >
         {children}
       </h6>
     ),
@@ -104,7 +111,6 @@ export function createMarkdownComponents(
         <div className="relative group my-3">
           <pre
             className="bg-ctp-crust rounded-md p-4 overflow-x-auto text-sm"
-            tabIndex={0}
             {...props}
           >
             {children}
@@ -201,11 +207,7 @@ export function createMarkdownComponents(
 
     // Links — custom handler
     a: ({ href, children, ...props }) => (
-      <MarkdownLink
-        href={href}
-        currentFilePath={currentFilePath}
-        {...props}
-      >
+      <MarkdownLink href={href} currentFilePath={currentFilePath} {...props}>
         {children}
       </MarkdownLink>
     ),

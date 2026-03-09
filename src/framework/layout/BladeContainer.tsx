@@ -1,18 +1,18 @@
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useSelector } from "@xstate/react";
-import { useNavigationActorRef } from "./navigation/context";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
-  selectBladeStack,
-  selectLastAction,
-  selectDirtyBladeIds,
-} from "./navigation/selectors";
-import {
-  bladeTransitionVariants,
   bladeTransitionConfig,
+  bladeTransitionVariants,
 } from "../theme/animations";
 import { BladeRenderer } from "./BladeRenderer";
 import { BladeStrip } from "./BladeStrip";
 import { NavigationGuardDialog } from "./NavigationGuardDialog";
+import { useNavigationActorRef } from "./navigation/context";
+import {
+  selectBladeStack,
+  selectDirtyBladeIds,
+  selectLastAction,
+} from "./navigation/selectors";
 
 interface BladeContainerProps {
   /** Whether focus mode is currently active (passed through to BladePanel). */
@@ -21,7 +21,10 @@ interface BladeContainerProps {
   onToggleFocusMode?: () => void;
 }
 
-export function BladeContainer({ isFocusMode, onToggleFocusMode }: BladeContainerProps = {}) {
+export function BladeContainer({
+  isFocusMode,
+  onToggleFocusMode,
+}: BladeContainerProps = {}) {
   const actorRef = useNavigationActorRef();
   const bladeStack = useSelector(actorRef, selectBladeStack);
   const lastAction = useSelector(actorRef, selectLastAction);

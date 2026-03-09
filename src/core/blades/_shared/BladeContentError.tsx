@@ -13,13 +13,19 @@ interface BladeContentErrorProps {
  * Standardized error state for data-fetch failures within blades.
  * Shows a centered error message with an optional retry button.
  */
-export function BladeContentError({ message, detail, onRetry }: BladeContentErrorProps) {
+export function BladeContentError({
+  message,
+  detail,
+  onRetry,
+}: BladeContentErrorProps) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center bg-ctp-mantle gap-3">
       <AlertTriangle className="w-8 h-8 text-ctp-red" />
       <p className="text-sm text-ctp-red">{message}</p>
       {detail && (
-        <p className="text-xs text-ctp-overlay0 max-w-md text-center">{detail}</p>
+        <p className="text-xs text-ctp-overlay0 max-w-md text-center">
+          {detail}
+        </p>
       )}
       {onRetry && (
         <button

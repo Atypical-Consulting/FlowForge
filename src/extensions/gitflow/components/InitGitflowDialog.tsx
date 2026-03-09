@@ -1,11 +1,13 @@
 import { AlertTriangle, X } from "lucide-react";
 import { useState } from "react";
-import type { GitflowConfig } from "../../../bindings";
 import { cn } from "@/framework/lib/utils";
-import { useGitOpsStore as useBranchStore } from "../../../core/stores/domain/git-ops";
-import { useGitOpsStore as useGitflowStore } from "../../../core/stores/domain/git-ops";
-import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";
 import { toast } from "@/framework/stores/toast";
+import type { GitflowConfig } from "../../../bindings";
+import {
+  useGitOpsStore as useBranchStore,
+  useGitOpsStore as useGitflowStore,
+  useGitOpsStore as useRepositoryStore,
+} from "../../../core/stores/domain/git-ops";
 
 interface InitGitflowDialogProps {
   open: boolean;
@@ -16,8 +18,13 @@ export function InitGitflowDialog({
   open,
   onOpenChange,
 }: InitGitflowDialogProps) {
-  const { gitflowStatus: status, initGitflow, gitflowIsLoading: isLoading, gitflowError: error, clearGitflowError: clearError } =
-    useGitflowStore();
+  const {
+    gitflowStatus: status,
+    initGitflow,
+    gitflowIsLoading: isLoading,
+    gitflowError: error,
+    clearGitflowError: clearError,
+  } = useGitflowStore();
   const { loadBranches } = useBranchStore();
   const { refreshRepoStatus: refreshStatus } = useRepositoryStore();
 

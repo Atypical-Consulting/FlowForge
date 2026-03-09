@@ -1,22 +1,22 @@
+export { type GitflowActorRef, getGitflowActor } from "./context";
 export { gitflowMachine } from "./gitflowMachine";
-export { getGitflowActor, type GitflowActorRef } from "./context";
 export {
-  selectGitflowState,
-  selectOperation,
-  selectPhase,
-  selectGitflowResult,
   selectGitflowError,
-  selectRefreshErrors,
-  selectIsExecuting,
+  selectGitflowResult,
+  selectGitflowState,
   selectIsAborting,
+  selectIsBusy,
+  selectIsExecuting,
   selectIsRefreshing,
   selectIsStale,
-  selectIsBusy,
+  selectOperation,
+  selectPhase,
+  selectRefreshErrors,
 } from "./selectors";
 export type {
   GitflowContext,
   GitflowEvent,
-  GitflowState,
   GitflowOp,
   GitflowPhase,
+  GitflowState,
 } from "./types";

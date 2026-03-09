@@ -7,13 +7,26 @@
   "main": "index.ts",
   "contributes": {
     "blades": [
-      { "type": "gitflow-cheatsheet", "title": "Gitflow Guide", "singleton": true }
+      {
+        "type": "gitflow-cheatsheet",
+        "title": "Gitflow Guide",
+        "singleton": true
+      }
     ],
     "commands": [
-      { "id": "open-gitflow-cheatsheet", "title": "Gitflow Cheatsheet", "category": "Navigation" }
+      {
+        "id": "open-gitflow-cheatsheet",
+        "title": "Gitflow Cheatsheet",
+        "category": "Navigation"
+      }
     ],
     "toolbar": [
-      { "id": "gitflow-guide", "label": "Gitflow Guide", "group": "views", "priority": 50 }
+      {
+        "id": "gitflow-guide",
+        "label": "Gitflow Guide",
+        "group": "views",
+        "priority": 50
+      }
     ],
     "sidebarPanels": [
       { "id": "gitflow-panel", "title": "Gitflow", "defaultOpen": false }

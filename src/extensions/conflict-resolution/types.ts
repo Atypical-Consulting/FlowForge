@@ -1,5 +1,8 @@
 export type ResolutionChoice = "ours" | "theirs" | "both" | "custom";
-export type FileResolutionStatus = "unresolved" | "partially-resolved" | "resolved";
+export type FileResolutionStatus =
+  | "unresolved"
+  | "partially-resolved"
+  | "resolved";
 
 export interface ConflictHunk {
   id: string;

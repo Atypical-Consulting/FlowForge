@@ -47,11 +47,7 @@ export const createDiffSlice: StateCreator<
       await store.set("diff-preferences", newPrefs);
       await store.save();
 
-      set(
-        { diffPreferences: newPrefs },
-        false,
-        "preferences:diff/setViewMode",
-      );
+      set({ diffPreferences: newPrefs }, false, "preferences:diff/setViewMode");
     } catch (e) {
       console.error("Failed to update diff view mode:", e);
     }

@@ -52,9 +52,7 @@ export function CommitTooltip({ node, style }: CommitTooltipProps) {
   const shouldReduceMotion = useReducedMotion();
 
   const truncatedMessage =
-    node.message.length > 60
-      ? `${node.message.slice(0, 60)}...`
-      : node.message;
+    node.message.length > 60 ? `${node.message.slice(0, 60)}...` : node.message;
 
   const content = (
     <div className="flex flex-col gap-1">
@@ -65,7 +63,9 @@ export function CommitTooltip({ node, style }: CommitTooltipProps) {
       <div className="text-[11px] text-ctp-overlay0">
         {formatRelativeDate(node.timestampMs)}
       </div>
-      <div className="text-xs text-ctp-text leading-snug">{truncatedMessage}</div>
+      <div className="text-xs text-ctp-text leading-snug">
+        {truncatedMessage}
+      </div>
     </div>
   );
 

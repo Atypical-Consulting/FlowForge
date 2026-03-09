@@ -1,7 +1,7 @@
 import { Plus, Tag } from "lucide-react";
 import { useEffect } from "react";
-import { useGitOpsStore as useTagStore } from "@/core/stores/domain/git-ops";
 import { EmptyState } from "@/core/components/ui/EmptyState";
+import { useGitOpsStore as useTagStore } from "@/core/stores/domain/git-ops";
 import { CreateTagDialog } from "./CreateTagDialog";
 import { TagItem } from "./TagItem";
 
@@ -16,8 +16,14 @@ export function TagList({
   onCloseCreateDialog,
   onOpenCreateDialog,
 }: TagListProps) {
-  const { tagList: tags, tagIsLoading: isLoading, tagError: error, loadTags, deleteTag, clearTagError: clearError } =
-    useTagStore();
+  const {
+    tagList: tags,
+    tagIsLoading: isLoading,
+    tagError: error,
+    loadTags,
+    deleteTag,
+    clearTagError: clearError,
+  } = useTagStore();
 
   useEffect(() => {
     loadTags();

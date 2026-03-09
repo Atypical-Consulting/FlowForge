@@ -21,10 +21,7 @@ export interface BranchMetadataSlice {
   isBranchPinned: (repoPath: string, branchName: string) => boolean;
   recordBranchVisit: (repoPath: string, branchName: string) => Promise<void>;
   getMetaRecentBranches: (repoPath: string) => RecentBranchEntry[];
-  setMetaScopePreference: (
-    repoPath: string,
-    scopeId: string,
-  ) => Promise<void>;
+  setMetaScopePreference: (repoPath: string, scopeId: string) => Promise<void>;
   getMetaScopePreference: (repoPath: string) => string;
   initMetadata: () => Promise<void>;
 }
@@ -54,11 +51,7 @@ export const createBranchMetadataSlice: StateCreator<
     } catch (e) {
       console.error("Failed to persist pinned branches:", e);
     }
-    set(
-      { metaPinnedBranches: updated },
-      false,
-      "preferences:meta/pinBranch",
-    );
+    set({ metaPinnedBranches: updated }, false, "preferences:meta/pinBranch");
   },
 
   unpinBranch: async (repoPath: string, branchName: string) => {
@@ -75,11 +68,7 @@ export const createBranchMetadataSlice: StateCreator<
     } catch (e) {
       console.error("Failed to persist pinned branches:", e);
     }
-    set(
-      { metaPinnedBranches: updated },
-      false,
-      "preferences:meta/unpinBranch",
-    );
+    set({ metaPinnedBranches: updated }, false, "preferences:meta/unpinBranch");
   },
 
   isBranchPinned: (repoPath: string, branchName: string) => {
@@ -106,11 +95,7 @@ export const createBranchMetadataSlice: StateCreator<
     } catch (e) {
       console.error("Failed to persist recent branches:", e);
     }
-    set(
-      { metaRecentBranches: updated },
-      false,
-      "preferences:meta/recordVisit",
-    );
+    set({ metaRecentBranches: updated }, false, "preferences:meta/recordVisit");
   },
 
   getMetaRecentBranches: (repoPath: string) => {

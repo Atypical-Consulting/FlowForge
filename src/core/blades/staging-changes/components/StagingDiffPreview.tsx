@@ -24,12 +24,17 @@ export function StagingDiffPreview({
   hasPrev,
   hasNext,
 }: StagingDiffPreviewProps) {
-  const { stagingScrollPositions: scrollPositions, saveStagingScrollPosition: saveScrollPosition } = useStagingStore();
+  const {
+    stagingScrollPositions: scrollPositions,
+    saveStagingScrollPosition: saveScrollPosition,
+  } = useStagingStore();
 
   if (!file) {
     return (
       <div className="flex-1 flex items-center justify-center bg-ctp-mantle">
-        <p className="text-ctp-overlay0 text-sm">Select a file to preview diff</p>
+        <p className="text-ctp-overlay0 text-sm">
+          Select a file to preview diff
+        </p>
       </div>
     );
   }

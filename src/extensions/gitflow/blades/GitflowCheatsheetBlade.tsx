@@ -1,11 +1,16 @@
 import { GitMerge } from "lucide-react";
-import { useGitOpsStore as useGitflowStore } from "../../../core/stores/domain/git-ops";
-import { useGitOpsStore as useRepositoryStore } from "../../../core/stores/domain/git-ops";
-import { classifyBranch, BRANCH_TYPE_COLORS } from "../../../core/lib/branchClassifier";
 import type { GitflowBranchType } from "../../../core/lib/branchClassifier";
-import { GitflowDiagram } from "../components/GitflowDiagram";
+import {
+  BRANCH_TYPE_COLORS,
+  classifyBranch,
+} from "../../../core/lib/branchClassifier";
+import {
+  useGitOpsStore as useGitflowStore,
+  useGitOpsStore as useRepositoryStore,
+} from "../../../core/stores/domain/git-ops";
 import { GitflowActionCards } from "../components/GitflowActionCards";
 import { GitflowBranchReference } from "../components/GitflowBranchReference";
+import { GitflowDiagram } from "../components/GitflowDiagram";
 
 export function GitflowCheatsheetBlade() {
   const gitflowStatus = useGitflowStore((s) => s.gitflowStatus);
@@ -13,7 +18,8 @@ export function GitflowCheatsheetBlade() {
 
   // Determine branch type from current branch name
   // Prefer gitflow status (has currentBranch), fall back to repo status (has branchName)
-  const branchName = gitflowStatus?.currentBranch || repoStatus?.branchName || "";
+  const branchName =
+    gitflowStatus?.currentBranch || repoStatus?.branchName || "";
   const branchType: GitflowBranchType = branchName
     ? classifyBranch(branchName)
     : "other";

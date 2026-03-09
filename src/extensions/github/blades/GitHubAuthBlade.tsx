@@ -8,17 +8,17 @@
  * 4. Error state with retry
  */
 
-import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Check, AlertTriangle, Github } from "lucide-react";
+import { AlertTriangle, Check, Github } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { cn } from "@/framework/lib/utils";
 import { Button } from "../../../core/components/ui/button";
 import { useBladeNavigation } from "../../../core/hooks/useBladeNavigation";
-import { useGitHubStore } from "../githubStore";
-import { SCOPE_PROFILES } from "../types";
-import type { AuthStep } from "../types";
-import { ScopeSelector } from "../components/ScopeSelector";
 import { DeviceCodeDisplay } from "../components/DeviceCodeDisplay";
-import { cn } from "@/framework/lib/utils";
+import { ScopeSelector } from "../components/ScopeSelector";
+import { useGitHubStore } from "../githubStore";
+import type { AuthStep } from "../types";
+import { SCOPE_PROFILES } from "../types";
 
 const STEP_LABELS = ["Permissions", "Authorize", "Done"];
 
@@ -43,17 +43,21 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
             <span
               className={cn(
                 "text-xs",
-                i === currentStep ? "text-ctp-text font-medium" : "text-ctp-overlay0",
+                i === currentStep
+                  ? "text-ctp-text font-medium"
+                  : "text-ctp-overlay0",
               )}
             >
               {label}
             </span>
           </div>
           {i < STEP_LABELS.length - 1 && (
-            <div className={cn(
-              "w-8 h-px",
-              i < currentStep ? "bg-ctp-green" : "bg-ctp-surface1",
-            )} />
+            <div
+              className={cn(
+                "w-8 h-px",
+                i < currentStep ? "bg-ctp-green" : "bg-ctp-surface1",
+              )}
+            />
           )}
         </div>
       ))}
@@ -98,9 +102,7 @@ export function GitHubAuthBlade() {
   const handleContinue = () => {
     const profile = SCOPE_PROFILES.find((p) => p.id === selectedProfile);
     const selectedScopes =
-      selectedProfile === "custom"
-        ? customScopes
-        : profile?.scopes ?? [];
+      selectedProfile === "custom" ? customScopes : (profile?.scopes ?? []);
 
     if (selectedScopes.length === 0) return;
     startDeviceFlow(selectedScopes);
@@ -124,7 +126,9 @@ export function GitHubAuthBlade() {
       <div className="px-6 pt-4 pb-0">
         <div className="flex items-center gap-3 mb-4">
           <Github className="w-6 h-6 text-ctp-text" />
-          <h2 className="text-lg font-semibold text-ctp-text">Sign in to GitHub</h2>
+          <h2 className="text-lg font-semibold text-ctp-text">
+            Sign in to GitHub
+          </h2>
         </div>
         <StepIndicator currentStep={stepIndex[authStep]} />
       </div>
@@ -139,7 +143,8 @@ export function GitHubAuthBlade() {
                 Choose permissions
               </h3>
               <p className="text-xs text-ctp-subtext0">
-                Select the access level FlowForge should have for your GitHub account.
+                Select the access level FlowForge should have for your GitHub
+                account.
               </p>
             </div>
 
@@ -234,11 +239,7 @@ export function GitHubAuthBlade() {
             <AlertTriangle className="w-12 h-12 text-ctp-red" />
             <p className="text-sm text-ctp-red text-center">{authError}</p>
             <div className="flex gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={cancelAuth}
-              >
+              <Button variant="outline" size="sm" onClick={cancelAuth}>
                 Try Again
               </Button>
             </div>

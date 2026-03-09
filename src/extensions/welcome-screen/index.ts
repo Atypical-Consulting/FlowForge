@@ -5,7 +5,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
   const WelcomeBlade = lazy(() =>
     import("./blades/WelcomeBlade").then((m) => ({
       default: m.WelcomeBlade,
-    }))
+    })),
   );
 
   api.registerBlade({

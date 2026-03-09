@@ -1,8 +1,8 @@
 import type { StateCreator } from "zustand";
 import type { UndoInfo } from "../../../../bindings";
 import { commands } from "../../../../bindings";
-import type { GitOpsMiddleware } from "./types";
 import type { GitOpsStore } from "./index";
+import type { GitOpsMiddleware } from "./types";
 
 export interface UndoSlice {
   undoInfo: UndoInfo | null;
@@ -28,7 +28,11 @@ export const createUndoSlice: StateCreator<
     try {
       const result = await commands.getUndoInfo();
       if (result.status === "ok") {
-        set({ undoInfo: result.data, undoIsLoading: false }, undefined, "gitOps:undo/loadOk");
+        set(
+          { undoInfo: result.data, undoIsLoading: false },
+          undefined,
+          "gitOps:undo/loadOk",
+        );
       } else {
         set({ undoInfo: null, undoIsLoading: false });
       }

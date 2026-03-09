@@ -10,17 +10,13 @@
  * Import this file at app startup (e.g., from App.tsx or commands/index.ts).
  */
 
+import { Palette, Search, Settings } from "lucide-react";
 import { createElement } from "react";
-import {
-  Palette,
-  Search,
-  Settings,
-} from "lucide-react";
-import { ThemeToggle } from "../components/ui/ThemeToggle";
-import { openBlade } from "@/framework/layout/bladeOpener";
+import { usePaletteStore as useCommandPaletteStore } from "@/framework/command-palette/paletteStore";
 import type { ToolbarAction } from "@/framework/extension-system/toolbarRegistry";
 import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
-import { usePaletteStore as useCommandPaletteStore } from "@/framework/command-palette/paletteStore";
+import { openBlade } from "@/framework/layout/bladeOpener";
+import { ThemeToggle } from "../components/ui/ThemeToggle";
 
 // --- Core Actions ---
 

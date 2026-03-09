@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { GitCommitHorizontal, GitBranch, Users, Clock } from "lucide-react";
+import { Clock, GitBranch, GitCommitHorizontal, Users } from "lucide-react";
 import type { RepoInsights } from "../types";
 
 interface Props {

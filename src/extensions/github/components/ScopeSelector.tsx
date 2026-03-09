@@ -5,9 +5,9 @@
  * expandable custom scope checkbox section.
  */
 
-import { Eye, Shield, Settings } from "lucide-react";
-import { SCOPE_PROFILES, CUSTOM_SCOPES } from "../types";
+import { Eye, Settings, Shield } from "lucide-react";
 import { cn } from "@/framework/lib/utils";
+import { CUSTOM_SCOPES, SCOPE_PROFILES } from "../types";
 
 interface ScopeSelectorProps {
   selectedProfile: string;
@@ -61,14 +61,18 @@ export function ScopeSelector({
                   Recommended
                 </span>
               )}
-              <Icon className={cn(
-                "w-6 h-6",
-                isSelected ? "text-ctp-blue" : "text-ctp-overlay1",
-              )} />
-              <span className={cn(
-                "text-sm font-medium",
-                isSelected ? "text-ctp-blue" : "text-ctp-text",
-              )}>
+              <Icon
+                className={cn(
+                  "w-6 h-6",
+                  isSelected ? "text-ctp-blue" : "text-ctp-overlay1",
+                )}
+              />
+              <span
+                className={cn(
+                  "text-sm font-medium",
+                  isSelected ? "text-ctp-blue" : "text-ctp-text",
+                )}
+              >
                 {profile.name}
               </span>
               <span className="text-xs text-ctp-subtext0 text-center leading-tight">

@@ -1,11 +1,14 @@
 import { Editor } from "@monaco-editor/react";
 import { FileCode } from "lucide-react";
 import { useRepoFile } from "../../../core/hooks/useRepoFile";
-import { MONACO_COMMON_OPTIONS, MONACO_THEME } from "../../../core/lib/monacoConfig";
+import {
+  MONACO_COMMON_OPTIONS,
+  MONACO_THEME,
+} from "../../../core/lib/monacoConfig";
 import "../../../core/lib/monacoTheme";
-import { BladeContentLoading } from "../../../core/blades/_shared/BladeContentLoading";
-import { BladeContentError } from "../../../core/blades/_shared/BladeContentError";
 import { BladeContentEmpty } from "../../../core/blades/_shared/BladeContentEmpty";
+import { BladeContentError } from "../../../core/blades/_shared/BladeContentError";
+import { BladeContentLoading } from "../../../core/blades/_shared/BladeContentLoading";
 
 interface ViewerCodeBladeProps {
   filePath: string;
@@ -44,7 +47,9 @@ export function ViewerCodeBlade({ filePath }: ViewerCodeBladeProps) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-ctp-mantle gap-3">
         <FileCode className="w-10 h-10 text-ctp-overlay0" />
-        <p className="text-sm text-ctp-subtext0">Binary file — preview not available</p>
+        <p className="text-sm text-ctp-subtext0">
+          Binary file — preview not available
+        </p>
         <p className="text-xs text-ctp-overlay0">{filePath}</p>
         <p className="text-xs text-ctp-overlay0">{sizeLabel}</p>
       </div>

@@ -1,8 +1,17 @@
-import { useState, useEffect } from "react";
 import { AlertTriangle, GitMerge } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../../core/components/ui/dialog";
+import { useEffect, useState } from "react";
 import { Button } from "../../../core/components/ui/button";
-import { MergeStrategySelector, type MergeMethod } from "./MergeStrategySelector";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../core/components/ui/dialog";
+import {
+  type MergeMethod,
+  MergeStrategySelector,
+} from "./MergeStrategySelector";
 
 interface MergeConfirmDialogProps {
   open: boolean;
@@ -11,7 +20,11 @@ interface MergeConfirmDialogProps {
   prTitle: string;
   headRef: string;
   baseRef: string;
-  onMerge: (method: MergeMethod, commitTitle?: string, commitMessage?: string) => void;
+  onMerge: (
+    method: MergeMethod,
+    commitTitle?: string,
+    commitMessage?: string,
+  ) => void;
   isPending: boolean;
 }
 

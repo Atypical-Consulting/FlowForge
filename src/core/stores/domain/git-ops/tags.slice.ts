@@ -2,8 +2,8 @@ import type { StateCreator } from "zustand";
 import type { TagInfo } from "../../../../bindings";
 import { commands } from "../../../../bindings";
 import { getErrorMessage } from "../../../lib/errors";
-import type { GitOpsMiddleware } from "./types";
 import type { GitOpsStore } from "./index";
+import type { GitOpsMiddleware } from "./types";
 
 export interface TagSlice {
   tagList: TagInfo[];
@@ -29,7 +29,11 @@ export const createTagSlice: StateCreator<
     set({ tagIsLoading: true, tagError: null }, undefined, "gitOps:tag/load");
     const result = await commands.listTags();
     if (result.status === "ok") {
-      set({ tagList: result.data, tagIsLoading: false }, undefined, "gitOps:tag/loadOk");
+      set(
+        { tagList: result.data, tagIsLoading: false },
+        undefined,
+        "gitOps:tag/loadOk",
+      );
     } else {
       set({ tagError: getErrorMessage(result.error), tagIsLoading: false });
     }
@@ -42,5 +46,6 @@ export const createTagSlice: StateCreator<
     }
   },
 
-  clearTagError: () => set({ tagError: null }, undefined, "gitOps:tag/clearError"),
+  clearTagError: () =>
+    set({ tagError: null }, undefined, "gitOps:tag/clearError"),
 });

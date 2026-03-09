@@ -1,7 +1,10 @@
 import Editor, { type OnMount } from "@monaco-editor/react";
-import { useEffect, useMemo, useRef } from "react";
 import type { editor } from "monaco-editor";
-import { MONACO_COMMON_OPTIONS, MONACO_THEME } from "../../../../core/lib/monacoConfig";
+import { useEffect, useMemo, useRef } from "react";
+import {
+  MONACO_COMMON_OPTIONS,
+  MONACO_THEME,
+} from "../../../../core/lib/monacoConfig";
 import "../../../../core/lib/monacoTheme";
 
 interface ConflictResultEditorProps {
