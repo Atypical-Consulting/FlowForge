@@ -24,7 +24,7 @@ serde_json = "1"
 tokio = { version = "1", features = ["full"] }
 thiserror = "2"
 base64 = "0.22"
-git2 = "0.20"
+git2 = "0.21"
 statig = "0.4"
 git-conventional = "1.0"
 tera = "1"
