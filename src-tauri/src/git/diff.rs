@@ -472,7 +472,7 @@ pub async fn get_file_base64(
         .await
         .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
 
-    let abs_path = repo_path.join(&file_path);
+    let abs_path = resolve_within_repo(&repo_path, &file_path)?;
     let data = tokio::fs::read(&abs_path)
         .await
         .map_err(|e| GitError::OperationFailed(format!("Failed to read file: {}", e)))?;
@@ -517,6 +517,42 @@ pub async fn get_commit_file_base64(
     .map_err(|e| GitError::OperationFailed(format!("Task join error: {}", e)))?
 }
 
+/// Resolve a caller-supplied relative file path against the repository root,
+/// guaranteeing the result stays inside the repository.
+///
+/// Rejects absolute paths and any path containing `..` components up front, then
+/// canonicalizes both the repository root and the joined path and verifies the
+/// resolved path is still contained within the (canonical) repository root. This
+/// prevents path-traversal / arbitrary-file-read via crafted `file_path` values
+/// reaching the IPC command.
+fn resolve_within_repo(repo_path: &Path, file_path: &str) -> Result<std::path::PathBuf, GitError> {
+    let candidate = Path::new(file_path);
+
+    // Reject absolute paths (on Unix `join` discards the base for them) and any
+    // parent-dir traversal before touching the filesystem.
+    if candidate.is_absolute()
+        || candidate
+            .components()
+            .any(|c| matches!(c, std::path::Component::ParentDir))
+    {
+        return Err(GitError::PathNotFound(file_path.to_string()));
+    }
+
+    let base = repo_path
+        .canonicalize()
+        .map_err(|_| GitError::PathNotFound(file_path.to_string()))?;
+    let abs = base
+        .join(candidate)
+        .canonicalize()
+        .map_err(|_| GitError::PathNotFound(file_path.to_string()))?;
+
+    if !abs.starts_with(&base) {
+        return Err(GitError::PathNotFound(file_path.to_string()));
+    }
+
+    Ok(abs)
+}
+
 /// Guess MIME type from file extension.
 fn mime_from_extension(path: &str) -> &'static str {
     let lower = path.to_lowercase();
@@ -556,5 +592,59 @@ fn get_blob_content(
         }
         Err(e) if e.code() == git2::ErrorCode::NotFound => Ok(String::new()),
         Err(e) => Err(GitError::from(e)),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn resolve_within_repo_accepts_contained_file() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("image.png"), b"data").unwrap();
+
+        let resolved = resolve_within_repo(dir.path(), "image.png").unwrap();
+        assert!(resolved.ends_with("image.png"));
+        assert!(resolved.starts_with(dir.path().canonicalize().unwrap()));
+    }
+
+    #[test]
+    fn resolve_within_repo_accepts_nested_file() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join("assets")).unwrap();
+        std::fs::write(dir.path().join("assets/logo.png"), b"data").unwrap();
+
+        let resolved = resolve_within_repo(dir.path(), "assets/logo.png").unwrap();
+        assert!(resolved.ends_with("logo.png"));
+    }
+
+    #[test]
+    fn resolve_within_repo_rejects_absolute_path() {
+        let dir = tempfile::tempdir().unwrap();
+        let err = resolve_within_repo(dir.path(), "/etc/passwd").unwrap_err();
+        assert!(matches!(err, GitError::PathNotFound(_)));
+    }
+
+    #[test]
+    fn resolve_within_repo_rejects_parent_traversal() {
+        let dir = tempfile::tempdir().unwrap();
+        let err = resolve_within_repo(dir.path(), "../../etc/passwd").unwrap_err();
+        assert!(matches!(err, GitError::PathNotFound(_)));
+    }
+
+    #[test]
+    fn resolve_within_repo_rejects_embedded_parent_traversal() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join("assets")).unwrap();
+        let err = resolve_within_repo(dir.path(), "assets/../../secret").unwrap_err();
+        assert!(matches!(err, GitError::PathNotFound(_)));
+    }
+
+    #[test]
+    fn resolve_within_repo_rejects_missing_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let err = resolve_within_repo(dir.path(), "does_not_exist.png").unwrap_err();
+        assert!(matches!(err, GitError::PathNotFound(_)));
     }
 }

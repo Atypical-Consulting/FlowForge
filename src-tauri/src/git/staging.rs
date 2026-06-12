@@ -39,12 +39,84 @@ pub struct StagingStatus {
     pub untracked: Vec<FileChange>,
 }
 
+/// Which diff coordinate space a [`LineRange`] refers to.
+///
+/// Additions are identified by their *new-file* line number, while deletions are
+/// identified by their *old-file* line number. These live in different coordinate
+/// spaces, so a single numeric range is ambiguous: an addition at new-line N and an
+/// unrelated deletion at old-line N would both match. Tagging a range with its kind
+/// removes that ambiguity so only the lines the user actually selected are (un)staged.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub enum LineRangeKind {
+    /// The range selects addition lines, keyed by their new-file line number.
+    Addition,
+    /// The range selects deletion lines, keyed by their old-file line number.
+    Deletion,
+}
+
 /// A contiguous range of lines for partial staging operations.
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct LineRange {
     pub start: u32, // 1-based line number
     pub end: u32,   // inclusive
+    /// Optional coordinate-space tag disambiguating additions from deletions.
+    ///
+    /// When `None` (the legacy behaviour), the range is matched against both the
+    /// new-file line number of additions and the old-file line number of deletions,
+    /// which can mis-stage an unrelated change that happens to share a line number.
+    /// When `Some`, only lines of the matching kind in the requested range are
+    /// affected, eliminating the cross-coordinate collision.
+    #[serde(default)]
+    pub kind: Option<LineRangeKind>,
+}
+
+/// Coordinate-tagged line selection derived from a list of [`LineRange`]s.
+///
+/// `additions` holds new-file line numbers that select addition lines; `deletions`
+/// holds old-file line numbers that select deletion lines. An untagged range
+/// (`LineRange::kind == None`, the legacy frontend behaviour) is added to BOTH sets,
+/// preserving the previous matching semantics for backwards compatibility while
+/// allowing newer callers to disambiguate and avoid the cross-coordinate collision.
+struct SelectedLines {
+    additions: HashSet<u32>,
+    deletions: HashSet<u32>,
+}
+
+impl SelectedLines {
+    fn from_ranges(line_ranges: &[LineRange]) -> Self {
+        let mut additions = HashSet::new();
+        let mut deletions = HashSet::new();
+        for range in line_ranges {
+            match range.kind {
+                Some(LineRangeKind::Addition) => {
+                    additions.extend(range.start..=range.end);
+                }
+                Some(LineRangeKind::Deletion) => {
+                    deletions.extend(range.start..=range.end);
+                }
+                None => {
+                    // Legacy: a bare range matches additions by new-lineno and
+                    // deletions by old-lineno against the same numbers.
+                    additions.extend(range.start..=range.end);
+                    deletions.extend(range.start..=range.end);
+                }
+            }
+        }
+        Self {
+            additions,
+            deletions,
+        }
+    }
+
+    fn selects_addition(&self, new_lineno: u32) -> bool {
+        self.additions.contains(&new_lineno)
+    }
+
+    fn selects_deletion(&self, old_lineno: u32) -> bool {
+        self.deletions.contains(&old_lineno)
+    }
 }
 
 /// Get the current staging status of the repository.
@@ -185,13 +257,24 @@ pub async fn stage_file(path: String, state: State<'_, RepositoryState>) -> Resu
 
         let file_path = Path::new(&path);
 
-        // Check if file exists in workdir - if not, it's a deletion
-        let full_path = repo_path.join(file_path);
-        if full_path.exists() {
-            index.add_path(file_path)?;
-        } else {
+        // Decide add vs remove from git's own index-to-workdir delta rather than a raw
+        // `exists()` check on disk. `exists()` follows symlinks and races the filesystem
+        // (TOCTOU), so a file recreated by a build tool between status and stage could be
+        // staged as an add when the user asked for a deletion (or vice versa). The git
+        // status is authoritative for the file's actual state.
+        let is_deleted = match repo.status_file(file_path) {
+            Ok(status) => {
+                status.intersects(git2::Status::WT_DELETED | git2::Status::INDEX_DELETED)
+            }
+            // If status can't be determined, fall back to the on-disk check.
+            Err(_) => !repo_path.join(file_path).exists(),
+        };
+
+        if is_deleted {
             // File was deleted, remove from index
             index.remove_path(file_path)?;
+        } else {
+            index.add_path(file_path)?;
         }
 
         index.write()?;
@@ -573,8 +656,10 @@ pub async fn unstage_hunks(
 
         // Build result content with proper line endings
         let mut result_content = result_lines.join("\n");
-        // Preserve trailing newline if HEAD content had one
-        if head_content.ends_with('\n') || !head_content.is_empty() {
+        // Preserve trailing newline only if the source (HEAD) content actually had one.
+        // Using `!is_empty()` here would force a trailing newline onto files that lack
+        // one, corrupting the staged blob with a phantom "no newline at end of file".
+        if head_content.ends_with('\n') {
             result_content.push('\n');
         }
 
@@ -593,7 +678,7 @@ pub async fn unstage_hunks(
                 uid: 0,
                 gid: 0,
                 file_size: 0,
-                id: git2::Oid::zero(),
+                id: git2::Oid::ZERO_SHA1,
                 flags: 0,
                 flags_extended: 0,
                 path: path.as_bytes().to_vec(),
@@ -667,12 +752,11 @@ pub async fn stage_lines(
 
         let base_lines: Vec<&str> = base_content.lines().collect();
 
-        // Build selected line numbers set (these are new_lineno values for additions,
-        // old_lineno values for deletions)
-        let selected_new_lines: HashSet<u32> = line_ranges
-            .iter()
-            .flat_map(|r| r.start..=r.end)
-            .collect();
+        // Build selected line numbers, tagged by coordinate space: additions are keyed
+        // by new_lineno and deletions by old_lineno. These spaces differ, so a single
+        // untagged set would let an addition at new-line N coincidentally stage an
+        // unrelated deletion at old-line N (and vice versa).
+        let selected = SelectedLines::from_ranges(&line_ranges);
 
         // Build new content by applying selected lines from the target hunk
         let mut result_lines: Vec<String> = Vec::new();
@@ -701,18 +785,18 @@ pub async fn stage_lines(
                             base_idx += 1;
                         }
                         crate::git::diff::DiffLineOrigin::Addition => {
-                            // Include addition only if its new_lineno is in selected ranges
+                            // Include addition only if its new_lineno is selected
                             if let Some(new_no) = line.new_lineno
-                                && selected_new_lines.contains(&new_no) {
+                                && selected.selects_addition(new_no) {
                                     result_lines.push(
                                         line.content.trim_end_matches('\n').to_string(),
                                     );
                                 }
                         }
                         crate::git::diff::DiffLineOrigin::Deletion => {
-                            // Remove from output (stage deletion) only if old_lineno is in range
+                            // Remove from output (stage deletion) only if old_lineno is selected
                             if let Some(old_no) = line.old_lineno {
-                                if selected_new_lines.contains(&old_no) {
+                                if selected.selects_deletion(old_no) {
                                     // Stage the deletion: skip this line
                                     base_idx += 1;
                                 } else {
@@ -745,9 +829,11 @@ pub async fn stage_lines(
             base_idx += 1;
         }
 
-        // Build result with proper endings
+        // Build result with proper endings.
+        // Preserve trailing newline only if the source (index) content actually had one;
+        // forcing it on a file that lacks one corrupts the staged blob.
         let mut result_content = result_lines.join("\n");
-        if base_content.ends_with('\n') || !base_content.is_empty() {
+        if base_content.ends_with('\n') {
             result_content.push('\n');
         }
 
@@ -765,7 +851,7 @@ pub async fn stage_lines(
                 uid: 0,
                 gid: 0,
                 file_size: 0,
-                id: git2::Oid::zero(),
+                id: git2::Oid::ZERO_SHA1,
                 flags: 0,
                 flags_extended: 0,
                 path: path.as_bytes().to_vec(),
@@ -850,11 +936,11 @@ pub async fn unstage_lines(
 
         let head_lines: Vec<&str> = head_content.lines().collect();
 
-        // Build selected line numbers set
-        let selected_lines: HashSet<u32> = line_ranges
-            .iter()
-            .flat_map(|r| r.start..=r.end)
-            .collect();
+        // Build selected line numbers, tagged by coordinate space: additions are keyed
+        // by new_lineno and deletions by old_lineno. Keeping them separate prevents an
+        // addition at new-line N from coincidentally reverting an unrelated deletion at
+        // old-line N (and vice versa).
+        let selected = SelectedLines::from_ranges(&line_ranges);
 
         // Build result: start with HEAD, apply all hunks except selectively revert target hunk lines
         let mut result_lines: Vec<String> = Vec::new();
@@ -874,7 +960,7 @@ pub async fn unstage_lines(
             }
 
             if hunk.index == hunk_index {
-                // Target hunk: selectively revert lines in selected_lines
+                // Target hunk: selectively revert the selected lines
                 for line in &hunk.lines {
                     match line.origin {
                         crate::git::diff::DiffLineOrigin::Context => {
@@ -883,20 +969,20 @@ pub async fn unstage_lines(
                             old_line_idx += 1;
                         }
                         crate::git::diff::DiffLineOrigin::Addition => {
-                            // If new_lineno is in selected ranges, REVERT (don't include)
+                            // If new_lineno is selected, REVERT (don't include)
                             // Otherwise keep it staged
                             if let Some(new_no) = line.new_lineno
-                                && !selected_lines.contains(&new_no) {
+                                && !selected.selects_addition(new_no) {
                                     result_lines.push(
                                         line.content.trim_end_matches('\n').to_string(),
                                     );
                                 }
                         }
                         crate::git::diff::DiffLineOrigin::Deletion => {
-                            // If old_lineno is in selected ranges, REVERT (put line back)
+                            // If old_lineno is selected, REVERT (put line back)
                             // Otherwise keep it deleted (staged)
                             if let Some(old_no) = line.old_lineno
-                                && selected_lines.contains(&old_no) {
+                                && selected.selects_deletion(old_no) {
                                     // Revert the deletion: restore original line
                                     if old_line_idx < head_lines.len() {
                                         result_lines
@@ -934,9 +1020,11 @@ pub async fn unstage_lines(
             old_line_idx += 1;
         }
 
-        // Build result with proper endings
+        // Build result with proper endings.
+        // Preserve trailing newline only if the source (HEAD) content actually had one;
+        // forcing it on a file that lacks one corrupts the staged blob.
         let mut result_content = result_lines.join("\n");
-        if head_content.ends_with('\n') || !head_content.is_empty() {
+        if head_content.ends_with('\n') {
             result_content.push('\n');
         }
 
@@ -954,7 +1042,7 @@ pub async fn unstage_lines(
                 uid: 0,
                 gid: 0,
                 file_size: 0,
-                id: git2::Oid::zero(),
+                id: git2::Oid::ZERO_SHA1,
                 flags: 0,
                 flags_extended: 0,
                 path: path.as_bytes().to_vec(),
@@ -1249,5 +1337,63 @@ mod tests {
             detailed_hunks.is_empty(),
             "Detailed hunks should be empty when include_lines=false"
         );
+    }
+
+    fn range(start: u32, end: u32, kind: Option<LineRangeKind>) -> LineRange {
+        LineRange { start, end, kind }
+    }
+
+    #[test]
+    fn test_selected_lines_legacy_untagged_matches_both_spaces() {
+        // An untagged range (kind == None) preserves the historical behaviour: it
+        // matches additions by new-lineno AND deletions by old-lineno.
+        let selected = SelectedLines::from_ranges(&[range(3, 5, None)]);
+        assert!(selected.selects_addition(4));
+        assert!(selected.selects_deletion(4));
+        assert!(!selected.selects_addition(6));
+        assert!(!selected.selects_deletion(2));
+    }
+
+    #[test]
+    fn test_selected_lines_tagged_disambiguates_coordinate_spaces() {
+        // Selecting an addition at new-line 4 must NOT also select an unrelated
+        // deletion at old-line 4 (the cross-coordinate collision bug).
+        let selected = SelectedLines::from_ranges(&[range(4, 4, Some(LineRangeKind::Addition))]);
+        assert!(selected.selects_addition(4));
+        assert!(
+            !selected.selects_deletion(4),
+            "an addition selection must not stage a deletion sharing the line number"
+        );
+
+        // And the converse: a deletion selection must not touch an addition.
+        let selected = SelectedLines::from_ranges(&[range(4, 4, Some(LineRangeKind::Deletion))]);
+        assert!(selected.selects_deletion(4));
+        assert!(!selected.selects_addition(4));
+    }
+
+    #[test]
+    fn test_selected_lines_mixed_tags() {
+        let selected = SelectedLines::from_ranges(&[
+            range(2, 2, Some(LineRangeKind::Addition)),
+            range(7, 8, Some(LineRangeKind::Deletion)),
+        ]);
+        assert!(selected.selects_addition(2));
+        assert!(!selected.selects_addition(7));
+        assert!(selected.selects_deletion(7));
+        assert!(selected.selects_deletion(8));
+        assert!(!selected.selects_deletion(2));
+    }
+
+    #[test]
+    fn test_line_range_deserializes_without_kind() {
+        // Legacy frontend payloads omit `kind`; they must still deserialize.
+        let r: LineRange = serde_json::from_str(r#"{"start":1,"end":3}"#).unwrap();
+        assert_eq!(r.start, 1);
+        assert_eq!(r.end, 3);
+        assert_eq!(r.kind, None);
+
+        let r: LineRange =
+            serde_json::from_str(r#"{"start":1,"end":3,"kind":"addition"}"#).unwrap();
+        assert_eq!(r.kind, Some(LineRangeKind::Addition));
     }
 }

@@ -6,13 +6,20 @@ import type { GitError, GitflowError } from "../../bindings";
 export function getErrorMessage(error: GitError | GitflowError): string {
   // Handle GitflowError types
   if ("data" in error) {
-    const data = error.data as Record<string, unknown>;
-    if ("expected" in data && "actual" in data) {
-      return `Expected ${data.expected}, got ${data.actual}`;
-    }
-    // For errors with string data (e.g., ReleaseInProgress, BranchNotFound)
+    // For errors with string data (e.g., ReleaseInProgress, BranchNotFound).
+    // Check this before using the `in` operator below, which throws a
+    // TypeError when applied to a string primitive.
     if (typeof error.data === "string") {
       return `${error.type}: ${error.data}`;
+    }
+    if (
+      error.data &&
+      typeof error.data === "object" &&
+      "expected" in error.data &&
+      "actual" in error.data
+    ) {
+      const data = error.data as Record<string, unknown>;
+      return `Expected ${data.expected}, got ${data.actual}`;
     }
   }
 

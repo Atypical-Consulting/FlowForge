@@ -6,7 +6,7 @@ import {
 } from "../../../core/lib/branchClassifier";
 import { parseConventionalMessage } from "../../conventional-commits/lib/conventional-utils";
 
-export { BRANCH_HEX_COLORS, BRANCH_BADGE_STYLES, BRANCH_RING_COLORS };
+export { BRANCH_BADGE_STYLES, BRANCH_HEX_COLORS, BRANCH_RING_COLORS };
 
 // ── Layout constants (Ungit-inspired) ──
 

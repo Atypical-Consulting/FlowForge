@@ -51,6 +51,7 @@ export function BranchList({
   } = useBranchStore();
   const {
     mergeResult: lastMergeResult,
+    sourceBranch: mergeSourceBranch,
     startMerge,
     abort: _abortMerge,
     isMerging: _mergeIsLoading,
@@ -144,8 +145,12 @@ export function BranchList({
   const handleBulkDelete = async () => {
     setIsDeleting(true);
     try {
+      // Never delete protected branches (main/master/develop, Gitflow refs)
+      // even if a shift-range selection swept them into `selected`.
       const result = await bulkDeleteBranches({
-        branchNames: Array.from(bulkSelect.selected),
+        branchNames: Array.from(bulkSelect.selected).filter(
+          (n) => !protectedBranches.has(n),
+        ),
         force: false,
       });
       if (result.totalDeleted > 0) {
@@ -268,7 +273,12 @@ export function BranchList({
       {mergingBranch && (
         <MergeDialog
           sourceBranch={mergingBranch}
-          result={lastMergeResult}
+          // Only surface a merge result that belongs to the branch currently
+          // open in the dialog. A stale conflicted result left over from a
+          // previously-closed merge (the singleton actor is not reset on
+          // "Close") must not short-circuit the confirmation view for a
+          // different branch.
+          result={mergeSourceBranch === mergingBranch ? lastMergeResult : null}
           onConfirm={confirmMerge}
           onClose={closeMergeDialog}
         />
@@ -276,7 +286,10 @@ export function BranchList({
 
       {showDeleteDialog && (
         <BulkDeleteDialog
-          branches={branches.filter((b) => bulkSelect.selected.has(b.name))}
+          branches={branches.filter(
+            (b) =>
+              bulkSelect.selected.has(b.name) && !protectedBranches.has(b.name),
+          )}
           protectedBranches={Array.from(protectedBranches)}
           isDeleting={isDeleting}
           onConfirm={handleBulkDelete}

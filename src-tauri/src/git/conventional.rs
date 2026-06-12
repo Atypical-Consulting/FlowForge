@@ -706,7 +706,7 @@ pub async fn get_scope_suggestions(
                 Some(CommitSummary {
                     oid: oid.to_string(),
                     short_oid: format!("{:.7}", oid),
-                    message_subject: commit.summary().unwrap_or("").to_string(),
+                    message_subject: commit.summary().ok().flatten().unwrap_or("").to_string(),
                     author_name: author.name().unwrap_or("Unknown").to_string(),
                     author_email: author.email().unwrap_or("").to_string(),
                     timestamp_ms: (author.when().seconds() as f64) * 1000.0,
@@ -823,8 +823,7 @@ mod tests {
     fn test_parse_invalid_type() {
         let result = parse_conventional_commit("invalid: message");
         // git-conventional may allow custom types, so check behavior
-        if result.is_err() {
-            let err = result.unwrap_err();
+        if let Err(err) = result {
             assert!(err.code == "INVALID_TYPE" || err.code == "PARSE_ERROR");
         }
     }

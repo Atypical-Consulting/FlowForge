@@ -7,11 +7,11 @@ import type {
 } from "../bladeTypes";
 
 export type {
-  TypedBlade,
-  BladeType,
   BladePropsMap,
+  BladeType,
   CoreBladeType,
   ExtensionBladeType,
+  TypedBlade,
 };
 
 export type WorkflowType = string;

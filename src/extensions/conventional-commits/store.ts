@@ -253,4 +253,4 @@ export const useConventionalStore = createBladeStore<ConventionalState>(
   }),
 );
 
-export type { CommitType, TypeSuggestion, ScopeSuggestion, ValidationResult };
+export type { CommitType, ScopeSuggestion, TypeSuggestion, ValidationResult };

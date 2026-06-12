@@ -222,6 +222,8 @@ function App() {
   const initNavigation = useNavigationStore((s) => s.initNavigation);
   const initMetadata = useBranchMetadataStore((s) => s.initMetadata);
   const initChecklist = useReviewChecklistStore((s) => s.initChecklist);
+  const initDiffPreferences = useSettingsStore((s) => s.initDiffPreferences);
+  const initLayout = useSettingsStore((s) => s.initLayout);
   const loadUndoInfo = useUndoStore((s) => s.loadUndoInfo);
   const discoverExtensions = useExtensionHost((s) => s.discoverExtensions);
   const activateAll = useExtensionHost((s) => s.activateAll);
@@ -250,6 +252,8 @@ function App() {
     initNavigation();
     initMetadata();
     initChecklist();
+    initDiffPreferences();
+    initLayout();
 
     // Register built-in extensions
     registerBuiltIn({
@@ -433,15 +437,25 @@ function App() {
     initNavigation,
     initMetadata,
     initChecklist,
+    initDiffPreferences,
+    initLayout,
     registerBuiltIn,
   ]);
 
   // Discover and activate extensions when a repository is opened
   useEffect(() => {
+    // Guard against a stale discovery resolving after this effect run has been
+    // torn down (e.g. rapid repository switch). Without it, the late
+    // `.then(activateAll)` could re-activate extensions for a closed/superseded
+    // repo after cleanup already ran.
+    let cancelled = false;
+
     if (status) {
       // Repository opened -- discover and activate extensions
       discoverExtensions(status.repoPath).then(() => {
-        activateAll();
+        if (!cancelled) {
+          activateAll();
+        }
       });
     } else {
       // Repository closed -- deactivate all extensions
@@ -450,6 +464,7 @@ function App() {
 
     return () => {
       // Cleanup on unmount or before re-running (handles repo switch)
+      cancelled = true;
       deactivateAll();
     };
   }, [status, discoverExtensions, activateAll, deactivateAll]);

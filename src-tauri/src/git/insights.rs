@@ -269,7 +269,7 @@ pub async fn get_branch_health(
                 .map(|dt| dt.format("%Y-%m-%d").to_string())
                 .unwrap_or_else(|| "unknown".to_string());
             let last_commit_timestamp_ms = (ts as f64) * 1000.0;
-            let last_commit_message = commit.summary().unwrap_or("").to_string();
+            let last_commit_message = commit.summary().ok().flatten().unwrap_or("").to_string();
 
             // Compute ahead/behind vs HEAD
             let branch_oid = commit.id();

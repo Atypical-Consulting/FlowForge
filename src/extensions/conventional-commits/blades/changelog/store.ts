@@ -78,4 +78,4 @@ export const useChangelogStore = createBladeStore<ChangelogState>(
   }),
 );
 
-export type { ChangelogOutput, CommitGroup, ChangelogCommit };
+export type { ChangelogCommit, ChangelogOutput, CommitGroup };

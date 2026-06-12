@@ -285,5 +285,79 @@ describe("useGitOpsStore", () => {
       expect(state.topologyLastRefresh).toBe(0);
       expect(state.topologyCurrentOffset).toBe(0);
     });
+
+    // Build N minimal graph nodes for paging/race tests.
+    const makeNodes = (count: number, prefix: string) =>
+      Array.from({ length: count }, (_, i) => ({
+        oid: `${prefix}${i}`,
+        shortOid: `${prefix}${i}`,
+        message: "m",
+        author: "a",
+        timestampMs: 0,
+        parents: [],
+        branchType: "main",
+        refs: [],
+      })) as unknown as ReturnType<typeof Object>[];
+
+    // A promise whose resolution we control, to interleave async loads.
+    const deferred = <T>() => {
+      let resolve!: (v: T) => void;
+      const promise = new Promise<T>((r) => {
+        resolve = r;
+      });
+      return { promise, resolve };
+    };
+
+    it("loadMore discards its page when a refresh (loadGraph) interleaves", async () => {
+      useGitOpsStore.getState().resetTopology();
+
+      // Seed an initial page so loadMore has a base to append to.
+      mockCommands.getCommitGraph.mockResolvedValueOnce(
+        ok({ nodes: makeNodes(100, "init"), edges: [] }),
+      );
+      await useGitOpsStore.getState().loadGraph();
+      expect(useGitOpsStore.getState().nodes).toHaveLength(100);
+      expect(useGitOpsStore.getState().topologyCurrentOffset).toBe(100);
+
+      // loadMore's fetch is held open while a refresh resolves first.
+      const more = deferred<ReturnType<typeof ok>>();
+      const refreshNodes = makeNodes(100, "fresh");
+      mockCommands.getCommitGraph
+        .mockReturnValueOnce(more.promise) // loadMore (in-flight)
+        .mockResolvedValueOnce(ok({ nodes: refreshNodes, edges: [] })); // loadGraph
+
+      const loadMorePromise = useGitOpsStore.getState().loadMore();
+      // A concurrent full refresh replaces the graph and resets the offset.
+      await useGitOpsStore.getState().loadGraph();
+      expect(useGitOpsStore.getState().nodes).toHaveLength(100);
+      expect(useGitOpsStore.getState().topologyCurrentOffset).toBe(100);
+
+      // Now the stale loadMore resolves; its result must be discarded.
+      more.resolve(ok({ nodes: makeNodes(50, "stale"), edges: [] }));
+      await loadMorePromise;
+
+      const state = useGitOpsStore.getState();
+      expect(state.nodes).toHaveLength(100); // not 150
+      expect(state.nodes[0].oid).toBe("fresh0"); // refreshed base preserved
+      expect(state.topologyCurrentOffset).toBe(100); // offset not corrupted
+    });
+
+    it("loadGraph discards its result when resetTopology interleaves", async () => {
+      useGitOpsStore.getState().resetTopology();
+
+      const slow = deferred<ReturnType<typeof ok>>();
+      mockCommands.getCommitGraph.mockReturnValueOnce(slow.promise);
+
+      const loadPromise = useGitOpsStore.getState().loadGraph();
+      // Simulate unmount / repo switch clearing topology mid-flight.
+      useGitOpsStore.getState().resetTopology();
+
+      slow.resolve(ok({ nodes: makeNodes(100, "stale"), edges: [] }));
+      await loadPromise;
+
+      // The stale load must not repopulate the reset graph.
+      expect(useGitOpsStore.getState().nodes).toEqual([]);
+      expect(useGitOpsStore.getState().topologyCurrentOffset).toBe(0);
+    });
   });
 });

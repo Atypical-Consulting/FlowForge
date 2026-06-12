@@ -81,7 +81,7 @@ pub async fn get_remotes(state: State<'_, RepositoryState>) -> Result<Vec<Remote
         let remotes = repo.remotes()?;
 
         let mut result = Vec::new();
-        for name in remotes.iter().flatten() {
+        for name in remotes.iter().filter_map(|n| n.ok().flatten()) {
             if let Ok(remote) = repo.find_remote(name) {
                 result.push(RemoteInfo {
                     name: name.to_string(),
@@ -204,7 +204,12 @@ pub async fn push_to_remote(
 
         // Get current branch name
         let head = repo.head()?;
-        let branch_name = head.shorthand().ok_or_else(|| {
+        if !head.is_branch() {
+            return Err(GitError::OperationFailed(
+                "Cannot push: HEAD is detached. Check out a branch first.".to_string(),
+            ));
+        }
+        let branch_name = head.shorthand().map_err(|_| {
             GitError::OperationFailed("Cannot determine current branch".to_string())
         })?;
 
@@ -294,7 +299,7 @@ pub async fn pull_from_remote(
         let head = repo.head()?;
         let branch_name = head
             .shorthand()
-            .ok_or_else(|| {
+            .map_err(|_| {
                 GitError::OperationFailed("Cannot determine current branch".to_string())
             })?
             .to_string();
@@ -357,12 +362,31 @@ pub async fn pull_from_remote(
         }
 
         if analysis.is_fast_forward() {
+            // Refuse to fast-forward if the working tree has local modifications
+            // that a forced checkout would silently overwrite (matches
+            // `git pull --ff-only` semantics). Ignored and untracked files are
+            // not affected by the checkout, so exclude them from the check.
+            let mut status_opts = git2::StatusOptions::new();
+            status_opts
+                .include_ignored(false)
+                .include_untracked(false)
+                .exclude_submodules(true);
+            let statuses = repo.statuses(Some(&mut status_opts))?;
+            if !statuses.is_empty() {
+                return Err(GitError::OperationFailed(
+                    "Local changes would be overwritten by pull. Commit or stash them first."
+                        .to_string(),
+                ));
+            }
+
             // Fast-forward: just update HEAD
             let refname = format!("refs/heads/{}", branch_name);
             let mut reference = repo.find_reference(&refname)?;
             reference.set_target(fetch_commit.id(), "pull: fast-forward")?;
             repo.set_head(&refname)?;
-            repo.checkout_head(Some(git2::build::CheckoutBuilder::default().force()))?;
+            // Use a safe checkout (not force) so git2 refuses to clobber any
+            // file it cannot reconcile rather than discarding local work.
+            repo.checkout_head(Some(git2::build::CheckoutBuilder::default().safe()))?;
 
             return Ok(SyncResult {
                 success: true,
@@ -378,10 +402,16 @@ pub async fn pull_from_remote(
             // Check for conflicts
             let index = repo.index()?;
             if index.has_conflicts() {
+                // Abort the merge so the repository isn't left stuck in a
+                // MERGING state with a conflicted index. This mirrors the
+                // gitflow merge path and avoids subsequent operations behaving
+                // as if a merge were mid-flight.
+                repo.cleanup_state()?;
+                repo.checkout_head(Some(git2::build::CheckoutBuilder::default().force()))?;
                 return Ok(SyncResult {
                     success: false,
                     message:
-                        "Merge conflicts detected. Please resolve conflicts and commit manually."
+                        "Merge conflicts detected. Pull aborted; resolve manually or use a merge tool."
                             .to_string(),
                     commits_transferred: 0,
                 });

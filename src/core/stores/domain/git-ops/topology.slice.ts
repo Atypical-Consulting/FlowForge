@@ -8,6 +8,12 @@ import type { GitOpsMiddleware } from "./types";
 const INITIAL_LIMIT = 100;
 const LOAD_MORE_AMOUNT = 50;
 
+// Monotonic token guarding against stale async results. Any operation that
+// resets/replaces the graph (resetTopology, loadGraph) bumps this token; an
+// in-flight load captures the token before awaiting and discards its result if
+// the token changed while it was suspended, preventing stale-data clobbering.
+let topologyLoadToken = 0;
+
 export interface TopologySlice {
   nodes: GraphNode[];
   edges: GraphEdge[];
@@ -41,6 +47,8 @@ export const createTopologySlice: StateCreator<
   topologyCurrentOffset: 0,
 
   loadGraph: async () => {
+    // A fresh full load supersedes any in-flight load (including loadMore).
+    const myToken = ++topologyLoadToken;
     set(
       { topologyIsLoading: true, topologyError: null },
       undefined,
@@ -48,6 +56,9 @@ export const createTopologySlice: StateCreator<
     );
     try {
       const result = await commands.getCommitGraph(INITIAL_LIMIT, 0);
+      // Discard if a reset (unmount/repo switch/close) or another load ran
+      // while this request was pending, to avoid repopulating stale data.
+      if (myToken !== topologyLoadToken) return;
       if (result.status === "ok") {
         set(
           {
@@ -73,31 +84,33 @@ export const createTopologySlice: StateCreator<
   },
 
   loadMore: async () => {
-    const {
-      topologyCurrentOffset,
-      nodes,
-      edges,
-      topologyIsLoading,
-      topologyHasMore,
-    } = get();
+    const { topologyCurrentOffset, topologyIsLoading, topologyHasMore } = get();
     if (topologyIsLoading || !topologyHasMore) return;
 
+    // Capture the current token; a concurrent loadGraph/resetTopology will bump
+    // it and invalidate the page we are about to fetch at this offset.
+    const myToken = ++topologyLoadToken;
     set({ topologyIsLoading: true }, undefined, "gitOps:topology/loadMore");
     try {
       const result = await commands.getCommitGraph(
         LOAD_MORE_AMOUNT,
         topologyCurrentOffset,
       );
+      // If a full reload/reset happened while we were awaiting, this page was
+      // fetched against a now-stale offset/base; discard it to avoid
+      // duplicated/misaligned commits and a corrupted offset.
+      if (myToken !== topologyLoadToken) return;
       if (result.status === "ok") {
+        // Append using the functional form so we read the freshest arrays.
         set(
-          {
-            nodes: [...nodes, ...result.data.nodes],
-            edges: [...edges, ...result.data.edges],
+          (cur) => ({
+            nodes: [...cur.nodes, ...result.data.nodes],
+            edges: [...cur.edges, ...result.data.edges],
             topologyIsLoading: false,
             topologyHasMore: result.data.nodes.length === LOAD_MORE_AMOUNT,
             topologyCurrentOffset:
-              topologyCurrentOffset + result.data.nodes.length,
-          },
+              cur.topologyCurrentOffset + result.data.nodes.length,
+          }),
           undefined,
           "gitOps:topology/loadMoreOk",
         );
@@ -119,7 +132,10 @@ export const createTopologySlice: StateCreator<
       "gitOps:topology/selectCommit",
     ),
 
-  resetTopology: () =>
+  resetTopology: () => {
+    // Invalidate any in-flight load so its result can't repopulate the graph
+    // after an unmount/repo-switch/close reset.
+    topologyLoadToken++;
     set(
       {
         nodes: [],
@@ -133,7 +149,8 @@ export const createTopologySlice: StateCreator<
       },
       undefined,
       "gitOps:topology/reset",
-    ),
+    );
+  },
 
   clearTopologyError: () =>
     set({ topologyError: null }, undefined, "gitOps:topology/clearError"),

@@ -39,7 +39,7 @@ pub async fn list_tags(state: State<'_, RepositoryState>) -> Result<Vec<TagInfo>
         let tag_names = repo.tag_names(None)?;
         let mut tags = Vec::new();
 
-        for name in tag_names.iter().flatten() {
+        for name in tag_names.iter().filter_map(|n| n.ok().flatten()) {
             let ref_name = format!("refs/tags/{}", name);
             let reference = repo.find_reference(&ref_name)?;
             let resolved = reference.resolve()?;
@@ -61,7 +61,7 @@ pub async fn list_tags(state: State<'_, RepositoryState>) -> Result<Vec<TagInfo>
                     name: name.to_string(),
                     oid: oid.to_string(),
                     target_oid: target.id().to_string(),
-                    message: tag.message().map(|m: &str| m.trim().to_string()),
+                    message: tag.message().ok().flatten().map(|m: &str| m.trim().to_string()),
                     tagger: tagger_info,
                     is_annotated: true,
                     created_at_ms: tag

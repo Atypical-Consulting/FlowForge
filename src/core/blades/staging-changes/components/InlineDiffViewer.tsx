@@ -52,6 +52,11 @@ export function InlineDiffViewer({
   const [debouncedStaged, setDebouncedStaged] = useState(staged);
   const editorRef = useRef<Parameters<DiffOnMount>[0] | null>(null);
 
+  // Keep the latest saved scroll position in a ref so the restore effect can
+  // read it without re-firing every time a scroll-driven save updates the prop.
+  const initialScrollTopRef = useRef(initialScrollTop);
+  initialScrollTopRef.current = initialScrollTop;
+
   useEffect(() => {
     const timeout = setTimeout(() => {
       setDebouncedFilePath(filePath);
@@ -84,8 +89,9 @@ export function InlineDiffViewer({
 
   const handleMount: DiffOnMount = (editor) => {
     editorRef.current = editor;
-    if (initialScrollTop && initialScrollTop > 0) {
-      editor.getModifiedEditor().setScrollTop(initialScrollTop);
+    const scrollTop = initialScrollTopRef.current;
+    if (scrollTop && scrollTop > 0) {
+      editor.getModifiedEditor().setScrollTop(scrollTop);
     }
     scrollDisposableRef.current?.dispose();
     scrollDisposableRef.current = editor
@@ -95,6 +101,19 @@ export function InlineDiffViewer({
       });
   };
 
+  const diff = result?.status === "ok" ? result.data : null;
+
+  // The editor is reused in place when the selected file changes (no remount),
+  // so handleMount only runs once. Re-apply the saved scroll position whenever
+  // the file or its loaded diff content changes.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: debouncedFilePath is an intentional trigger so the saved scroll position is re-applied on every file switch (the editor is reused, not remounted).
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor || !diff) return;
+    const scrollTop = initialScrollTopRef.current ?? 0;
+    editor.getModifiedEditor().setScrollTop(scrollTop);
+  }, [debouncedFilePath, diff]);
+
   if (error) {
     return (
       <div className="flex-1 flex items-center justify-center bg-ctp-mantle">
@@ -102,8 +121,6 @@ export function InlineDiffViewer({
       </div>
     );
   }
-
-  const diff = result?.status === "ok" ? result.data : null;
 
   if (diff?.isBinary) {
     return (

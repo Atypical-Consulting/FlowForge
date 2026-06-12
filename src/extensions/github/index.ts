@@ -6,13 +6,9 @@
  * GitHub-specific code in core UI files.
  */
 
-import {
-  CircleDot,
-  Github,
-  GitPullRequest,
-  GitPullRequestCreate,
-} from "lucide-react";
+import { CircleDot, GitPullRequest, GitPullRequestCreate } from "lucide-react";
 import { createElement } from "react";
+import { GithubIcon } from "@/core/components/icons/GithubIcon";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
 import { openBlade } from "@/framework/layout/bladeOpener";
@@ -146,7 +142,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     id: "sign-in",
     title: "Sign in to GitHub",
     category: "GitHub",
-    icon: Github,
+    icon: GithubIcon,
     action: () => openBlade("ext:github:sign-in", {}),
     enabled: () => !useGitHubStore.getState().isAuthenticated,
   });
@@ -218,7 +214,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
   api.contributeToolbar({
     id: "github-status",
     label: "GitHub",
-    icon: Github,
+    icon: GithubIcon,
     group: "app",
     priority: 60,
     execute: () => {

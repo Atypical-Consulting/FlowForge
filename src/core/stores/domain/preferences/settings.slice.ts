@@ -80,7 +80,7 @@ export const createSettingsSlice: StateCreator<
   PreferencesMiddleware,
   [],
   SettingsSlice
-> = (set, get) => ({
+> = (set) => ({
   settingsActiveCategory: "general",
   settingsData: defaultSettings,
 
@@ -94,12 +94,20 @@ export const createSettingsSlice: StateCreator<
   updateSetting: async (category, key, value) => {
     try {
       const store = await getStore();
-      const currentSettings = get().settingsData;
+
+      // Merge against the currently persisted value rather than in-memory
+      // state. If init has not yet hydrated settingsData (it still equals
+      // defaultSettings), merging against in-memory state would clobber any
+      // previously-saved settings that have not been loaded yet. Reading the
+      // persisted blob here makes the write safe-by-construction.
+      const saved = mergeSettings(
+        (await store.get<Partial<Settings>>("settings")) ?? {},
+      );
 
       const newSettings: Settings = {
-        ...currentSettings,
+        ...saved,
         [category]: {
-          ...currentSettings[category],
+          ...saved[category],
           [key]: value,
         },
       };

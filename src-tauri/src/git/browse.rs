@@ -207,13 +207,43 @@ fn read_from_head(repo: &git2::Repository, file_path: &str) -> Result<RepoFileCo
     blob_to_content(blob)
 }
 
+/// Safely join a user-supplied relative path to a trusted root directory.
+///
+/// Rejects absolute paths and any path containing a `..` (parent-dir) component,
+/// then canonicalizes the result and verifies it stays inside the root. This
+/// prevents path-traversal escapes (e.g. `../../../../etc/passwd` or `/etc/passwd`)
+/// across the IPC boundary.
+fn safe_join(root: &std::path::Path, rel: &str) -> Result<std::path::PathBuf, GitError> {
+    let rel_path = std::path::Path::new(rel);
+    if rel_path.is_absolute()
+        || rel_path
+            .components()
+            .any(|c| matches!(c, std::path::Component::ParentDir))
+    {
+        return Err(GitError::InvalidPath(rel.to_string()));
+    }
+
+    let full = root.join(rel_path);
+    let canon = full
+        .canonicalize()
+        .map_err(|_| GitError::PathNotFound(rel.to_string()))?;
+    let root_canon = root
+        .canonicalize()
+        .map_err(|e| GitError::Internal(e.to_string()))?;
+    if !canon.starts_with(&root_canon) {
+        return Err(GitError::InvalidPath(rel.to_string()));
+    }
+
+    Ok(canon)
+}
+
 /// Read a file from the working directory on disk.
 fn read_from_workdir(repo: &git2::Repository, file_path: &str) -> Result<RepoFileContent, GitError> {
     let workdir = repo
         .workdir()
         .ok_or_else(|| GitError::OperationFailed("Bare repository has no working directory".to_string()))?;
 
-    let full_path = workdir.join(file_path);
+    let full_path = safe_join(workdir, file_path)?;
     let data = std::fs::read(&full_path)
         .map_err(|_| GitError::PathNotFound(file_path.to_string()))?;
 
@@ -258,4 +288,46 @@ fn blob_to_content(blob: &git2::Blob<'_>) -> Result<RepoFileContent, GitError> {
         is_binary,
         size,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+
+    #[test]
+    fn safe_join_reads_file_inside_root() {
+        let dir = tempfile::TempDir::new().unwrap();
+        fs::write(dir.path().join("hello.txt"), "hi").unwrap();
+
+        let joined = safe_join(dir.path(), "hello.txt").unwrap();
+        assert!(joined.ends_with("hello.txt"));
+        assert_eq!(fs::read_to_string(&joined).unwrap(), "hi");
+    }
+
+    #[test]
+    fn safe_join_rejects_parent_dir_traversal() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let err = safe_join(dir.path(), "../../etc/passwd").unwrap_err();
+        assert!(matches!(err, GitError::InvalidPath(_)));
+    }
+
+    #[test]
+    fn safe_join_rejects_absolute_path() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let abs = if cfg!(windows) {
+            "C:\\Windows\\System32\\drivers\\etc\\hosts"
+        } else {
+            "/etc/passwd"
+        };
+        let err = safe_join(dir.path(), abs).unwrap_err();
+        assert!(matches!(err, GitError::InvalidPath(_)));
+    }
+
+    #[test]
+    fn safe_join_missing_file_is_path_not_found() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let err = safe_join(dir.path(), "does_not_exist.txt").unwrap_err();
+        assert!(matches!(err, GitError::PathNotFound(_)));
+    }
 }

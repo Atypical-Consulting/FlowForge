@@ -129,7 +129,7 @@ fn collect_commits_ahead(
             break;
         }
         if let Ok(commit) = repo.find_commit(oid)
-            && let Some(summary) = commit.summary() {
+            && let Ok(Some(summary)) = commit.summary() {
                 messages.push(summary.to_string());
             }
     }

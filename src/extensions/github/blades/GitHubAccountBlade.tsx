@@ -6,9 +6,10 @@
  * When not authenticated, shows an empty state with sign-in button.
  */
 
-import { ExternalLink, Github, LogOut, UserCircle } from "lucide-react";
+import { ExternalLink, LogOut, UserCircle } from "lucide-react";
 import { useEffect } from "react";
 import { openBlade } from "@/framework/layout/bladeOpener";
+import { GithubIcon } from "../../../core/components/icons/GithubIcon";
 import { Button } from "../../../core/components/ui/button";
 import { RateLimitBar } from "../components/RateLimitBar";
 import { useGitHubStore } from "../githubStore";
@@ -34,7 +35,7 @@ export function GitHubAccountBlade() {
   if (!isAuthenticated) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 text-center px-6">
-        <Github className="w-12 h-12 text-ctp-overlay1" />
+        <GithubIcon className="w-12 h-12 text-ctp-overlay1" />
         <h3 className="text-lg font-medium text-ctp-text">Not signed in</h3>
         <p className="text-sm text-ctp-subtext0 max-w-xs">
           Sign in to GitHub to access repositories, view rate limits, and manage
@@ -134,7 +135,7 @@ export function GitHubAccountBlade() {
                 key={remote.url}
                 className="flex items-center gap-3 p-2.5 bg-ctp-surface0 rounded-lg"
               >
-                <Github className="w-4 h-4 text-ctp-overlay1 shrink-0" />
+                <GithubIcon className="w-4 h-4 text-ctp-overlay1 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-ctp-text truncate">
                     {remote.owner}/{remote.repo}

@@ -19,6 +19,7 @@ export function StagingPanel() {
     stagingViewMode: viewMode,
     setStagingViewMode: setViewMode,
     stagingSelectedFile: selectedFile,
+    stagingSelectedSection: selectedSection,
     selectFile,
     stagingFileListScrollTop: fileListScrollTop,
     setStagingFileListScrollTop: setFileListScrollTop,
@@ -91,14 +92,27 @@ export function StagingPanel() {
     const inUnstaged = status.unstaged.find((f) => f.path === filePath);
     const inUntracked = status.untracked.find((f) => f.path === filePath);
 
-    if (inStaged) {
+    // Keep the user's current section if the file is still present there.
+    // Partially-staged files appear in BOTH staged and unstaged, so without
+    // this guard the staged-first fallback below would override a user who
+    // selected the file in the unstaged section, flipping the diff preview.
+    const bySection = {
+      staged: inStaged,
+      unstaged: inUnstaged,
+      untracked: inUntracked,
+    };
+    const current = selectedSection ? bySection[selectedSection] : undefined;
+
+    if (current && selectedSection) {
+      selectFile(current, selectedSection);
+    } else if (inStaged) {
       selectFile(inStaged, "staged");
     } else if (inUnstaged) {
       selectFile(inUnstaged, "unstaged");
     } else if (inUntracked) {
       selectFile(inUntracked, "untracked");
     }
-  }, [result, selectFile, selectedFile]);
+  }, [result, selectFile, selectedFile, selectedSection]);
 
   // Restore scroll position on mount
   useEffect(() => {

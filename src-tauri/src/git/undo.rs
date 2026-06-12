@@ -61,7 +61,7 @@ pub async fn get_undo_info(state: State<'_, RepositoryState>) -> Result<UndoInfo
 
         match (current, previous) {
             (Some(curr), Some(prev)) => {
-                let curr_msg = curr.message().unwrap_or("").to_string();
+                let curr_msg = curr.message().ok().flatten().unwrap_or("").to_string();
                 let prev_oid = prev.id_new().to_string();
 
                 // Parse the reflog message to create a human-readable description

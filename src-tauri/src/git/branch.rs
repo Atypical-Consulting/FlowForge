@@ -70,7 +70,7 @@ pub async fn list_branches(state: State<'_, RepositoryState>) -> Result<Vec<Bran
 
             let commit = branch.get().peel_to_commit()?;
             let last_commit_oid = format!("{:.7}", commit.id());
-            let last_commit_message = commit.summary().unwrap_or("").to_string();
+            let last_commit_message = commit.summary().ok().flatten().unwrap_or("").to_string();
 
             let is_merged = if is_head {
                 None
@@ -151,7 +151,7 @@ pub async fn create_branch(
             name: name.clone(),
             is_head: checkout,
             last_commit_oid: format!("{:.7}", commit.id()),
-            last_commit_message: commit.summary().unwrap_or("").to_string(),
+            last_commit_message: commit.summary().ok().flatten().unwrap_or("").to_string(),
             is_merged: if checkout { None } else { Some(true) },
             is_remote: false,
             remote_name: None,
@@ -276,7 +276,7 @@ pub async fn list_all_branches(
 
             let commit = branch.get().peel_to_commit()?;
             let last_commit_oid = format!("{:.7}", commit.id());
-            let last_commit_message = commit.summary().unwrap_or("").to_string();
+            let last_commit_message = commit.summary().ok().flatten().unwrap_or("").to_string();
 
             let is_merged = if is_head {
                 None
@@ -320,7 +320,7 @@ pub async fn list_all_branches(
                     Err(_) => continue,
                 };
                 let last_commit_oid = format!("{:.7}", commit.id());
-                let last_commit_message = commit.summary().unwrap_or("").to_string();
+                let last_commit_message = commit.summary().ok().flatten().unwrap_or("").to_string();
 
                 let is_merged = if let Some(ref head) = head_commit {
                     match repo.merge_base(head.id(), commit.id()) {
@@ -490,7 +490,7 @@ pub async fn get_recent_checkouts(
         let mut recent = Vec::new();
 
         for entry in reflog.iter() {
-            let msg = entry.message().unwrap_or("");
+            let msg = entry.message().ok().flatten().unwrap_or("");
             if let Some(branch_name) = msg
                 .strip_prefix("checkout: moving from ")
                 .and_then(|rest| rest.rsplit(" to ").next())

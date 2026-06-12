@@ -71,6 +71,7 @@
     "@vitejs/plugin-react": "^6.0.0",
     "@vitest/coverage-v8": "^4.0.18",
     "@vitest/web-worker": "^4.0.18",
+    "esbuild": "^0.28.1",
     "jsdom": "^29.0.0",
     "monaco-editor": "^0.55.1",
     "tailwindcss": "^4",

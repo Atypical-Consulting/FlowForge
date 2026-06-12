@@ -247,8 +247,16 @@ fn get_commits_in_range(
     revwalk.push(to_oid)?;
     revwalk.set_sorting(Sort::TIME)?;
 
-    // Resolve the 'from' reference if provided
+    // Resolve the 'from' reference if provided and exclude everything
+    // reachable from it, matching `git log from..to` semantics. Using
+    // revwalk.hide() correctly excludes all ancestors of `from` regardless
+    // of commit timestamps or merge topology, which a single-OID break could
+    // not do under Sort::TIME (and would never trigger if `from` is not an
+    // ancestor of `to`, causing a runaway up to MAX_COMMITS).
     let from_oid = from.map(|f| resolve_ref(repo, f)).transpose()?;
+    if let Some(from_id) = from_oid {
+        revwalk.hide(from_id)?;
+    }
 
     let mut commits = Vec::new();
     let mut count = 0;
@@ -256,12 +264,6 @@ fn get_commits_in_range(
 
     for oid_result in revwalk {
         let oid = oid_result?;
-
-        // Stop if we've reached the 'from' commit
-        if let Some(from_id) = from_oid
-            && oid == from_id {
-                break;
-            }
 
         // Safety limit
         count += 1;
@@ -317,7 +319,7 @@ pub fn find_previous_tag(repo: &Repository, current: &str) -> Option<String> {
     let tag_names = repo.tag_names(None).ok()?;
     let mut tags_with_time: Vec<(String, i64)> = Vec::new();
 
-    for name in tag_names.iter().flatten() {
+    for name in tag_names.iter().filter_map(|n| n.ok().flatten()) {
         let ref_name = format!("refs/tags/{}", name);
         if let Ok(reference) = repo.find_reference(&ref_name)
             && let Some(target) = reference.target()
@@ -492,7 +494,7 @@ mod tests {
         }];
 
         // Create groups manually to test sorting
-        let mut groups = vec![
+        let mut groups = [
             CommitGroup {
                 commit_type: "chore".to_string(),
                 title: "Chores".to_string(),
@@ -563,6 +565,84 @@ mod tests {
         assert!(result.contains("\u{2728}")); // sparkles emoji
         assert!(result.contains("**api:**"));
         assert!(result.contains("add new endpoint"));
+    }
+
+    fn commit_to(
+        repo: &Repository,
+        msg: &str,
+        parents: &[git2::Oid],
+        update_ref: Option<&str>,
+    ) -> git2::Oid {
+        let mut index = repo.index().unwrap();
+        let tree_id = index.write_tree().unwrap();
+        let tree = repo.find_tree(tree_id).unwrap();
+        let sig = git2::Signature::now("Test", "test@test.com").unwrap();
+        let parent_commits: Vec<git2::Commit> =
+            parents.iter().map(|p| repo.find_commit(*p).unwrap()).collect();
+        let parent_refs: Vec<&git2::Commit> = parent_commits.iter().collect();
+        repo.commit(update_ref, &sig, &sig, msg, &tree, &parent_refs)
+            .unwrap()
+    }
+
+    #[test]
+    fn test_range_excludes_reachable_from() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let repo = Repository::init(dir.path()).unwrap();
+        {
+            let mut cfg = repo.config().unwrap();
+            cfg.set_str("user.name", "Test").unwrap();
+            cfg.set_str("user.email", "test@test.com").unwrap();
+        }
+
+        // Linear history: c1 (from) -> c2 -> c3 (to), all conventional.
+        let c1 = commit_to(&repo, "feat: one", &[], Some("HEAD"));
+        let c2 = commit_to(&repo, "fix: two", &[c1], Some("HEAD"));
+        let c3 = commit_to(&repo, "feat: three", &[c2], Some("HEAD"));
+
+        let c1_str = c1.to_string();
+        let c3_str = c3.to_string();
+
+        // from=c1 (exclusive), to=c3: should include only c2 and c3.
+        let commits =
+            get_commits_in_range(&repo, Some(&c1_str), Some(&c3_str)).unwrap();
+        assert_eq!(commits.len(), 2);
+        let descs: Vec<&str> = commits.iter().map(|c| c.commit.description.as_str()).collect();
+        assert!(descs.contains(&"three"));
+        assert!(descs.contains(&"two"));
+        assert!(!descs.contains(&"one"));
+    }
+
+    #[test]
+    fn test_range_from_not_ancestor_does_not_leak() {
+        // When `from` is NOT an ancestor of `to`, only commits unique to
+        // `to`'s history (excluding `from`'s reachable set) should appear.
+        let dir = tempfile::TempDir::new().unwrap();
+        let repo = Repository::init(dir.path()).unwrap();
+        {
+            let mut cfg = repo.config().unwrap();
+            cfg.set_str("user.name", "Test").unwrap();
+            cfg.set_str("user.email", "test@test.com").unwrap();
+        }
+
+        // base -> a (on a diverged branch "from")
+        //      \-> b -> c (on "to")
+        let base = commit_to(&repo, "chore: base", &[], Some("HEAD"));
+        let a = commit_to(&repo, "feat: branch-a", &[base], None);
+        let b = commit_to(&repo, "fix: branch-b", &[base], None);
+        let c = commit_to(&repo, "feat: branch-c", &[b], None);
+
+        let a_str = a.to_string();
+        let c_str = c.to_string();
+
+        // from=a (diverged), to=c. `git log a..c` excludes a AND base
+        // (base is reachable from a), yielding only b and c.
+        let commits = get_commits_in_range(&repo, Some(&a_str), Some(&c_str)).unwrap();
+        let descs: Vec<&str> = commits.iter().map(|c| c.commit.description.as_str()).collect();
+        assert!(descs.contains(&"branch-c"));
+        assert!(descs.contains(&"branch-b"));
+        assert!(!descs.contains(&"branch-a"));
+        assert!(!descs.contains(&"base"));
+        assert_eq!(commits.len(), 2);
     }
 
     #[test]

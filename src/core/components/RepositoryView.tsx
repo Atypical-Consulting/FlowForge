@@ -55,7 +55,15 @@ function DynamicSidebarPanels() {
   const _panels = useSidebarPanelRegistry((s) => s.items);
   const _visibilityTick = useSidebarPanelRegistry((s) => s.visibilityTick);
 
-  const visiblePanels = useMemo(() => getVisiblePanels(), []);
+  // Recompute when the registry items or visibility tick change so that
+  // asynchronously-registered extension panels and when()-based visibility
+  // changes are reflected. The subscriptions above trigger the re-render;
+  // these deps ensure the memoized value is refreshed on that render.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: _panels/_visibilityTick are intentional re-render triggers — getVisiblePanels() reads the registry imperatively, so these deps force a recompute when the registry changes.
+  const visiblePanels = useMemo(
+    () => getVisiblePanels(),
+    [_panels, _visibilityTick],
+  );
 
   if (visiblePanels.length === 0) return null;
 

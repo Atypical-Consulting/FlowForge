@@ -206,7 +206,7 @@ async fn get_commit_graph_impl(
                     nodes.push(GraphNode {
                         oid: oid.to_string(),
                         short_oid: oid.to_string()[..7].to_string(),
-                        message: commit.summary().unwrap_or("").to_string(),
+                        message: commit.summary().ok().flatten().unwrap_or("").to_string(),
                         author: author.name().unwrap_or("Unknown").to_string(),
                         timestamp_ms: (commit.time().seconds() as f64) * 1000.0,
                         parents: parent_oids,
@@ -262,10 +262,18 @@ async fn get_commit_graph_impl(
                 .map(|(oid, _)| oid.to_string());
 
             if let Some(tip) = tip_oid {
-                // DFS through parents, stamping each node with this ref
+                // DFS through parents, stamping each node with this ref.
+                //
+                // The tip (and possibly several of its newest ancestors) may fall
+                // outside the visible page window when offset > 0. In that case the
+                // OID is absent from `oid_to_index`, but we must still walk through
+                // those invisible ancestors so we can reach and stamp the visible
+                // commits that genuinely belong to this branch. `visited` bounds the
+                // walk over invisible OIDs (which never enter `stamped`).
                 let mut stack = vec![tip];
+                let mut visited: HashSet<String> = HashSet::new();
                 while let Some(current) = stack.pop() {
-                    if stamped.contains(&current) {
+                    if stamped.contains(&current) || !visited.insert(current.clone()) {
                         continue;
                     }
                     if let Some(&idx) = oid_to_index.get(&current) {
@@ -276,6 +284,17 @@ async fn get_commit_graph_impl(
                         for parent in &nodes[idx].parents {
                             if !stamped.contains(parent) {
                                 stack.push(parent.clone());
+                            }
+                        }
+                    } else if let Ok(oid) = git2::Oid::from_str(&current) {
+                        // Invisible ancestor (outside the page): keep walking toward
+                        // its parents so we can reach the visible descendants below it.
+                        if let Ok(commit) = repo.find_commit(oid) {
+                            for parent in commit.parent_ids() {
+                                let parent = parent.to_string();
+                                if !stamped.contains(&parent) {
+                                    stack.push(parent);
+                                }
                             }
                         }
                     }

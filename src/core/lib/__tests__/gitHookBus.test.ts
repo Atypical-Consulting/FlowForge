@@ -105,11 +105,11 @@ describe("GitHookBus (OperationBus)", () => {
     expect(handler).not.toHaveBeenCalled();
   });
 
-  it("re-entrancy guard suppresses nested emitDid calls", async () => {
+  it("allows a did handler to emit a DIFFERENT operation (no global guard)", async () => {
     const innerHandler = vi.fn();
     bus.onDid("commit", innerHandler, "inner");
 
-    // Register a handler that tries to emit again
+    // A `push` did-handler emits `commit`: a different operation, so it must run.
     bus.onDid(
       "push",
       async () => {
@@ -119,7 +119,28 @@ describe("GitHookBus (OperationBus)", () => {
     );
 
     await bus.emitDid("push");
-    // The nested emitDid("commit") should have been suppressed
-    expect(innerHandler).not.toHaveBeenCalled();
+    expect(innerHandler).toHaveBeenCalledTimes(1);
+  });
+
+  it("re-entrancy guard suppresses nested emit of the SAME operation", async () => {
+    let depth = 0;
+    let maxDepth = 0;
+    // A `commit` did-handler re-emits `commit`; the guard must stop infinite recursion.
+    bus.onDid(
+      "commit",
+      async () => {
+        depth += 1;
+        maxDepth = Math.max(maxDepth, depth);
+        if (depth < 5) {
+          await bus.emitDid("commit");
+        }
+        depth -= 1;
+      },
+      "self",
+    );
+
+    await bus.emitDid("commit");
+    // The nested same-operation emit is suppressed, so the handler runs only once.
+    expect(maxDepth).toBe(1);
   });
 });

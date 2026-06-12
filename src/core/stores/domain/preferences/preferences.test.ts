@@ -90,6 +90,34 @@ describe("Preferences store", () => {
         usePreferencesStore.getState().settingsData.git.defaultRemote,
       ).toBe("upstream");
     });
+
+    it("updateSetting preserves previously-saved settings when init has not hydrated state", async () => {
+      // Simulate a persisted blob from a prior session that has NOT yet been
+      // loaded into in-memory settingsData (initSettings has not resolved).
+      mockStoreData.set("settings", {
+        general: { defaultTab: "topology" },
+        integrations: { editor: "code", terminal: "iterm" },
+      });
+
+      // updateSetting runs before init hydrates state — it must merge against
+      // the persisted value, not the in-memory defaults.
+      await usePreferencesStore
+        .getState()
+        .updateSetting("git", "defaultRemote", "upstream");
+
+      const persisted = mockStoreData.get("settings") as {
+        general: { defaultTab: string };
+        integrations: { editor: string; terminal: string };
+        git: { defaultRemote: string };
+      };
+
+      // The unrelated previously-saved settings must survive.
+      expect(persisted.general.defaultTab).toBe("topology");
+      expect(persisted.integrations.editor).toBe("code");
+      expect(persisted.integrations.terminal).toBe("iterm");
+      // And the changed value is applied.
+      expect(persisted.git.defaultRemote).toBe("upstream");
+    });
   });
 
   describe("theme slice", () => {

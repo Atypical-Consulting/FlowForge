@@ -19,6 +19,7 @@ export interface StagingSlice {
   saveStagingScrollPosition: (filePath: string, scrollTop: number) => void;
   setStagingFileListScrollTop: (top: number) => void;
   clearStagingScrollPositions: () => void;
+  pruneStagingScrollPositions: (currentPaths: string[]) => void;
 }
 
 export const createStagingSlice: StateCreator<
@@ -62,5 +63,22 @@ export const createStagingSlice: StateCreator<
       { stagingScrollPositions: {}, stagingFileListScrollTop: 0 },
       false,
       "uiState:staging/clearScrollPositions",
+    ),
+  pruneStagingScrollPositions: (currentPaths) =>
+    set(
+      (state) => {
+        const allowed = new Set(currentPaths);
+        const pruned: Record<string, number> = {};
+        for (const [path, scrollTop] of Object.entries(
+          state.stagingScrollPositions,
+        )) {
+          if (allowed.has(path)) {
+            pruned[path] = scrollTop;
+          }
+        }
+        return { stagingScrollPositions: pruned };
+      },
+      false,
+      "uiState:staging/pruneScrollPositions",
     ),
 });
