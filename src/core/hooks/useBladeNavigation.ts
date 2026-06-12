@@ -69,7 +69,7 @@ export function useBladeNavigation() {
         type: "PUSH_BLADE",
         bladeType: type,
         title,
-        props: { filePath } as Record<string, unknown>,
+        props: { filePath, oid } as Record<string, unknown>,
       });
     }
   }

@@ -104,7 +104,7 @@ pub async fn get_conflict_content(
         let ours_name = repo
             .head()
             .ok()
-            .and_then(|h| h.shorthand().map(|s| s.to_string()))
+            .and_then(|h| h.shorthand().ok().map(|s| s.to_string()))
             .unwrap_or_else(|| "HEAD".to_string());
 
         let theirs_name = {
@@ -177,8 +177,18 @@ pub async fn resolve_conflict_file(
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
 
-        // Verify a merge is in progress
-        if repo.state() != git2::RepositoryState::Merge {
+        // Verify the repo is in a conflict-bearing state. git produces conflicted
+        // index entries not only during a merge but also during rebase, cherry-pick,
+        // and revert — all of these are valid contexts in which to resolve a file.
+        if !matches!(
+            repo.state(),
+            git2::RepositoryState::Merge
+                | git2::RepositoryState::RebaseMerge
+                | git2::RepositoryState::CherryPick
+                | git2::RepositoryState::CherryPickSequence
+                | git2::RepositoryState::Revert
+                | git2::RepositoryState::RevertSequence
+        ) {
             return Err(GitError::NoMergeInProgress);
         }
 

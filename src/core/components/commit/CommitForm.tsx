@@ -67,7 +67,8 @@ export function CommitForm() {
   };
 
   // Simple form logic
-  const canSimpleCommit = hasStagedFiles && message.trim().length > 0;
+  const canSimpleCommit =
+    (hasStagedFiles || amendPrefill.amend) && message.trim().length > 0;
   const lines = message.split("\n");
   const subject = lines[0] || "";
   const subjectLength = subject.length;
@@ -221,7 +222,7 @@ export function CommitForm() {
             )}
           </Button>
 
-          {!hasStagedFiles && (
+          {!hasStagedFiles && !amendPrefill.amend && (
             <p className="text-xs text-ctp-overlay0 text-center">
               No staged changes to commit
             </p>

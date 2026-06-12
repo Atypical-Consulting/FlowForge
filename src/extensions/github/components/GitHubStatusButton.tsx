@@ -8,8 +8,8 @@
  * - Red: <10% remaining
  */
 
-import { Github } from "lucide-react";
 import { openBlade } from "@/framework/layout/bladeOpener";
+import { GithubIcon } from "../../../core/components/icons/GithubIcon";
 import { Button } from "../../../core/components/ui/button";
 import { ShortcutTooltip } from "../../../core/components/ui/ShortcutTooltip";
 import { useGitHubStore } from "../githubStore";
@@ -55,7 +55,7 @@ export function GitHubStatusButton({ tabIndex }: GitHubStatusButtonProps) {
         tabIndex={tabIndex}
         className="relative"
       >
-        <Github className="w-4 h-4" />
+        <GithubIcon className="w-4 h-4" />
         {dotColor && (
           <span
             className={`absolute top-1 right-1 w-2 h-2 rounded-full ${dotColor}`}

@@ -92,7 +92,7 @@ pub async fn get_commit_history(
                 Some(CommitSummary {
                     oid: oid.to_string(),
                     short_oid: format!("{:.7}", oid),
-                    message_subject: commit.summary().unwrap_or("").to_string(),
+                    message_subject: commit.summary().ok().flatten().unwrap_or("").to_string(),
                     author_name: author.name().unwrap_or("Unknown").to_string(),
                     author_email: author.email().unwrap_or("").to_string(),
                     timestamp_ms: (author.when().seconds() as f64) * 1000.0,
@@ -279,7 +279,7 @@ pub async fn search_commits(
                 results.push(CommitSummary {
                     oid: oid.to_string(),
                     short_oid: format!("{:.7}", oid),
-                    message_subject: commit.summary().unwrap_or("").to_string(),
+                    message_subject: commit.summary().ok().flatten().unwrap_or("").to_string(),
                     author_name: author.name().unwrap_or("Unknown").to_string(),
                     author_email: author.email().unwrap_or("").to_string(),
                     timestamp_ms: (author.when().seconds() as f64) * 1000.0,

@@ -84,7 +84,7 @@ fn get_main_worktree_info(repo: &git2::Repository) -> Result<WorktreeInfo, GitEr
         .ok_or_else(|| GitError::OperationFailed("Repository is bare".to_string()))?;
 
     let branch = match repo.head() {
-        Ok(head) => head.shorthand().map(String::from),
+        Ok(head) => head.shorthand().ok().map(String::from),
         Err(e) if e.code() == git2::ErrorCode::UnbornBranch => Some("main".to_string()),
         Err(_) => None,
     };
@@ -108,6 +108,8 @@ fn get_worktree_info(
 ) -> Result<WorktreeInfo, GitError> {
     let name = worktree
         .name()
+        .ok()
+        .flatten()
         .ok_or_else(|| GitError::OperationFailed("Worktree has no name".to_string()))?
         .to_string();
 
@@ -132,7 +134,7 @@ fn get_worktree_info(
     let wt_repo = git2::Repository::open(worktree.path())?;
 
     let branch = match wt_repo.head() {
-        Ok(head) => head.shorthand().map(String::from),
+        Ok(head) => head.shorthand().ok().map(String::from),
         Err(e) if e.code() == git2::ErrorCode::UnbornBranch => Some("main".to_string()),
         Err(_) => None,
     };
@@ -164,7 +166,7 @@ pub fn list_worktrees_internal(repo_path: &Path) -> Result<Vec<WorktreeInfo>, Gi
 
     // Add linked worktrees
     if let Ok(wt_names) = repo.worktrees() {
-        for name in wt_names.iter().flatten() {
+        for name in wt_names.iter().filter_map(|n| n.ok().flatten()) {
             if let Ok(wt) = repo.find_worktree(name)
                 && let Ok(info) = get_worktree_info(&repo, &wt) {
                     worktrees.push(info);
@@ -232,7 +234,7 @@ pub fn delete_worktree_internal(
             wt_repo
                 .head()
                 .ok()
-                .and_then(|h| h.shorthand().map(String::from))
+                .and_then(|h| h.shorthand().ok().map(String::from))
         } else {
             None
         }

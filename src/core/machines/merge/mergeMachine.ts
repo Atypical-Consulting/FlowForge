@@ -1,17 +1,34 @@
-import { assign, setup } from "xstate";
+import { assign, fromCallback, setup } from "xstate";
 import { gitHookBus } from "@/core/services/gitHookBus";
 import type { MergeResult } from "../../../bindings";
 import { abortMergeActor, executeMerge } from "./actors";
 import type { MergeContext, MergeEvent } from "./types";
 
+// Internal-only event used by the conflict watcher; not part of the public
+// MergeEvent contract that external callers send.
+type MergeInternalEvent = MergeEvent | { type: "RESOLVED" };
+
+// While conflicted, watch the git hook bus: once the user stages and commits
+// their manual resolution, return the machine to idle so subsequent merges work
+// and the stale conflict/abort UI clears.
+const watchConflictResolution = fromCallback(({ sendBack }) => {
+  const unsubscribe = gitHookBus.onDid(
+    "commit",
+    () => sendBack({ type: "RESOLVED" }),
+    "merge-machine",
+  );
+  return unsubscribe;
+});
+
 export const mergeMachine = setup({
   types: {
     context: {} as MergeContext,
-    events: {} as MergeEvent,
+    events: {} as MergeInternalEvent,
   },
   actors: {
     executeMerge,
     abortMerge: abortMergeActor,
+    watchConflictResolution,
   },
   guards: {
     hasConflicts: (_, params: { result: MergeResult }) =>
@@ -77,13 +94,15 @@ export const mergeMachine = setup({
           },
           {
             target: "idle",
+            // NOTE: do not clearState here — the UI reads context.mergeResult to
+            // render the success view. Transient fields are reset on the next
+            // START_MERGE (setSourceBranch) or when the dialog is closed.
             actions: [
               assign(({ event }) => ({
                 mergeResult: event.output,
                 conflicts: [],
               })),
               "emitMergeDid",
-              "clearState",
             ],
           },
         ],
@@ -99,8 +118,17 @@ export const mergeMachine = setup({
       },
     },
     conflicted: {
+      invoke: {
+        id: "watchConflictResolution",
+        src: "watchConflictResolution",
+      },
       on: {
         ABORT: "aborting",
+        // User manually resolved conflicts and committed → return to idle.
+        RESOLVED: {
+          target: "idle",
+          actions: "clearState",
+        },
       },
     },
     aborting: {

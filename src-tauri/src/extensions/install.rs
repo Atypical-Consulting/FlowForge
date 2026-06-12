@@ -7,6 +7,37 @@
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
+use super::manifest::ExtensionManifest;
+
+/// Validate an extension `id` before it is used to build a filesystem path.
+///
+/// The `id` originates from an untrusted `flowforge.extension.json` in an
+/// arbitrary cloned Git repository, so it must never be allowed to escape the
+/// extensions directory via absolute paths or `..` traversal. Only a strict
+/// set of safe characters is permitted, and leading dots are rejected so the
+/// id can never become `.`, `..`, or a hidden traversal segment.
+fn validate_ext_id(ext_id: &str) -> Result<(), String> {
+    if ext_id.is_empty() {
+        return Err("Manifest 'id' field is empty".to_string());
+    }
+    if ext_id == "." || ext_id == ".." {
+        return Err(format!("Invalid extension id '{}'", ext_id));
+    }
+    if ext_id.starts_with('.') {
+        return Err(format!("Extension id '{}' must not start with '.'", ext_id));
+    }
+    if !ext_id
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_' || c == '.')
+    {
+        return Err(format!(
+            "Extension id '{}' contains invalid characters (allowed: alphanumeric, '-', '_', '.')",
+            ext_id
+        ));
+    }
+    Ok(())
+}
+
 /// Result of fetching an extension manifest from a Git URL.
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
@@ -57,9 +88,14 @@ pub async fn extension_fetch_manifest(git_url: String) -> Result<ExtensionFetchR
         .await
         .map_err(|e| format!("Failed to read manifest: {}", e))?;
 
-    // Validate that the manifest is valid JSON
-    serde_json::from_str::<serde_json::Value>(&manifest_json)
-        .map_err(|e| format!("Invalid manifest JSON: {}", e))?;
+    // Validate the manifest against the full ExtensionManifest schema so that
+    // required fields (id, name, version, apiVersion, main) are present and
+    // well-formed before we offer to install it.
+    let manifest = serde_json::from_str::<ExtensionManifest>(&manifest_json)
+        .map_err(|e| format!("Invalid extension manifest: {}", e))?;
+
+    // Reject ids that could escape the extensions directory on install.
+    validate_ext_id(&manifest.id)?;
 
     Ok(ExtensionFetchResult {
         manifest_json,
@@ -84,17 +120,24 @@ pub async fn extension_install(
         .await
         .map_err(|e| format!("Failed to read manifest: {}", e))?;
 
-    let manifest: serde_json::Value = serde_json::from_str(&manifest_str)
-        .map_err(|e| format!("Invalid manifest JSON: {}", e))?;
+    // Validate the manifest against the full schema (not just a generic JSON
+    // value) so malformed extensions cannot be installed.
+    let manifest = serde_json::from_str::<ExtensionManifest>(&manifest_str)
+        .map_err(|e| format!("Invalid extension manifest: {}", e))?;
 
-    let ext_id = manifest
-        .get("id")
-        .and_then(|v| v.as_str())
-        .ok_or_else(|| "Manifest missing 'id' field".to_string())?
-        .to_string();
+    let ext_id = manifest.id.clone();
+
+    // The id is attacker-controlled (from the cloned repo's manifest). Reject
+    // anything that could escape the extensions directory before joining.
+    validate_ext_id(&ext_id)?;
 
     let ext_dir = std::path::PathBuf::from(&extensions_dir);
     let target = ext_dir.join(&ext_id);
+
+    // Defense-in-depth: ensure the target stays directly inside ext_dir.
+    if target.parent() != Some(ext_dir.as_path()) {
+        return Err(format!("Invalid extension id '{}'", ext_id));
+    }
 
     if target.exists() {
         // Clean up temp dir
@@ -109,8 +152,15 @@ pub async fn extension_install(
 
     // Try rename (same filesystem) first, fall back to copy
     if tokio::fs::rename(&temp, &target).await.is_err() {
-        // Cross-filesystem: copy recursively then delete temp
-        copy_dir_recursive(&temp, &target).await?;
+        // Cross-filesystem: copy recursively then delete temp.
+        if let Err(e) = copy_dir_recursive(&temp, &target).await {
+            // Best-effort cleanup of the partially-copied target so it does
+            // not block reinstall or get picked up by discovery, and of the
+            // leftover temp clone.
+            tokio::fs::remove_dir_all(&target).await.ok();
+            tokio::fs::remove_dir_all(&temp).await.ok();
+            return Err(e);
+        }
         tokio::fs::remove_dir_all(&temp).await.ok();
     }
 
@@ -124,7 +174,18 @@ pub async fn extension_uninstall(
     extension_id: String,
     extensions_dir: String,
 ) -> Result<(), String> {
-    let target = std::path::PathBuf::from(&extensions_dir).join(&extension_id);
+    // The extension_id comes verbatim from a (potentially untrusted) manifest
+    // id, so it must be validated before being used to build a path for a
+    // recursive delete.
+    validate_ext_id(&extension_id)?;
+
+    let ext_dir = std::path::PathBuf::from(&extensions_dir);
+    let target = ext_dir.join(&extension_id);
+
+    // Defense-in-depth: the target must be a direct child of ext_dir.
+    if target.parent() != Some(ext_dir.as_path()) {
+        return Err(format!("Invalid extension id '{}'", extension_id));
+    }
 
     if !target.exists() {
         return Err(format!("Extension '{}' is not installed", extension_id));
@@ -181,4 +242,61 @@ async fn copy_dir_recursive(
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn accepts_valid_ids() {
+        for id in ["github", "git-flow", "my_ext", "ext.2", "Abc123"] {
+            assert!(validate_ext_id(id).is_ok(), "expected '{}' to be valid", id);
+        }
+    }
+
+    #[test]
+    fn rejects_empty_id() {
+        assert!(validate_ext_id("").is_err());
+    }
+
+    #[test]
+    fn rejects_dot_and_dotdot() {
+        assert!(validate_ext_id(".").is_err());
+        assert!(validate_ext_id("..").is_err());
+    }
+
+    #[test]
+    fn rejects_leading_dot() {
+        assert!(validate_ext_id(".hidden").is_err());
+    }
+
+    #[test]
+    fn rejects_path_separators_and_traversal() {
+        for id in [
+            "../../etc/passwd",
+            "..\\..\\windows",
+            "foo/bar",
+            "/Users/victim/.zshrc",
+            "a/b",
+            "x\\y",
+        ] {
+            assert!(
+                validate_ext_id(id).is_err(),
+                "expected '{}' to be rejected",
+                id
+            );
+        }
+    }
+
+    #[test]
+    fn join_with_validated_id_stays_inside_dir() {
+        // A validated id always produces a target that is a direct child of
+        // the extensions directory.
+        let ext_dir = std::path::PathBuf::from("/tmp/extensions");
+        let id = "github";
+        validate_ext_id(id).unwrap();
+        let target = ext_dir.join(id);
+        assert_eq!(target.parent(), Some(ext_dir.as_path()));
+    }
 }

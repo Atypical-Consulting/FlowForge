@@ -104,7 +104,27 @@ pub async fn merge_branch(
             let head = repo.head()?;
             let refname = head
                 .name()
+                .ok()
                 .ok_or_else(|| GitError::Internal("HEAD has no name".to_string()))?;
+
+            // Update the working directory first using a SAFE checkout so that
+            // uncommitted local changes are not silently discarded. A safe
+            // checkout fails (rather than overwriting) if the FF target would
+            // clobber dirty files, matching `git merge`'s refusal to fast-forward
+            // over local changes. Doing this before moving the ref also ensures
+            // HEAD is not left advanced on a dirty working tree.
+            let target_tree = source_commit.tree()?;
+            repo.checkout_tree(
+                target_tree.as_object(),
+                Some(git2::build::CheckoutBuilder::new().safe()),
+            )
+            .map_err(|e| {
+                if e.message().contains("conflict") || e.message().contains("overwrite") {
+                    GitError::DirtyWorkingDirectory
+                } else {
+                    GitError::from(e)
+                }
+            })?;
 
             // Update reference to point to source commit
             repo.reference(
@@ -113,9 +133,6 @@ pub async fn merge_branch(
                 true,
                 &format!("merge {}: fast-forward", source_branch),
             )?;
-
-            // Update working directory
-            repo.checkout_head(Some(git2::build::CheckoutBuilder::new().force()))?;
 
             return Ok(MergeResult {
                 success: true,
@@ -250,11 +267,15 @@ pub async fn abort_merge(state: State<'_, RepositoryState>) -> Result<(), GitErr
             return Err(GitError::NoMergeInProgress);
         }
 
-        // Clean up merge state
-        repo.cleanup_state()?;
+        // Hard-reset to HEAD to restore both the index and working tree,
+        // discarding merge-produced staged changes and conflict-stage entries.
+        // A force checkout_head alone does not reset the index, so leftover
+        // staged/conflict entries would remain. This matches `git merge --abort`.
+        let head_commit = repo.head()?.peel_to_commit()?;
+        repo.reset(head_commit.as_object(), git2::ResetType::Hard, None)?;
 
-        // Reset to HEAD (force to discard merge changes)
-        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().force()))?;
+        // Clean up merge state (MERGE_HEAD, MERGE_MSG, etc.)
+        repo.cleanup_state()?;
 
         Ok(())
     })

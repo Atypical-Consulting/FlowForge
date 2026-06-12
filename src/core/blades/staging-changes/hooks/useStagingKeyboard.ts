@@ -91,6 +91,21 @@ export function useStagingKeyboard({
   useHotkeys(
     "space",
     (e) => {
+      // Folder rows (and other button-like elements) handle Space themselves
+      // to toggle expand/collapse. react-hotkeys-hook's `enableOnFormTags`
+      // filter does not exclude `role="button"` divs or native buttons, so
+      // without this guard pressing Space on a focused folder would BOTH
+      // expand the folder AND stage/unstage the selected file. Skip the
+      // staging toggle when the focused element owns the Space key.
+      const target = e.target as HTMLElement | null;
+      const focused = (target ?? document.activeElement) as HTMLElement | null;
+      if (
+        focused &&
+        (focused.tagName === "BUTTON" ||
+          focused.getAttribute("role") === "button")
+      ) {
+        return;
+      }
       e.preventDefault();
       if (stagingSelectedFile) {
         onToggleStage?.();

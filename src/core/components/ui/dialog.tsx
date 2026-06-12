@@ -179,4 +179,4 @@ function DialogFooter({ className, ...props }: DialogFooterProps) {
   return <div className={cn("flex justify-end gap-2", className)} {...props} />;
 }
 
-export { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter };
+export { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle };

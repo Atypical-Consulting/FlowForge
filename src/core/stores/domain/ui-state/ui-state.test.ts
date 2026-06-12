@@ -66,6 +66,28 @@ describe("UI State store", () => {
       expect(useUIStore.getState().stagingScrollPositions).toEqual({});
       expect(useUIStore.getState().stagingFileListScrollTop).toBe(0);
     });
+
+    it("pruneStagingScrollPositions keeps only current paths", () => {
+      useUIStore.getState().saveStagingScrollPosition("src/main.ts", 150);
+      useUIStore.getState().saveStagingScrollPosition("src/stale.ts", 90);
+      useUIStore.getState().saveStagingScrollPosition("src/other.ts", 42);
+
+      useUIStore
+        .getState()
+        .pruneStagingScrollPositions(["src/main.ts", "src/other.ts"]);
+
+      expect(useUIStore.getState().stagingScrollPositions).toEqual({
+        "src/main.ts": 150,
+        "src/other.ts": 42,
+      });
+    });
+
+    it("pruneStagingScrollPositions with empty list clears positions", () => {
+      useUIStore.getState().saveStagingScrollPosition("src/main.ts", 150);
+      useUIStore.getState().pruneStagingScrollPositions([]);
+
+      expect(useUIStore.getState().stagingScrollPositions).toEqual({});
+    });
   });
 
   describe("command palette slice", () => {

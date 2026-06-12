@@ -50,8 +50,16 @@ pub fn start_watching(
         Duration::from_millis(500),
         move |result: Result<Vec<DebouncedEvent>, notify::Error>| match result {
             Ok(events) => {
+                // Filter out internal git writes (index updates, ref/log writes,
+                // lock files) under `.git`, which would otherwise emit spurious
+                // "repository-changed" events during the app's own git operations.
                 let paths: Vec<String> = events
                     .iter()
+                    .filter(|e| {
+                        !e.path
+                            .components()
+                            .any(|c| c.as_os_str() == ".git")
+                    })
                     .map(|e| e.path.to_string_lossy().to_string())
                     .collect();
 

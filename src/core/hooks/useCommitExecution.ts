@@ -81,7 +81,13 @@ export function useCommitExecution(options?: UseCommitExecutionOptions) {
       toast.warning(willResult.reason ?? "Commit cancelled by extension");
       return;
     }
-    await commitMutation.mutateAsync({ message, amend });
+    // Errors are surfaced via commitMutation.onError; swallow the rejection
+    // here so callers (fire-and-forget) don't trigger unhandled rejections.
+    try {
+      await commitMutation.mutateAsync({ message, amend });
+    } catch {
+      /* surfaced by onError toast */
+    }
   };
 
   const commitAndPush = async (message: string, amend = false) => {
@@ -92,11 +98,29 @@ export function useCommitExecution(options?: UseCommitExecutionOptions) {
       toast.warning(willResult.reason ?? "Commit cancelled by extension");
       return;
     }
-    await commitMutation.mutateAsync({ message, amend });
-    await pushMutation.mutateAsync();
+    // Errors are surfaced via mutation onError handlers; swallow the rejections
+    // so fire-and-forget callers don't trigger unhandled rejections. If the
+    // commit fails, do not attempt to push.
+    try {
+      await commitMutation.mutateAsync({ message, amend });
+    } catch {
+      /* surfaced by onError toast */
+      return;
+    }
+    try {
+      await pushMutation.mutateAsync();
+    } catch {
+      /* surfaced by onError toast */
+    }
   };
 
-  const push = () => pushMutation.mutateAsync();
+  const push = async () => {
+    try {
+      await pushMutation.mutateAsync();
+    } catch {
+      /* surfaced by onError toast */
+    }
+  };
 
   return {
     commit,

@@ -46,7 +46,7 @@ export class OperationBus<
     TOperation,
     Set<HandlerEntry<WillHandler<TContext>>>
   >();
-  private reentryDepth = 0;
+  private inFlight = new Set<TOperation>();
 
   constructor(private readonly name: string = "OperationBus") {}
 
@@ -96,9 +96,12 @@ export class OperationBus<
     operation: TOperation,
     ctx?: Omit<TContext, "operation">,
   ): Promise<void> {
-    if (this.reentryDepth > 0) return;
+    // Guard only against nested re-entry of the SAME operation (e.g. a `did`
+    // handler re-triggering its own operation). Concurrent emits for different
+    // operations must still run their handlers.
+    if (this.inFlight.has(operation)) return;
 
-    this.reentryDepth++;
+    this.inFlight.add(operation);
     try {
       const fullCtx = { operation, ...ctx } as TContext;
       const entries = this.didHandlers.get(operation);
@@ -117,7 +120,7 @@ export class OperationBus<
         }),
       );
     } finally {
-      this.reentryDepth--;
+      this.inFlight.delete(operation);
     }
   }
 

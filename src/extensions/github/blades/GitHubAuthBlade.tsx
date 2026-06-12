@@ -9,9 +9,10 @@
  */
 
 import { motion } from "framer-motion";
-import { AlertTriangle, Check, Github } from "lucide-react";
+import { AlertTriangle, Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/framework/lib/utils";
+import { GithubIcon } from "../../../core/components/icons/GithubIcon";
 import { Button } from "../../../core/components/ui/button";
 import { useBladeNavigation } from "../../../core/hooks/useBladeNavigation";
 import { DeviceCodeDisplay } from "../components/DeviceCodeDisplay";
@@ -125,7 +126,7 @@ export function GitHubAuthBlade() {
       {/* Header */}
       <div className="px-6 pt-4 pb-0">
         <div className="flex items-center gap-3 mb-4">
-          <Github className="w-6 h-6 text-ctp-text" />
+          <GithubIcon className="w-6 h-6 text-ctp-text" />
           <h2 className="text-lg font-semibold text-ctp-text">
             Sign in to GitHub
           </h2>

@@ -150,7 +150,9 @@ export function ConventionalCommitBlade({
   const handleCommitAndPush = () => {
     if (isAmend) {
       const confirmed = window.confirm(
-        "This will amend the last commit and force push. This cannot be undone. Continue?",
+        "This will amend the last commit, then push. This cannot be undone. " +
+          "If the previous commit was already pushed, the remote may reject the push " +
+          "(force push is not yet supported). Continue?",
       );
       if (!confirmed) return;
     }

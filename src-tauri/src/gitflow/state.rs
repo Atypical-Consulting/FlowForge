@@ -88,7 +88,13 @@ pub fn get_current_branch_name(repo: &Repository) -> Result<Option<String>, Gitf
     match repo.head() {
         Ok(head) => {
             if head.is_branch() {
-                Ok(head.shorthand().map(|s| s.to_string()))
+                // In git2 0.21, shorthand() returns Result and errors on a
+                // non-UTF-8 ref name. Propagate that rather than masquerading
+                // as a detached HEAD (which Ok(None) signals to callers).
+                match head.shorthand() {
+                    Ok(s) => Ok(Some(s.to_string())),
+                    Err(e) => Err(GitflowError::from(e)),
+                }
             } else {
                 // Detached HEAD
                 Ok(None)

@@ -235,13 +235,14 @@ export function GitSettings() {
                     min="1"
                     max="60"
                     value={settings.git.autoFetchInterval ?? 5}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const n = parseInt(e.target.value, 10);
                       updateSetting(
                         "git",
                         "autoFetchInterval",
-                        parseInt(e.target.value, 10) || 5,
-                      )
-                    }
+                        Number.isNaN(n) ? 5 : Math.min(60, Math.max(1, n)),
+                      );
+                    }}
                     className="w-20 px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 rounded-md text-sm text-ctp-text focus:outline-none focus:ring-2 focus:ring-ctp-blue focus:border-transparent"
                   />
                   <span className="text-sm text-ctp-subtext0">minutes</span>

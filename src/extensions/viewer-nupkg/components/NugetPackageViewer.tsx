@@ -3,12 +3,12 @@ import {
   Calendar,
   Download,
   ExternalLink,
-  Github,
   Loader2,
   Package,
   User,
 } from "lucide-react";
 import { commands } from "../../../bindings";
+import { GithubIcon } from "../../../core/components/icons/GithubIcon";
 import type { ViewerProps } from "../../../core/components/viewers/ViewerRegistry";
 
 // Extract package ID and version from filename: PackageName.1.2.3.nupkg
@@ -17,7 +17,7 @@ function parseNupkgFilename(
 ): { id: string; version: string } | null {
   const filename = path.split("/").pop() || "";
   const match = filename.match(
-    /^(.+?)\.(\d+\.\d+\.\d+(?:\.\d+)?(?:-[a-zA-Z0-9.-]+)?)\.nupkg$/,
+    /^(.+?)\.(\d+(?:\.\d+)+(?:-[a-zA-Z0-9.-]+)?)\.nupkg$/,
   );
   if (!match) return null;
   return { id: match[1], version: match[2] };
@@ -143,7 +143,7 @@ export function NugetPackageViewer({ file }: ViewerProps) {
               {packageInfo.projectUrl && (
                 <div className="bg-ctp-surface0 rounded-lg p-3">
                   <div className="flex items-center gap-2 text-ctp-overlay1 text-xs mb-1">
-                    <Github className="w-3 h-3" />
+                    <GithubIcon className="w-3 h-3" />
                     Project
                   </div>
                   <a

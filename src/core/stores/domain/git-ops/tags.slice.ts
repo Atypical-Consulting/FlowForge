@@ -11,7 +11,7 @@ export interface TagSlice {
   tagError: string | null;
 
   loadTags: () => Promise<void>;
-  deleteTag: (name: string) => Promise<void>;
+  deleteTag: (name: string) => Promise<boolean>;
   clearTagError: () => void;
 }
 
@@ -40,10 +40,14 @@ export const createTagSlice: StateCreator<
   },
 
   deleteTag: async (name: string) => {
+    set({ tagIsLoading: true, tagError: null }, undefined, "gitOps:tag/delete");
     const result = await commands.deleteTag(name);
     if (result.status === "ok") {
       await get().loadTags();
+      return true;
     }
+    set({ tagError: getErrorMessage(result.error), tagIsLoading: false });
+    return false;
   },
 
   clearTagError: () =>
