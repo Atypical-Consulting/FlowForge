@@ -333,7 +333,7 @@ pub fn find_previous_tag(repo: &Repository, current: &str) -> Option<String> {
     }
 
     // Sort by time descending and get the most recent one before current
-    tags_with_time.sort_by(|a, b| b.1.cmp(&a.1));
+    tags_with_time.sort_by_key(|b| std::cmp::Reverse(b.1));
     tags_with_time.first().map(|(name, _)| name.clone())
 }
 

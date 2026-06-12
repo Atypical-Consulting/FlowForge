@@ -193,7 +193,7 @@ pub async fn get_repo_insights(
                 last_commit_ms: (last_ts as f64) * 1000.0,
             })
             .collect();
-        contributors.sort_by(|a, b| b.commit_count.cmp(&a.commit_count));
+        contributors.sort_by_key(|b| std::cmp::Reverse(b.commit_count));
 
         let first_commit_ms = if earliest_ts == i64::MAX {
             0.0

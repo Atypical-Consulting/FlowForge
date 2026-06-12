@@ -239,7 +239,7 @@ async fn get_commit_graph_impl(
                 BranchType::Other => 5,
             }
         }
-        sorted_refs.sort_by(|a, b| branch_priority(&a.1).cmp(&branch_priority(&b.1)));
+        sorted_refs.sort_by_key(|a| branch_priority(&a.1));
 
         // Build parent lookup within our visible nodes
         let mut children_map: HashMap<String, Vec<String>> = HashMap::new();

@@ -578,7 +578,7 @@ pub fn extract_scopes_from_history(
         .collect();
 
     // Sort by frequency descending
-    suggestions.sort_by(|a, b| b.usage_count.cmp(&a.usage_count));
+    suggestions.sort_by_key(|b| std::cmp::Reverse(b.usage_count));
 
     // Limit results
     suggestions.truncate(limit);
