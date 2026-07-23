@@ -1,3 +1,5 @@
+![FlowForge banner](.github/banner.png)
+
 # FlowForge
 
 > **A modern, opinionated Git client that makes Gitflow workflows a first-class citizen.**
