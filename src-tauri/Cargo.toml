@@ -27,7 +27,7 @@ base64 = "0.22"
 git2 = { version = "0.21", features = ["https", "ssh"] }
 statig = "0.4"
 git-conventional = "1.0"
-tera = "1"
+tera = "2"
 chrono = "0.4"
 notify = "8"
 notify-debouncer-mini = "0.7"
