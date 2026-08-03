@@ -81,7 +81,7 @@ pub async fn fetch_nuget_info(package_id: String) -> Result<NugetPackageInfo, Gi
     // 1. Search API for package metadata
     let search_url = format!(
         "https://azuresearch-usnc.nuget.org/query?q=packageid:{}&prerelease=true&take=1",
-        &package_id
+        package_id
     );
 
     let search_resp = client
