@@ -1,4 +1,9 @@
-export { rootBladeForWorkflow } from "./actions";
+export {
+  EMPTY_BLADE_TYPE,
+  isEmptyRootBlade,
+  resolveWorkflowId,
+  rootBladeForWorkflow,
+} from "./actions";
 export {
   getNavigationActor,
   NavigationProvider,
@@ -33,5 +38,7 @@ export {
   getDefaultWorkflowId,
   getWorkflow,
   registerWorkflow,
+  subscribeWorkflows,
   type WorkflowConfig,
+  type WorkflowRegistryListener,
 } from "./workflowRegistry";

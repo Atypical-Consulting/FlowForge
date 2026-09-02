@@ -44,6 +44,13 @@ export type NavigationEvent =
     }
   | { type: "RESET_STACK" }
   | { type: "SWITCH_WORKFLOW"; workflow: WorkflowType }
+  /**
+   * Sent by the navigation context whenever the workflow registry changes.
+   * Heals an actor whose active workflow is not registered (or whose root is
+   * the "empty" placeholder) — e.g. when the actor was created before the
+   * workflows were registered because of production chunk evaluation order.
+   */
+  | { type: "WORKFLOWS_CHANGED" }
   | { type: "MARK_DIRTY"; bladeId: string }
   | { type: "MARK_CLEAN"; bladeId: string }
   | { type: "CONFIRM_DISCARD" }

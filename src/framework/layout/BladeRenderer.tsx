@@ -5,6 +5,7 @@ import { BladeLoadingFallback } from "./BladeLoadingFallback";
 import { BladePanel } from "./BladePanel";
 import { openBlade } from "./bladeOpener";
 import { useBladeRegistry } from "./bladeRegistry";
+import { EMPTY_BLADE_TYPE } from "./navigation/actions";
 import type { TypedBlade } from "./navigation/types";
 
 interface BladeRendererProps {
@@ -23,6 +24,18 @@ export function BladeRenderer({
   onToggleFocusMode,
 }: BladeRendererProps) {
   const reg = useBladeRegistry((s) => s.items.get(blade.type));
+  if ((blade.type as string) === EMPTY_BLADE_TYPE)
+    // Placeholder root: no workflow registered yet. The navigation actor
+    // replaces it as soon as a workflow is registered, so this should only be
+    // visible transiently — never render it as a blank panel.
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8">
+        <Puzzle className="w-10 h-10 text-ctp-overlay0 opacity-50" />
+        <p className="text-sm text-ctp-subtext0 text-center">
+          No workflow is available yet. Waiting for a workflow to be registered…
+        </p>
+      </div>
+    );
   if (!reg)
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8">

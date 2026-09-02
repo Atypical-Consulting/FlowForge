@@ -1,9 +1,13 @@
 import { and, assign, not, setup } from "xstate";
 import { toast } from "../../stores/toast";
 import { isSingletonBlade } from "../bladeRegistry";
-import { rootBladeForWorkflow } from "./actions";
+import {
+  isEmptyRootBlade,
+  resolveWorkflowId,
+  rootBladeForWorkflow,
+} from "./actions";
 import type { NavigationContext, NavigationEvent, TypedBlade } from "./types";
-import { getDefaultWorkflowId } from "./workflowRegistry";
+import { getDefaultWorkflowId, getWorkflow } from "./workflowRegistry";
 
 const DEFAULT_MAX_STACK_DEPTH = 8;
 
@@ -36,6 +40,14 @@ export const navigationMachine = setup({
       const bladesAbove = context.bladeStack.slice(event.index + 1);
       return bladesAbove.some((b) => !!context.dirtyBladeIds[b.id]);
     },
+    /**
+     * The active workflow is not registered (actor created before the
+     * workflows, or the workflow was removed) or the root is the "empty"
+     * placeholder — the stack needs to be re-rooted on a registered workflow.
+     */
+    needsWorkflowHeal: ({ context }) =>
+      !getWorkflow(context.activeWorkflow) ||
+      isEmptyRootBlade(context.bladeStack[0]),
   },
   actions: {
     pushBlade: assign(({ context, event }) => {
@@ -98,17 +110,36 @@ export const navigationMachine = setup({
         lastAction: "replace" as const,
       };
     }),
-    resetStack: assign(({ context }) => ({
-      bladeStack: [rootBladeForWorkflow(context.activeWorkflow)],
-      dirtyBladeIds: {} as Record<string, true>,
-      lastAction: "reset" as const,
-    })),
+    resetStack: assign(({ context }) => {
+      const workflow = resolveWorkflowId(context.activeWorkflow);
+      return {
+        activeWorkflow: workflow,
+        bladeStack: [rootBladeForWorkflow(workflow)],
+        dirtyBladeIds: {} as Record<string, true>,
+        lastAction: "reset" as const,
+      };
+    }),
     switchWorkflow: assign(({ event }) => {
       if (event.type !== "SWITCH_WORKFLOW") return {};
+      // Unknown ids (e.g. a persisted workflow whose extension is gone) fall
+      // back to the default workflow instead of producing an unusable root.
+      const workflow = resolveWorkflowId(event.workflow);
       return {
-        activeWorkflow: event.workflow,
-        bladeStack: [rootBladeForWorkflow(event.workflow)],
+        activeWorkflow: workflow,
+        bladeStack: [rootBladeForWorkflow(workflow)],
         dirtyBladeIds: {} as Record<string, true>,
+        lastAction: "reset" as const,
+      };
+    }),
+    healWorkflow: assign(({ context }) => {
+      const workflow = resolveWorkflowId(context.activeWorkflow);
+      // Replace only the root; anything pushed on top of it is preserved.
+      return {
+        activeWorkflow: workflow,
+        bladeStack: [
+          rootBladeForWorkflow(workflow),
+          ...context.bladeStack.slice(1),
+        ],
         lastAction: "reset" as const,
       };
     }),
@@ -170,19 +201,24 @@ export const navigationMachine = setup({
             ],
             lastAction: "replace" as const,
           };
-        case "RESET_STACK":
+        case "RESET_STACK": {
+          const workflow = resolveWorkflowId(context.activeWorkflow);
           return {
             ...base,
-            bladeStack: [rootBladeForWorkflow(context.activeWorkflow)],
+            activeWorkflow: workflow,
+            bladeStack: [rootBladeForWorkflow(workflow)],
             lastAction: "reset" as const,
           };
-        case "SWITCH_WORKFLOW":
+        }
+        case "SWITCH_WORKFLOW": {
+          const workflow = resolveWorkflowId(pending.workflow);
           return {
             ...base,
-            activeWorkflow: pending.workflow,
-            bladeStack: [rootBladeForWorkflow(pending.workflow)],
+            activeWorkflow: workflow,
+            bladeStack: [rootBladeForWorkflow(workflow)],
             lastAction: "reset" as const,
           };
+        }
         default:
           return base;
       }
@@ -208,6 +244,14 @@ export const navigationMachine = setup({
     maxStackDepth: DEFAULT_MAX_STACK_DEPTH,
     pendingEvent: null as NavigationEvent | null,
   }),
+  // Root-level so it applies in every state: the registry can change at any
+  // time (extension activation, production chunk evaluation order).
+  on: {
+    WORKFLOWS_CHANGED: {
+      guard: "needsWorkflowHeal",
+      actions: "healWorkflow",
+    },
+  },
   states: {
     navigating: {
       on: {
