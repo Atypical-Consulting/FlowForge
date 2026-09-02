@@ -177,7 +177,10 @@ export function BranchSwitcher({ onSelectBranch }: BranchSwitcherProps) {
         aria-label={`Branch: ${currentBranch}`}
       >
         <GitBranch className="w-4 h-4 text-ctp-subtext0" />
-        <span className="text-sm text-ctp-subtext1 font-mono font-medium">
+        <span
+          className="text-sm text-ctp-subtext1 font-mono font-medium truncate"
+          title={currentBranch || undefined}
+        >
           {currentBranch || "No branch"}
         </span>
         {isDirty && (

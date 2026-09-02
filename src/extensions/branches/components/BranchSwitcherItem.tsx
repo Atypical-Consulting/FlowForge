@@ -1,6 +1,7 @@
 import { Check, GitBranch } from "lucide-react";
 import { cn } from "@/framework/lib/utils";
 import type { BranchInfo } from "../../../bindings";
+import { BranchName } from "./BranchName";
 
 interface BranchSwitcherItemProps {
   branch: BranchInfo;
@@ -34,7 +35,7 @@ export function BranchSwitcherItem({
     >
       <GitBranch className="w-4 h-4 text-ctp-subtext0 shrink-0" />
       <div className="flex-1 min-w-0 flex items-center gap-1.5">
-        <span className="text-sm text-ctp-text truncate">{branch.name}</span>
+        <BranchName name={branch.name} className="text-sm text-ctp-text" />
         {branch.isRemote && (
           <span className="text-xs text-ctp-overlay0 bg-ctp-surface1 px-1.5 py-0.5 rounded shrink-0">
             remote
