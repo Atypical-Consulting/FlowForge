@@ -66,11 +66,11 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
         branchType: GitflowBranchType;
       }
     >();
-    for (const gn of graphNodes) {
-      for (const name of gn.branchNames) {
+    for (const pn of nodes) {
+      for (const name of pn.node.branchNames) {
         if (!seen.has(name)) {
           seen.set(name, {
-            column: gn.column,
+            column: pn.column,
             branchName: name,
             branchType: classifyBranch(name),
           });
@@ -78,7 +78,7 @@ export function TopologyPanel({ onCommitSelect }: TopologyPanelProps) {
       }
     }
     return Array.from(seen.values());
-  }, [graphNodes]);
+  }, [nodes]);
 
   // Compute timestamp range for heat map coloring
   const { minTs, maxTs } = useMemo(() => {

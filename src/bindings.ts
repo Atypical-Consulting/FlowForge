@@ -1225,8 +1225,6 @@ export type GraphNode = {
 	parents: string[],
 	/**  Classification of the branch type for coloring */
 	branchType: BranchType,
-	/**  Lane/column position for visual layout (0-indexed from left) */
-	column: number,
 	/**  Branch names pointing to this commit */
 	branchNames: string[],
 	/**  Whether this commit is a first-parent ancestor of HEAD */

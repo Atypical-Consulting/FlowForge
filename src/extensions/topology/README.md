@@ -20,6 +20,7 @@ topology/
 │   ├── TopologyEmptyState.tsx        # Empty state placeholder
 │   └── TopologyPanel.tsx             # Main topology panel
 └── lib/
+    ├── laneAssignment.ts             # Lane (column) assignment for commits and edges
     └── layoutUtils.ts                # Lane layout computation utilities
 ```
 
