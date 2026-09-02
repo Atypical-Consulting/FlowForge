@@ -1,22 +1,42 @@
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Maximize2, RotateCcw } from "lucide-react";
-import { useEffect, useState } from "react";
+import { GitMerge, Loader2, Maximize2, RotateCcw } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useCommandShortcut } from "@/framework/command-palette/useCommandShortcut";
 import { confirm } from "@/framework/stores/confirm";
-import { commands } from "../../../bindings";
+import { commands, type RepoStatus } from "../../../bindings";
 import { useExtensionHost } from "../../../extensions";
 import { ConventionalCommitForm } from "../../../extensions/conventional-commits/components/ConventionalCommitForm";
 import { useAmendPrefill } from "../../../extensions/conventional-commits/hooks/useAmendPrefill";
 import { useBladeNavigation } from "../../hooks/useBladeNavigation";
 import { useCommitExecution } from "../../hooks/useCommitExecution";
 import { cn } from "../../lib/utils";
+import { useGitOpsStore } from "../../stores/domain/git-ops";
 import { Button } from "../ui/button";
 import { ShortcutTooltip } from "../ui/ShortcutTooltip";
+
+/**
+ * Merge-state fields of `RepoStatus` returned by `get_repository_status`.
+ *
+ * Declared locally (and intersected with the generated type) so this file
+ * compiles whether or not `src/bindings.ts` has been regenerated with them;
+ * once it has, this can be dropped in favour of `RepoStatus` alone.
+ */
+interface MergeStateFields {
+  mergeInProgress?: boolean;
+  mergeHeadBranch?: string | null;
+  mergeMessage?: string | null;
+}
 
 export function CommitForm() {
   const [useConventional, setUseConventional] = useState(false);
   const [message, setMessage] = useState("");
   const { bladeStack, openBlade } = useBladeNavigation();
+  const repoStatus = useGitOpsStore((s) => s.repoStatus) as
+    | (RepoStatus & MergeStateFields)
+    | null;
+  const mergeInProgress = repoStatus?.mergeInProgress ?? false;
+  const mergeHeadBranch = repoStatus?.mergeHeadBranch ?? null;
+  const mergeMessage = repoStatus?.mergeMessage ?? null;
   const isCCActive = useExtensionHost(
     (s) => s.extensions.get("conventional-commits")?.status === "active",
   );
@@ -33,10 +53,14 @@ export function CommitForm() {
 
   const amendPrefill = useAmendPrefill({ mode: "simple" });
   const amendShortcut = useCommandShortcut("ext:sync:toggle-amend");
+  // Amending the pre-merge HEAD during a merge would silently drop the merge
+  // (the backend refuses it too), so amend is forced off while merging.
+  const amend = amendPrefill.amend && !mergeInProgress;
 
   // Listen for toggle-amend event from keyboard shortcut
   useEffect(() => {
     const handleToggleAmend = () => {
+      if (mergeInProgress) return;
       amendPrefill.toggleAmend(!amendPrefill.amend, {
         onPrefill: (msg) => setMessage(msg),
         onClear: () => setMessage(""),
@@ -47,7 +71,7 @@ export function CommitForm() {
     return () => {
       document.removeEventListener("toggle-amend", handleToggleAmend);
     };
-  }, [amendPrefill, message]);
+  }, [amendPrefill, message, mergeInProgress]);
 
   // Auto-reset conventional commit mode when extension is disabled
   useEffect(() => {
@@ -56,6 +80,24 @@ export function CommitForm() {
     }
   }, [isCCActive, useConventional]);
 
+  // Pre-fill the message git prepared in MERGE_MSG once per merge, and only
+  // into an empty field so a message the user is typing is never replaced.
+  const prefilledMergeMessage = useRef<string | null>(null);
+  useEffect(() => {
+    if (!mergeInProgress) {
+      prefilledMergeMessage.current = null;
+      return;
+    }
+    if (
+      mergeMessage &&
+      prefilledMergeMessage.current !== mergeMessage &&
+      message.trim().length === 0
+    ) {
+      prefilledMergeMessage.current = mergeMessage;
+      setMessage(mergeMessage);
+    }
+  }, [mergeInProgress, mergeMessage, message]);
+
   const { data: result } = useQuery({
     queryKey: ["stagingStatus"],
     queryFn: () => commands.getStagingStatus(),
@@ -63,6 +105,8 @@ export function CommitForm() {
 
   const status = result?.status === "ok" ? result.data : null;
   const hasStagedFiles = status && status.staged.length > 0;
+  // A merge commit is valid even when the resolved tree matches HEAD.
+  const hasCommittableChanges = hasStagedFiles || mergeInProgress;
 
   // Handle commit from ConventionalCommitForm
   const handleConventionalCommit = (commitMessage: string) => {
@@ -71,7 +115,7 @@ export function CommitForm() {
 
   // Simple form logic
   const canSimpleCommit =
-    (hasStagedFiles || amendPrefill.amend) && message.trim().length > 0;
+    (hasCommittableChanges || amend) && message.trim().length > 0;
   const lines = message.split("\n");
   const subject = lines[0] || "";
   const subjectLength = subject.length;
@@ -117,6 +161,19 @@ export function CommitForm() {
         )}
       </div>
 
+      {mergeInProgress && (
+        <p
+          role="status"
+          className="flex items-center gap-1.5 mb-2 text-xs text-ctp-peach"
+        >
+          <GitMerge className="w-3.5 h-3.5 shrink-0" />
+          <span>
+            Merging {mergeHeadBranch ? <b>{mergeHeadBranch}</b> : "MERGE_HEAD"}{" "}
+            &mdash; this commit will complete the merge
+          </span>
+        </p>
+      )}
+
       {/* Conventional commit mode */}
       {useConventional && isCCBladeOpen ? (
         /* Placeholder when blade is open */
@@ -128,9 +185,9 @@ export function CommitForm() {
           <ConventionalCommitForm
             onCommit={handleConventionalCommit}
             onCancel={() => setUseConventional(false)}
-            disabled={isCommitting || !hasStagedFiles}
+            disabled={isCommitting || !hasCommittableChanges}
           />
-          {!hasStagedFiles && (
+          {!hasCommittableChanges && (
             <p className="text-xs text-ctp-overlay0 text-center">
               No staged changes to commit
             </p>
@@ -160,13 +217,26 @@ export function CommitForm() {
             <div className="flex items-center gap-2">
               <ShortcutTooltip
                 shortcut={amendShortcut}
-                label="Toggle Amend"
+                label={
+                  mergeInProgress
+                    ? "Amend is unavailable during a merge"
+                    : "Toggle Amend"
+                }
                 side="top"
               >
-                <label className="flex items-center gap-1.5 text-ctp-overlay1 cursor-pointer">
+                <label
+                  className={cn(
+                    "flex items-center gap-1.5 text-ctp-overlay1",
+                    mergeInProgress
+                      ? "opacity-50 cursor-not-allowed"
+                      : "cursor-pointer",
+                  )}
+                >
                   <input
                     type="checkbox"
-                    checked={amendPrefill.amend}
+                    checked={amend}
+                    disabled={mergeInProgress}
+                    aria-label="Amend last commit"
                     onChange={(e) =>
                       amendPrefill.toggleAmend(e.target.checked, {
                         onPrefill: (msg) => setMessage(msg),
@@ -199,7 +269,7 @@ export function CommitForm() {
           {/* Commit button */}
           <Button
             onClick={async () => {
-              if (amendPrefill.amend) {
+              if (amend) {
                 const confirmed = await confirm({
                   title: "Amend commit",
                   description:
@@ -208,7 +278,7 @@ export function CommitForm() {
                 });
                 if (!confirmed) return;
               }
-              commit(message, amendPrefill.amend);
+              commit(message, amend);
             }}
             disabled={!canSimpleCommit || isCommitting}
             className="w-full"
@@ -218,7 +288,7 @@ export function CommitForm() {
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Committing...
               </>
-            ) : amendPrefill.amend ? (
+            ) : amend ? (
               <>
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Amend Commit
@@ -228,7 +298,7 @@ export function CommitForm() {
             )}
           </Button>
 
-          {!hasStagedFiles && !amendPrefill.amend && (
+          {!hasCommittableChanges && !amend && (
             <p className="text-xs text-ctp-overlay0 text-center">
               No staged changes to commit
             </p>

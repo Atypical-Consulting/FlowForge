@@ -37,6 +37,17 @@ pub enum GitError {
     #[error("Could not determine commit author: {0}")]
     SignatureError(String),
 
+    /// The index still holds conflict entries for the listed paths
+    /// (comma-separated). Committing would record conflict markers, so the
+    /// commit is refused until every file is resolved and staged.
+    #[error("Cannot commit with unresolved conflicts in: {0}")]
+    UnresolvedConflicts(String),
+
+    /// `amend` was requested while a merge is in progress. Amending the
+    /// pre-merge HEAD would silently drop the merge, so it is refused.
+    #[error("Cannot amend while a merge is in progress; complete or abort the merge first")]
+    AmendDuringMerge,
+
     // Remote errors
     #[error("Remote not found: {0}")]
     RemoteNotFound(String),
