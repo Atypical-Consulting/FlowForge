@@ -30,7 +30,6 @@ git-conventional = "1.0"
 tera = "2"
 chrono = "0.4"
 notify = "8"
-notify-debouncer-mini = "0.7"
 reqwest = { version = "0.13", features = ["json", "rustls", "form"], default-features = false }
 keyring = "4"
 
