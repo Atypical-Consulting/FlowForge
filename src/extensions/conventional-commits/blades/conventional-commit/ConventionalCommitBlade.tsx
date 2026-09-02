@@ -3,6 +3,7 @@ import { AlertTriangle, Check, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { SplitPaneLayout } from "@/framework/layout/SplitPaneLayout";
 import { cn } from "@/framework/lib/utils";
+import { confirm } from "@/framework/stores/confirm";
 import { useBladeNavigation } from "../../../../core/hooks/useBladeNavigation";
 import { useCommitExecution } from "../../../../core/hooks/useCommitExecution";
 import { BreakingChangeSection } from "../../components/BreakingChangeSection";
@@ -137,23 +138,29 @@ export function ConventionalCommitBlade({
     }
   };
 
-  const handleCommit = () => {
+  const handleCommit = async () => {
     if (isAmend) {
-      const confirmed = window.confirm(
-        "Amend will rewrite the last commit. This cannot be undone. Continue?",
-      );
+      const confirmed = await confirm({
+        title: "Amend commit",
+        description:
+          "Amend will rewrite the last commit. This cannot be undone. Continue?",
+        confirmLabel: "Amend",
+      });
       if (!confirmed) return;
     }
     commit(currentMessage, isAmend);
   };
 
-  const handleCommitAndPush = () => {
+  const handleCommitAndPush = async () => {
     if (isAmend) {
-      const confirmed = window.confirm(
-        "This will amend the last commit, then push. This cannot be undone. " +
+      const confirmed = await confirm({
+        title: "Amend and push",
+        description:
+          "This will amend the last commit, then push. This cannot be undone. " +
           "If the previous commit was already pushed, the remote may reject the push " +
           "(force push is not yet supported). Continue?",
-      );
+        confirmLabel: "Amend and push",
+      });
       if (!confirmed) return;
     }
     commitAndPush(currentMessage, isAmend);

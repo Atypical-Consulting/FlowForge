@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
+import { confirm } from "@/framework/stores/confirm";
 import type { CommitType } from "../../../bindings";
 import { commands } from "../../../bindings";
 import { parseConventionalMessage } from "../lib/conventional-utils";
@@ -46,9 +47,13 @@ export function useAmendPrefill({ mode: _mode }: UseAmendPrefillOptions) {
             callbacks.onPrefill?.(fetchedMessage.fullMessage);
             setAmend(true);
           } else {
-            const shouldReplace = window.confirm(
-              "You have unsaved text. Replace with previous commit message?",
-            );
+            const shouldReplace = await confirm({
+              title: "Replace commit message",
+              description:
+                "You have unsaved text. Replace with previous commit message?",
+              confirmLabel: "Replace",
+              cancelLabel: "Keep my text",
+            });
             if (shouldReplace) {
               callbacks.onPrefill?.(fetchedMessage.fullMessage);
             }

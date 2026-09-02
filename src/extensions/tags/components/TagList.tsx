@@ -2,6 +2,7 @@ import { Plus, Tag } from "lucide-react";
 import { useEffect } from "react";
 import { EmptyState } from "@/core/components/ui/EmptyState";
 import { useGitOpsStore as useTagStore } from "@/core/stores/domain/git-ops";
+import { confirm } from "@/framework/stores/confirm";
 import { CreateTagDialog } from "./CreateTagDialog";
 import { TagItem } from "./TagItem";
 
@@ -30,7 +31,13 @@ export function TagList({
   }, [loadTags]);
 
   const handleDelete = async (name: string) => {
-    if (!window.confirm(`Delete tag "${name}"?`)) return;
+    const confirmed = await confirm({
+      title: "Delete tag",
+      description: `Delete tag "${name}"?`,
+      confirmLabel: "Delete",
+      danger: true,
+    });
+    if (!confirmed) return;
     await deleteTag(name);
   };
 

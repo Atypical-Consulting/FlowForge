@@ -1,6 +1,7 @@
 import { Pin, Shield } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { gitHookBus } from "@/core/services/gitHookBus";
+import { confirm } from "@/framework/stores/confirm";
 import { toast } from "@/framework/stores/toast";
 import { useBranchScopes } from "../../../core/hooks/useBranchScopes";
 import { useBulkSelect } from "../../../core/hooks/useBulkSelect";
@@ -116,9 +117,12 @@ export function BranchList({
 
   const handleDelete = async (name: string, isMerged: boolean | null) => {
     if (!isMerged) {
-      const confirmed = window.confirm(
-        `Branch "${name}" has unmerged commits. Force delete?`,
-      );
+      const confirmed = await confirm({
+        title: "Force delete branch",
+        description: `Branch "${name}" has unmerged commits. Force delete?`,
+        confirmLabel: "Force delete",
+        danger: true,
+      });
       if (!confirmed) return;
       await deleteBranch(name, true);
     } else {

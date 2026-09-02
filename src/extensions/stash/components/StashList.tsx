@@ -2,6 +2,7 @@ import { Archive } from "lucide-react";
 import { useEffect } from "react";
 import { EmptyState } from "@/core/components/ui/EmptyState";
 import { useGitOpsStore as useStashStore } from "@/core/stores/domain/git-ops";
+import { confirm } from "@/framework/stores/confirm";
 import { StashDialog } from "./StashDialog";
 import { StashItem } from "./StashItem";
 
@@ -30,7 +31,13 @@ export function StashList({
   }, [loadStashes]);
 
   const handleDrop = async (index: number) => {
-    if (window.confirm("Drop this stash? This cannot be undone.")) {
+    const confirmed = await confirm({
+      title: "Drop stash",
+      description: "Drop this stash? This cannot be undone.",
+      confirmLabel: "Drop",
+      danger: true,
+    });
+    if (confirmed) {
       await dropStash(index);
     }
   };
