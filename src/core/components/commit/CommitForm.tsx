@@ -1,5 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { GitMerge, Loader2, Maximize2, RotateCcw } from "lucide-react";
+import {
+  Cherry,
+  GitMerge,
+  Loader2,
+  Maximize2,
+  RotateCcw,
+  Undo2,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useCommandShortcut } from "@/framework/command-palette/useCommandShortcut";
 import { confirm } from "@/framework/stores/confirm";
@@ -15,7 +22,8 @@ import { Button } from "../ui/button";
 import { ShortcutTooltip } from "../ui/ShortcutTooltip";
 
 /**
- * Merge-state fields of `RepoStatus` returned by `get_repository_status`.
+ * Merge / cherry-pick / revert state fields of `RepoStatus` returned by
+ * `get_repository_status`.
  *
  * Declared locally (and intersected with the generated type) so this file
  * compiles whether or not `src/bindings.ts` has been regenerated with them;
@@ -24,7 +32,12 @@ import { ShortcutTooltip } from "../ui/ShortcutTooltip";
 interface MergeStateFields {
   mergeInProgress?: boolean;
   mergeHeadBranch?: string | null;
+  /** `.git/MERGE_MSG`: the message git prepared for the pending commit. */
   mergeMessage?: string | null;
+  cherryPickInProgress?: boolean;
+  revertInProgress?: boolean;
+  /** Short oid of the commit being cherry-picked or reverted. */
+  sequencerHead?: string | null;
 }
 
 /** Drop `#` comment lines (as `git commit` does) and surrounding blank lines. */
@@ -46,6 +59,12 @@ export function CommitForm() {
   const mergeInProgress = repoStatus?.mergeInProgress ?? false;
   const mergeHeadBranch = repoStatus?.mergeHeadBranch ?? null;
   const mergeMessage = repoStatus?.mergeMessage ?? null;
+  const cherryPickInProgress = repoStatus?.cherryPickInProgress ?? false;
+  const revertInProgress = repoStatus?.revertInProgress ?? false;
+  const sequencerHead = repoStatus?.sequencerHead ?? null;
+  // Any operation whose prepared message (MERGE_MSG) should prefill the form.
+  const operationInProgress =
+    mergeInProgress || cherryPickInProgress || revertInProgress;
   const isCCActive = useExtensionHost(
     (s) => s.extensions.get("conventional-commits")?.status === "active",
   );
@@ -89,11 +108,12 @@ export function CommitForm() {
     }
   }, [isCCActive, useConventional]);
 
-  // Pre-fill the message git prepared in MERGE_MSG once per merge, and only
-  // into an empty field so a message the user is typing is never replaced.
+  // Pre-fill the message git prepared in MERGE_MSG once per merge (or
+  // cherry-pick / revert), and only into an empty field so a message the user
+  // is typing is never replaced.
   const prefilledMergeMessage = useRef<string | null>(null);
   useEffect(() => {
-    if (!mergeInProgress) {
+    if (!operationInProgress) {
       prefilledMergeMessage.current = null;
       return;
     }
@@ -107,7 +127,7 @@ export function CommitForm() {
       // comment lines on commit, we must do the same before prefilling.
       setMessage(stripCommentLines(mergeMessage));
     }
-  }, [mergeInProgress, mergeMessage, message]);
+  }, [operationInProgress, mergeMessage, message]);
 
   const { data: result } = useQuery({
     queryKey: ["stagingStatus"],
@@ -172,7 +192,7 @@ export function CommitForm() {
         )}
       </div>
 
-      {mergeInProgress && (
+      {mergeInProgress ? (
         <p
           role="status"
           className="flex items-center gap-1.5 mb-2 text-xs text-ctp-peach"
@@ -183,7 +203,30 @@ export function CommitForm() {
             &mdash; this commit will complete the merge
           </span>
         </p>
-      )}
+      ) : cherryPickInProgress ? (
+        <p
+          role="status"
+          className="flex items-center gap-1.5 mb-2 text-xs text-ctp-peach"
+        >
+          <Cherry className="w-3.5 h-3.5 shrink-0" />
+          <span>
+            Cherry-picking{" "}
+            {sequencerHead ? <b>{sequencerHead}</b> : "CHERRY_PICK_HEAD"}{" "}
+            &mdash; this commit will complete it
+          </span>
+        </p>
+      ) : revertInProgress ? (
+        <p
+          role="status"
+          className="flex items-center gap-1.5 mb-2 text-xs text-ctp-peach"
+        >
+          <Undo2 className="w-3.5 h-3.5 shrink-0" />
+          <span>
+            Reverting {sequencerHead ? <b>{sequencerHead}</b> : "REVERT_HEAD"}{" "}
+            &mdash; this commit will complete it
+          </span>
+        </p>
+      ) : null}
 
       {/* Conventional commit mode */}
       {useConventional && isCCBladeOpen ? (

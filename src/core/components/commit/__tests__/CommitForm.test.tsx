@@ -87,6 +87,27 @@ function mergingRepoStatus(overrides?: {
   } as RepoStatus;
 }
 
+/**
+ * RepoStatus for a repository mid cherry-pick or revert (single or one step of
+ * a `git cherry-pick a..b` sequence). Same cast as above.
+ */
+function sequencerRepoStatus(
+  operation: "cherryPick" | "revert",
+  overrides?: { sequencerHead?: string | null; mergeMessage?: string | null },
+): RepoStatus {
+  return {
+    ...createRepoStatus({ branchName: "develop" }),
+    cherryPickInProgress: operation === "cherryPick",
+    revertInProgress: operation === "revert",
+    sequencerHead: "585521c",
+    mergeMessage:
+      operation === "cherryPick"
+        ? "picked commit\n\n# Conflicts:\n#\tshared.txt"
+        : 'Revert "add a"\n\nThis reverts commit 585521ce.',
+    ...overrides,
+  } as RepoStatus;
+}
+
 describe("CommitForm graceful degradation", () => {
   let queryClient: QueryClient;
 
@@ -177,6 +198,59 @@ describe("CommitForm graceful degradation", () => {
       expect(
         screen.queryByText("No staged changes to commit"),
       ).not.toBeInTheDocument();
+    });
+  });
+
+  describe("cherry-pick / revert in progress", () => {
+    it("shows which commit is being cherry-picked and prefills MERGE_MSG", () => {
+      useGitOpsStore.setState({
+        repoStatus: sequencerRepoStatus("cherryPick"),
+      });
+      renderCommitForm();
+
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "Cherry-picking 585521c — this commit will complete it",
+      );
+      expect(screen.getByPlaceholderText("Commit message...")).toHaveValue(
+        "picked commit",
+      );
+    });
+
+    it("shows which commit is being reverted and prefills MERGE_MSG", () => {
+      useGitOpsStore.setState({ repoStatus: sequencerRepoStatus("revert") });
+      renderCommitForm();
+
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "Reverting 585521c — this commit will complete it",
+      );
+      expect(screen.getByPlaceholderText("Commit message...")).toHaveValue(
+        'Revert "add a"\n\nThis reverts commit 585521ce.',
+      );
+    });
+
+    it("falls back to CHERRY_PICK_HEAD when the oid is unknown", () => {
+      useGitOpsStore.setState({
+        repoStatus: sequencerRepoStatus("cherryPick", { sequencerHead: null }),
+      });
+      renderCommitForm();
+
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "Cherry-picking CHERRY_PICK_HEAD",
+      );
+    });
+
+    it("keeps Amend enabled and still requires staged changes", () => {
+      // Unlike a merge, git allows amending during a cherry-pick and refuses
+      // an empty pick, so neither merge-specific rule applies here.
+      useGitOpsStore.setState({
+        repoStatus: sequencerRepoStatus("cherryPick"),
+      });
+      renderCommitForm();
+
+      expect(
+        screen.getByRole("checkbox", { name: "Amend last commit" }),
+      ).toBeEnabled();
+      expect(screen.getByRole("button", { name: "Commit" })).toBeDisabled();
     });
   });
 

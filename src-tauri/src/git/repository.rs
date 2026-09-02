@@ -27,9 +27,19 @@ pub struct RepoStatus {
     /// Branch being merged in, when a merge is in progress. Falls back to the
     /// short MERGE_HEAD oid when no branch points at it.
     pub merge_head_branch: Option<String>,
-    /// Contents of `.git/MERGE_MSG` (the message git prepared for the merge
-    /// commit), when a merge is in progress.
+    /// Contents of `.git/MERGE_MSG` (the message git prepared for the merge,
+    /// cherry-pick or revert commit), when one of those is in progress.
     pub merge_message: Option<String>,
+    /// Whether a cherry-pick is in progress (`.git/CHERRY_PICK_HEAD` exists),
+    /// on its own or as one step of a `git cherry-pick a..b` sequence. The
+    /// next commit records the pick; a sequence is then continued with git.
+    pub cherry_pick_in_progress: bool,
+    /// Whether a revert is in progress (`.git/REVERT_HEAD` exists), on its
+    /// own or as one step of a `git revert a..b` sequence.
+    pub revert_in_progress: bool,
+    /// Short oid of the commit being cherry-picked or reverted
+    /// (CHERRY_PICK_HEAD / REVERT_HEAD), when one of those is in progress.
+    pub sequencer_head: Option<String>,
 }
 
 /// All commits recorded in `.git/MERGE_HEAD` (empty when no merge is in progress).
@@ -78,6 +88,14 @@ pub(crate) fn branch_name_for_oid(repo: &git2::Repository, oid: git2::Oid) -> Op
 pub(crate) fn merge_head_label(repo: &git2::Repository) -> Option<String> {
     let oid = *merge_head_oids(repo).ok()?.first()?;
     Some(branch_name_for_oid(repo, oid).unwrap_or_else(|| format!("{:.7}", oid)))
+}
+
+/// Short oid recorded in `.git/<name>` (CHERRY_PICK_HEAD / REVERT_HEAD), if
+/// the file exists and holds a valid oid.
+pub(crate) fn short_oid_in_state_file(repo: &git2::Repository, name: &str) -> Option<String> {
+    let contents = std::fs::read_to_string(repo.path().join(name)).ok()?;
+    let oid = git2::Oid::from_str(contents.trim()).ok()?;
+    Some(format!("{oid:.7}"))
 }
 
 /// Contents of `.git/MERGE_MSG`, if present.
@@ -188,12 +206,31 @@ impl RepositoryState {
                 .unwrap_or("unknown")
                 .to_string();
 
-            let merge_in_progress = repo.state() == git2::RepositoryState::Merge;
-            let (merge_head_branch, merge_message) = if merge_in_progress {
-                (merge_head_label(&repo), merge_message(&repo))
+            let state = repo.state();
+            let merge_in_progress = state == git2::RepositoryState::Merge;
+            let cherry_pick_in_progress = matches!(
+                state,
+                git2::RepositoryState::CherryPick | git2::RepositoryState::CherryPickSequence
+            );
+            let revert_in_progress = matches!(
+                state,
+                git2::RepositoryState::Revert | git2::RepositoryState::RevertSequence
+            );
+            let merge_head_branch = merge_in_progress
+                .then(|| merge_head_label(&repo))
+                .flatten();
+            let sequencer_head = if cherry_pick_in_progress {
+                short_oid_in_state_file(&repo, "CHERRY_PICK_HEAD")
+            } else if revert_in_progress {
+                short_oid_in_state_file(&repo, "REVERT_HEAD")
             } else {
-                (None, None)
+                None
             };
+            // MERGE_MSG is what git prepared for the pending commit, whichever
+            // operation is in progress; it prefills the commit form.
+            let merge_message = (merge_in_progress || cherry_pick_in_progress || revert_in_progress)
+                .then(|| merge_message(&repo))
+                .flatten();
 
             Ok(RepoStatus {
                 branch_name,
@@ -203,6 +240,9 @@ impl RepositoryState {
                 merge_in_progress,
                 merge_head_branch,
                 merge_message,
+                cherry_pick_in_progress,
+                revert_in_progress,
+                sequencer_head,
             })
         })
         .await
@@ -324,6 +364,55 @@ mod merge_state_tests {
         assert!(!status.merge_in_progress);
         assert!(status.merge_head_branch.is_none());
         assert!(status.merge_message.is_none());
+        assert!(!status.cherry_pick_in_progress);
+        assert!(!status.revert_in_progress);
+        assert!(status.sequencer_head.is_none());
+    }
+
+    #[tokio::test]
+    async fn status_reports_cherry_pick_in_progress_with_head_and_message() {
+        let (dir, repo) = init_repo();
+        create_and_checkout(&repo, "topic");
+        let picked = commit_file(&repo, "picked.txt", "picked\n", "picked commit");
+        checkout(&repo, "main");
+        repo.cherrypick(&repo.find_commit(picked).unwrap(), None)
+            .unwrap();
+        // Simulate the sequencer of a multi-commit `git cherry-pick a..b`.
+        std::fs::create_dir_all(repo.path().join("sequencer")).unwrap();
+        std::fs::write(
+            repo.path().join("sequencer").join("todo"),
+            format!("pick {picked:.7} picked commit\npick 0000000 next\n"),
+        )
+        .unwrap();
+        assert_eq!(repo.state(), git2::RepositoryState::CherryPickSequence);
+
+        let state = RepositoryState::new();
+        let status = state.open(dir.path().to_path_buf()).await.unwrap();
+
+        assert!(status.cherry_pick_in_progress);
+        assert!(!status.revert_in_progress);
+        assert!(!status.merge_in_progress);
+        assert_eq!(status.sequencer_head.as_deref(), Some(&format!("{picked:.7}")[..]));
+        assert_eq!(status.merge_message.as_deref(), Some("picked commit"));
+    }
+
+    #[tokio::test]
+    async fn status_reports_revert_in_progress_with_head_and_message() {
+        let (dir, repo) = init_repo();
+        let reverted = commit_file(&repo, "a.txt", "a\n", "add a");
+        repo.revert(&repo.find_commit(reverted).unwrap(), None)
+            .unwrap();
+        assert_eq!(repo.state(), git2::RepositoryState::Revert);
+
+        let state = RepositoryState::new();
+        let status = state.open(dir.path().to_path_buf()).await.unwrap();
+
+        assert!(status.revert_in_progress);
+        assert!(!status.cherry_pick_in_progress);
+        assert_eq!(status.sequencer_head.as_deref(), Some(&format!("{reverted:.7}")[..]));
+        let message = status.merge_message.expect("MERGE_MSG prefill");
+        assert!(message.starts_with("Revert \"add a\""), "got {message:?}");
+        assert!(message.contains(&reverted.to_string()), "got {message:?}");
     }
 
     #[test]

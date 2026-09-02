@@ -116,6 +116,10 @@ fn parse_commit_message(message: &str) -> (String, Option<String>) {
 /// When a merge is in progress (`.git/MERGE_HEAD` exists) the commit records
 /// HEAD *and* every MERGE_HEAD as parents, i.e. it completes the merge exactly
 /// like `git commit` would, and the merge state files are removed afterwards.
+/// During a cherry-pick or revert (single or a `git cherry-pick a..b`
+/// sequence) the commit is a plain single-parent commit and only
+/// CHERRY_PICK_HEAD / REVERT_HEAD and MERGE_MSG are removed, so the sequence
+/// can be continued with `git cherry-pick --continue`.
 ///
 /// # Errors
 /// - `NoStagedChanges` if index is empty (nothing staged)
@@ -149,9 +153,12 @@ enum PendingOperation {
     None,
     /// A merge: the commit gets HEAD plus these MERGE_HEAD oids as parents.
     Merge(Vec<git2::Oid>),
-    /// A single cherry-pick or revert: single parent, but the state files
-    /// (CHERRY_PICK_HEAD / REVERT_HEAD) must be removed once committed.
-    SingleParent,
+    /// A cherry-pick (single, or one step of a `git cherry-pick a..b`
+    /// sequence): single parent; CHERRY_PICK_HEAD is removed once committed.
+    CherryPick,
+    /// A revert (single or one step of a sequence): single parent; REVERT_HEAD
+    /// is removed once committed.
+    Revert,
 }
 
 fn pending_operation(repo: &git2::Repository) -> Result<PendingOperation, GitError> {
@@ -159,19 +166,65 @@ fn pending_operation(repo: &git2::Repository) -> Result<PendingOperation, GitErr
         git2::RepositoryState::Merge => {
             PendingOperation::Merge(crate::git::repository::merge_head_oids(repo)?)
         }
-        git2::RepositoryState::CherryPick | git2::RepositoryState::Revert => {
-            PendingOperation::SingleParent
+        git2::RepositoryState::CherryPick | git2::RepositoryState::CherryPickSequence => {
+            PendingOperation::CherryPick
         }
-        // TODO: CherryPickSequence / RevertSequence (multi-commit sequencer runs)
-        // and rebases keep a sequencer directory that `cleanup_state` would
-        // discard along with the remaining steps, so they are committed as
-        // plain commits and the sequence is continued with git itself.
+        git2::RepositoryState::Revert | git2::RepositoryState::RevertSequence => {
+            PendingOperation::Revert
+        }
+        // Rebases keep their own state directory and are driven by git
+        // itself, so a commit made during one is a plain commit.
         _ => PendingOperation::None,
     })
 }
 
+/// Remove a file under `.git/`, treating "already gone" as success.
+fn remove_state_file(repo: &git2::Repository, name: &str) -> Result<(), GitError> {
+    match std::fs::remove_file(repo.path().join(name)) {
+        Ok(()) => Ok(()),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(GitError::Internal(format!("could not remove .git/{name}: {e}"))),
+    }
+}
+
+/// Whether the sequencer's todo list has no step left after the current one,
+/// i.e. the commit just made was the last pick/revert of the sequence.
+///
+/// Mirrors git's `have_finished_the_last_pick`: `.git/sequencer/todo` starts
+/// with the step in progress, so a single-line file means nothing follows.
+/// A missing todo (single `git cherry-pick x`, no sequencer) is not "finished"
+/// here because there is nothing to remove.
+fn sequencer_finished(repo: &git2::Repository) -> bool {
+    match std::fs::read_to_string(repo.path().join("sequencer").join("todo")) {
+        Ok(todo) => match todo.find('\n') {
+            None => true,
+            Some(eol) => todo[eol + 1..].is_empty(),
+        },
+        Err(_) => false,
+    }
+}
+
+/// Post-commit cleanup for a cherry-pick or revert, as `git commit` does it:
+/// drop the `*_HEAD` marker and MERGE_MSG only, leaving `.git/sequencer` in
+/// place so `git cherry-pick --continue` / `git revert --continue` can carry
+/// on with the remaining steps. Once the last step is committed the sequencer
+/// directory is removed too, otherwise git would refuse to start a new
+/// cherry-pick ("a cherry-pick or revert is already in progress").
+fn finish_sequencer_step(repo: &git2::Repository, head_file: &str) -> Result<(), GitError> {
+    remove_state_file(repo, head_file)?;
+    remove_state_file(repo, "MERGE_MSG")?;
+    remove_state_file(repo, "AUTO_MERGE")?;
+    if sequencer_finished(repo) {
+        let sequencer = repo.path().join("sequencer");
+        std::fs::remove_dir_all(&sequencer).map_err(|e| {
+            GitError::Internal(format!("could not remove .git/sequencer: {e}"))
+        })?;
+    }
+    Ok(())
+}
+
 /// Paths that still have conflict entries in the index.
-fn conflicted_paths(index: &git2::Index) -> Result<Vec<String>, GitError> {
+pub(crate) fn conflicted_paths(index: &git2::Index) -> Result<Vec<String>, GitError> {
     let mut paths = Vec::new();
     for conflict in index.conflicts()?.flatten() {
         let entry = conflict.our.or(conflict.their).or(conflict.ancestor);
@@ -283,10 +336,15 @@ pub(crate) fn create_commit_in_repo(
         }
     };
 
-    // The operation is now recorded in the commit: drop MERGE_HEAD / MERGE_MSG /
-    // CHERRY_PICK_HEAD / REVERT_HEAD so git no longer reports it in progress.
-    if pending != PendingOperation::None {
-        repo.cleanup_state()?;
+    // The operation is now recorded in the commit: drop its state files so git
+    // no longer reports it in progress. A cherry-pick/revert must NOT go
+    // through `cleanup_state`, which would also wipe `.git/sequencer` and with
+    // it the remaining steps of a multi-commit sequence.
+    match pending {
+        PendingOperation::None => {}
+        PendingOperation::Merge(_) => repo.cleanup_state()?,
+        PendingOperation::CherryPick => finish_sequencer_step(repo, "CHERRY_PICK_HEAD")?,
+        PendingOperation::Revert => finish_sequencer_step(repo, "REVERT_HEAD")?,
     }
 
     Ok(CommitInfo {
@@ -451,5 +509,162 @@ mod tests {
         assert_eq!(commit.parent_ids().collect::<Vec<_>>(), vec![head_before]);
         assert_eq!(repo.state(), git2::RepositoryState::Clean);
         assert!(!repo.path().join("CHERRY_PICK_HEAD").exists());
+        assert!(!repo.path().join("MERGE_MSG").exists());
+    }
+
+    /// Two commits on `topic` to pick/revert; returns their oids in order.
+    fn two_topic_commits(repo: &git2::Repository) -> (git2::Oid, git2::Oid) {
+        create_and_checkout(repo, "topic");
+        let first = commit_file(repo, "one.txt", "one\n", "first pick");
+        let second = commit_file(repo, "two.txt", "two\n", "second pick");
+        checkout(repo, "main");
+        (first, second)
+    }
+
+    /// Lay down the `.git/sequencer` directory git creates for a multi-commit
+    /// `git cherry-pick a..b` / `git revert a..b`, with `todo` listing the
+    /// step in progress first, exactly as git's `save_todo` writes it.
+    fn write_sequencer(repo: &git2::Repository, action: &str, steps: &[git2::Oid]) {
+        let dir = repo.path().join("sequencer");
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("head"), format!("{}\n", head_oid(repo))).unwrap();
+        let todo: String = steps
+            .iter()
+            .map(|oid| format!("{action} {oid:.7} subject\n"))
+            .collect();
+        std::fs::write(dir.join("todo"), todo).unwrap();
+    }
+
+    #[test]
+    fn commit_during_cherry_pick_sequence_keeps_sequencer_for_continue() {
+        let (_dir, repo) = init_repo();
+        let (first, second) = two_topic_commits(&repo);
+        let head_before = head_oid(&repo);
+
+        // `git cherry-pick topic~1..topic` stopped on the first step.
+        repo.cherrypick(&repo.find_commit(first).unwrap(), None).unwrap();
+        write_sequencer(&repo, "pick", &[first, second]);
+        assert_eq!(repo.state(), git2::RepositoryState::CherryPickSequence);
+        assert!(repo.path().join("MERGE_MSG").exists());
+
+        let info = create_commit_in_repo(&repo, "first pick", false).unwrap();
+
+        let commit = find_commit(&repo, &info);
+        assert_eq!(commit.parent_ids().collect::<Vec<_>>(), vec![head_before]);
+        assert!(!repo.path().join("CHERRY_PICK_HEAD").exists());
+        assert!(!repo.path().join("MERGE_MSG").exists());
+        // The remaining step is still there for `git cherry-pick --continue`.
+        assert!(repo.path().join("sequencer").join("todo").exists());
+        assert!(repo.path().join("sequencer").join("head").exists());
+        // Without CHERRY_PICK_HEAD libgit2 no longer reports a pick in progress.
+        assert_eq!(repo.state(), git2::RepositoryState::Clean);
+    }
+
+    #[test]
+    fn commit_of_last_cherry_pick_in_sequence_removes_sequencer_like_git() {
+        let (_dir, repo) = init_repo();
+        let (_first, second) = two_topic_commits(&repo);
+
+        // Only the last step is left in todo.
+        repo.cherrypick(&repo.find_commit(second).unwrap(), None).unwrap();
+        write_sequencer(&repo, "pick", &[second]);
+        assert_eq!(repo.state(), git2::RepositoryState::CherryPickSequence);
+
+        create_commit_in_repo(&repo, "second pick", false).unwrap();
+
+        assert!(!repo.path().join("CHERRY_PICK_HEAD").exists());
+        assert!(!repo.path().join("sequencer").exists());
+        assert_eq!(repo.state(), git2::RepositoryState::Clean);
+    }
+
+    #[test]
+    fn commit_during_revert_sequence_keeps_sequencer_for_continue() {
+        let (_dir, repo) = init_repo();
+        let first = commit_file(&repo, "one.txt", "one\n", "first");
+        let second = commit_file(&repo, "two.txt", "two\n", "second");
+        let head_before = head_oid(&repo);
+
+        // `git revert HEAD~2..HEAD` reverts `second` first, then `first`.
+        repo.revert(&repo.find_commit(second).unwrap(), None).unwrap();
+        write_sequencer(&repo, "revert", &[second, first]);
+        assert_eq!(repo.state(), git2::RepositoryState::RevertSequence);
+
+        let info = create_commit_in_repo(&repo, "Revert \"second\"", false).unwrap();
+
+        let commit = find_commit(&repo, &info);
+        assert_eq!(commit.parent_ids().collect::<Vec<_>>(), vec![head_before]);
+        assert!(!repo.path().join("REVERT_HEAD").exists());
+        assert!(!repo.path().join("MERGE_MSG").exists());
+        assert!(repo.path().join("sequencer").join("todo").exists());
+        assert_eq!(repo.state(), git2::RepositoryState::Clean);
+        assert!(!repo.workdir().unwrap().join("two.txt").exists());
+    }
+
+    /// Run the real `git` binary in the repo's working tree, isolated from the
+    /// user's global config. Returns `None` when git is not installed.
+    fn real_git(repo: &git2::Repository, args: &[&str]) -> Option<std::process::Output> {
+        std::process::Command::new("git")
+            .args(args)
+            .current_dir(repo.workdir().unwrap())
+            .env("GIT_CONFIG_GLOBAL", "/dev/null")
+            .env("GIT_CONFIG_NOSYSTEM", "1")
+            .env("GIT_EDITOR", "true")
+            .output()
+            .ok()
+    }
+
+    #[test]
+    fn real_git_cherry_pick_continue_resumes_after_app_commit() {
+        // End-to-end: `git cherry-pick a..b` stops on a conflict, the user
+        // resolves and commits in the app, then `git cherry-pick --continue`
+        // must pick up the remaining commit.
+        let (_dir, repo) = init_repo();
+        commit_file(&repo, "shared.txt", "base\n", "base");
+        create_and_checkout(&repo, "topic");
+        commit_file(&repo, "shared.txt", "topic\n", "first pick");
+        commit_file(&repo, "two.txt", "two\n", "second pick");
+        checkout(&repo, "main");
+        commit_file(&repo, "shared.txt", "main\n", "main edit");
+
+        let Some(pick) = real_git(&repo, &["cherry-pick", "main..topic"]) else {
+            eprintln!("git not installed, skipping");
+            return;
+        };
+        assert!(!pick.status.success(), "first pick should conflict");
+        assert_eq!(repo.state(), git2::RepositoryState::CherryPickSequence);
+
+        write_file(&repo, "shared.txt", "resolved\n");
+        stage_file(&repo, "shared.txt");
+        create_commit_in_repo(&repo, "first pick (resolved)", false).unwrap();
+        assert!(repo.path().join("sequencer").exists());
+
+        let cont = real_git(&repo, &["cherry-pick", "--continue"]).unwrap();
+        assert!(
+            cont.status.success(),
+            "continue failed: {}",
+            String::from_utf8_lossy(&cont.stderr)
+        );
+        let head = repo.head().unwrap().peel_to_commit().unwrap();
+        assert_eq!(head.message().unwrap().trim(), "second pick");
+        assert!(repo.workdir().unwrap().join("two.txt").exists());
+        assert!(!repo.path().join("sequencer").exists());
+        assert_eq!(repo.state(), git2::RepositoryState::Clean);
+    }
+
+    #[test]
+    fn sequencer_finished_only_when_todo_has_a_single_step() {
+        let (_dir, repo) = init_repo();
+        assert!(!sequencer_finished(&repo), "no sequencer at all");
+
+        let dir = repo.path().join("sequencer");
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("todo"), "pick aaaaaaa one\npick bbbbbbb two\n").unwrap();
+        assert!(!sequencer_finished(&repo));
+
+        std::fs::write(dir.join("todo"), "pick bbbbbbb two\n").unwrap();
+        assert!(sequencer_finished(&repo));
+
+        std::fs::write(dir.join("todo"), "pick bbbbbbb two").unwrap();
+        assert!(sequencer_finished(&repo));
     }
 }

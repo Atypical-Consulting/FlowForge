@@ -52,9 +52,9 @@ export function gitflowErr(error: GitflowError): Result<never, GitflowError> {
 
 // Factory functions
 export function createRepoStatus(overrides?: Partial<RepoStatus>): RepoStatus {
-  // Built as a separate object (not an inline literal) so the merge fields
-  // type-check both before and after `src/bindings.ts` is regenerated with
-  // `mergeInProgress` / `mergeHeadBranch` / `mergeMessage`.
+  // Built as a separate object (not an inline literal) so the merge /
+  // cherry-pick / revert fields type-check both before and after
+  // `src/bindings.ts` is regenerated with them.
   const base = {
     branchName: "main",
     isDirty: false,
@@ -63,6 +63,9 @@ export function createRepoStatus(overrides?: Partial<RepoStatus>): RepoStatus {
     mergeInProgress: false,
     mergeHeadBranch: null,
     mergeMessage: null,
+    cherryPickInProgress: false,
+    revertInProgress: false,
+    sequencerHead: null,
   };
   return { ...base, ...overrides };
 }
