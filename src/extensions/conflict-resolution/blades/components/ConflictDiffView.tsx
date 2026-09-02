@@ -58,9 +58,15 @@ export function ConflictDiffView({
     [oursContent, theirsContent],
   );
 
+  // The parent is a resizable Panel (a flex *item*, not a flex container), so
+  // `flex-1` alone gives this wrapper no height and Monaco lays out into 0px.
+  // `h-full` makes the panel's height definite for the editor below.
   return (
-    <div className="flex flex-col flex-1 min-h-0">
-      <div className="flex border-b border-ctp-surface0 text-xs font-mono">
+    <div
+      className="flex flex-col h-full min-h-0"
+      data-testid="conflict-diff-view"
+    >
+      <div className="flex border-b border-ctp-surface0 text-xs font-mono shrink-0">
         <div className="flex-1 px-3 py-1.5 text-ctp-blue font-semibold">
           {oursName} (Ours)
         </div>
@@ -68,7 +74,10 @@ export function ConflictDiffView({
           {theirsName} (Theirs)
         </div>
       </div>
-      <div className="flex-1 min-h-0 overflow-hidden">
+      <div
+        className="flex-1 min-h-0 h-full overflow-hidden"
+        data-testid="conflict-diff-editor-container"
+      >
         <DiffEditor
           original={content.original}
           modified={content.modified}

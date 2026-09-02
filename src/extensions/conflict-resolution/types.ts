@@ -21,6 +21,11 @@ export interface UndoEntry {
 
 export interface ConflictFile {
   path: string;
+  /**
+   * False until `openConflictFile` has fetched ours/theirs/base from the
+   * backend. A placeholder from the file list has empty contents and no hunks.
+   */
+  loaded: boolean;
   status: FileResolutionStatus;
   hunks: ConflictHunk[];
   oursFullContent: string;

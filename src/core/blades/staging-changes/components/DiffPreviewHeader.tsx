@@ -1,4 +1,9 @@
-import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
+import {
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  Maximize2,
+} from "lucide-react";
 import { FileTypeIcon } from "../../../components/icons/FileTypeIcon";
 
 interface DiffPreviewHeaderProps {
@@ -8,6 +13,10 @@ interface DiffPreviewHeaderProps {
   onNext?: () => void;
   hasPrev?: boolean;
   hasNext?: boolean;
+  /** The file has unresolved merge conflicts (the diff shows raw markers). */
+  isConflicted?: boolean;
+  /** Opens the conflict-resolution blade for this file. */
+  onOpenConflictResolver?: () => void;
 }
 
 export function DiffPreviewHeader({
@@ -17,6 +26,8 @@ export function DiffPreviewHeader({
   onNext,
   hasPrev,
   hasNext,
+  isConflicted = false,
+  onOpenConflictResolver,
 }: DiffPreviewHeaderProps) {
   const lastSlash = filePath.lastIndexOf("/");
   const dir = lastSlash >= 0 ? filePath.slice(0, lastSlash + 1) : "";
@@ -29,6 +40,18 @@ export function DiffPreviewHeader({
         {dir && <span className="text-ctp-overlay1">{dir}</span>}
         <span className="font-semibold text-ctp-text">{filename}</span>
       </span>
+      {isConflicted && onOpenConflictResolver && (
+        <button
+          type="button"
+          onClick={onOpenConflictResolver}
+          className="flex items-center gap-1.5 px-2 py-0.5 text-xs rounded border border-ctp-red/40 bg-ctp-red/10 text-ctp-red hover:bg-ctp-red/20 transition-colors shrink-0"
+          title="Resolve this file's merge conflict side by side"
+          aria-label="Open conflict resolver"
+        >
+          <AlertTriangle className="w-3.5 h-3.5" />
+          Open conflict resolver
+        </button>
+      )}
       {onPrev && (
         <button
           type="button"

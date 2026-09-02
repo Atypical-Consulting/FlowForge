@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { getErrorMessage } from "@/core/lib/errors";
+import { invalidateRepositoryQueries } from "@/core/lib/repositoryRefresh";
 import { registerStoreForReset } from "@/framework/stores/registry";
 import { toast } from "@/framework/stores/toast";
 import { commands } from "../../bindings";
@@ -18,13 +20,55 @@ function deriveStatus(hunks: ConflictHunk[]): FileResolutionStatus {
   return "partially-resolved";
 }
 
+function createPlaceholder(path: string): ConflictFile {
+  return {
+    path,
+    loaded: false,
+    status: "unresolved",
+    hunks: [],
+    oursFullContent: "",
+    theirsFullContent: "",
+    baseFullContent: "",
+    resultContent: "",
+    undoStack: [],
+    oursName: "HEAD",
+    theirsName: "MERGE_HEAD",
+  };
+}
+
+function samePaths(files: Map<string, ConflictFile>, paths: string[]): boolean {
+  if (files.size !== paths.length) return false;
+  let i = 0;
+  for (const key of files.keys()) {
+    if (key !== paths[i++]) return false;
+  }
+  return true;
+}
+
+function unknownErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return String(error ?? "Unknown error");
+}
+
 interface ConflictStore {
   files: Map<string, ConflictFile>;
   activeFilePath: string | null;
+  /** Path whose ours/theirs content is currently being fetched. */
+  loadingPath: string | null;
 
   // Actions
-  loadConflictFiles: () => Promise<void>;
-  openConflictFile: (path: string) => Promise<void>;
+  /**
+   * Refresh the conflicted-file list from the index. Resolves with the list
+   * of conflicted paths (never undefined, so it can back a TanStack query).
+   * On backend failure the current list is kept and returned.
+   */
+  loadConflictFiles: () => Promise<string[]>;
+  /**
+   * Make `path` the active file and fetch its ours/theirs/base content unless
+   * it is already loaded. Re-selecting a loaded file never discards the
+   * user's resolution progress. Resolves with the file, or null on failure.
+   */
+  openConflictFile: (path: string) => Promise<ConflictFile | null>;
   resolveHunk: (
     filePath: string,
     hunkId: string,
@@ -33,6 +77,10 @@ interface ConflictStore {
   undoHunkResolution: (filePath: string) => void;
   updateResultContent: (filePath: string, content: string) => void;
   resetFile: (filePath: string) => void;
+  /**
+   * Write the result content to the working tree and stage the file. Resolves
+   * with true on success; every failure is reported with a toast.
+   */
   markFileResolved: (filePath: string) => Promise<boolean>;
   getActiveFile: () => ConflictFile | undefined;
 
@@ -44,47 +92,74 @@ interface ConflictStore {
 export const useConflictStore = create<ConflictStore>()((set, get) => ({
   files: new Map(),
   activeFilePath: null,
+  loadingPath: null,
 
   loadConflictFiles: async () => {
-    const result = await commands.listConflictFiles();
+    let result: Awaited<ReturnType<typeof commands.listConflictFiles>>;
+    try {
+      result = await commands.listConflictFiles();
+    } catch (error) {
+      console.error("Failed to list conflict files:", error);
+      return Array.from(get().files.keys());
+    }
     if (result.status === "error") {
       console.error("Failed to list conflict files:", result.error);
-      return;
+      return Array.from(get().files.keys());
     }
 
     const paths = result.data;
-    const files = new Map<string, ConflictFile>();
+    const current = get().files;
 
+    // Same list as before: keep the same Map instance so subscribers (blade,
+    // toolbar badge) are not re-rendered on every poll.
+    if (samePaths(current, paths)) return paths;
+
+    const files = new Map<string, ConflictFile>();
     for (const path of paths) {
-      // Preserve existing file data if already loaded
-      const existing = get().files.get(path);
-      if (existing) {
-        files.set(path, existing);
-      } else {
-        files.set(path, {
-          path,
-          status: "unresolved",
-          hunks: [],
-          oursFullContent: "",
-          theirsFullContent: "",
-          baseFullContent: "",
-          resultContent: "",
-          undoStack: [],
-          oursName: "HEAD",
-          theirsName: "MERGE_HEAD",
-        });
-      }
+      // Preserve existing file data (content, resolutions) if already loaded
+      files.set(path, current.get(path) ?? createPlaceholder(path));
     }
 
-    set({ files });
+    const { activeFilePath } = get();
+    set({
+      files,
+      activeFilePath:
+        activeFilePath && files.has(activeFilePath) ? activeFilePath : null,
+    });
+    return paths;
   },
 
   openConflictFile: async (path: string) => {
-    const result = await commands.getConflictContent(path);
+    const existing = get().files.get(path);
+    if (existing?.loaded) {
+      if (get().activeFilePath !== path) set({ activeFilePath: path });
+      return existing;
+    }
+
+    set({ activeFilePath: path, loadingPath: path });
+
+    const finishLoading = () => {
+      if (get().loadingPath === path) set({ loadingPath: null });
+    };
+
+    let result: Awaited<ReturnType<typeof commands.getConflictContent>>;
+    try {
+      result = await commands.getConflictContent(path);
+    } catch (error) {
+      finishLoading();
+      console.error("Failed to get conflict content:", error);
+      toast.error(
+        `Failed to load conflict ${path}: ${unknownErrorMessage(error)}`,
+      );
+      return null;
+    }
     if (result.status === "error") {
+      finishLoading();
       console.error("Failed to get conflict content:", result.error);
-      toast.error(`Failed to load conflict: ${path}`);
-      return;
+      toast.error(
+        `Failed to load conflict ${path}: ${getErrorMessage(result.error)}`,
+      );
+      return null;
     }
 
     const data = result.data;
@@ -92,18 +167,9 @@ export const useConflictStore = create<ConflictStore>()((set, get) => ({
     const theirsContent = data.theirs ?? "";
     const baseContent = data.base ?? "";
 
-    // Read working directory file to parse conflict markers
-    // The working directory file has the markers; use ours content as initial result
-    const files = new Map(get().files);
-    const existing = files.get(path);
-
-    // Parse conflict markers from a synthetic marker format
-    // since we have clean ours/theirs from git2, we construct hunks from the diff
-    // For now, we create a single hunk representing the whole-file conflict
-    // The parser will be used if we have marker-containing content
+    // git2 gives us the clean ours/theirs blobs (index stages 2 and 3), not
+    // the marker-laden working tree file, so the whole file is one hunk.
     const hunks: ConflictHunk[] = [];
-
-    // If the content differs, create a hunk
     if (oursContent !== theirsContent) {
       hunks.push({
         id: "hunk-0",
@@ -120,19 +186,25 @@ export const useConflictStore = create<ConflictStore>()((set, get) => ({
 
     const file: ConflictFile = {
       path,
+      loaded: true,
       status: deriveStatus(hunks),
       hunks,
       oursFullContent: oursContent,
       theirsFullContent: theirsContent,
       baseFullContent: baseContent,
       resultContent: oursContent, // Start with ours (VS Code convention)
-      undoStack: existing?.undoStack ?? [],
+      undoStack: [],
       oursName: data.oursName,
       theirsName: data.theirsName,
     };
 
+    const files = new Map(get().files);
     files.set(path, file);
-    set({ files, activeFilePath: path });
+    set({
+      files,
+      loadingPath: get().loadingPath === path ? null : get().loadingPath,
+    });
+    return file;
   },
 
   resolveHunk: (filePath: string, hunkId: string, choice: ResolutionChoice) => {
@@ -252,15 +324,30 @@ export const useConflictStore = create<ConflictStore>()((set, get) => ({
 
   markFileResolved: async (filePath: string) => {
     const file = get().files.get(filePath);
-    if (!file) return false;
+    if (!file) {
+      toast.error(`Cannot resolve ${filePath}: not in the conflict list`);
+      return false;
+    }
+    if (!file.loaded) {
+      toast.error(`Cannot resolve ${filePath}: conflict content not loaded`);
+      return false;
+    }
 
-    const result = await commands.resolveConflictFile(
-      filePath,
-      file.resultContent,
-    );
+    let result: Awaited<ReturnType<typeof commands.resolveConflictFile>>;
+    try {
+      result = await commands.resolveConflictFile(filePath, file.resultContent);
+    } catch (error) {
+      console.error("Failed to resolve conflict:", error);
+      toast.error(
+        `Failed to resolve ${filePath}: ${unknownErrorMessage(error)}`,
+      );
+      return false;
+    }
     if (result.status === "error") {
-      toast.error(`Failed to resolve: ${filePath}`);
       console.error("Failed to resolve conflict:", result.error);
+      toast.error(
+        `Failed to resolve ${filePath}: ${getErrorMessage(result.error)}`,
+      );
       return false;
     }
 
@@ -273,7 +360,10 @@ export const useConflictStore = create<ConflictStore>()((set, get) => ({
       get().activeFilePath === filePath ? null : get().activeFilePath;
 
     set({ files, activeFilePath });
-    toast.success(`Resolved: ${filePath}`);
+    // The file left the index conflict set and is now staged: refresh the
+    // staging blade, repo status and the conflict list query.
+    invalidateRepositoryQueries();
+    toast.success(`${filePath} resolved and staged`);
     return true;
   },
 
@@ -288,7 +378,7 @@ export const useConflictStore = create<ConflictStore>()((set, get) => ({
 
   isFileFullyResolved: (filePath: string) => {
     const file = get().files.get(filePath);
-    if (!file) return false;
+    if (!file || !file.loaded) return false;
     return file.hunks.every((h) => h.resolution !== null);
   },
 }));

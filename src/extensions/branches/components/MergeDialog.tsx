@@ -1,4 +1,4 @@
-import { AlertTriangle, Check, GitMerge } from "lucide-react";
+import { AlertTriangle, Check, GitMerge, Wrench } from "lucide-react";
 import { Button } from "@/core/components/ui/button";
 import {
   Dialog,
@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/core/components/ui/dialog";
+import { openBlade } from "@/framework/layout/bladeOpener";
 import type { MergeResult } from "../../../bindings";
 import { useMergeWorkflow } from "../../../core/hooks/useMergeWorkflow";
 
@@ -28,6 +29,11 @@ export function MergeDialog({
 
   const handleAbort = () => {
     abort();
+    onClose();
+  };
+
+  const handleOpenResolver = () => {
+    openBlade("conflict-resolution", {});
     onClose();
   };
 
@@ -100,16 +106,27 @@ export function MergeDialog({
               </ul>
             </div>
             <p className="text-sm text-ctp-overlay0">
-              Resolve conflicts manually, then stage and commit.
+              Resolve the conflicts in the conflict resolver (or manually, then
+              stage), then commit.
             </p>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleAbort}
-              disabled={isAborting}
-            >
-              {isAborting ? "Aborting..." : "Abort Merge"}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                onClick={handleOpenResolver}
+                disabled={isAborting}
+              >
+                <Wrench className="w-4 h-4" />
+                Open Conflict Resolver
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleAbort}
+                disabled={isAborting}
+              >
+                {isAborting ? "Aborting..." : "Abort Merge"}
+              </Button>
+            </div>
           </div>
         )}
 
