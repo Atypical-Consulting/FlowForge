@@ -13,6 +13,9 @@ export type ContextMenuLocation =
   | "diff-hunk"
   | "blade-tab";
 
+/** A callback the row that opened the menu already owns (checkout, drop, ...). */
+export type ContextMenuAction = () => void | Promise<void>;
+
 export interface ContextMenuContext {
   location: ContextMenuLocation;
   branchName?: string;
@@ -20,6 +23,17 @@ export interface ContextMenuContext {
   commitOid?: string;
   stashIndex?: number;
   tagName?: string;
+  /** True when the row is the currently checked-out branch. */
+  isHead?: boolean;
+  /** True when the branch is pinned in Quick Access. */
+  isPinned?: boolean;
+  /**
+   * Handlers supplied by the row that opened the menu, keyed by action name
+   * (e.g. "checkout", "drop"). Lets menu items reuse the exact same callbacks
+   * the row's hover buttons invoke -- confirmation dialogs included -- instead
+   * of re-implementing git logic inside the extension.
+   */
+  actions?: Record<string, ContextMenuAction | undefined>;
 }
 
 export interface ContextMenuItem {

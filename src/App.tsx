@@ -25,6 +25,7 @@ import { ContextMenuPortal } from "./core/components/ui/ContextMenu";
 import { StatusBar } from "./core/components/ui/StatusBar";
 import { ToastContainer } from "./core/components/ui/ToastContainer";
 import { useKeyboardShortcuts } from "./core/hooks/useKeyboardShortcuts";
+import { installNativeContextMenuGuard } from "./core/lib/nativeContextMenu";
 import { modKeyLabel } from "./core/lib/platform";
 import {
   containsGitDirPath,
@@ -245,6 +246,11 @@ function App() {
 
   // Register global keyboard shortcuts
   useKeyboardShortcuts();
+
+  // Suppress the WebView's native context menu app-wide (its "Reload" entry
+  // reloads the SPA and loses state). See nativeContextMenu.ts for the
+  // editable-element and Shift+RightClick (dev only) escape hatches.
+  useEffect(() => installNativeContextMenuGuard(), []);
 
   // Initialize theme, settings, navigation, and branch metadata on mount
   useEffect(() => {

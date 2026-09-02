@@ -121,6 +121,16 @@ export function BranchItem({
           .showMenu({ x: e.clientX, y: e.clientY }, "branch-list", {
             location: "branch-list",
             branchName: branch.name,
+            isHead: branch.isHead,
+            isPinned: branch.isPinned,
+            // Same callbacks the hover buttons use, so menu items go through
+            // the identical confirmation / merge-dialog paths.
+            actions: {
+              checkout: () => handleAction("checkout", onCheckout),
+              merge: () => handleAction("merge", onMerge),
+              delete: () => handleAction("delete", onDelete),
+              togglePin: onTogglePin,
+            },
           });
       }}
     >
