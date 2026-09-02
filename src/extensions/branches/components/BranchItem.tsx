@@ -6,6 +6,7 @@ import { cn } from "@/framework/lib/utils";
 import type { AheadBehind } from "../../../bindings";
 import { commands } from "../../../bindings";
 import type { EnrichedBranch } from "../../../core/lib/branchClassifier";
+import { BranchName } from "./BranchName";
 import { BranchTypeBadge } from "./BranchTypeBadge";
 
 function AheadBehindBadge({
@@ -144,19 +145,33 @@ export function BranchItem({
           </button>
         )}
         <GitBranch className="w-3.5 h-3.5 shrink-0 text-ctp-overlay1" />
-        <span className="truncate text-sm font-medium">{branch.name}</span>
+        <BranchName name={branch.name} className="text-sm font-medium" />
         {branch.isHead && (
           <Check className="w-3.5 h-3.5 shrink-0 text-ctp-green" />
         )}
         {branch.isMerged && !branch.isHead && (
-          <span className="text-xs text-ctp-overlay0 px-1 py-0.5 bg-ctp-surface0 rounded">
+          <span
+            className="shrink-0 text-[10px] leading-none text-ctp-overlay0 px-1 py-0.5 bg-ctp-surface0 rounded"
+            title="Merged into the current branch"
+            data-testid="branch-merged-badge"
+          >
             merged
           </span>
         )}
-        <BranchTypeBadge branchType={branch.branchType} />
+        <BranchTypeBadge branchType={branch.branchType} variant="dot" />
         <AheadBehindBadge branchName={branch.name} isRemote={branch.isRemote} />
       </div>
-      <div className="flex items-center gap-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity">
+      {/* Hover actions collapse to zero width when idle so they do not steal
+          room from the branch name; they expand on hover or keyboard focus. */}
+      <div
+        className={cn(
+          "flex items-center gap-0.5 shrink-0 overflow-hidden transition-opacity",
+          "max-w-0 opacity-0",
+          "group-hover/item:max-w-none group-hover/item:opacity-100",
+          "group-focus-within/item:max-w-none group-focus-within/item:opacity-100",
+        )}
+        data-testid="branch-actions"
+      >
         {!branch.isHead && (
           <>
             <button
