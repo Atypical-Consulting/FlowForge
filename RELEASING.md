@@ -6,28 +6,39 @@ Gatekeeper as *"FlowForge.app is damaged and can't be opened."*
 
 ## How releases work
 
-- Releases are built by [`.github/workflows/release.yml`](.github/workflows/release.yml),
-  triggered when a tag matching `v*` is pushed.
-- The workflow builds installers for **macOS (Apple Silicon)**, **Windows**, and
-  **Linux** via [`tauri-action`](https://github.com/tauri-apps/tauri-action) and
-  publishes a GitHub Release with the binaries attached.
-- Releases build from `main`, so changes to `release.yml` (and the version bump)
-  must be merged into `main` **before** tagging.
+Releases are automated by [release-please](https://github.com/googleapis/release-please)
+through [`.github/workflows/release-please.yml`](.github/workflows/release-please.yml):
+
+- Every push to `main` runs release-please, which derives the next semantic version from the
+  [Conventional Commits](https://www.conventionalcommits.org/) since the last tag and keeps a
+  **release PR** (`chore(main): release X.Y.Z`) up to date. That PR bumps the version in
+  `package.json`, `package-lock.json`, `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json`
+  (see [`release-please-config.json`](release-please-config.json)) and prepends the new section
+  to `CHANGELOG.md`.
+- Merging the release PR tags `vX.Y.Z` and creates the GitHub Release. In the same workflow run
+  the `build` matrix then builds the installers for **macOS (Apple Silicon)**, **Windows** and
+  **Linux (x86_64 and arm64)** with [`tauri-action`](https://github.com/tauri-apps/tauri-action)
+  and attaches them to that release.
+- PRs are squash-merged, so the **PR title** is the commit release-please reads: `fix:` bumps the
+  patch version, `feat:` the minor one, `feat!:` (or a `BREAKING CHANGE:` footer) the major one.
+  `chore:`, `docs:`, `ci:`, … do not trigger a release on their own.
 
 ### Cutting a release
 
 ```bash
-# 1. Make sure main has the changes you want to release (merge dev -> main).
-# 2. Bump the version in all manifests to e.g. 1.9.1:
-#    - package.json, package-lock.json
-#    - src-tauri/Cargo.toml, Cargo.lock (flowforge package)
-#    - src-tauri/tauri.conf.json
-# 3. Commit the bump, then tag and push:
-git tag -a v1.9.1 -m "FlowForge v1.9.1"
-git push origin v1.9.1
+# 1. Merge dev -> main (release-please only watches main).
+git switch main && git merge --ff-only dev && git push origin main
+# 2. Wait for the "release-please" workflow to open/refresh the release PR against main,
+#    review the CHANGELOG it proposes, then merge it. Nothing to bump or tag by hand.
 ```
 
-Pushing the tag triggers the release workflow.
+Merging the release PR triggers the tag, the GitHub Release and the installer builds. If the
+release PR is missing after a push (token or permission hiccup), re-run the workflow from the
+Actions tab (`workflow_dispatch`) — it is idempotent.
+
+> `Cargo.lock` is not rewritten by release-please (cargo strips its annotation), so the
+> `flowforge` entry lags `Cargo.toml` by one version on the release commit. The build job
+> refreshes it with `cargo update -p flowforge`; locally the next `cargo build` does the same.
 
 ---
 
@@ -37,7 +48,7 @@ Without signing, macOS quarantines downloaded builds and shows the misleading
 *"damaged and can't be opened"* dialog. The fix is to sign the app with an
 **Apple Developer ID Application** certificate and have Apple **notarize** it.
 
-`release.yml` already passes the required environment variables to `tauri-action`.
+`release-please.yml` already passes the required environment variables to `tauri-action`.
 When the GitHub secrets below are **absent**, builds are simply unsigned (current
 behavior). When they are **present**, builds are automatically signed and notarized.
 
@@ -94,7 +105,7 @@ gh secret set KEYCHAIN_PASSWORD
 
 ### Step 5 — Cut a signed release
 
-Merge `dev` → `main`, then tag a new version (e.g. `v1.9.1`) as described above.
+Merge `dev` → `main`, then merge the release PR as described above.
 The macOS build will now be signed and notarized; users can open it normally.
 
 ### Verifying a signed build
@@ -111,7 +122,7 @@ codesign -dvvv /Applications/FlowForge.app
 ### Cleanup once signing is verified
 
 Once a signed release is confirmed working, remove the now-inaccurate Gatekeeper
-workaround note (the `xattr -cr` block) from `release.yml`.
+workaround note (the `xattr -cr` block) from the README and the docs.
 
 ---
 
