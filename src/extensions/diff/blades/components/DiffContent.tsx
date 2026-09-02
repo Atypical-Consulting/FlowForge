@@ -1,6 +1,7 @@
 import { DiffEditor, type DiffOnMount } from "@monaco-editor/react";
 import { useEffect, useMemo, useRef } from "react";
 import { useMonacoTheme } from "@/core/hooks/useMonacoTheme";
+import { prepareDiffContent } from "@/core/lib/diffContent";
 import { MONACO_COMMON_OPTIONS } from "@/core/lib/monacoConfig";
 import type { DiffHunkDetail } from "../../../../bindings";
 import "@/core/lib/monacoTheme";
@@ -67,6 +68,13 @@ export function DiffContent({
   };
 
   const monacoTheme = useMonacoTheme();
+  // Normalize trailing newlines so Monaco's line count matches git's and new
+  // files don't render phantom empty removed/added lines.
+  const content = useMemo(
+    () => prepareDiffContent(original, modified),
+    [original, modified],
+  );
+
   const options = useMemo(
     () => ({
       ...MONACO_COMMON_OPTIONS,
@@ -92,8 +100,8 @@ export function DiffContent({
   if (stagingSource) {
     return (
       <StagingDiffEditor
-        original={original}
-        modified={modified}
+        original={content.original}
+        modified={content.modified}
         language={language}
         inline={inline}
         collapseUnchanged={collapseUnchanged}
@@ -110,8 +118,8 @@ export function DiffContent({
   return (
     <div className="flex-1 min-h-0 h-full overflow-hidden">
       <DiffEditor
-        original={original}
-        modified={modified}
+        original={content.original}
+        modified={content.modified}
         language={language}
         theme={monacoTheme}
         options={options}

@@ -1,6 +1,7 @@
 import { DiffEditor, type DiffOnMount } from "@monaco-editor/react";
 import { useEffect, useMemo, useRef } from "react";
 import { useMonacoTheme } from "../../../../core/hooks/useMonacoTheme";
+import { prepareDiffContent } from "../../../../core/lib/diffContent";
 import { MONACO_COMMON_OPTIONS } from "../../../../core/lib/monacoConfig";
 import "../../../../core/lib/monacoTheme";
 
@@ -51,6 +52,12 @@ export function ConflictDiffView({
     [],
   );
 
+  // Normalize trailing newlines so Monaco doesn't render a phantom empty last line.
+  const content = useMemo(
+    () => prepareDiffContent(oursContent, theirsContent),
+    [oursContent, theirsContent],
+  );
+
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <div className="flex border-b border-ctp-surface0 text-xs font-mono">
@@ -63,8 +70,8 @@ export function ConflictDiffView({
       </div>
       <div className="flex-1 min-h-0 overflow-hidden">
         <DiffEditor
-          original={oursContent}
-          modified={theirsContent}
+          original={content.original}
+          modified={content.modified}
           language={language}
           theme={monacoTheme}
           options={options}
