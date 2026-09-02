@@ -47,6 +47,8 @@ chmod +x FlowForge_1.8.0_amd64.AppImage
 ./FlowForge_1.8.0_amd64.AppImage
 ```
 
+**ARM64 (aarch64):** starting with the release after v1.9.0, Linux `arm64` assets (`.deb`, `.AppImage`, `.rpm`) are also published for aarch64 machines such as Raspberry Pi 5 or Apple Silicon Macs running Asahi Linux. Look for the `arm64` / `aarch64` suffix on the [Releases page](https://github.com/Atypical-Consulting/FlowForge/releases).
+
 ## Prerequisites
 
 - **Git** must be installed and available on your `PATH`.
