@@ -1,5 +1,9 @@
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import {
+  getCommandShortcut,
+  useCommandShortcut,
+} from "../command-palette/useCommandShortcut";
 import { createRegistry } from "../stores/createRegistry";
 
 // --- Types ---
@@ -37,7 +41,18 @@ export interface ToolbarAction {
   group: ToolbarGroup;
   /** Higher = more important = collapses last in overflow */
   priority: number;
-  /** Keyboard shortcut (react-hotkeys-hook format, e.g. "mod+o") */
+  /**
+   * ID of the command this action mirrors (full ID, e.g. "command-palette"
+   * or "ext:sync:push"). When set, the command registry is the single source
+   * of truth for the shortcut hint shown in tooltips, the overflow menu and
+   * Toolbar settings -- see {@link resolveToolbarActionShortcut}.
+   */
+  commandId?: string;
+  /**
+   * Keyboard shortcut hint (react-hotkeys-hook format, e.g. "mod+o").
+   * Only consulted for actions without a `commandId`; prefer linking a
+   * command so the hint cannot drift from the command palette.
+   */
   shortcut?: string;
   /** Visibility condition. Reads store .getState() at eval time (NOT closures) */
   when?: () => boolean;
@@ -87,6 +102,34 @@ export function getGroupedToolbarActions(): Record<
   }
 
   return grouped;
+}
+
+// --- Shortcut hints ---
+
+type ShortcutSource = Pick<ToolbarAction, "commandId" | "shortcut">;
+
+/**
+ * Shortcut hint to display for a toolbar action.
+ *
+ * Actions linked to a command (`commandId`) always show the command's
+ * registered shortcut, even when they also carry a legacy `shortcut` string,
+ * so every surface (menu bar, command palette, toolbar) agrees. Unlinked
+ * actions fall back to their own `shortcut`.
+ */
+export function resolveToolbarActionShortcut(
+  action: ShortcutSource,
+): string | undefined {
+  if (action.commandId) return getCommandShortcut(action.commandId);
+  return action.shortcut;
+}
+
+/** Reactive variant of {@link resolveToolbarActionShortcut}. */
+export function useToolbarActionShortcut(
+  action: ShortcutSource,
+): string | undefined {
+  const commandShortcut = useCommandShortcut(action.commandId);
+  if (action.commandId) return commandShortcut;
+  return action.shortcut;
 }
 
 // NOTE: Toolbar registry is NOT registered for reset — toolbar actions survive repo switches.

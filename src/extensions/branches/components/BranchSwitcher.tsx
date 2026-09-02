@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/framework/lib/utils";
 import type { BranchInfo } from "../../../bindings";
 import {
+  selectCurrentBranchName,
   useGitOpsStore as useBranchStore,
   useGitOpsStore as useRepositoryStore,
 } from "../../../core/stores/domain/git-ops";
@@ -45,7 +46,9 @@ export function BranchSwitcher({ onSelectBranch }: BranchSwitcherProps) {
     getNavRecentBranches: getRecentBranches,
   } = useNavigationStore();
 
-  const currentBranch = status?.branchName ?? "";
+  // Live current branch: HEAD of the loaded branch list, falling back to the
+  // repository status (same source as the sidebar branch list).
+  const currentBranch = useBranchStore(selectCurrentBranchName);
   const isDirty = status?.isDirty ?? false;
   const repoPath = status?.repoPath ?? "";
 

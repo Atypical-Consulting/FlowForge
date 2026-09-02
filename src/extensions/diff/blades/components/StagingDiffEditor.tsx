@@ -1,6 +1,9 @@
 import { DiffEditor, type DiffOnMount } from "@monaco-editor/react";
+import type { editor } from "monaco-editor";
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { WholeFileDiffEditor } from "@/core/components/diff/WholeFileDiffEditor";
 import { useMonacoTheme } from "@/core/hooks/useMonacoTheme";
+import type { DiffContentKind } from "@/core/lib/diffContent";
 import { MONACO_COMMON_OPTIONS } from "@/core/lib/monacoConfig";
 import type { DiffHunkDetail } from "../../../../bindings";
 import "@/core/lib/monacoTheme";
@@ -19,6 +22,8 @@ interface LineSelection {
 interface StagingDiffEditorProps {
   original: string;
   modified: string;
+  /** Added/deleted files are rendered single-sided (see WholeFileDiffEditor). */
+  kind: DiffContentKind;
   language: string;
   inline: boolean;
   collapseUnchanged?: boolean;
@@ -33,6 +38,7 @@ interface StagingDiffEditorProps {
 export function StagingDiffEditor({
   original,
   modified,
+  kind,
   language,
   inline,
   collapseUnchanged,
@@ -43,26 +49,19 @@ export function StagingDiffEditor({
   onToggleHunk,
   lineSelection,
 }: StagingDiffEditorProps) {
-  const editorRef = useRef<Parameters<DiffOnMount>[0] | null>(null);
+  // The editor that shows the "new" side and carries the hunk/line staging
+  // widgets: the modified editor of the DiffEditor for two-sided diffs, or the
+  // single WholeFileDiffEditor for added/deleted files.
+  const modifiedEditorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const modelsRef =
     useRef<ReturnType<Parameters<DiffOnMount>[0]["getModel"]>>(null);
   const viewZoneIdsRef = useRef<string[]>([]);
-  const hunkDecorationRef =
-    useRef<
-      ReturnType<
-        Parameters<DiffOnMount>[0]["getModifiedEditor"]
-      >["createDecorationsCollection"] extends (...args: any) => infer R
-        ? R
-        : null
-    >(null);
-  const lineDecorationRef =
-    useRef<
-      ReturnType<
-        Parameters<DiffOnMount>[0]["getModifiedEditor"]
-      >["createDecorationsCollection"] extends (...args: any) => infer R
-        ? R
-        : null
-    >(null);
+  const hunkDecorationRef = useRef<editor.IEditorDecorationsCollection | null>(
+    null,
+  );
+  const lineDecorationRef = useRef<editor.IEditorDecorationsCollection | null>(
+    null,
+  );
   const announcementRef = useRef<HTMLDivElement>(null);
 
   // Store callbacks in refs so ViewZone DOM nodes always have current values
@@ -119,10 +118,8 @@ export function StagingDiffEditor({
 
   // Build ViewZone DOM nodes and glyph margin decorations
   const updateViewZonesAndDecorations = useCallback(() => {
-    const diffEditor = editorRef.current;
-    if (!diffEditor) return;
-
-    const modifiedEditor = diffEditor.getModifiedEditor();
+    const modifiedEditor = modifiedEditorRef.current;
+    if (!modifiedEditor) return;
 
     // Clear existing ViewZones
     modifiedEditor.changeViewZones((accessor) => {
@@ -280,10 +277,8 @@ export function StagingDiffEditor({
 
   // Update line selection decorations separately for performance
   const updateLineDecorations = useCallback(() => {
-    const diffEditor = editorRef.current;
-    if (!diffEditor || !lineSelection) return;
-
-    const modifiedEditor = diffEditor.getModifiedEditor();
+    const modifiedEditor = modifiedEditorRef.current;
+    if (!modifiedEditor || !lineSelection) return;
     const decorations: Array<{
       range: {
         startLineNumber: number;
@@ -355,10 +350,8 @@ export function StagingDiffEditor({
 
   // Handle glyph margin clicks (both hunk and line)
   useEffect(() => {
-    const diffEditor = editorRef.current;
-    if (!diffEditor) return;
-
-    const modifiedEditor = diffEditor.getModifiedEditor();
+    const modifiedEditor = modifiedEditorRef.current;
+    if (!modifiedEditor) return;
     const disposable = modifiedEditor.onMouseDown((e) => {
       // Monaco mouse target type 3 = GUTTER_GLYPH_MARGIN
       if (e.target.type !== 3) return;
@@ -402,10 +395,8 @@ export function StagingDiffEditor({
 
   // Register keyboard actions on the modified editor
   useEffect(() => {
-    const diffEditor = editorRef.current;
-    if (!diffEditor) return;
-
-    const modifiedEditor = diffEditor.getModifiedEditor();
+    const modifiedEditor = modifiedEditorRef.current;
+    if (!modifiedEditor) return;
     const disposables: Array<{ dispose(): void }> = [];
 
     // ] key: next hunk
@@ -532,12 +523,28 @@ export function StagingDiffEditor({
     };
   }, []);
 
-  const handleMount: DiffOnMount = (editor) => {
-    editorRef.current = editor;
-    modelsRef.current = editor.getModel();
+  const attachModifiedEditor = (codeEditor: editor.IStandaloneCodeEditor) => {
+    modifiedEditorRef.current = codeEditor;
     updateViewZonesAndDecorations();
     updateLineDecorations();
   };
+
+  const handleMount: DiffOnMount = (diffEditor) => {
+    modelsRef.current = diffEditor.getModel();
+    attachModifiedEditor(diffEditor.getModifiedEditor());
+  };
+
+  // Options for the single-sided view of an added/deleted file: same base as
+  // the DiffEditor's modified pane, keeping the glyph margin for hunk/line
+  // staging controls.
+  const wholeFileOptions = useMemo(
+    () => ({
+      ...MONACO_COMMON_OPTIONS,
+      glyphMargin: true,
+      wordWrap: "on" as const,
+    }),
+    [],
+  );
 
   // Dispose models on unmount. keepCurrentOriginalModel/keepCurrentModifiedModel
   // tell @monaco-editor/react to skip model disposal in its own cleanup so the
@@ -551,22 +558,32 @@ export function StagingDiffEditor({
       viewZoneIdsRef.current = [];
       hunkDecorationRef.current = null;
       lineDecorationRef.current = null;
-      editorRef.current = null;
+      modifiedEditorRef.current = null;
     };
   }, []);
 
   return (
     <div className="flex-1 min-h-0 h-full overflow-hidden relative">
-      <DiffEditor
-        original={original}
-        modified={modified}
-        language={language}
-        theme={monacoTheme}
-        options={options}
-        onMount={handleMount}
-        keepCurrentOriginalModel
-        keepCurrentModifiedModel
-      />
+      {kind === "modified" ? (
+        <DiffEditor
+          original={original}
+          modified={modified}
+          language={language}
+          theme={monacoTheme}
+          options={options}
+          onMount={handleMount}
+          keepCurrentOriginalModel
+          keepCurrentModifiedModel
+        />
+      ) : (
+        <WholeFileDiffEditor
+          content={kind === "added" ? modified : original}
+          kind={kind}
+          language={language}
+          options={wholeFileOptions}
+          onMount={attachModifiedEditor}
+        />
+      )}
       {/* Screen reader announcement for staging operations */}
       <div
         ref={announcementRef}

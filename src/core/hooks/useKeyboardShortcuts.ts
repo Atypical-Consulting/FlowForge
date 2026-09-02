@@ -9,6 +9,10 @@ import { getNavigationActor } from "@/framework/layout/navigation/context";
 import { toast } from "@/framework/stores/toast";
 import { commands, type SyncProgress } from "../../bindings";
 import {
+  describeSyncResult,
+  formatSyncException,
+} from "../../extensions/sync/lib/syncMessages";
+import {
   useGitOpsStore as useRepositoryStore,
   useGitOpsStore as useTopologyStore,
 } from "../stores/domain/git-ops";
@@ -17,17 +21,26 @@ import { usePreferencesStore } from "../stores/domain/preferences";
 /**
  * Keyboard shortcuts for common Git operations.
  *
+ * The hints displayed in menus, tooltips and the command palette come from
+ * the `shortcut` declared on each command in the command registry -- keep the
+ * bindings below and those declarations in sync.
+ *
  * Shortcuts:
+ * - Cmd/Ctrl+N: New repository
  * - Cmd/Ctrl+O: Open repository
+ * - Cmd/Ctrl+Shift+O: Clone repository
  * - Cmd/Ctrl+,: Open settings
  * - Cmd/Ctrl+Shift+A: Stage all files
- * - Cmd/Ctrl+K: Open command palette
- * - Cmd/Ctrl+Shift+P: Open command palette
+ * - Cmd/Ctrl+K: Open command palette (the advertised shortcut)
+ * - Cmd/Ctrl+Shift+P: Open command palette (unadvertised VS Code-style alias)
  * - Cmd/Ctrl+Shift+U: Push (Upload)
  * - Cmd/Ctrl+Shift+L: Pull (L for "pull Latest")
  * - Cmd/Ctrl+Shift+F: Fetch
  * - Cmd/Ctrl+Shift+M: Toggle amend commit
  * - Cmd/Ctrl+\: Toggle sidebar visibility
+ * - Cmd/Ctrl+1 / Cmd/Ctrl+2: Show changes / history
+ * - Cmd/Ctrl+B: Show branches
+ * - Cmd/Ctrl+Shift+N: New branch
  * - Escape: Exit focus mode (if active), else pop blade
  * - Backspace: Pop blade (navigate back)
  */
@@ -53,12 +66,17 @@ export function useKeyboardShortcuts() {
       const channel = new Channel<SyncProgress>();
       return commands.pushToRemote("origin", channel);
     },
-    onSuccess: () => {
-      toast.success("Pushed to origin");
+    onSuccess: (result) => {
+      const outcome = describeSyncResult("push", result, "origin");
+      if (!outcome.ok) {
+        toast.error(outcome.message);
+        return;
+      }
+      toast.success(outcome.message);
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
     },
     onError: (error) => {
-      toast.error(`Push failed: ${String(error)}`, {
+      toast.error(formatSyncException("push", error), {
         label: "Retry",
         onClick: () => pushMutation.mutate(),
       });
@@ -71,13 +89,18 @@ export function useKeyboardShortcuts() {
       const channel = new Channel<SyncProgress>();
       return commands.pullFromRemote("origin", channel);
     },
-    onSuccess: () => {
-      toast.success("Pulled from origin");
+    onSuccess: (result) => {
+      const outcome = describeSyncResult("pull", result, "origin");
+      if (!outcome.ok) {
+        toast.error(outcome.message);
+        return;
+      }
+      toast.success(outcome.message);
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
       queryClient.invalidateQueries({ queryKey: ["stagingStatus"] });
     },
     onError: (error) => {
-      toast.error(`Pull failed: ${String(error)}`, {
+      toast.error(formatSyncException("pull", error), {
         label: "Retry",
         onClick: () => pullMutation.mutate(),
       });
@@ -90,12 +113,17 @@ export function useKeyboardShortcuts() {
       const channel = new Channel<SyncProgress>();
       return commands.fetchFromRemote("origin", channel);
     },
-    onSuccess: () => {
-      toast.success("Fetched from origin");
+    onSuccess: (result) => {
+      const outcome = describeSyncResult("fetch", result, "origin");
+      if (!outcome.ok) {
+        toast.error(outcome.message);
+        return;
+      }
+      toast.success(outcome.message);
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
     },
     onError: (error) => {
-      toast.error(`Fetch failed: ${String(error)}`, {
+      toast.error(formatSyncException("fetch", error), {
         label: "Retry",
         onClick: () => fetchMutation.mutate(),
       });
@@ -182,7 +210,7 @@ export function useKeyboardShortcuts() {
     { preventDefault: true, enabled: !!status },
   );
 
-  // Command palette shortcut
+  // Command palette alias (VS Code muscle memory); not shown in the UI
   useHotkeys(
     "mod+shift+p",
     (e) => {
@@ -192,7 +220,7 @@ export function useKeyboardShortcuts() {
     { preventDefault: true },
   );
 
-  // Command palette shortcut (discoverable alias)
+  // Command palette shortcut (the one advertised by the "command-palette" command)
   useHotkeys(
     "mod+k",
     (e) => {

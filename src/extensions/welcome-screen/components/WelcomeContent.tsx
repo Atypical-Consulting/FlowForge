@@ -45,6 +45,32 @@ export function WelcomeContent() {
     }
   }, [showInitRepo, initRepoRegistration]);
 
+  /**
+   * Open `path` as a repository, or offer to initialize it.
+   *
+   * The init banner is offered only when the backend positively reports
+   * "no repository here" (`isRepo.data === false`). If the pre-check fails
+   * for any other reason (permission denied, libgit2 ownership validation,
+   * corrupt metadata, ...) we attempt the real open so the underlying reason
+   * surfaces in the store's `repoError` instead of offering to `git init` an
+   * existing repository.
+   */
+  const openOrOfferInit = useCallback(
+    async (path: string) => {
+      const isRepo = await commands.isGitRepository(path);
+      if (isRepo.status === "ok" && !isRepo.data) {
+        setPendingInitPath(path);
+        return;
+      }
+      if (isRepo.status === "error") {
+        console.error("Could not inspect repository:", isRepo.error);
+      }
+      await openRepository(path);
+      await addRecentRepo(path);
+    },
+    [openRepository, addRecentRepo],
+  );
+
   const openDialog = useCallback(async () => {
     try {
       clearError();
@@ -56,18 +82,12 @@ export function WelcomeContent() {
       });
 
       if (selected && typeof selected === "string") {
-        const isRepo = await commands.isGitRepository(selected);
-        if (isRepo.status === "ok" && isRepo.data) {
-          await openRepository(selected);
-          await addRecentRepo(selected);
-        } else {
-          setPendingInitPath(selected);
-        }
+        await openOrOfferInit(selected);
       }
     } catch (e) {
       console.error("Failed to open repository:", e);
     }
-  }, [openRepository, addRecentRepo, clearError]);
+  }, [openOrOfferInit, clearError]);
 
   // Listen for keyboard shortcut event
   useEffect(() => {
@@ -122,18 +142,12 @@ export function WelcomeContent() {
       }
 
       try {
-        const isRepo = await commands.isGitRepository(path);
-        if (isRepo.status === "ok" && isRepo.data) {
-          await openRepository(path);
-          await addRecentRepo(path);
-        } else {
-          setPendingInitPath(path);
-        }
+        await openOrOfferInit(path);
       } catch (e) {
         console.error("Failed to open dropped repository:", e);
       }
     },
-    [openRepository, addRecentRepo, clearError],
+    [openOrOfferInit, clearError],
   );
 
   // Show Init Repo blade in standalone mode

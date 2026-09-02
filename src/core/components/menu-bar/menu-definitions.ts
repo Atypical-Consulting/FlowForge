@@ -9,7 +9,6 @@ import {
   FolderPlus,
   FolderSearch,
   GitBranch,
-  GitCommitHorizontal,
   GitFork,
   History,
   LayoutGrid,
@@ -20,6 +19,7 @@ import {
   RotateCcw,
   Search,
   Settings,
+  SquarePen,
   Sun,
   X,
 } from "lucide-react";
@@ -29,7 +29,10 @@ export interface MenuItemDef {
   id: string;
   label: string;
   icon?: LucideIcon;
-  shortcut?: string;
+  /**
+   * Command this entry executes. Its registered shortcut is the hint shown
+   * next to the label -- menus never hard-code shortcut strings.
+   */
   commandId: string;
 }
 
@@ -56,7 +59,6 @@ export const menuDefinitions: MenuDef[] = [
         id: "file-new-repo",
         label: "New Repository...",
         icon: FolderPlus,
-        shortcut: "mod+n",
         commandId: "ext:init-repo:init-repository",
       },
       {
@@ -64,7 +66,6 @@ export const menuDefinitions: MenuDef[] = [
         id: "file-open-repo",
         label: "Open Repository...",
         icon: FolderOpen,
-        shortcut: "mod+o",
         commandId: "ext:repository:open-repository",
       },
       {
@@ -72,7 +73,6 @@ export const menuDefinitions: MenuDef[] = [
         id: "file-clone-repo",
         label: "Clone Repository...",
         icon: GitFork,
-        shortcut: "mod+shift+o",
         commandId: "ext:repository:clone-repository",
       },
       { type: "divider", id: "file-div-1" },
@@ -89,7 +89,6 @@ export const menuDefinitions: MenuDef[] = [
         id: "file-settings",
         label: "Preferences...",
         icon: Settings,
-        shortcut: "mod+,",
         commandId: "open-settings",
       },
     ],
@@ -103,7 +102,6 @@ export const menuDefinitions: MenuDef[] = [
         id: "view-changes",
         label: "Changes",
         icon: FileText,
-        shortcut: "mod+1",
         commandId: "show-changes",
       },
       {
@@ -111,7 +109,6 @@ export const menuDefinitions: MenuDef[] = [
         id: "view-history",
         label: "History",
         icon: History,
-        shortcut: "mod+2",
         commandId: "show-history",
       },
       {
@@ -119,7 +116,6 @@ export const menuDefinitions: MenuDef[] = [
         id: "view-branches",
         label: "Show Branches",
         icon: GitBranch,
-        shortcut: "mod+b",
         commandId: "ext:branches:show-branches",
       },
       { type: "divider", id: "view-div-1" },
@@ -128,7 +124,6 @@ export const menuDefinitions: MenuDef[] = [
         id: "view-command-palette",
         label: "Command Palette",
         icon: Search,
-        shortcut: "mod+k",
         commandId: "command-palette",
       },
       {
@@ -155,10 +150,10 @@ export const menuDefinitions: MenuDef[] = [
       },
       {
         type: "action",
-        id: "view-layout-commit",
-        label: "Layout: Commit",
-        icon: GitCommitHorizontal,
-        commandId: "layout-preset-commit",
+        id: "view-layout-compose",
+        label: "Layout: Compose",
+        icon: SquarePen,
+        commandId: "layout-preset-compose",
       },
       {
         type: "action",
@@ -180,7 +175,6 @@ export const menuDefinitions: MenuDef[] = [
         id: "view-toggle-sidebar",
         label: "Toggle Sidebar",
         icon: PanelLeft,
-        shortcut: "mod+\\",
         commandId: "toggle-sidebar",
       },
       {
@@ -201,7 +195,6 @@ export const menuDefinitions: MenuDef[] = [
         id: "repo-fetch",
         label: "Fetch",
         icon: CloudDownload,
-        shortcut: "mod+shift+f",
         commandId: "ext:sync:fetch",
       },
       {
@@ -209,7 +202,6 @@ export const menuDefinitions: MenuDef[] = [
         id: "repo-pull",
         label: "Pull",
         icon: ArrowDown,
-        shortcut: "mod+shift+l",
         commandId: "ext:sync:pull",
       },
       {
@@ -217,7 +209,6 @@ export const menuDefinitions: MenuDef[] = [
         id: "repo-push",
         label: "Push",
         icon: ArrowUp,
-        shortcut: "mod+shift+u",
         commandId: "ext:sync:push",
       },
       { type: "divider", id: "repo-div-1" },
@@ -226,7 +217,6 @@ export const menuDefinitions: MenuDef[] = [
         id: "repo-stage-all",
         label: "Stage All",
         icon: FileCheck,
-        shortcut: "mod+shift+a",
         commandId: "ext:sync:stage-all",
       },
       {
@@ -234,7 +224,6 @@ export const menuDefinitions: MenuDef[] = [
         id: "repo-toggle-amend",
         label: "Toggle Amend",
         icon: RotateCcw,
-        shortcut: "mod+shift+m",
         commandId: "ext:sync:toggle-amend",
       },
       { type: "divider", id: "repo-div-2" },
@@ -256,7 +245,6 @@ export const menuDefinitions: MenuDef[] = [
         id: "branch-new",
         label: "New Branch...",
         icon: GitBranch,
-        shortcut: "mod+shift+n",
         commandId: "ext:branches:create-branch",
       },
     ],

@@ -75,6 +75,13 @@ export interface ExtensionToolbarConfig {
   icon: LucideIcon;
   group: ToolbarGroup;
   priority: number;
+  /**
+   * Full ID of the command this action mirrors (e.g. "ext:sync:push" for a
+   * command registered through this API). Its registered shortcut is the
+   * hint displayed for the action; do not duplicate it in `shortcut`.
+   */
+  commandId?: string;
+  /** Shortcut hint for actions that have no matching command. */
   shortcut?: string;
   when?: () => boolean;
   execute: () => void | Promise<void>;

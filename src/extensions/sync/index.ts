@@ -12,9 +12,13 @@ import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { toast } from "@/framework/stores/toast";
 import type { SyncProgress } from "../../bindings";
 import { commands as tauriCommands } from "../../bindings";
-import { getErrorMessage } from "../../core/lib/errors";
 import { queryClient } from "../../core/lib/queryClient";
 import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
+import {
+  describeSyncResult,
+  formatSyncException,
+  type SyncOperation,
+} from "./lib/syncMessages";
 
 // Module-level loading flags for sync operations.
 let fetchLoading = false;
@@ -22,6 +26,39 @@ let pullLoading = false;
 let pushLoading = false;
 
 const whenRepoOpen = (): boolean => !!useRepositoryStore.getState().repoStatus;
+
+const SYNC_COMMANDS = {
+  push: tauriCommands.pushToRemote,
+  pull: tauriCommands.pullFromRemote,
+  fetch: tauriCommands.fetchFromRemote,
+} as const;
+
+/**
+ * Run a sync operation against `remote` and toast its outcome.
+ *
+ * The toast text comes from the backend result (branch, remote, counts), so
+ * it stays correct even when the toolbar's branch display is stale.
+ * Returns true when the operation succeeded.
+ */
+async function runSync(
+  operation: SyncOperation,
+  remote = "origin",
+): Promise<boolean> {
+  try {
+    const channel = new Channel<SyncProgress>();
+    const result = await SYNC_COMMANDS[operation](remote, channel);
+    const outcome = describeSyncResult(operation, result, remote);
+    if (outcome.ok) {
+      toast.success(outcome.message);
+    } else {
+      toast.error(outcome.message);
+    }
+    return outcome.ok;
+  } catch (error) {
+    toast.error(formatSyncException(operation, error));
+    return false;
+  }
+}
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {
   // ── Commands ──────────────────────────────────────────────
@@ -34,21 +71,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     shortcut: "mod+shift+u",
     icon: ArrowUp,
     action: async () => {
-      try {
-        const channel = new Channel<SyncProgress>();
-        const result = await tauriCommands.pushToRemote("origin", channel);
-        if (result.status === "error") {
-          toast.error(`Push failed: ${getErrorMessage(result.error)}`);
-          return;
-        }
-        if (!result.data.success) {
-          toast.error(`Push failed: ${result.data.message}`);
-          return;
-        }
-        toast.success("Pushed to origin");
-      } catch (error) {
-        toast.error(`Push failed: ${String(error)}`);
-      }
+      await runSync("push");
     },
     enabled: whenRepoOpen,
   });
@@ -61,21 +84,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     shortcut: "mod+shift+l",
     icon: ArrowDown,
     action: async () => {
-      try {
-        const channel = new Channel<SyncProgress>();
-        const result = await tauriCommands.pullFromRemote("origin", channel);
-        if (result.status === "error") {
-          toast.error(`Pull failed: ${getErrorMessage(result.error)}`);
-          return;
-        }
-        if (!result.data.success) {
-          toast.error(`Pull failed: ${result.data.message}`);
-          return;
-        }
-        toast.success("Pulled from origin");
-      } catch (error) {
-        toast.error(`Pull failed: ${String(error)}`);
-      }
+      await runSync("pull");
     },
     enabled: whenRepoOpen,
   });
@@ -88,21 +97,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     shortcut: "mod+shift+f",
     icon: CloudDownload,
     action: async () => {
-      try {
-        const channel = new Channel<SyncProgress>();
-        const result = await tauriCommands.fetchFromRemote("origin", channel);
-        if (result.status === "error") {
-          toast.error(`Fetch failed: ${getErrorMessage(result.error)}`);
-          return;
-        }
-        if (!result.data.success) {
-          toast.error(`Fetch failed: ${result.data.message}`);
-          return;
-        }
-        toast.success("Fetched from origin");
-      } catch (error) {
-        toast.error(`Fetch failed: ${String(error)}`);
-      }
+      await runSync("fetch");
     },
     enabled: whenRepoOpen,
   });
@@ -146,26 +141,15 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     icon: ArrowUp,
     group: "git-actions",
     priority: 40,
-    shortcut: "mod+shift+U",
+    commandId: "ext:sync:push",
     when: whenRepoOpen,
     isLoading: () => pushLoading,
     execute: async () => {
       pushLoading = true;
       try {
-        const channel = new Channel<SyncProgress>();
-        const result = await tauriCommands.pushToRemote("origin", channel);
-        if (result.status === "error") {
-          toast.error(`Push failed: ${getErrorMessage(result.error)}`);
-          return;
+        if (await runSync("push")) {
+          gitHookBus.emitDid("push");
         }
-        if (!result.data.success) {
-          toast.error(`Push failed: ${result.data.message}`);
-          return;
-        }
-        gitHookBus.emitDid("push");
-        toast.success("Pushed to origin");
-      } catch (error) {
-        toast.error(`Push failed: ${String(error)}`);
       } finally {
         pushLoading = false;
       }
@@ -178,26 +162,15 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     icon: ArrowDown,
     group: "git-actions",
     priority: 50,
-    shortcut: "mod+shift+L",
+    commandId: "ext:sync:pull",
     when: whenRepoOpen,
     isLoading: () => pullLoading,
     execute: async () => {
       pullLoading = true;
       try {
-        const channel = new Channel<SyncProgress>();
-        const result = await tauriCommands.pullFromRemote("origin", channel);
-        if (result.status === "error") {
-          toast.error(`Pull failed: ${getErrorMessage(result.error)}`);
-          return;
+        if (await runSync("pull")) {
+          gitHookBus.emitDid("pull");
         }
-        if (!result.data.success) {
-          toast.error(`Pull failed: ${result.data.message}`);
-          return;
-        }
-        gitHookBus.emitDid("pull");
-        toast.success("Pulled from origin");
-      } catch (error) {
-        toast.error(`Pull failed: ${String(error)}`);
       } finally {
         pullLoading = false;
       }
@@ -210,26 +183,15 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     icon: CloudDownload,
     group: "git-actions",
     priority: 60,
-    shortcut: "mod+shift+F",
+    commandId: "ext:sync:fetch",
     when: whenRepoOpen,
     isLoading: () => fetchLoading,
     execute: async () => {
       fetchLoading = true;
       try {
-        const channel = new Channel<SyncProgress>();
-        const result = await tauriCommands.fetchFromRemote("origin", channel);
-        if (result.status === "error") {
-          toast.error(`Fetch failed: ${getErrorMessage(result.error)}`);
-          return;
+        if (await runSync("fetch")) {
+          gitHookBus.emitDid("fetch");
         }
-        if (!result.data.success) {
-          toast.error(`Fetch failed: ${result.data.message}`);
-          return;
-        }
-        gitHookBus.emitDid("fetch");
-        toast.success("Fetched from origin");
-      } catch (error) {
-        toast.error(`Fetch failed: ${String(error)}`);
       } finally {
         fetchLoading = false;
       }

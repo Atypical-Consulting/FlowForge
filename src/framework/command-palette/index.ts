@@ -25,3 +25,7 @@ export {
 } from "./fuzzySearch";
 
 export { type PaletteState, usePaletteStore } from "./paletteStore";
+export {
+  getCommandShortcut,
+  useCommandShortcut,
+} from "./useCommandShortcut";

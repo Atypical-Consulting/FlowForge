@@ -1,13 +1,19 @@
-import { AlertTriangle, X } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/core/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
 import { cn } from "@/framework/lib/utils";
 import { toast } from "@/framework/stores/toast";
 import type { GitflowConfig } from "../../../bindings";
-import {
-  useGitOpsStore as useBranchStore,
-  useGitOpsStore as useGitflowStore,
-  useGitOpsStore as useRepositoryStore,
-} from "../../../core/stores/domain/git-ops";
+import { refreshRepositoryState } from "../../../core/lib/repositoryRefresh";
+import { useGitOpsStore as useGitflowStore } from "../../../core/stores/domain/git-ops";
 
 interface InitGitflowDialogProps {
   open: boolean;
@@ -25,8 +31,6 @@ export function InitGitflowDialog({
     gitflowError: error,
     clearGitflowError: clearError,
   } = useGitflowStore();
-  const { loadBranches } = useBranchStore();
-  const { refreshRepoStatus: refreshStatus } = useRepositoryStore();
 
   // Detect default main branch name
   const defaultMainBranch = status?.context.hasMain ? "main" : "master";
@@ -40,8 +44,6 @@ export function InitGitflowDialog({
   });
   const [pushDevelop, setPushDevelop] = useState(true);
 
-  if (!open) return null;
-
   const handleClose = () => {
     clearError();
     onOpenChange(false);
@@ -49,6 +51,7 @@ export function InitGitflowDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
 
     // Validate prefixes end with /
     if (
@@ -62,8 +65,8 @@ export function InitGitflowDialog({
 
     const result = await initGitflow(config, pushDevelop);
     if (result) {
-      await loadBranches();
-      await refreshStatus(); // Update branch name in header
+      // Init may switch to develop: refresh header branch, branch list, queries...
+      await refreshRepositoryState();
       toast.success(
         result.switchedToDevelop
           ? `Gitflow initialized! Switched to ${config.developBranch} branch.`
@@ -81,22 +84,21 @@ export function InitGitflowDialog({
   const developExists = status?.context.hasDevelop;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-5 w-[420px] shadow-xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Initialize Gitflow</h3>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="p-1 hover:bg-ctp-surface0 rounded text-ctp-overlay1 hover:text-ctp-text"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) handleClose();
+        else onOpenChange(true);
+      }}
+    >
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Initialize Gitflow</DialogTitle>
+        </DialogHeader>
 
-        <p className="text-sm text-ctp-overlay1 mb-4">
+        <DialogDescription className="mb-4">
           Configure branch naming conventions for this repository.
-        </p>
+        </DialogDescription>
 
         {developExists && (
           <div className="flex items-start gap-2 p-3 mb-4 bg-ctp-yellow/10 border border-ctp-yellow/30 rounded-lg">
@@ -245,28 +247,23 @@ export function InitGitflowDialog({
 
           {error && <p className="text-ctp-red text-sm">{error}</p>}
 
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="px-4 py-2 text-sm text-ctp-overlay1 hover:text-ctp-text transition-colors"
-            >
+          <DialogFooter className="pt-2">
+            <Button type="button" variant="ghost" onClick={handleClose}>
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={
                 !config.mainBranch.trim() ||
                 !config.developBranch.trim() ||
                 isLoading
               }
-              className="px-4 py-2 text-sm bg-ctp-blue hover:bg-ctp-blue/80 rounded font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? "Initializing..." : "Initialize Gitflow"}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

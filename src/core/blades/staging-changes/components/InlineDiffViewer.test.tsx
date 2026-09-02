@@ -23,6 +23,9 @@ vi.mock("../../../../bindings", () => ({
 const diffEditorProps = vi.hoisted(() => ({
   current: null as Record<string, unknown> | null,
 }));
+const editorProps = vi.hoisted(() => ({
+  current: null as Record<string, unknown> | null,
+}));
 
 vi.mock("@monaco-editor/react", () => ({
   DiffEditor: (props: Record<string, unknown>) => {
@@ -31,7 +34,10 @@ vi.mock("@monaco-editor/react", () => ({
       <div data-testid="mock-diff-editor" data-theme={props.theme as string} />
     );
   },
-  default: () => <div data-testid="mock-editor" />,
+  default: (props: Record<string, unknown>) => {
+    editorProps.current = props;
+    return <div data-testid="mock-editor" />;
+  },
   loader: {
     config: vi.fn(),
     init: vi.fn().mockResolvedValue({ editor: { defineTheme: vi.fn() } }),
@@ -43,6 +49,7 @@ import { INLINE_DIFF_OPTIONS, InlineDiffViewer } from "./InlineDiffViewer";
 describe("InlineDiffViewer", () => {
   beforeEach(() => {
     diffEditorProps.current = null;
+    editorProps.current = null;
   });
 
   describe("gutter layout", () => {
@@ -66,6 +73,61 @@ describe("InlineDiffViewer", () => {
       render(<InlineDiffViewer filePath="package.json" staged={false} />);
       await screen.findByTestId("mock-diff-editor");
       expect(diffEditorProps.current?.options).toBe(INLINE_DIFF_OPTIONS);
+    });
+  });
+
+  describe("single-sided files", () => {
+    it("renders an untracked file in a single editor instead of a DiffEditor", async () => {
+      // Monaco cannot represent an empty original: a DiffEditor would show a
+      // phantom removed empty line ("1 —") above the added content.
+      mockCommands.getFileDiff.mockResolvedValueOnce({
+        status: "ok",
+        data: {
+          path: "notes.txt",
+          oldContent: "",
+          newContent: "tmp\n",
+          hunks: [],
+          isBinary: false,
+          language: "plaintext",
+        },
+      });
+
+      render(<InlineDiffViewer filePath="notes.txt" staged={false} />);
+      await screen.findByTestId("mock-editor");
+
+      expect(screen.queryByTestId("mock-diff-editor")).toBeNull();
+      // Exactly one line: the trailing newline is not a second empty line.
+      expect(editorProps.current?.value).toBe("tmp");
+      const options = editorProps.current?.options as Record<string, unknown>;
+      expect(options.readOnly).toBe(true);
+      expect(options.lineDecorationsWidth as number).toBeGreaterThanOrEqual(16);
+    });
+
+    it("renders a deleted file's old content in a single editor", async () => {
+      mockCommands.getFileDiff.mockResolvedValueOnce({
+        status: "ok",
+        data: {
+          path: "old.txt",
+          oldContent: "gone\n",
+          newContent: "",
+          hunks: [],
+          isBinary: false,
+          language: "plaintext",
+        },
+      });
+
+      render(<InlineDiffViewer filePath="old.txt" staged={false} />);
+      await screen.findByTestId("mock-editor");
+
+      expect(screen.queryByTestId("mock-diff-editor")).toBeNull();
+      expect(editorProps.current?.value).toBe("gone");
+    });
+
+    it("keeps the DiffEditor for a file that exists on both sides", async () => {
+      render(<InlineDiffViewer filePath="package.json" staged={false} />);
+      await screen.findByTestId("mock-diff-editor");
+
+      expect(screen.queryByTestId("mock-editor")).toBeNull();
     });
   });
 

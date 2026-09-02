@@ -1,5 +1,14 @@
-import { X } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/core/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
+import { Input } from "@/core/components/ui/input";
 import { useGitOpsStore as useGitflowStore } from "../../../core/stores/domain/git-ops";
 import { useGitflowWorkflow } from "../hooks/useGitflowWorkflow";
 import { ReviewChecklist } from "./ReviewChecklist";
@@ -54,28 +63,22 @@ export function FinishFlowDialog({ flowType, onClose }: FinishFlowDialogProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
     finishOperation(flowType, tagMessage || undefined);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-5 w-96 shadow-xl">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
             Finish {flowType.charAt(0).toUpperCase() + flowType.slice(1)}
-          </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1 hover:bg-ctp-surface0 rounded text-ctp-overlay1 hover:text-ctp-text"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+          </DialogTitle>
+        </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <p className="text-sm text-ctp-overlay1">{getDescription()}</p>
+          <DialogDescription>{getDescription()}</DialogDescription>
 
           <ReviewChecklist flowType={flowType} />
 
@@ -87,7 +90,7 @@ export function FinishFlowDialog({ flowType, onClose }: FinishFlowDialogProps) {
               >
                 Tag message (optional)
               </label>
-              <input
+              <Input
                 id="tag-message"
                 type="text"
                 value={tagMessage}
@@ -97,31 +100,26 @@ export function FinishFlowDialog({ flowType, onClose }: FinishFlowDialogProps) {
                     ? `Release ${flowName}`
                     : `Hotfix ${flowName}`
                 }
-                className="w-full px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 rounded text-sm focus:outline-none focus:border-ctp-blue focus:ring-1 focus:ring-ctp-blue"
               />
             </div>
           )}
 
           {error && <p className="text-ctp-red text-sm">{error}</p>}
 
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm text-ctp-overlay1 hover:text-ctp-text transition-colors"
-            >
+          <DialogFooter className="pt-2">
+            <Button type="button" variant="ghost" onClick={onClose}>
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={isLoading}
-              className="px-4 py-2 text-sm bg-ctp-green hover:bg-ctp-green/80 rounded font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="bg-ctp-green hover:bg-ctp-green/90"
             >
               {isLoading ? "Finishing..." : "Finish"}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

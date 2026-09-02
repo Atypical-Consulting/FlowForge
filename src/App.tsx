@@ -26,6 +26,11 @@ import { ToastContainer } from "./core/components/ui/ToastContainer";
 import { useKeyboardShortcuts } from "./core/hooks/useKeyboardShortcuts";
 import { modKeyLabel } from "./core/lib/platform";
 import {
+  containsGitDirPath,
+  invalidateRepositoryQueries,
+  refreshRepositoryState,
+} from "./core/lib/repositoryRefresh";
+import {
   useGitOpsStore,
   useGitOpsStore as useRepositoryStore,
   useGitOpsStore as useUndoStore,
@@ -155,9 +160,16 @@ function WelcomeFallback() {
     });
     if (selected && typeof selected === "string") {
       const isRepo = await commands.isGitRepository(selected);
-      if (isRepo.status === "ok" && isRepo.data) {
-        await openRepository(selected);
+      // Only a positive "not a repository" answer is skipped here; a real
+      // error (permission, ownership validation, ...) still goes through the
+      // real open so its cause surfaces in the store's `repoError`.
+      if (isRepo.status === "ok" && !isRepo.data) return;
+      if (isRepo.status === "error") {
+        console.error("Could not inspect repository:", isRepo.error);
       }
+      await openRepository(selected).catch((e) =>
+        console.error("Failed to open repository:", e),
+      );
     }
   }, [openRepository]);
 
@@ -476,12 +488,21 @@ function App() {
     const unlisten = listen<{ paths: string[] }>(
       "repository-changed",
       (event) => {
-        console.log("Repository changed:", event.payload.paths);
+        const { paths } = event.payload;
+        console.log("Repository changed:", paths);
 
-        // Invalidate relevant queries to trigger refresh
-        queryClient.invalidateQueries({ queryKey: ["stagingStatus"] });
-        queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
-        queryClient.invalidateQueries({ queryKey: ["repositoryStatus"] });
+        if (containsGitDirPath(paths)) {
+          // HEAD or a ref moved (branch switch/create/delete, fetch, tag...),
+          // possibly from outside the app: refresh the store-backed state too
+          // (header branch, branch list, gitflow status), not just the queries.
+          refreshRepositoryState(queryClient).catch((e) => {
+            console.error("Failed to refresh repository state:", e);
+          });
+          return;
+        }
+
+        // Working-tree change: invalidate relevant queries to trigger refresh
+        invalidateRepositoryQueries(queryClient);
 
         // Also refresh undo info
         loadUndoInfo();

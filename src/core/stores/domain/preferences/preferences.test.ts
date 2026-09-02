@@ -336,4 +336,79 @@ describe("Preferences store", () => {
       expect(usePreferencesStore.getState().settingsActiveCategory).toBe("git");
     });
   });
+  describe("layout slice — sidebar sections", () => {
+    it("defaults to no remembered sections", () => {
+      expect(
+        usePreferencesStore.getState().layoutState.sidebarSections,
+      ).toEqual({});
+    });
+
+    it("setSidebarSectionOpen updates state immediately and persists under 'layout'", async () => {
+      const promise = usePreferencesStore
+        .getState()
+        .setSidebarSectionOpen("stashes", true);
+
+      // Synchronous update — UI must not wait for disk I/O.
+      expect(
+        usePreferencesStore.getState().layoutState.sidebarSections.stashes,
+      ).toBe(true);
+
+      await promise;
+      expect(mockStore.set).toHaveBeenCalledWith(
+        "layout",
+        expect.objectContaining({ sidebarSections: { stashes: true } }),
+      );
+      expect(mockStore.save).toHaveBeenCalled();
+    });
+
+    it("setSidebarSectionOpen is a no-op when the value is unchanged", async () => {
+      await usePreferencesStore.getState().setSidebarSectionOpen("tags", false);
+      mockStore.set.mockClear();
+
+      await usePreferencesStore.getState().setSidebarSectionOpen("tags", false);
+      expect(mockStore.set).not.toHaveBeenCalled();
+    });
+
+    it("setSidebarSectionOpen does not mark the preset as custom", async () => {
+      await usePreferencesStore.getState().setSidebarSectionOpen("tags", true);
+      expect(usePreferencesStore.getState().layoutState.activePreset).toBe(
+        "review",
+      );
+    });
+
+    it("initLayout restores persisted section state", async () => {
+      mockStoreData.set("layout", {
+        panelSizes: { sidebar: 25, blades: 75 },
+        sidebarSections: { stashes: true, tags: true },
+      });
+
+      await usePreferencesStore.getState().initLayout();
+
+      const { layoutState } = usePreferencesStore.getState();
+      expect(layoutState.sidebarSections).toEqual({
+        stashes: true,
+        tags: true,
+      });
+      expect(layoutState.panelSizes).toEqual({ sidebar: 25, blades: 75 });
+    });
+
+    it("initLayout tolerates legacy layouts without sidebarSections", async () => {
+      mockStoreData.set("layout", { panelSizes: { sidebar: 25, blades: 75 } });
+
+      await usePreferencesStore.getState().initLayout();
+
+      expect(
+        usePreferencesStore.getState().layoutState.sidebarSections,
+      ).toEqual({});
+    });
+
+    it("setActivePreset keeps remembered sections", async () => {
+      await usePreferencesStore.getState().setSidebarSectionOpen("tags", true);
+      await usePreferencesStore.getState().setActivePreset("compose");
+
+      const { layoutState } = usePreferencesStore.getState();
+      expect(layoutState.activePreset).toBe("compose");
+      expect(layoutState.sidebarSections).toEqual({ tags: true });
+    });
+  });
 });
