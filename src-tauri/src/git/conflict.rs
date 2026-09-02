@@ -107,38 +107,8 @@ pub async fn get_conflict_content(
             .and_then(|h| h.shorthand().ok().map(|s| s.to_string()))
             .unwrap_or_else(|| "HEAD".to_string());
 
-        let theirs_name = {
-            let merge_head_path = repo.path().join("MERGE_HEAD");
-            if merge_head_path.exists() {
-                // Try to resolve MERGE_HEAD to a branch name
-                std::fs::read_to_string(&merge_head_path)
-                    .ok()
-                    .and_then(|oid_str| {
-                        let oid_str = oid_str.trim();
-                        git2::Oid::from_str(oid_str).ok().and_then(|oid| {
-                            // Check all branches to find one pointing to this commit
-                            repo.branches(Some(git2::BranchType::Local))
-                                .ok()
-                                .and_then(|mut branches| {
-                                    branches.find_map(|b| {
-                                        b.ok().and_then(|(branch, _)| {
-                                            branch.get().target().and_then(|target| {
-                                                if target == oid {
-                                                    branch.name().ok().flatten().map(|n| n.to_string())
-                                                } else {
-                                                    None
-                                                }
-                                            })
-                                        })
-                                    })
-                                })
-                        })
-                    })
-                    .unwrap_or_else(|| "MERGE_HEAD".to_string())
-            } else {
-                "MERGE_HEAD".to_string()
-            }
-        };
+        let theirs_name = crate::git::repository::merge_head_label(&repo)
+            .unwrap_or_else(|| "MERGE_HEAD".to_string());
 
         // Verify at least one side has content
         if ours.is_none() && theirs.is_none() && base.is_none() {

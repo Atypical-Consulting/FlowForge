@@ -21,6 +21,71 @@ pub struct RepoStatus {
     pub repo_path: String,
     /// Repository display name (folder name)
     pub repo_name: String,
+    /// Whether a merge is in progress (`.git/MERGE_HEAD` exists). The next
+    /// commit will complete it as a real merge commit.
+    pub merge_in_progress: bool,
+    /// Branch being merged in, when a merge is in progress. Falls back to the
+    /// short MERGE_HEAD oid when no branch points at it.
+    pub merge_head_branch: Option<String>,
+    /// Contents of `.git/MERGE_MSG` (the message git prepared for the merge
+    /// commit), when a merge is in progress.
+    pub merge_message: Option<String>,
+}
+
+/// All commits recorded in `.git/MERGE_HEAD` (empty when no merge is in progress).
+///
+/// Reads the file directly, one oid per line, the same way libgit2's
+/// `git_repository_mergehead_foreach` does; that API needs `&mut Repository`,
+/// which the shared `&Repository` helpers here cannot provide.
+pub(crate) fn merge_head_oids(repo: &git2::Repository) -> Result<Vec<git2::Oid>, git2::Error> {
+    let contents = match std::fs::read_to_string(repo.path().join("MERGE_HEAD")) {
+        Ok(contents) => contents,
+        // No MERGE_HEAD file at all: not an error, just no merge.
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+        Err(e) => {
+            return Err(git2::Error::from_str(&format!(
+                "could not read MERGE_HEAD: {e}"
+            )))
+        }
+    };
+    contents
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+        .map(git2::Oid::from_str)
+        .collect()
+}
+
+/// Name of a local (or, failing that, remote-tracking) branch whose tip is `oid`.
+pub(crate) fn branch_name_for_oid(repo: &git2::Repository, oid: git2::Oid) -> Option<String> {
+    for branch_type in [git2::BranchType::Local, git2::BranchType::Remote] {
+        let Ok(branches) = repo.branches(Some(branch_type)) else {
+            continue;
+        };
+        for (branch, _) in branches.flatten() {
+            if branch.get().target() == Some(oid)
+                && let Ok(Some(name)) = branch.name()
+            {
+                return Some(name.to_string());
+            }
+        }
+    }
+    None
+}
+
+/// Human-readable name for what is being merged: the branch pointing at the
+/// first MERGE_HEAD, or its short oid. `None` when no merge is in progress.
+pub(crate) fn merge_head_label(repo: &git2::Repository) -> Option<String> {
+    let oid = *merge_head_oids(repo).ok()?.first()?;
+    Some(branch_name_for_oid(repo, oid).unwrap_or_else(|| format!("{:.7}", oid)))
+}
+
+/// Contents of `.git/MERGE_MSG`, if present.
+pub(crate) fn merge_message(repo: &git2::Repository) -> Option<String> {
+    std::fs::read_to_string(repo.path().join("MERGE_MSG"))
+        .ok()
+        .map(|m| m.trim_end().to_string())
+        .filter(|m| !m.is_empty())
 }
 
 /// Application state holding the current repository path.
@@ -123,11 +188,21 @@ impl RepositoryState {
                 .unwrap_or("unknown")
                 .to_string();
 
+            let merge_in_progress = repo.state() == git2::RepositoryState::Merge;
+            let (merge_head_branch, merge_message) = if merge_in_progress {
+                (merge_head_label(&repo), merge_message(&repo))
+            } else {
+                (None, None)
+            };
+
             Ok(RepoStatus {
                 branch_name,
                 is_dirty,
                 repo_path: path.display().to_string(),
                 repo_name,
+                merge_in_progress,
+                merge_head_branch,
+                merge_message,
             })
         })
         .await
@@ -204,5 +279,64 @@ mod tests {
         // the status must not be cached.
         let status = state.get_status().await.unwrap();
         assert_eq!(status.branch_name, "feature/payments");
+    }
+}
+
+#[cfg(test)]
+mod merge_state_tests {
+    use super::*;
+    use crate::gitflow::test_support::{checkout, commit_file, create_and_checkout, init_repo};
+
+    /// Start a merge of `topic` into `main` where both sides edited `shared.txt`,
+    /// leaving the repository in the Merge state with a conflicted index.
+    fn start_conflicting_merge(repo: &git2::Repository) {
+        commit_file(repo, "shared.txt", "base\n", "base");
+        create_and_checkout(repo, "topic");
+        let topic_oid = commit_file(repo, "shared.txt", "topic\n", "topic edit");
+        checkout(repo, "main");
+        commit_file(repo, "shared.txt", "main\n", "main edit");
+        let annotated = repo.find_annotated_commit(topic_oid).unwrap();
+        repo.merge(&[&annotated], None, None).unwrap();
+        assert_eq!(repo.state(), git2::RepositoryState::Merge);
+    }
+
+    #[tokio::test]
+    async fn status_reports_merge_in_progress_with_branch_and_message() {
+        let (dir, repo) = init_repo();
+        start_conflicting_merge(&repo);
+        std::fs::write(repo.path().join("MERGE_MSG"), "Merge branch 'topic'\n").unwrap();
+
+        let state = RepositoryState::new();
+        let status = state.open(dir.path().to_path_buf()).await.unwrap();
+
+        assert!(status.merge_in_progress);
+        assert_eq!(status.merge_head_branch.as_deref(), Some("topic"));
+        assert_eq!(status.merge_message.as_deref(), Some("Merge branch 'topic'"));
+    }
+
+    #[tokio::test]
+    async fn status_has_no_merge_fields_when_clean() {
+        let (dir, _repo) = init_repo();
+
+        let state = RepositoryState::new();
+        let status = state.open(dir.path().to_path_buf()).await.unwrap();
+
+        assert!(!status.merge_in_progress);
+        assert!(status.merge_head_branch.is_none());
+        assert!(status.merge_message.is_none());
+    }
+
+    #[test]
+    fn merge_head_label_falls_back_to_short_oid_without_branch() {
+        let (_dir, repo) = init_repo();
+        start_conflicting_merge(&repo);
+        // Delete the branch so nothing points at MERGE_HEAD any more.
+        let topic_oid = merge_head_oids(&repo).unwrap()[0];
+        repo.find_branch("topic", git2::BranchType::Local)
+            .unwrap()
+            .delete()
+            .unwrap();
+
+        assert_eq!(merge_head_label(&repo), Some(format!("{:.7}", topic_oid)));
     }
 }

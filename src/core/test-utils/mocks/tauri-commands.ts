@@ -52,13 +52,19 @@ export function gitflowErr(error: GitflowError): Result<never, GitflowError> {
 
 // Factory functions
 export function createRepoStatus(overrides?: Partial<RepoStatus>): RepoStatus {
-  return {
+  // Built as a separate object (not an inline literal) so the merge fields
+  // type-check both before and after `src/bindings.ts` is regenerated with
+  // `mergeInProgress` / `mergeHeadBranch` / `mergeMessage`.
+  const base = {
     branchName: "main",
     isDirty: false,
     repoPath: "/test/repo",
     repoName: "repo",
-    ...overrides,
+    mergeInProgress: false,
+    mergeHeadBranch: null,
+    mergeMessage: null,
   };
+  return { ...base, ...overrides };
 }
 
 export function createStagingStatus(
