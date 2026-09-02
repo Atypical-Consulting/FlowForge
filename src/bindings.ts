@@ -1131,6 +1131,11 @@ export type GitflowError =
 { type: "MergeConflict" } | 
 /**  Working directory has uncommitted changes */
 { type: "DirtyWorkingTree" } | 
+/**
+ *  Switching to the named branch would overwrite uncommitted local changes.
+ *  The checkout is refused and nothing is modified.
+ */
+{ type: "CheckoutWouldOverwriteChanges"; data: string } | 
 /**  Repository has no commits yet */
 { type: "UnbornHead" } | 
 /**  Specified branch was not found */
@@ -1148,7 +1153,10 @@ export type GitflowError =
 export type GitflowInitResult = {
 	/**  Whether the develop branch was created (false if it already existed) */
 	developCreated: boolean,
-	/**  Whether we switched to the develop branch */
+	/**
+	 *  Whether HEAD was moved to the develop branch (false if it was already
+	 *  checked out, in which case the working tree was not touched)
+	 */
 	switchedToDevelop: boolean,
 };
 
