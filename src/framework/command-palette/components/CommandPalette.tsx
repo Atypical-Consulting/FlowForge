@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
+import { useGitOpsStore as useRepositoryStore } from "@/core/stores/domain/git-ops";
 import type { CommandCategory } from "../commandRegistry";
 import { getOrderedCategories, useCommandRegistry } from "../commandRegistry";
 import { searchCommands } from "../fuzzySearch";
@@ -23,13 +24,21 @@ export function CommandPalette() {
 
   // Subscribe to commands Map -- re-renders on any register/unregister
   const commandsMap = useCommandRegistry((s) => s.items);
+  // enabled() predicates read the repository store imperatively (most are
+  // `() => !!repoStatus`), so repoStatus must invalidate the enabled list.
+  const repoStatus = useRepositoryStore((s) => s.repoStatus);
 
+  // Re-evaluate enabled() whenever the registry, the repository or the
+  // open state changes. Opening the palette is a dependency on purpose: it
+  // guarantees a fresh evaluation for predicates that read state this
+  // component cannot subscribe to (e.g. an extension's own store).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: repoStatus and isOpen are read imperatively by the enabled() callbacks; they must invalidate the memo.
   const enabledCommands = useMemo(
     () =>
       Array.from(commandsMap.values()).filter((cmd) =>
         cmd.enabled ? cmd.enabled() : true,
       ),
-    [commandsMap],
+    [commandsMap, repoStatus, isOpen],
   );
   const results = useMemo(
     () => searchCommands(query, enabledCommands),
