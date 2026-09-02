@@ -33,11 +33,16 @@ function StatusBarWidget({ item }: { item: StatusBarItem }) {
 }
 
 export function StatusBar() {
-  const _items = useStatusBarRegistry((s) => s.items);
-  const _visibilityTick = useStatusBarRegistry((s) => s.visibilityTick);
+  // Registry contents and visibility tick are read imperatively by
+  // getLeftItems()/getRightItems() (which evaluate when()), so both are memo
+  // dependencies, not just re-render triggers.
+  const items = useStatusBarRegistry((s) => s.items);
+  const visibilityTick = useStatusBarRegistry((s) => s.visibilityTick);
 
-  const leftItems = useMemo(() => getLeftItems(), []);
-  const rightItems = useMemo(() => getRightItems(), []);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: items/visibilityTick invalidate the imperative registry reads.
+  const leftItems = useMemo(() => getLeftItems(), [items, visibilityTick]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: items/visibilityTick invalidate the imperative registry reads.
+  const rightItems = useMemo(() => getRightItems(), [items, visibilityTick]);
 
   if (leftItems.length === 0 && rightItems.length === 0) return null;
 

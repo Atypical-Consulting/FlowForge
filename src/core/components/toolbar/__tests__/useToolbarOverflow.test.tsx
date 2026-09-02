@@ -186,6 +186,17 @@ describe("useToolbarOverflow", () => {
     expectLayout("Infinity", 0);
   });
 
+  it("re-measures when the list grows from the welcome-screen set to the full repository set", () => {
+    // Welcome screen: 3 core actions fit (3 x 44 - 4 = 128px <= 300px).
+    const { rerender } = render(<Harness ids={ids(3)} />);
+    expectLayout("Infinity", 0);
+
+    // Repository opens: every extension action's when() flips to true.
+    rerender(<Harness ids={ids(17)} />);
+    // 17 x 44 - 4 = 744px > 300px; 44i + 84 <= 300 -> i <= 4 -> 5 inline.
+    expectLayout("5", 12);
+  });
+
   it("brings collapsed actions back when the container grows and collapses more when it shrinks", () => {
     containerWidth = 200;
     render(<Harness ids={ids(5)} />);

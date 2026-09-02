@@ -22,16 +22,22 @@ import { useToolbarOverflow } from "./useToolbarOverflow";
  * registered action execute/when/isLoading functions.
  */
 export function Toolbar() {
-  // Subscribe to registry changes for reactivity
-  const _actions = useToolbarRegistry((s) => s.items);
-  const _visibilityTick = useToolbarRegistry((s) => s.visibilityTick);
+  // Inputs that invalidate the action list. `when()` conditions read stores
+  // imperatively, so the subscriptions below are re-render triggers AND memo
+  // dependencies: registry contents, the registry's visibility tick
+  // (refreshVisibility() for conditions outside the repo store) and
+  // repoStatus (open/close). Subscribing without listing them as deps is not
+  // enough -- that used to freeze the list computed on the welcome screen
+  // (3 core actions) for the whole session.
+  const actions = useToolbarRegistry((s) => s.items);
+  const visibilityTick = useToolbarRegistry((s) => s.visibilityTick);
+  const repoStatus = useRepositoryStore((s) => s.repoStatus);
   const hiddenActions = usePreferencesStore(
     (s) => s.settingsData.toolbar?.hiddenActions ?? [],
   );
-  // Subscribe to repoStatus so when() conditions re-evaluate on repo change
-  const _repoStatus = useRepositoryStore((s) => s.repoStatus);
 
   // Build the flattened ordered action list
+  // biome-ignore lint/correctness/useExhaustiveDependencies: actions/visibilityTick/repoStatus are read imperatively by getGroupedToolbarActions() and the when() callbacks; they must invalidate the memo.
   const { orderedActions, groupBoundaries } = useMemo(() => {
     const grouped = getGroupedToolbarActions();
     const ordered: ToolbarAction[] = [];
@@ -47,8 +53,7 @@ export function Toolbar() {
     }
 
     return { orderedActions: ordered, groupBoundaries: boundaries };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- repoStatus + visibilityTick trigger when() re-eval
-  }, [hiddenActions]);
+  }, [actions, visibilityTick, repoStatus, hiddenActions]);
 
   const { containerRef, visibleCount } = useToolbarOverflow(orderedActions);
 
