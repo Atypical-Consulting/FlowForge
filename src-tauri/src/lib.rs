@@ -2,6 +2,7 @@ mod extensions;
 mod git;
 mod github;
 mod gitflow;
+mod window;
 
 use std::sync::Mutex;
 
@@ -62,7 +63,9 @@ use gitflow::{
 };
 use specta_typescript::Typescript;
 use tauri::Manager;
+use tauri_plugin_window_state::StateFlags;
 use tauri_specta::{Builder, collect_commands};
+use window::{get_default_window_decorations, set_window_decorations};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -201,6 +204,9 @@ pub fn run() {
         // Welcome screen commands
         get_repo_health_quick,
         open_in_terminal,
+        // Window commands
+        set_window_decorations,
+        get_default_window_decorations,
     ]);
 
     #[cfg(debug_assertions)]
@@ -217,7 +223,14 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::new().build())
-        .plugin(tauri_plugin_window_state::Builder::new().build())
+        // Decorations are decided at startup (tiling compositor detection) and by
+        // the `window.decorations` preference; the plugin must not persist and
+        // replay a stale value on top of that decision.
+        .plugin(
+            tauri_plugin_window_state::Builder::new()
+                .with_state_flags(StateFlags::all() - StateFlags::DECORATIONS)
+                .build(),
+        )
         .manage(RepositoryState::new())
         .manage(Mutex::new(WatcherState::new()))
         .invoke_handler(builder.invoke_handler())
@@ -226,6 +239,7 @@ pub fn run() {
 
             // Show window after setup to prevent flash
             if let Some(window) = app.get_webview_window("main") {
+                window::apply_startup_decorations(&window);
                 window.show().ok();
             }
 

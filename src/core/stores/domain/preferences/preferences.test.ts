@@ -21,6 +21,7 @@ vi.mock("@/framework/stores/toast", () => ({
   },
 }));
 
+import { invoke } from "@tauri-apps/api/core";
 import { resetAllStores } from "@/framework/stores/registry";
 import { usePreferencesStore } from "./index";
 import { DEFAULT_CHECKLIST } from "./review-checklist.slice";
@@ -72,6 +73,61 @@ describe("Preferences store", () => {
       const state = usePreferencesStore.getState();
       expect(state.settingsData.general.defaultTab).toBe("topology");
       expect(state.settingsData.git.defaultRemote).toBe("origin");
+    });
+
+    it("defaults window.decorations to auto", () => {
+      expect(
+        usePreferencesStore.getState().settingsData.window.decorations,
+      ).toBe("auto");
+    });
+
+    it("initSettings fills window.decorations from defaults when the saved blob predates it", async () => {
+      mockStoreData.set("settings", {
+        general: { defaultTab: "history" },
+      });
+
+      await usePreferencesStore.getState().initSettings();
+
+      expect(
+        usePreferencesStore.getState().settingsData.window.decorations,
+      ).toBe("auto");
+    });
+
+    it("initSettings merges a saved window.decorations value", async () => {
+      mockStoreData.set("settings", { window: { decorations: "never" } });
+
+      await usePreferencesStore.getState().initSettings();
+
+      expect(
+        usePreferencesStore.getState().settingsData.window.decorations,
+      ).toBe("never");
+    });
+
+    it("setWindowDecorations persists the mode and applies it to the window", async () => {
+      vi.mocked(invoke).mockResolvedValue(undefined);
+
+      await usePreferencesStore.getState().setWindowDecorations("never");
+
+      expect(
+        usePreferencesStore.getState().settingsData.window.decorations,
+      ).toBe("never");
+      expect(mockStore.save).toHaveBeenCalled();
+      expect(invoke).toHaveBeenCalledWith("set_window_decorations", {
+        enabled: false,
+      });
+    });
+
+    it("setWindowDecorations('auto') asks Rust for the detected default", async () => {
+      vi.mocked(invoke).mockImplementation(async (cmd: string) =>
+        cmd === "get_default_window_decorations" ? false : undefined,
+      );
+
+      await usePreferencesStore.getState().setWindowDecorations("auto");
+
+      expect(invoke).toHaveBeenCalledWith("get_default_window_decorations");
+      expect(invoke).toHaveBeenLastCalledWith("set_window_decorations", {
+        enabled: false,
+      });
     });
 
     it("updateSetting persists to store and updates state", async () => {
