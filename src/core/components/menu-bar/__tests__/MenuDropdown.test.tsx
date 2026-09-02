@@ -5,6 +5,10 @@ import type { MenuEntryDef } from "../menu-definitions";
 
 vi.mock("@/framework/command-palette/commandRegistry", () => ({
   getCommandById: () => ({ id: "create-branch" }),
+  useCommandRegistry: (selector?: (state: unknown) => unknown) => {
+    const state = { items: new Map(), get: () => undefined };
+    return selector ? selector(state) : state;
+  },
 }));
 
 const items: MenuEntryDef[] = [
