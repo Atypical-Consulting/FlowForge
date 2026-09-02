@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  classifyDiffContent,
   hasTrailingNewline,
   prepareDiffContent,
   stripTrailingNewline,
@@ -11,12 +12,15 @@ const monacoLines = (text: string): string[] => text.split(/\r?\n/);
 describe("prepareDiffContent", () => {
   describe("untracked (new) file", () => {
     it("renders a single-line file with a trailing newline as exactly one added line", () => {
-      const { original, modified } = prepareDiffContent("", "tmp\n");
+      const { original, modified, kind } = prepareDiffContent("", "tmp\n");
 
       // No phantom removed line: the original side must be an empty document.
       expect(original).toBe("");
       // No phantom trailing added line: exactly one line on the modified side.
       expect(monacoLines(modified)).toEqual(["tmp"]);
+      // Monaco cannot represent an empty original without a phantom deleted
+      // line, so the diff must be flagged for single-sided rendering.
+      expect(kind).toBe("added");
     });
 
     it("keeps a new file without a trailing newline as-is", () => {
@@ -35,10 +39,37 @@ describe("prepareDiffContent", () => {
 
   describe("deleted file", () => {
     it("renders as removed lines with an empty modified document", () => {
-      const { original, modified } = prepareDiffContent("gone\n", "");
+      const { original, modified, kind } = prepareDiffContent("gone\n", "");
 
       expect(monacoLines(original)).toEqual(["gone"]);
       expect(modified).toBe("");
+      expect(kind).toBe("deleted");
+    });
+  });
+
+  describe("kind classification", () => {
+    it("flags a two-sided diff as modified", () => {
+      expect(prepareDiffContent("a\n", "b\n").kind).toBe("modified");
+      expect(classifyDiffContent("a", "b")).toBe("modified");
+    });
+
+    it("treats two empty sides as modified (nothing single-sided to show)", () => {
+      expect(classifyDiffContent("", "")).toBe("modified");
+    });
+
+    it("distinguishes an absent file from a real one-line empty document", () => {
+      // "" is zero bytes: the file does not exist on that side.
+      expect(classifyDiffContent("", "tmp\n")).toBe("added");
+      // "\n" is a real file holding one empty line: git reports a line
+      // replaced by "tmp", so this must stay a two-sided diff.
+      expect(classifyDiffContent("\n", "tmp\n")).toBe("modified");
+    });
+
+    it("flags a new file even when it only contains an empty line", () => {
+      const { modified, kind } = prepareDiffContent("", "\n");
+
+      expect(kind).toBe("added");
+      expect(monacoLines(modified)).toEqual([""]);
     });
   });
 
@@ -94,6 +125,7 @@ describe("prepareDiffContent", () => {
       expect(prepareDiffContent("", "")).toEqual({
         original: "",
         modified: "",
+        kind: "modified",
       });
     });
 
