@@ -69,7 +69,7 @@ export function ContextMenuPortal() {
         ref={menuRef}
         role="menu"
         aria-label="Context menu"
-        className="fixed min-w-48 py-1 bg-ctp-mantle border border-ctp-surface0 rounded-lg shadow-xl shadow-black/20 z-[101]"
+        className="fixed w-max min-w-48 py-1 bg-ctp-mantle border border-ctp-surface0 rounded-lg shadow-xl shadow-black/20 z-[101]"
         style={{ top, left }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -92,7 +92,7 @@ export function ContextMenuPortal() {
                 {item.icon && (
                   <item.icon className="w-4 h-4 text-ctp-overlay1" />
                 )}
-                <span>{item.label}</span>
+                <span className="whitespace-nowrap">{item.label}</span>
               </button>
             ))}
           </div>

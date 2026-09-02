@@ -80,7 +80,7 @@ export const ToolbarOverflowMenu = memo(function ToolbarOverflowMenu({
         <div
           ref={menuRef}
           role="menu"
-          className="absolute right-0 top-full mt-1 min-w-48 rounded-md border border-ctp-surface0 bg-ctp-mantle/95 backdrop-blur-sm shadow-lg py-1 z-50"
+          className="absolute right-0 top-full mt-1 w-max min-w-48 rounded-md border border-ctp-surface0 bg-ctp-mantle/95 backdrop-blur-sm shadow-lg py-1 z-50"
         >
           {actions.map((action) => {
             const Icon = action.icon;
@@ -101,9 +101,11 @@ export const ToolbarOverflowMenu = memo(function ToolbarOverflowMenu({
                 <Icon
                   className={`w-4 h-4 shrink-0${loading ? " animate-spin" : ""}`}
                 />
-                <span className="flex-1 text-left">{action.label}</span>
+                <span className="flex-1 text-left whitespace-nowrap">
+                  {action.label}
+                </span>
                 {action.shortcut && (
-                  <span className="text-xs text-ctp-subtext0 font-mono ml-4">
+                  <span className="ml-8 shrink-0 whitespace-nowrap text-xs text-ctp-subtext0 font-mono">
                     {formatShortcut(action.shortcut)}
                   </span>
                 )}
