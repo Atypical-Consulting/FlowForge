@@ -3,6 +3,11 @@ import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { useGitOpsStore } from "../../core/stores/domain/git-ops";
 import { WorktreeSidebarPanel } from "./components";
 
+/** Header badge; runs during render so it can subscribe to the store. */
+function useWorktreeCount(): number {
+  return useGitOpsStore((s) => s.worktreeList.length);
+}
+
 export async function onActivate(api: ExtensionAPI): Promise<void> {
   // Contribute sidebar panel (replaces hardcoded RepositoryView section)
   api.contributeSidebarPanel({
@@ -29,10 +34,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
         </button>
       );
     },
-    badge: () => {
-      const count = useGitOpsStore.getState().worktreeList.length;
-      return count > 1 ? count : null;
-    },
+    badge: useWorktreeCount,
   });
 
   // Register "Create Worktree" command in palette

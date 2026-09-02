@@ -13,7 +13,13 @@ export interface SidebarPanelConfig {
   when?: () => boolean;
   defaultOpen?: boolean;
   source?: string;
+  /** Header action (e.g. a "+" button). Clicking it never toggles the panel. */
   renderAction?: () => ReactNode;
+  /**
+   * Count shown in the panel header. Invoked during render of the header, so it
+   * may be a hook (e.g. `() => useStore((s) => s.items.length)`) to stay
+   * reactive. `0` is displayed; return `null` to hide the badge.
+   */
   badge?: () => number | string | null;
 }
 

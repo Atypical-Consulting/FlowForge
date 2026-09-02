@@ -1,4 +1,4 @@
-import { Archive, GitBranch, Plus, Tag } from "lucide-react";
+import { Archive, GitBranch, Tag } from "lucide-react";
 import type { ErrorInfo, ReactNode } from "react";
 import {
   Component,
@@ -13,6 +13,7 @@ import { useGroupRef, usePanelRef } from "react-resizable-panels";
 import { getPresetById } from "@/framework/layout/layoutPresets";
 import {
   getVisiblePanels,
+  type SidebarPanelConfig,
   useSidebarPanelRegistry,
 } from "@/framework/layout/sidebarPanelRegistry";
 import { BranchList } from "../../extensions/branches/components/BranchList";
@@ -23,6 +24,7 @@ import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 import { usePreferencesStore } from "../stores/domain/preferences";
 import { CommitForm } from "./commit/CommitForm";
 import { ResizablePanel, ResizablePanelLayout, ResizeHandle } from "./layout";
+import { SidebarSection } from "./sidebar";
 
 // Minimal error boundary for extension panels (react-error-boundary not in deps)
 class ExtensionPanelErrorBoundary extends Component<
@@ -70,37 +72,37 @@ function DynamicSidebarPanels() {
   return (
     <>
       {visiblePanels.map((panel) => (
-        <details
-          key={panel.id}
-          open={panel.defaultOpen}
-          className="border-b border-ctp-surface0"
-        >
-          <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
-            <panel.icon className="w-4 h-4" />
-            <span className="font-semibold text-sm flex-1">{panel.title}</span>
-            {panel.badge &&
-              (() => {
-                const value = panel.badge?.();
-                if (value == null || value === 0 || value === "") return null;
-                return (
-                  <span className="bg-ctp-blue text-ctp-base text-[10px] font-medium px-1.5 min-w-[18px] text-center rounded-full">
-                    {value}
-                  </span>
-                );
-              })()}
-            {panel.renderAction?.()}
-          </summary>
-          <ExtensionPanelErrorBoundary>
-            <panel.component />
-          </ExtensionPanelErrorBoundary>
-        </details>
+        <ExtensionSidebarSection key={panel.id} panel={panel} />
       ))}
     </>
   );
 }
 
+function ExtensionSidebarSection({ panel }: { panel: SidebarPanelConfig }) {
+  // `badge` is invoked during render so it may subscribe to stores via hooks.
+  const badge = panel.badge?.();
+
+  return (
+    <SidebarSection
+      id={panel.id}
+      title={panel.title}
+      icon={panel.icon}
+      count={badge}
+      defaultOpen={panel.defaultOpen ?? false}
+      renderAction={panel.renderAction}
+    >
+      <ExtensionPanelErrorBoundary>
+        <panel.component />
+      </ExtensionPanelErrorBoundary>
+    </SidebarSection>
+  );
+}
+
 export function RepositoryView() {
   const status = useRepositoryStore((s) => s.repoStatus);
+  const localBranchCount = useRepositoryStore((s) => s.branchList.length);
+  const stashCount = useRepositoryStore((s) => s.stashList.length);
+  const tagCount = useRepositoryStore((s) => s.tagList.length);
   const [showBranchDialog, setShowBranchDialog] = useState(false);
   const [showStashDialog, setShowStashDialog] = useState(false);
   const [showTagDialog, setShowTagDialog] = useState(false);
@@ -228,74 +230,57 @@ export function RepositoryView() {
           {/* Scrollable sections container */}
           <div className="flex-1 overflow-y-auto">
             {/* Branches section */}
-            <details open className="border-b border-ctp-surface0">
-              <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
-                <GitBranch className="w-4 h-4" />
-                <span className="font-semibold text-sm flex-1">Branches</span>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowBranchDialog(true);
-                  }}
-                  className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
-                  title="Create new branch"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              </summary>
+            <SidebarSection
+              id="branches"
+              title="Branches"
+              icon={GitBranch}
+              count={localBranchCount}
+              defaultOpen
+              action={{
+                title: "Create new branch",
+                onClick: () => setShowBranchDialog(true),
+              }}
+            >
               <BranchList
                 showCreateDialog={showBranchDialog}
                 onCloseCreateDialog={() => setShowBranchDialog(false)}
               />
-            </details>
+            </SidebarSection>
 
             {/* Stash section */}
-            <details className="border-b border-ctp-surface0">
-              <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
-                <Archive className="w-4 h-4" />
-                <span className="font-semibold text-sm flex-1">Stashes</span>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowStashDialog(true);
-                  }}
-                  className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
-                  title="Save new stash"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              </summary>
+            <SidebarSection
+              id="stashes"
+              title="Stashes"
+              icon={Archive}
+              count={stashCount}
+              action={{
+                title: "Save new stash",
+                onClick: () => setShowStashDialog(true),
+              }}
+            >
               <StashList
                 showSaveDialog={showStashDialog}
                 onCloseSaveDialog={() => setShowStashDialog(false)}
               />
-            </details>
+            </SidebarSection>
 
             {/* Tags section */}
-            <details className="border-b border-ctp-surface0">
-              <summary className="p-3 cursor-pointer hover:bg-ctp-surface0/50 flex items-center gap-2 select-none sticky top-0 z-10 bg-ctp-base/70 backdrop-blur-lg border-b border-ctp-surface0/50">
-                <Tag className="w-4 h-4" />
-                <span className="font-semibold text-sm flex-1">Tags</span>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowTagDialog(true);
-                  }}
-                  className="p-1 hover:bg-ctp-surface1 rounded text-ctp-subtext0 hover:text-ctp-text"
-                  title="Create new tag"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              </summary>
+            <SidebarSection
+              id="tags"
+              title="Tags"
+              icon={Tag}
+              count={tagCount}
+              action={{
+                title: "Create new tag",
+                onClick: () => setShowTagDialog(true),
+              }}
+            >
               <TagList
                 showCreateDialog={showTagDialog}
                 onCloseCreateDialog={() => setShowTagDialog(false)}
                 onOpenCreateDialog={() => setShowTagDialog(true)}
               />
-            </details>
+            </SidebarSection>
 
             {/* Extension-contributed sidebar panels */}
             <DynamicSidebarPanels />

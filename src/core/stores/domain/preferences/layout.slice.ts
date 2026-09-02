@@ -13,6 +13,8 @@ export interface LayoutState {
   panelSizes: Record<string, number>;
   hiddenPanels: string[];
   focusedPanel: string | null;
+  /** Expanded (true) / collapsed (false) state of sidebar sections, keyed by section id. */
+  sidebarSections: Record<string, boolean>;
 }
 
 const defaultLayoutState: LayoutState = {
@@ -20,10 +22,21 @@ const defaultLayoutState: LayoutState = {
   panelSizes: { sidebar: 20, blades: 80 },
   hiddenPanels: [],
   focusedPanel: null,
+  sidebarSections: {},
 };
 
 function mergeLayoutState(saved: Partial<LayoutState>): LayoutState {
-  return { ...defaultLayoutState, ...saved };
+  return {
+    ...defaultLayoutState,
+    ...saved,
+    sidebarSections: { ...(saved.sidebarSections ?? {}) },
+  };
+}
+
+async function persistLayoutState(state: LayoutState): Promise<void> {
+  const store = await getStore();
+  await store.set("layout", state);
+  await store.save();
 }
 
 export interface LayoutSlice {
@@ -31,6 +44,8 @@ export interface LayoutSlice {
   setActivePreset: (presetId: PresetId) => Promise<void>;
   setPanelSizes: (sizes: Record<string, number>) => Promise<void>;
   togglePanel: (panelId: string) => Promise<void>;
+  /** Remember whether a sidebar section is expanded; applied immediately, persisted in the background. */
+  setSidebarSectionOpen: (sectionId: string, open: boolean) => Promise<void>;
   enterFocusMode: (panelId: string) => void;
   exitFocusMode: () => void;
   resetLayout: () => Promise<void>;
@@ -60,6 +75,7 @@ export const createLayoutSlice: StateCreator<
         panelSizes: { ...preset.layout },
         hiddenPanels,
         focusedPanel: null,
+        sidebarSections: get().layoutState.sidebarSections,
       };
 
       const store = await getStore();
@@ -111,6 +127,29 @@ export const createLayoutSlice: StateCreator<
       set({ layoutState: newState }, false, "preferences:layout/togglePanel");
     } catch (e) {
       console.error("Failed to toggle panel:", e);
+    }
+  },
+
+  setSidebarSectionOpen: async (sectionId, open) => {
+    const current = get().layoutState;
+    if (current.sidebarSections[sectionId] === open) return;
+
+    const newState: LayoutState = {
+      ...current,
+      sidebarSections: { ...current.sidebarSections, [sectionId]: open },
+    };
+
+    // Update synchronously so the controlled <details> never lags behind the DOM.
+    set(
+      { layoutState: newState },
+      false,
+      "preferences:layout/setSidebarSectionOpen",
+    );
+
+    try {
+      await persistLayoutState(newState);
+    } catch (e) {
+      console.error("Failed to persist sidebar section state:", e);
     }
   },
 
