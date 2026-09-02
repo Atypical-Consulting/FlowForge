@@ -9,6 +9,17 @@ import { CONFLICT_FILES_QUERY_KEY } from "./hooks/useConflictQuery";
 import { useConflictStore } from "./store";
 
 let unsubConflictWatch: (() => void) | null = null;
+let unsubRepoWatch: (() => void) | null = null;
+
+/** Forget every conflict when the repository is closed. */
+function clearConflictFiles(): void {
+  useConflictStore.setState({
+    files: new Map(),
+    activeFilePath: null,
+    loadingPath: null,
+  });
+  queryClient.setQueryData(CONFLICT_FILES_QUERY_KEY, []);
+}
 
 /**
  * Re-read the conflicted-file list and mirror it into the TanStack query so
@@ -82,6 +93,24 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
   const refresh = () => {
     void refreshConflictFiles();
   };
+
+  // A repository can already be mid-merge when it is opened (app launch or
+  // reload with `UU` entries in `git status`), and `refreshRepositoryState`
+  // (file watcher on .git, gitflow ops, "Refresh All") replaces `repoStatus`
+  // with a fresh object. Neither goes through a git hook, so follow the repo
+  // store: load the list whenever `repoStatus` changes, clear it on close.
+  unsubRepoWatch?.();
+  unsubRepoWatch = useGitOpsStore.subscribe((state, prevState) => {
+    if (state.repoStatus === prevState.repoStatus) return;
+    if (state.repoStatus) {
+      refresh();
+    } else {
+      clearConflictFiles();
+    }
+  });
+  if (useGitOpsStore.getState().repoStatus) {
+    refresh();
+  }
   api.onDidGit("merge", refresh);
   api.onDidGit("merge-abort", refresh);
   api.onDidGit("pull", refresh);
@@ -91,5 +120,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
 export function onDeactivate(): void {
   unsubConflictWatch?.();
   unsubConflictWatch = null;
+  unsubRepoWatch?.();
+  unsubRepoWatch = null;
   // api.cleanup() handles all registrations
 }
