@@ -1,8 +1,9 @@
 import { DiffEditor, type DiffOnMount } from "@monaco-editor/react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { commands } from "../../../../bindings";
+import { prepareDiffContent } from "../../../lib/diffContent";
 import "../../../lib/monacoTheme";
 
 interface InlineDiffViewerProps {
@@ -103,6 +104,13 @@ export function InlineDiffViewer({
 
   const diff = result?.status === "ok" ? result.data : null;
 
+  // Normalize trailing newlines so Monaco's line count matches git's and new
+  // files don't render phantom empty removed/added lines.
+  const content = useMemo(
+    () => (diff ? prepareDiffContent(diff.oldContent, diff.newContent) : null),
+    [diff],
+  );
+
   // The editor is reused in place when the selected file changes (no remount),
   // so handleMount only runs once. Re-apply the saved scroll position whenever
   // the file or its loaded diff content changes.
@@ -137,10 +145,10 @@ export function InlineDiffViewer({
           <Loader2 className="w-5 h-5 animate-spin text-ctp-overlay1" />
         </div>
       )}
-      {diff && (
+      {diff && content && (
         <DiffEditor
-          original={diff.oldContent}
-          modified={diff.newContent}
+          original={content.original}
+          modified={content.modified}
           language={diff.language}
           theme="flowforge-dark"
           options={INLINE_DIFF_OPTIONS}
