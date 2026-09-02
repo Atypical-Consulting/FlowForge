@@ -8,6 +8,7 @@ import { RepoStatsCards } from "../components/RepoStatsCards";
 import { TimeRangeSelector } from "../components/TimeRangeSelector";
 import { useInsightsData } from "../hooks/useInsightsData";
 import { useInsightsStore } from "../insightsStore";
+import { countActiveBranches } from "../lib/branchStats";
 
 export function InsightsDashboardBlade() {
   const { insights, branchHealth, isLoading, error } = useInsightsData();
@@ -49,7 +50,8 @@ export function InsightsDashboardBlade() {
           {/* Row 1: Stats cards */}
           <RepoStatsCards
             insights={insights}
-            branchCount={branchHealth.length}
+            branchCount={countActiveBranches(branchHealth, timeRange)}
+            timeRange={timeRange}
             isLoading={isLoading}
           />
 
