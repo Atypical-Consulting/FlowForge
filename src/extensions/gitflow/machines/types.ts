@@ -13,14 +13,26 @@ export interface GitflowContext {
 
 export type GitflowEvent =
   | { type: "START"; operation: GitflowOp; name: string }
-  | { type: "FINISH"; operation: GitflowOp; tagMessage?: string }
-  | { type: "ABORT_GITFLOW" }
+  | {
+      type: "FINISH";
+      operation: GitflowOp;
+      /** Name of the active flow (used for the success toast only). */
+      name?: string;
+      tagMessage?: string;
+    }
+  | {
+      type: "ABORT_GITFLOW";
+      /** Active flow being aborted (used for the success toast only). */
+      operation?: GitflowOp;
+      name?: string;
+    }
   | { type: "RETRY_REFRESH" }
   | { type: "DISMISS_ERROR" };
 
 export type GitflowState =
   | "idle"
   | "executing"
+  | "aborting"
   | "refreshing"
   | "stale"
   | "error";

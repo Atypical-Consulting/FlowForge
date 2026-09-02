@@ -9,8 +9,13 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from "../../../core/test-utils";
-import { gitflowOk } from "../../../core/test-utils/mocks/tauri-commands";
+import {
+  gitflowErr,
+  gitflowOk,
+} from "../../../core/test-utils/mocks/tauri-commands";
+import { getGitflowActor } from "../machines/context";
 
 const mockCommands = vi.hoisted(() => ({
   getGitflowStatus: vi.fn(),
@@ -21,9 +26,15 @@ const mockCommands = vi.hoisted(() => ({
   getUndoInfo: vi.fn(),
   getCommitGraph: vi.fn(),
   startFeature: vi.fn(),
+  finishFeature: vi.fn(),
+  abortGitflow: vi.fn(),
+}));
+const mockToast = vi.hoisted(() => ({
+  toast: { error: vi.fn(), success: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }));
 
 vi.mock("../../../bindings", () => ({ commands: mockCommands }));
+vi.mock("@/framework/stores/toast", () => mockToast);
 
 import { GitflowPanel } from "./GitflowPanel";
 
@@ -76,6 +87,8 @@ function setBackendBranch(branch: string) {
 describe("GitflowPanel", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // The machine actor is a module singleton: reset any leftover failure.
+    getGitflowActor().send({ type: "DISMISS_ERROR" });
     setBackendBranch("develop");
     mockCommands.listTags.mockResolvedValue(ok([]));
     mockCommands.listStashes.mockResolvedValue(ok([]));
@@ -148,6 +161,81 @@ describe("GitflowPanel", () => {
     });
     expect(invalidateSpy).toHaveBeenCalledWith({
       queryKey: ["commitHistory"],
+    });
+  });
+
+  describe("on a feature branch with a dirty working tree", () => {
+    const DIRTY_TREE_MESSAGE =
+      "You have uncommitted changes. Commit or stash them before running this Gitflow operation.";
+
+    beforeEach(() => {
+      setBackendBranch("feature/ui-test");
+      useGitOpsStore.setState({
+        repoStatus: createRepoStatus({
+          branchName: "feature/ui-test",
+          isDirty: true,
+        }),
+        branchList: [
+          createBranchInfo({ name: "develop", isHead: false }),
+          createBranchInfo({ name: "feature/ui-test", isHead: true }),
+        ],
+      });
+      mockCommands.finishFeature.mockResolvedValue(
+        gitflowErr({ type: "DirtyWorkingTree" }),
+      );
+      mockCommands.abortGitflow.mockResolvedValue(
+        gitflowErr({ type: "DirtyWorkingTree" }),
+      );
+    });
+
+    it("keeps a failed Finish Feature visible in the panel and dismiss clears it", async () => {
+      render(<GitflowPanel />);
+
+      const finishFeature = await screen.findByRole("button", {
+        name: "Finish Feature",
+      });
+      await waitFor(() => expect(finishFeature).toBeEnabled());
+      fireEvent.click(finishFeature);
+      fireEvent.click(screen.getByRole("button", { name: "Finish" }));
+
+      // The dialog stays open and shows the failure
+      const dialog = screen.getByRole("dialog");
+      expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+        DIRTY_TREE_MESSAGE,
+      );
+      expect(mockToast.toast.error).toHaveBeenCalledWith(DIRTY_TREE_MESSAGE);
+
+      // Closing the dialog leaves the failure visible in the panel
+      fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+      await waitFor(() =>
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+      );
+      expect(screen.getByRole("alert")).toHaveTextContent(DIRTY_TREE_MESSAGE);
+
+      fireEvent.click(screen.getByRole("button", { name: "Dismiss error" }));
+      await waitFor(() =>
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument(),
+      );
+      // The branch was never changed
+      expect(useGitOpsStore.getState().repoStatus?.branchName).toBe(
+        "feature/ui-test",
+      );
+    });
+
+    it("shows a failed abort in the panel", async () => {
+      render(<GitflowPanel />);
+
+      const abort = await screen.findByRole("button", {
+        name: "Abort current flow",
+      });
+      await waitFor(() => expect(abort).toBeEnabled());
+      fireEvent.click(abort);
+
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        DIRTY_TREE_MESSAGE,
+      );
+      expect(mockCommands.abortGitflow).toHaveBeenCalledTimes(1);
+      expect(mockToast.toast.error).toHaveBeenCalledWith(DIRTY_TREE_MESSAGE);
     });
   });
 });

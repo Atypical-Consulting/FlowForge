@@ -22,6 +22,9 @@ export function FinishFlowDialog({ flowType, onClose }: FinishFlowDialogProps) {
   const { gitflowStatus: status } = useGitflowStore();
   const { isBusy: isLoading, error, finishOperation } = useGitflowWorkflow();
   const [tagMessage, setTagMessage] = useState("");
+  // Only surface failures of the operation submitted from this dialog, not a
+  // stale error left over from an earlier one (the panel shows that).
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const needsTagMessage = flowType === "release" || flowType === "hotfix";
   const flowName = status?.activeFlow?.name || "";
@@ -61,11 +64,14 @@ export function FinishFlowDialog({ flowType, onClose }: FinishFlowDialogProps) {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLoading) return;
-    finishOperation(flowType, tagMessage || undefined);
-    onClose();
+    setHasSubmitted(true);
+    // Stay open while the machine runs and refreshes; close only on success
+    // so a failure (e.g. dirty working tree) is shown right here.
+    const succeeded = await finishOperation(flowType, tagMessage || undefined);
+    if (succeeded) onClose();
   };
 
   return (
@@ -104,7 +110,11 @@ export function FinishFlowDialog({ flowType, onClose }: FinishFlowDialogProps) {
             </div>
           )}
 
-          {error && <p className="text-ctp-red text-sm">{error}</p>}
+          {hasSubmitted && error && (
+            <p role="alert" className="text-ctp-red text-sm">
+              {error}
+            </p>
+          )}
 
           <DialogFooter className="pt-2">
             <Button type="button" variant="ghost" onClick={onClose}>
