@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createActor } from "xstate";
 import { registerBlade, unregisterBlade } from "../bladeRegistry";
+import { rootBladeForWorkflow } from "./actions";
 import { navigationMachine } from "./navigationMachine";
 import { clearWorkflows, registerWorkflow } from "./workflowRegistry";
 
@@ -827,5 +828,105 @@ describe("navigationMachine", () => {
     expect(notifyFn).toHaveBeenCalled();
 
     actor.stop();
+  });
+});
+
+describe("navigationMachine — workflow registry resilience", () => {
+  const STAGING = {
+    id: "staging",
+    label: "Staging",
+    rootBlade: {
+      type: "staging-changes",
+      title: "Changes",
+      props: {} as Record<string, never>,
+    },
+  } as const;
+
+  beforeEach(() => {
+    clearWorkflows();
+  });
+
+  it("starts on the placeholder root when nothing is registered, then heals on WORKFLOWS_CHANGED", () => {
+    const actor = createTestActor();
+    expect(actor.getSnapshot().context.activeWorkflow).toBe("");
+    expect(actor.getSnapshot().context.bladeStack[0]?.type).toBe("empty");
+
+    registerWorkflow(STAGING);
+    actor.send({ type: "WORKFLOWS_CHANGED" });
+
+    const snap = actor.getSnapshot();
+    expect(snap.context.activeWorkflow).toBe("staging");
+    expect(snap.context.bladeStack).toHaveLength(1);
+    expect(snap.context.bladeStack[0]?.type).toBe("staging-changes");
+    expect(snap.context.lastAction).toBe("reset");
+    actor.stop();
+  });
+
+  it("WORKFLOWS_CHANGED is a no-op when the active workflow is registered", () => {
+    registerWorkflow(STAGING);
+    const actor = createTestActor();
+    const stackBefore = actor.getSnapshot().context.bladeStack;
+
+    actor.send({ type: "WORKFLOWS_CHANGED" });
+
+    expect(actor.getSnapshot().context.bladeStack).toBe(stackBefore);
+    expect(actor.getSnapshot().context.lastAction).toBe("init");
+    actor.stop();
+  });
+
+  it("WORKFLOWS_CHANGED heals even while confirming a discard", () => {
+    const actor = createTestActor();
+    actor.send({
+      type: "PUSH_BLADE",
+      bladeType: "settings",
+      title: "Settings",
+      props: {},
+    });
+    const settingsId = actor.getSnapshot().context.bladeStack[1]?.id ?? "";
+    actor.send({ type: "MARK_DIRTY", bladeId: settingsId });
+    actor.send({ type: "POP_BLADE" });
+    expect(actor.getSnapshot().value).toBe("confirmingDiscard");
+
+    registerWorkflow(STAGING);
+    actor.send({ type: "WORKFLOWS_CHANGED" });
+
+    const snap = actor.getSnapshot();
+    expect(snap.value).toBe("confirmingDiscard");
+    expect(snap.context.activeWorkflow).toBe("staging");
+    expect(snap.context.bladeStack[0]?.type).toBe("staging-changes");
+    expect(snap.context.bladeStack[1]?.type).toBe("settings");
+    actor.stop();
+  });
+
+  it("SWITCH_WORKFLOW to an unknown workflow resolves to the default", () => {
+    registerWorkflow(STAGING);
+    const actor = createTestActor();
+
+    actor.send({ type: "SWITCH_WORKFLOW", workflow: "does-not-exist" });
+
+    const snap = actor.getSnapshot();
+    expect(snap.context.activeWorkflow).toBe("staging");
+    expect(snap.context.bladeStack[0]?.type).toBe("staging-changes");
+    actor.stop();
+  });
+
+  it("RESET_STACK repairs an unknown active workflow", () => {
+    const actor = createTestActor();
+    expect(actor.getSnapshot().context.activeWorkflow).toBe("");
+
+    registerWorkflow(STAGING);
+    actor.send({ type: "RESET_STACK" });
+
+    const snap = actor.getSnapshot();
+    expect(snap.context.activeWorkflow).toBe("staging");
+    expect(snap.context.bladeStack[0]?.type).toBe("staging-changes");
+    actor.stop();
+  });
+
+  it("rootBladeForWorkflow never returns the placeholder once a workflow exists", () => {
+    registerWorkflow(STAGING);
+    expect(rootBladeForWorkflow("").type).toBe("staging-changes");
+    expect(rootBladeForWorkflow("unknown").type).toBe("staging-changes");
+    expect(rootBladeForWorkflow("staging").type).toBe("staging-changes");
   });
 });
