@@ -5,6 +5,7 @@ import {
   BRANCH_RING_COLORS,
 } from "../../../core/lib/branchClassifier";
 import { parseConventionalMessage } from "../../conventional-commits/lib/conventional-utils";
+import { assignLanes, edgeKey } from "./laneAssignment";
 
 export { BRANCH_BADGE_STYLES, BRANCH_HEX_COLORS, BRANCH_RING_COLORS };
 
@@ -26,11 +27,19 @@ export const SIDE_RADIUS = 8;
 export const BADGE_WIDTH = 240;
 /** Height of commit detail badge (DOM overlay) */
 export const BADGE_HEIGHT = 32;
+/**
+ * Vertical distance an edge travels straight out of (or into) a node before
+ * it is allowed to curve sideways, so the turn clears the node circle and the
+ * badge row instead of cutting under them.
+ */
+export const EDGE_TURN_OFFSET = BADGE_HEIGHT / 2 + 4;
 
 // ── Positioned types ──
 
 export interface PositionedNode {
   node: GraphNode;
+  /** Lane index the commit is drawn in (0 = HEAD ancestry lane) */
+  column: number;
   cx: number;
   cy: number;
   r: number;
@@ -52,6 +61,12 @@ export interface LaneLine {
   yStart: number;
   yEnd: number;
   color: string;
+}
+
+/** Cubic Bézier between two points, vertical tangent at both ends. */
+function verticalCurve(x1: number, y1: number, x2: number, y2: number): string {
+  const midY = (y1 + y2) / 2;
+  return `C ${x1},${midY} ${x2},${midY} ${x2},${y2}`;
 }
 
 // ── Layout function ──
@@ -76,25 +91,30 @@ export function computeLayout(
     };
   }
 
+  const { columns, edgeLanes, laneCount } = assignLanes(graphNodes);
+  const laneX = (lane: number) => MAIN_LANE_X + lane * LANE_SPACING;
+
   // ── Position nodes ──
   const positionedNodes: PositionedNode[] = [];
   const nodeMap = new Map<string, PositionedNode>();
+  const rowOf = new Map<string, number>();
+  const rowY: number[] = [];
   let currentY = 40;
-  let maxColumn = 0;
 
   for (let i = 0; i < graphNodes.length; i++) {
     const gn = graphNodes[i];
     const isHead = gn.isHeadAncestor;
     const r = isHead ? MAIN_RADIUS : SIDE_RADIUS;
-    const cx = MAIN_LANE_X + gn.column * LANE_SPACING;
+    const column = columns.get(gn.oid) ?? 0;
+    const cx = laneX(column);
     const cy = currentY;
     const color = BRANCH_HEX_COLORS[gn.branchType] || BRANCH_HEX_COLORS.other;
 
-    const pn: PositionedNode = { node: gn, cx, cy, r, color };
+    const pn: PositionedNode = { node: gn, column, cx, cy, r, color };
     positionedNodes.push(pn);
     nodeMap.set(gn.oid, pn);
-
-    if (gn.column > maxColumn) maxColumn = gn.column;
+    rowOf.set(gn.oid, i);
+    rowY.push(cy);
 
     // Spacing to next node
     const nextNode = graphNodes[i + 1];
@@ -105,8 +125,7 @@ export function computeLayout(
   }
 
   const totalHeight = currentY + 60;
-  const totalWidth =
-    MAIN_LANE_X + (maxColumn + 1) * LANE_SPACING + BADGE_WIDTH + 20;
+  const totalWidth = MAIN_LANE_X + laneCount * LANE_SPACING + BADGE_WIDTH + 20;
 
   // ── Build lane guide lines ──
   // For each column, find the first and last node and draw a vertical line
@@ -115,10 +134,13 @@ export function computeLayout(
     { yStart: number; yEnd: number; color: string }
   >();
   for (const pn of positionedNodes) {
-    const col = pn.node.column;
-    const existing = laneExtents.get(col);
+    const existing = laneExtents.get(pn.column);
     if (!existing) {
-      laneExtents.set(col, { yStart: pn.cy, yEnd: pn.cy, color: pn.color });
+      laneExtents.set(pn.column, {
+        yStart: pn.cy,
+        yEnd: pn.cy,
+        color: pn.color,
+      });
     } else {
       existing.yEnd = pn.cy;
     }
@@ -127,7 +149,7 @@ export function computeLayout(
   for (const [col, ext] of laneExtents) {
     if (ext.yStart !== ext.yEnd) {
       laneLines.push({
-        x: MAIN_LANE_X + col * LANE_SPACING,
+        x: laneX(col),
         yStart: ext.yStart,
         yEnd: ext.yEnd,
         color: ext.color,
@@ -136,23 +158,55 @@ export function computeLayout(
   }
 
   // ── Position edges ──
+  // An edge leaves the child straight down, curves into its assigned lane
+  // before the next row, runs down that lane (which is guaranteed free of
+  // unrelated commits), and curves into the parent right above its row.
   const positionedEdges: PositionedEdge[] = [];
   for (const edge of graphEdges) {
     const source = nodeMap.get(edge.from);
     const target = nodeMap.get(edge.to);
     if (!source || !target) continue;
 
-    const isSameLane = source.cx === target.cx;
+    const r1 = rowOf.get(edge.from) as number;
+    const r2 = rowOf.get(edge.to) as number;
+    if (r2 <= r1) continue;
+
+    const lane = edgeLanes.get(edgeKey(edge.from, edge.to)) ?? target.column;
+    const isSameLane = source.column === lane && lane === target.column;
     let path: string;
 
     if (isSameLane) {
       // Same lane: straight vertical line
       path = `M ${source.cx},${source.cy} L ${target.cx},${target.cy}`;
+    } else if (r2 - r1 === 1) {
+      // Adjacent rows: a single S-curve between the two nodes
+      const exitY = source.cy + EDGE_TURN_OFFSET;
+      const entryY = target.cy - EDGE_TURN_OFFSET;
+      path = [
+        `M ${source.cx},${source.cy}`,
+        `L ${source.cx},${exitY}`,
+        verticalCurve(source.cx, exitY, target.cx, entryY),
+        `L ${target.cx},${target.cy}`,
+      ].join(" ");
     } else {
-      // Cross-lane: step path — go down from source, then horizontal, then down to target.
-      // The horizontal step happens at the midpoint Y.
-      const midY = source.cy + (target.cy - source.cy) * 0.3;
-      path = `M ${source.cx},${source.cy} L ${source.cx},${midY} L ${target.cx},${midY} L ${target.cx},${target.cy}`;
+      const x = laneX(lane);
+      const parts = [`M ${source.cx},${source.cy}`];
+      // Exit the child into the edge's lane before the next row
+      const laneStartY = rowY[r1 + 1];
+      if (source.column !== lane) {
+        const exitY = source.cy + EDGE_TURN_OFFSET;
+        parts.push(`L ${source.cx},${exitY}`);
+        parts.push(verticalCurve(source.cx, exitY, x, laneStartY));
+      }
+      // Travel down the lane, then turn into the parent right above its row
+      const laneEndY = rowY[r2 - 1];
+      if (target.column !== lane) {
+        const entryY = target.cy - EDGE_TURN_OFFSET;
+        parts.push(`L ${x},${laneEndY}`);
+        parts.push(verticalCurve(x, laneEndY, target.cx, entryY));
+      }
+      parts.push(`L ${target.cx},${target.cy}`);
+      path = parts.join(" ");
     }
 
     positionedEdges.push({

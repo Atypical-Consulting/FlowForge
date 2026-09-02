@@ -43,8 +43,6 @@ pub struct GraphNode {
     pub parents: Vec<String>,
     /// Classification of the branch type for coloring
     pub branch_type: BranchType,
-    /// Lane/column position for visual layout (0-indexed from left)
-    pub column: u32,
     /// Branch names pointing to this commit
     pub branch_names: Vec<String>,
     /// Whether this commit is a first-parent ancestor of HEAD
@@ -211,7 +209,6 @@ async fn get_commit_graph_impl(
                         timestamp_ms: (commit.time().seconds() as f64) * 1000.0,
                         parents: parent_oids,
                         branch_type: BranchType::Other, // Will be set by ideological assignment
-                        column: 0,                      // Will be set by lane algorithm
                         branch_names,
                         is_head_ancestor: head_ancestors.contains(&oid),
                         ideological_branch: String::new(), // Will be set below
@@ -310,48 +307,13 @@ async fn get_commit_graph_impl(
             }
         }
 
-        // ── 5. Assign lanes for visual layout ──
-        assign_lanes(&mut nodes, &head_ancestors);
-
+        // Lane/column layout is computed client-side over all loaded pages
+        // (see src/extensions/topology/lib/laneAssignment.ts), since a page
+        // cannot know which lanes are still occupied by edges from earlier pages.
         Ok(CommitGraph { nodes, edges })
     })
     .await
     .map_err(|e| GitError::OperationFailed(format!("Task join error: {}", e)))?
-}
-
-/// Assign lane/column positions to commits for visual layout (Ungit-style).
-///
-/// Algorithm: HEAD ancestors always get column 0. Side branches get columns
-/// assigned per ideological branch — all commits belonging to the same branch
-/// share the same column. Columns are allocated left-to-right as new branches
-/// are first encountered in topological order.
-fn assign_lanes(nodes: &mut [GraphNode], _head_ancestors: &HashSet<git2::Oid>) {
-    if nodes.is_empty() {
-        return;
-    }
-
-    // Map ideological branch name -> assigned column
-    let mut branch_column: HashMap<String, u32> = HashMap::new();
-    // Column 0 is always reserved for HEAD ancestry line
-    let mut next_column: u32 = 1;
-
-    for node in nodes.iter_mut() {
-        if node.is_head_ancestor {
-            // HEAD ancestors always go in column 0
-            node.column = 0;
-        } else {
-            // Side-branch commits: assign a column per ideological branch
-            let col = if let Some(&col) = branch_column.get(&node.ideological_branch) {
-                col
-            } else {
-                let col = next_column;
-                next_column += 1;
-                branch_column.insert(node.ideological_branch.clone(), col);
-                col
-            };
-            node.column = col;
-        }
-    }
 }
 
 #[cfg(test)]
@@ -401,113 +363,5 @@ mod tests {
         assert_eq!(classify_branch("bugfix/something"), BranchType::Other);
         assert_eq!(classify_branch("experiment"), BranchType::Other);
         assert_eq!(classify_branch("feat-login"), BranchType::Other);
-    }
-
-    fn make_node(oid: &str, parents: Vec<&str>, is_head: bool, branch: &str) -> GraphNode {
-        GraphNode {
-            oid: oid.to_string(),
-            short_oid: oid[..7.min(oid.len())].to_string(),
-            message: format!("Commit {}", oid),
-            author: "Test".to_string(),
-            timestamp_ms: 0.0,
-            parents: parents.into_iter().map(String::from).collect(),
-            branch_type: classify_branch(branch),
-            column: 0,
-            branch_names: vec![],
-            is_head_ancestor: is_head,
-            ideological_branch: branch.to_string(),
-        }
-    }
-
-    #[test]
-    fn test_assign_lanes_empty() {
-        let mut nodes: Vec<GraphNode> = vec![];
-        let head_ancestors = HashSet::new();
-        assign_lanes(&mut nodes, &head_ancestors);
-        assert!(nodes.is_empty());
-    }
-
-    #[test]
-    fn test_assign_lanes_single_commit() {
-        let oid = git2::Oid::from_str("abc1234abc1234abc1234abc1234abc1234abc12").unwrap();
-        let mut head_ancestors = HashSet::new();
-        head_ancestors.insert(oid);
-        let mut nodes = vec![make_node(
-            "abc1234abc1234abc1234abc1234abc1234abc12",
-            vec![],
-            true,
-            "main",
-        )];
-        assign_lanes(&mut nodes, &head_ancestors);
-        assert_eq!(nodes[0].column, 0);
-    }
-
-    #[test]
-    fn test_assign_lanes_linear_history() {
-        let oid3 = git2::Oid::from_str("3333333333333333333333333333333333333333").unwrap();
-        let oid2 = git2::Oid::from_str("2222222222222222222222222222222222222222").unwrap();
-        let oid1 = git2::Oid::from_str("1111111111111111111111111111111111111111").unwrap();
-        let mut head_ancestors = HashSet::new();
-        head_ancestors.insert(oid3);
-        head_ancestors.insert(oid2);
-        head_ancestors.insert(oid1);
-        let mut nodes = vec![
-            make_node(
-                "3333333333333333333333333333333333333333",
-                vec!["2222222222222222222222222222222222222222"],
-                true,
-                "main",
-            ),
-            make_node(
-                "2222222222222222222222222222222222222222",
-                vec!["1111111111111111111111111111111111111111"],
-                true,
-                "main",
-            ),
-            make_node(
-                "1111111111111111111111111111111111111111",
-                vec![],
-                true,
-                "main",
-            ),
-        ];
-        assign_lanes(&mut nodes, &head_ancestors);
-        // All HEAD ancestors should be in column 0
-        assert_eq!(nodes[0].column, 0);
-        assert_eq!(nodes[1].column, 0);
-        assert_eq!(nodes[2].column, 0);
-    }
-
-    #[test]
-    fn test_assign_lanes_branch() {
-        let oid_head = git2::Oid::from_str("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").unwrap();
-        let oid_base = git2::Oid::from_str("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb").unwrap();
-        let mut head_ancestors = HashSet::new();
-        head_ancestors.insert(oid_head);
-        head_ancestors.insert(oid_base);
-        let mut nodes = vec![
-            make_node(
-                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-                vec!["bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"],
-                true,
-                "main",
-            ),
-            make_node(
-                "cccccccccccccccccccccccccccccccccccccccc",
-                vec!["bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"],
-                false,
-                "feature/login",
-            ),
-            make_node(
-                "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-                vec![],
-                true,
-                "main",
-            ),
-        ];
-        assign_lanes(&mut nodes, &head_ancestors);
-        assert_eq!(nodes[0].column, 0); // HEAD ancestor = column 0
-        assert_eq!(nodes[1].column, 1); // feature branch = column 1
-        assert_eq!(nodes[2].column, 0); // HEAD ancestor = column 0
     }
 }

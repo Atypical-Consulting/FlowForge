@@ -2895,10 +2895,6 @@ export type GraphNode = {
    */
   branchType: BranchType;
   /**
-   * Lane/column position for visual layout (0-indexed from left)
-   */
-  column: number;
-  /**
    * Branch names pointing to this commit
    */
   branchNames: string[];
