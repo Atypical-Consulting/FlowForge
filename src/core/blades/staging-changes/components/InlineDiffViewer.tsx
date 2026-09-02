@@ -1,8 +1,10 @@
 import { DiffEditor, type DiffOnMount } from "@monaco-editor/react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import type { editor } from "monaco-editor";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { commands } from "../../../../bindings";
+import { WholeFileDiffEditor } from "../../../components/diff/WholeFileDiffEditor";
 import { useMonacoTheme } from "../../../hooks/useMonacoTheme";
 import { prepareDiffContent } from "../../../lib/diffContent";
 import "../../../lib/monacoTheme";
@@ -55,7 +57,9 @@ export function InlineDiffViewer({
   // Debounce file path changes to prevent rapid-fire queries during keyboard nav
   const [debouncedFilePath, setDebouncedFilePath] = useState(filePath);
   const [debouncedStaged, setDebouncedStaged] = useState(staged);
-  const editorRef = useRef<Parameters<DiffOnMount>[0] | null>(null);
+  // The editor whose scroll position is tracked: the modified pane of the
+  // DiffEditor, or the single WholeFileDiffEditor for added/deleted files.
+  const editorRef = useRef<editor.ICodeEditor | null>(null);
   const monacoTheme = useMonacoTheme();
 
   // Keep the latest saved scroll position in a ref so the restore effect can
@@ -93,18 +97,20 @@ export function InlineDiffViewer({
     };
   }, []);
 
-  const handleMount: DiffOnMount = (editor) => {
-    editorRef.current = editor;
+  const attachEditor = (codeEditor: editor.ICodeEditor) => {
+    editorRef.current = codeEditor;
     const scrollTop = initialScrollTopRef.current;
     if (scrollTop && scrollTop > 0) {
-      editor.getModifiedEditor().setScrollTop(scrollTop);
+      codeEditor.setScrollTop(scrollTop);
     }
     scrollDisposableRef.current?.dispose();
-    scrollDisposableRef.current = editor
-      .getModifiedEditor()
-      .onDidScrollChange((e) => {
-        onScrollPositionChange?.(e.scrollTop);
-      });
+    scrollDisposableRef.current = codeEditor.onDidScrollChange((e) => {
+      onScrollPositionChange?.(e.scrollTop);
+    });
+  };
+
+  const handleMount: DiffOnMount = (diffEditor) => {
+    attachEditor(diffEditor.getModifiedEditor());
   };
 
   const diff = result?.status === "ok" ? result.data : null;
@@ -124,7 +130,7 @@ export function InlineDiffViewer({
     const editor = editorRef.current;
     if (!editor || !diff) return;
     const scrollTop = initialScrollTopRef.current ?? 0;
-    editor.getModifiedEditor().setScrollTop(scrollTop);
+    editor.setScrollTop(scrollTop);
   }, [debouncedFilePath, diff]);
 
   if (error) {
@@ -150,7 +156,18 @@ export function InlineDiffViewer({
           <Loader2 className="w-5 h-5 animate-spin text-ctp-overlay1" />
         </div>
       )}
-      {diff && content && (
+      {diff && content && content.kind !== "modified" && (
+        <WholeFileDiffEditor
+          content={
+            content.kind === "added" ? content.modified : content.original
+          }
+          kind={content.kind}
+          language={diff.language}
+          options={INLINE_DIFF_OPTIONS}
+          onMount={attachEditor}
+        />
+      )}
+      {diff && content && content.kind === "modified" && (
         <DiffEditor
           original={content.original}
           modified={content.modified}

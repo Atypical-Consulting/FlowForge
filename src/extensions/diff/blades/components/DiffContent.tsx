@@ -1,5 +1,6 @@
 import { DiffEditor, type DiffOnMount } from "@monaco-editor/react";
 import { useEffect, useMemo, useRef } from "react";
+import { WholeFileDiffEditor } from "@/core/components/diff/WholeFileDiffEditor";
 import { useMonacoTheme } from "@/core/hooks/useMonacoTheme";
 import { prepareDiffContent } from "@/core/lib/diffContent";
 import { MONACO_COMMON_OPTIONS } from "@/core/lib/monacoConfig";
@@ -97,11 +98,25 @@ export function DiffContent({
     [inline, collapseUnchanged, contextLines],
   );
 
+  // Options for the single-sided view of an added/deleted file.
+  const wholeFileOptions = useMemo(
+    () => ({
+      ...MONACO_COMMON_OPTIONS,
+      glyphMargin: true,
+      wordWrap: "on" as const,
+    }),
+    [],
+  );
+
   if (stagingSource) {
     return (
       <StagingDiffEditor
+        // Remount when switching between the two-sided and single-sided
+        // editors so hunk/line decorations are rebuilt for the new editor.
+        key={content.kind}
         original={content.original}
         modified={content.modified}
+        kind={content.kind}
         language={language}
         inline={inline}
         collapseUnchanged={collapseUnchanged}
@@ -112,6 +127,21 @@ export function DiffContent({
         onToggleHunk={stagingSource.onToggleHunk}
         lineSelection={stagingSource.lineSelection}
       />
+    );
+  }
+
+  if (content.kind !== "modified") {
+    return (
+      <div className="flex-1 min-h-0 h-full overflow-hidden">
+        <WholeFileDiffEditor
+          content={
+            content.kind === "added" ? content.modified : content.original
+          }
+          kind={content.kind}
+          language={language}
+          options={wholeFileOptions}
+        />
+      </div>
     );
   }
 
