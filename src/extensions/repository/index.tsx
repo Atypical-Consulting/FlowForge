@@ -3,6 +3,7 @@ import { lazy } from "react";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { openBlade } from "@/framework/layout/bladeOpener";
 import { BladeBreadcrumb } from "../../core/blades/_shared/BladeBreadcrumb";
+import { refreshRepositoryState } from "../../core/lib/repositoryRefresh";
 import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
 
 /** Shared repo-open condition. */
@@ -75,16 +76,20 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
   api.registerCommand({
     id: "refresh-all",
     title: "Refresh All",
-    description: "Refresh branches, stashes, and tags",
+    description:
+      "Refresh status, branches, stashes, tags, history and gitflow state",
     category: "Repository",
     icon: RefreshCw,
     action: () => {
+      // Shared post-mutation refresh: repo status (header branch), branch
+      // list, gitflow, undo, tags, stashes, graph + query invalidation.
       const store = useRepositoryStore.getState();
       Promise.all([
-        store.loadBranches(),
-        store.loadStashes(),
-        store.loadTags(),
-      ]);
+        refreshRepositoryState(),
+        store.loadAllBranches(true),
+      ]).catch((e) => {
+        console.error("Refresh All failed:", e);
+      });
     },
     enabled: () => !!useRepositoryStore.getState().repoStatus,
   });

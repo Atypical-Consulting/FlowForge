@@ -157,3 +157,52 @@ impl Default for RepositoryState {
         Self::new()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    /// Fresh repository with an initial commit on `main` and a local signature.
+    fn init_repo() -> (TempDir, git2::Repository) {
+        let dir = TempDir::new().unwrap();
+        let repo = git2::Repository::init(dir.path()).unwrap();
+        {
+            let mut cfg = repo.config().unwrap();
+            cfg.set_str("user.name", "Test").unwrap();
+            cfg.set_str("user.email", "test@example.com").unwrap();
+        }
+        repo.set_head("refs/heads/main").unwrap();
+        let sig = repo.signature().unwrap();
+        let tree_oid = {
+            let mut index = repo.index().unwrap();
+            index.write_tree().unwrap()
+        };
+        {
+            let tree = repo.find_tree(tree_oid).unwrap();
+            repo.commit(Some("HEAD"), &sig, &sig, "initial", &tree, &[])
+                .unwrap();
+        }
+        (dir, repo)
+    }
+
+    #[tokio::test]
+    async fn get_status_reflects_head_switched_after_open() {
+        let (dir, repo) = init_repo();
+        let state = RepositoryState::new();
+
+        let initial = state.open(dir.path().to_path_buf()).await.unwrap();
+        assert_eq!(initial.branch_name, "main");
+
+        // Branch switch after the repository was opened (gitflow start, or an
+        // external `git checkout -b` from a terminal).
+        let head = repo.head().unwrap().peel_to_commit().unwrap();
+        repo.branch("feature/payments", &head, false).unwrap();
+        repo.set_head("refs/heads/feature/payments").unwrap();
+
+        // The state stores only the path and re-reads HEAD on every call, so
+        // the status must not be cached.
+        let status = state.get_status().await.unwrap();
+        assert_eq!(status.branch_name, "feature/payments");
+    }
+}
