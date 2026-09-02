@@ -3,7 +3,10 @@ import { Channel } from "@tauri-apps/api/core";
 import { gitHookBus } from "@/core/services/gitHookBus";
 import { toast } from "@/framework/stores/toast";
 import { commands, type SyncProgress } from "../../bindings";
-import { getErrorMessage } from "../lib/errors";
+import {
+  describeSyncResult,
+  formatSyncException,
+} from "../../extensions/sync/lib/syncMessages";
 
 interface UseCommitExecutionOptions {
   onCommitSuccess?: (message: string) => void;
@@ -25,23 +28,23 @@ export function useCommitExecution(options?: UseCommitExecutionOptions) {
       return commands.pushToRemote("origin", channel);
     },
     onSuccess: (result) => {
-      if (result.status === "error") {
-        toast.error(`Push failed: ${getErrorMessage(result.error)}`);
-        options?.onPushError?.(result.error);
+      const outcome = describeSyncResult("push", result, "origin");
+      if (!outcome.ok) {
+        toast.error(outcome.message);
+        options?.onPushError?.(
+          result.status === "error"
+            ? result.error
+            : new Error(result.data.message),
+        );
         return;
       }
-      if (!result.data.success) {
-        toast.error(`Push failed: ${result.data.message}`);
-        options?.onPushError?.(new Error(result.data.message));
-        return;
-      }
-      toast.success("Pushed to origin");
+      toast.success(outcome.message);
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
       gitHookBus.emitDid("push");
       options?.onPushSuccess?.();
     },
     onError: (error) => {
-      toast.error(`Push failed: ${String(error)}`, {
+      toast.error(formatSyncException("push", error), {
         label: "Retry",
         onClick: () => pushMutation.mutate(),
       });

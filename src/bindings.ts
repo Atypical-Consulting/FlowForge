@@ -1605,11 +1605,31 @@ export type SyncProgress = { event: "started"; data: {
 	message: string,
 } };
 
-/**  Result of a sync operation (push/pull/fetch). */
+/**
+ *  Result of a sync operation (push/pull/fetch).
+ * 
+ *  Every field is derived from what the operation actually did, so the
+ *  frontend can build self-contained feedback ("Pushed feature/x to origin,
+ *  3 commits") without relying on possibly-stale UI state.
+ */
 export type SyncResult = {
 	success: boolean,
 	message: string,
+	/**  Number of commits sent (push) or received (fetch/pull). */
 	commitsTransferred: number,
+	/**  Name of the remote the operation targeted. */
+	remote: string,
+	/**  Local branch involved (`None` for fetch, which touches no local branch). */
+	branch: string | null,
+	/**  Remote-tracking refs created or updated by a fetch/pull. */
+	updatedRefs: number,
+	/**  True when there was nothing to transfer. */
+	upToDate: boolean,
+	/**
+	 *  True when this push configured `<remote>/<branch>` as the upstream
+	 *  of the local branch (first push of a branch).
+	 */
+	upstreamSet: boolean,
 };
 
 /**  Information about a git tag. */

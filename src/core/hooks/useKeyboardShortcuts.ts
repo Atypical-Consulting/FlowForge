@@ -9,6 +9,10 @@ import { getNavigationActor } from "@/framework/layout/navigation/context";
 import { toast } from "@/framework/stores/toast";
 import { commands, type SyncProgress } from "../../bindings";
 import {
+  describeSyncResult,
+  formatSyncException,
+} from "../../extensions/sync/lib/syncMessages";
+import {
   useGitOpsStore as useRepositoryStore,
   useGitOpsStore as useTopologyStore,
 } from "../stores/domain/git-ops";
@@ -53,12 +57,17 @@ export function useKeyboardShortcuts() {
       const channel = new Channel<SyncProgress>();
       return commands.pushToRemote("origin", channel);
     },
-    onSuccess: () => {
-      toast.success("Pushed to origin");
+    onSuccess: (result) => {
+      const outcome = describeSyncResult("push", result, "origin");
+      if (!outcome.ok) {
+        toast.error(outcome.message);
+        return;
+      }
+      toast.success(outcome.message);
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
     },
     onError: (error) => {
-      toast.error(`Push failed: ${String(error)}`, {
+      toast.error(formatSyncException("push", error), {
         label: "Retry",
         onClick: () => pushMutation.mutate(),
       });
@@ -71,13 +80,18 @@ export function useKeyboardShortcuts() {
       const channel = new Channel<SyncProgress>();
       return commands.pullFromRemote("origin", channel);
     },
-    onSuccess: () => {
-      toast.success("Pulled from origin");
+    onSuccess: (result) => {
+      const outcome = describeSyncResult("pull", result, "origin");
+      if (!outcome.ok) {
+        toast.error(outcome.message);
+        return;
+      }
+      toast.success(outcome.message);
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
       queryClient.invalidateQueries({ queryKey: ["stagingStatus"] });
     },
     onError: (error) => {
-      toast.error(`Pull failed: ${String(error)}`, {
+      toast.error(formatSyncException("pull", error), {
         label: "Retry",
         onClick: () => pullMutation.mutate(),
       });
@@ -90,12 +104,17 @@ export function useKeyboardShortcuts() {
       const channel = new Channel<SyncProgress>();
       return commands.fetchFromRemote("origin", channel);
     },
-    onSuccess: () => {
-      toast.success("Fetched from origin");
+    onSuccess: (result) => {
+      const outcome = describeSyncResult("fetch", result, "origin");
+      if (!outcome.ok) {
+        toast.error(outcome.message);
+        return;
+      }
+      toast.success(outcome.message);
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
     },
     onError: (error) => {
-      toast.error(`Fetch failed: ${String(error)}`, {
+      toast.error(formatSyncException("fetch", error), {
         label: "Retry",
         onClick: () => fetchMutation.mutate(),
       });

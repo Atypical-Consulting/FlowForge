@@ -7,6 +7,7 @@ import { ShortcutTooltip } from "@/core/components/ui/ShortcutTooltip";
 import { gitHookBus } from "@/core/services/gitHookBus";
 import { toast } from "@/framework/stores/toast";
 import { commands, type SyncProgress } from "../../../bindings";
+import { describeSyncResult, formatSyncException } from "../lib/syncMessages";
 import { SyncProgressDisplay } from "./SyncProgress";
 
 export function SyncButtons() {
@@ -38,13 +39,18 @@ export function SyncButtons() {
       const channel = createProgressChannel();
       return commands.pushToRemote(defaultRemote, channel);
     },
-    onSuccess: () => {
-      toast.success(`Pushed to ${defaultRemote}`);
+    onSuccess: (result) => {
+      const outcome = describeSyncResult("push", result, defaultRemote);
+      if (!outcome.ok) {
+        toast.error(outcome.message);
+        return;
+      }
+      toast.success(outcome.message);
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
       gitHookBus.emitDid("push");
     },
     onError: (error) => {
-      toast.error(`Push failed: ${String(error)}`, {
+      toast.error(formatSyncException("push", error), {
         label: "Retry",
         onClick: () => pushMutation.mutate(),
       });
@@ -56,15 +62,20 @@ export function SyncButtons() {
       const channel = createProgressChannel();
       return commands.pullFromRemote(defaultRemote, channel);
     },
-    onSuccess: () => {
-      toast.success(`Pulled from ${defaultRemote}`);
+    onSuccess: (result) => {
+      const outcome = describeSyncResult("pull", result, defaultRemote);
+      if (!outcome.ok) {
+        toast.error(outcome.message);
+        return;
+      }
+      toast.success(outcome.message);
       queryClient.invalidateQueries({ queryKey: ["stagingStatus"] });
       queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
       queryClient.invalidateQueries({ queryKey: ["repositoryStatus"] });
       gitHookBus.emitDid("pull");
     },
     onError: (error) => {
-      toast.error(`Pull failed: ${String(error)}`, {
+      toast.error(formatSyncException("pull", error), {
         label: "Retry",
         onClick: () => pullMutation.mutate(),
       });
@@ -76,12 +87,17 @@ export function SyncButtons() {
       const channel = createProgressChannel();
       return commands.fetchFromRemote(defaultRemote, channel);
     },
-    onSuccess: () => {
-      toast.success(`Fetched from ${defaultRemote}`);
+    onSuccess: (result) => {
+      const outcome = describeSyncResult("fetch", result, defaultRemote);
+      if (!outcome.ok) {
+        toast.error(outcome.message);
+        return;
+      }
+      toast.success(outcome.message);
       gitHookBus.emitDid("fetch");
     },
     onError: (error) => {
-      toast.error(`Fetch failed: ${String(error)}`, {
+      toast.error(formatSyncException("fetch", error), {
         label: "Retry",
         onClick: () => fetchMutation.mutate(),
       });
