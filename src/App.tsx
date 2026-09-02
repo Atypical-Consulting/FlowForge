@@ -155,9 +155,16 @@ function WelcomeFallback() {
     });
     if (selected && typeof selected === "string") {
       const isRepo = await commands.isGitRepository(selected);
-      if (isRepo.status === "ok" && isRepo.data) {
-        await openRepository(selected);
+      // Only a positive "not a repository" answer is skipped here; a real
+      // error (permission, ownership validation, ...) still goes through the
+      // real open so its cause surfaces in the store's `repoError`.
+      if (isRepo.status === "ok" && !isRepo.data) return;
+      if (isRepo.status === "error") {
+        console.error("Could not inspect repository:", isRepo.error);
       }
+      await openRepository(selected).catch((e) =>
+        console.error("Failed to open repository:", e),
+      );
     }
   }, [openRepository]);
 
