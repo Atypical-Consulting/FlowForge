@@ -32,6 +32,7 @@ import {
   invalidateRepositoryQueries,
   refreshRepositoryState,
 } from "./core/lib/repositoryRefresh";
+import { applyWindowDecorations } from "./core/lib/windowDecorations";
 import {
   useGitOpsStore,
   useGitOpsStore as useRepositoryStore,
@@ -257,6 +258,11 @@ function App() {
     initTheme();
     initSettings().then(() => {
       const { settingsData: settings } = useSettingsStore.getState();
+      // Resolve the title bar preference once settings are hydrated: "auto"
+      // keeps the Rust detection, "always"/"never" override it.
+      applyWindowDecorations(settings.window.decorations).catch((e) => {
+        console.error("Failed to apply window decorations:", e);
+      });
       const defaultTab = settings.general.defaultTab;
       if (
         (defaultTab === "topology" || defaultTab === "history") &&

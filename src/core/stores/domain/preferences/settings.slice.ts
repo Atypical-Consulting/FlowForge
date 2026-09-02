@@ -1,5 +1,9 @@
 import type { StateCreator } from "zustand";
 import { getStore } from "@/framework/stores/persistence/tauri";
+import {
+  applyWindowDecorations,
+  type WindowDecorationsMode,
+} from "../../../lib/windowDecorations";
 import type { PreferencesStore } from "./index";
 import type { PreferencesMiddleware } from "./types";
 
@@ -30,11 +34,20 @@ export interface ToolbarSettings {
   hiddenActions: string[];
 }
 
+export interface WindowSettings {
+  /**
+   * Client-side title bar policy. `auto` defers to the Rust runtime detection
+   * (hidden on tiling Wayland compositors, shown elsewhere).
+   */
+  decorations: WindowDecorationsMode;
+}
+
 export interface Settings {
   general: GeneralSettings;
   git: GitSettings;
   integrations: IntegrationsSettings;
   toolbar: ToolbarSettings;
+  window: WindowSettings;
 }
 
 const defaultSettings: Settings = {
@@ -52,6 +65,9 @@ const defaultSettings: Settings = {
   toolbar: {
     hiddenActions: [],
   },
+  window: {
+    decorations: "auto",
+  },
 };
 
 function mergeSettings(saved: Partial<Settings>): Settings {
@@ -60,6 +76,7 @@ function mergeSettings(saved: Partial<Settings>): Settings {
     git: { ...defaultSettings.git, ...saved.git },
     integrations: { ...defaultSettings.integrations, ...saved.integrations },
     toolbar: { ...defaultSettings.toolbar, ...saved.toolbar },
+    window: { ...defaultSettings.window, ...saved.window },
   };
 }
 
@@ -72,6 +89,8 @@ export interface SettingsSlice {
     key: keyof Settings[C],
     value: Settings[C][keyof Settings[C]],
   ) => Promise<void>;
+  /** Persist the title bar preference and apply it to the window right away. */
+  setWindowDecorations: (mode: WindowDecorationsMode) => Promise<void>;
   initSettings: () => Promise<void>;
 }
 
@@ -80,7 +99,7 @@ export const createSettingsSlice: StateCreator<
   PreferencesMiddleware,
   [],
   SettingsSlice
-> = (set) => ({
+> = (set, get) => ({
   settingsActiveCategory: "general",
   settingsData: defaultSettings,
 
@@ -118,6 +137,15 @@ export const createSettingsSlice: StateCreator<
       set({ settingsData: newSettings }, false, "preferences:settings/update");
     } catch (e) {
       console.error("Failed to update setting:", e);
+    }
+  },
+
+  setWindowDecorations: async (mode) => {
+    await get().updateSetting("window", "decorations", mode);
+    try {
+      await applyWindowDecorations(mode);
+    } catch (e) {
+      console.error("Failed to apply window decorations:", e);
     }
   },
 
