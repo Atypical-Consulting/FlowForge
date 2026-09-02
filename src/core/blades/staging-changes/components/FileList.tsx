@@ -90,6 +90,7 @@ export function FileList({
               onUnstageAll();
             }}
             className="ml-auto text-xs text-ctp-overlay1 hover:text-ctp-text"
+            title="Unstage all staged files"
           >
             Unstage All
           </button>
@@ -102,6 +103,11 @@ export function FileList({
               onStageAll();
             }}
             className="ml-auto text-xs text-ctp-overlay1 hover:text-ctp-text"
+            title={
+              section === "untracked"
+                ? "Stage all untracked files"
+                : "Stage all changed files"
+            }
           >
             Stage All
           </button>

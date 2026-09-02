@@ -6,9 +6,9 @@ import { commands } from "../../../../bindings";
 import { Button } from "../../../components/ui/button";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { Skeleton } from "../../../components/ui/Skeleton";
-import { formatShortcut } from "../../../hooks/useKeyboardShortcuts";
 import { cn } from "../../../lib/utils";
 import { useUIStore as useStagingStore } from "../../../stores/domain/ui-state";
+import { getSectionPaths } from "../utils/sectionPaths";
 import { FileList } from "./FileList";
 import { FileTreeSearch } from "./FileTreeSearch";
 import { FileTreeView } from "./FileTreeView";
@@ -38,29 +38,31 @@ export function StagingPanel() {
     refetchInterval: 2000,
   });
 
-  const stageAllMutation = useMutation({
-    mutationFn: () => commands.stageAll(),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["stagingStatus"] }),
-  });
-
-  const unstageAllMutation = useMutation({
-    mutationFn: () => commands.unstageAll(),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["stagingStatus"] }),
-  });
-
-  const stageFolderMutation = useMutation({
+  // Section-level and folder-level actions always stage/unstage an explicit
+  // path list so a section's "Stage All" never touches files outside that
+  // section (e.g. staging "Changes" must not sweep in untracked files). The
+  // global stage-everything action lives in the toolbar/shortcut, not here.
+  const stagePathsMutation = useMutation({
     mutationFn: (paths: string[]) => commands.stageFiles(paths),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ["stagingStatus"] }),
   });
 
-  const unstageFolderMutation = useMutation({
+  const unstagePathsMutation = useMutation({
     mutationFn: (paths: string[]) => commands.unstageFiles(paths),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ["stagingStatus"] }),
   });
+
+  const stageSection = (files: FileChange[]) => {
+    const paths = getSectionPaths(files);
+    if (paths.length > 0) stagePathsMutation.mutate(paths);
+  };
+
+  const unstageSection = (files: FileChange[]) => {
+    const paths = getSectionPaths(files);
+    if (paths.length > 0) unstagePathsMutation.mutate(paths);
+  };
 
   // Auto-select first file when data loads and no selection exists
   useEffect(() => {
@@ -275,8 +277,9 @@ export function StagingPanel() {
                   </span>
                   <button
                     type="button"
-                    onClick={() => unstageAllMutation.mutate()}
+                    onClick={() => unstageSection(status.staged)}
                     className="text-xs text-ctp-subtext0 hover:text-ctp-text"
+                    title="Unstage all staged files"
                   >
                     Unstage All
                   </button>
@@ -285,7 +288,7 @@ export function StagingPanel() {
                   files={status.staged}
                   section="staged"
                   filter={searchFilter}
-                  onStageFolder={(paths) => unstageFolderMutation.mutate(paths)}
+                  onStageFolder={(paths) => unstagePathsMutation.mutate(paths)}
                   partiallyStagedPaths={partiallyStagedPaths}
                 />
               </div>
@@ -301,9 +304,9 @@ export function StagingPanel() {
                   </span>
                   <button
                     type="button"
-                    onClick={() => stageAllMutation.mutate()}
+                    onClick={() => stageSection(status.unstaged)}
                     className="text-xs text-ctp-subtext0 hover:text-ctp-text"
-                    title={`Stage All (${formatShortcut("mod+shift+A")})`}
+                    title="Stage all changed files"
                   >
                     Stage All
                   </button>
@@ -312,7 +315,7 @@ export function StagingPanel() {
                   files={status.unstaged}
                   section="unstaged"
                   filter={searchFilter}
-                  onStageFolder={(paths) => stageFolderMutation.mutate(paths)}
+                  onStageFolder={(paths) => stagePathsMutation.mutate(paths)}
                   partiallyStagedPaths={partiallyStagedPaths}
                 />
               </div>
@@ -328,9 +331,9 @@ export function StagingPanel() {
                   </span>
                   <button
                     type="button"
-                    onClick={() => stageAllMutation.mutate()}
+                    onClick={() => stageSection(status.untracked)}
                     className="text-xs text-ctp-subtext0 hover:text-ctp-text"
-                    title={`Stage All (${formatShortcut("mod+shift+A")})`}
+                    title="Stage all untracked files"
                   >
                     Stage All
                   </button>
@@ -339,7 +342,7 @@ export function StagingPanel() {
                   files={status.untracked}
                   section="untracked"
                   filter={searchFilter}
-                  onStageFolder={(paths) => stageFolderMutation.mutate(paths)}
+                  onStageFolder={(paths) => stagePathsMutation.mutate(paths)}
                   partiallyStagedPaths={partiallyStagedPaths}
                 />
               </div>
@@ -351,24 +354,24 @@ export function StagingPanel() {
               title="Staged Changes"
               files={status.staged}
               section="staged"
-              onUnstageAll={() => unstageAllMutation.mutate()}
-              onBulkUnstage={(paths) => unstageFolderMutation.mutate(paths)}
+              onUnstageAll={() => unstageSection(status.staged)}
+              onBulkUnstage={(paths) => unstagePathsMutation.mutate(paths)}
               partiallyStagedPaths={partiallyStagedPaths}
             />
             <FileList
               title="Changes"
               files={status.unstaged}
               section="unstaged"
-              onStageAll={() => stageAllMutation.mutate()}
-              onBulkStage={(paths) => stageFolderMutation.mutate(paths)}
+              onStageAll={() => stageSection(status.unstaged)}
+              onBulkStage={(paths) => stagePathsMutation.mutate(paths)}
               partiallyStagedPaths={partiallyStagedPaths}
             />
             <FileList
               title="Untracked Files"
               files={status.untracked}
               section="untracked"
-              onStageAll={() => stageAllMutation.mutate()}
-              onBulkStage={(paths) => stageFolderMutation.mutate(paths)}
+              onStageAll={() => stageSection(status.untracked)}
+              onBulkStage={(paths) => stagePathsMutation.mutate(paths)}
               partiallyStagedPaths={partiallyStagedPaths}
             />
           </>
