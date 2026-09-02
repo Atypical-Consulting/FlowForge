@@ -1,5 +1,12 @@
-import { AlertTriangle, GitBranch, Loader2, Shield, X } from "lucide-react";
-import { cn } from "@/framework/lib/utils";
+import { AlertTriangle, GitBranch, Loader2, Shield } from "lucide-react";
+import { Button } from "@/core/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
 import type { EnrichedBranch } from "../../../core/lib/branchClassifier";
 
 interface BulkDeleteDialogProps {
@@ -20,21 +27,13 @@ export function BulkDeleteDialog({
   const hasUnmerged = branches.some((b) => b.isMerged === false);
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-6 w-[28rem] max-h-[80vh] overflow-y-auto shadow-xl">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-ctp-text">
+    <Dialog open={true} onOpenChange={() => onCancel()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="text-ctp-text">
             Delete {branches.length} branch{branches.length !== 1 ? "es" : ""}?
-          </h2>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="p-1 hover:bg-ctp-surface1 rounded text-ctp-overlay1 hover:text-ctp-text"
-            aria-label="Close dialog"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+          </DialogTitle>
+        </DialogHeader>
 
         <div className="max-h-48 overflow-y-auto space-y-1 mb-4">
           {branches.map((branch) => (
@@ -75,31 +74,27 @@ export function BulkDeleteDialog({
           This action cannot be undone.
         </p>
 
-        <div className="flex justify-end gap-2">
-          <button
+        <DialogFooter>
+          <Button
             type="button"
+            variant="ghost"
             onClick={onCancel}
             disabled={isDeleting}
-            className="px-3 py-1.5 text-sm text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface0 rounded transition-colors"
+            data-autofocus
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="destructive"
             onClick={onConfirm}
             disabled={isDeleting}
-            className={cn(
-              "px-3 py-1.5 text-sm font-medium rounded transition-colors flex items-center gap-1.5",
-              isDeleting
-                ? "bg-ctp-red/50 text-ctp-base cursor-not-allowed"
-                : "bg-ctp-red text-ctp-base hover:bg-ctp-red/90",
-            )}
           >
             {isDeleting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
             Delete {branches.length}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
