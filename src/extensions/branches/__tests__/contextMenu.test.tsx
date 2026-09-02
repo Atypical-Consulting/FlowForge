@@ -131,7 +131,7 @@ describe("branches extension context menu", () => {
       />,
     );
 
-    fireEvent.contextMenu(screen.getByText("feature/x"), {
+    fireEvent.contextMenu(screen.getByTitle("feature/x"), {
       clientX: 40,
       clientY: 50,
     });
