@@ -1,6 +1,7 @@
 import { fromPromise } from "xstate";
 import { commands } from "../../../bindings";
 import { getErrorMessage } from "../../../core/lib/errors";
+import { refreshRepositoryState } from "../../../core/lib/repositoryRefresh";
 import type { GitflowOp, GitflowPhase } from "./types";
 
 export interface ExecuteGitflowInput {
@@ -53,18 +54,12 @@ export const abortGitflowOp = fromPromise<void, void>(async () => {
   }
 });
 
+/**
+ * Post-operation refresh. Gitflow start/finish/abort move HEAD, so the
+ * repository status (header branch), branch list, gitflow status and the
+ * TanStack queries must all be refetched — the shared helper does exactly
+ * that and rejects if any refresh fails (machine enters the `stale` state).
+ */
 export const refreshAll = fromPromise<void, void>(async () => {
-  const results = await Promise.allSettled([
-    commands.getGitflowStatus(),
-    commands.listBranches(),
-    commands.getRepositoryStatus(),
-  ]);
-
-  const errors = results
-    .filter((r): r is PromiseRejectedResult => r.status === "rejected")
-    .map((r) => r.reason?.message ?? "Refresh failed");
-
-  if (errors.length > 0) {
-    throw new Error(errors.join("; "));
-  }
+  await refreshRepositoryState();
 });

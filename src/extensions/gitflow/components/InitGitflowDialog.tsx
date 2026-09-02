@@ -3,11 +3,8 @@ import { useState } from "react";
 import { cn } from "@/framework/lib/utils";
 import { toast } from "@/framework/stores/toast";
 import type { GitflowConfig } from "../../../bindings";
-import {
-  useGitOpsStore as useBranchStore,
-  useGitOpsStore as useGitflowStore,
-  useGitOpsStore as useRepositoryStore,
-} from "../../../core/stores/domain/git-ops";
+import { refreshRepositoryState } from "../../../core/lib/repositoryRefresh";
+import { useGitOpsStore as useGitflowStore } from "../../../core/stores/domain/git-ops";
 
 interface InitGitflowDialogProps {
   open: boolean;
@@ -25,8 +22,6 @@ export function InitGitflowDialog({
     gitflowError: error,
     clearGitflowError: clearError,
   } = useGitflowStore();
-  const { loadBranches } = useBranchStore();
-  const { refreshRepoStatus: refreshStatus } = useRepositoryStore();
 
   // Detect default main branch name
   const defaultMainBranch = status?.context.hasMain ? "main" : "master";
@@ -62,8 +57,8 @@ export function InitGitflowDialog({
 
     const result = await initGitflow(config, pushDevelop);
     if (result) {
-      await loadBranches();
-      await refreshStatus(); // Update branch name in header
+      // Init may switch to develop: refresh header branch, branch list, queries...
+      await refreshRepositoryState();
       toast.success(
         result.switchedToDevelop
           ? `Gitflow initialized! Switched to ${config.developBranch} branch.`

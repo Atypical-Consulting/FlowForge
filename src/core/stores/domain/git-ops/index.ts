@@ -44,6 +44,7 @@ export const useGitOpsStore = create<GitOpsStore>()(
 registerStoreForReset(useGitOpsStore);
 
 export type { BranchSlice } from "./branches.slice";
+export { selectCurrentBranchName } from "./branches.slice";
 export type { CloneSlice } from "./clone.slice";
 export type { GitflowSlice } from "./gitflow.slice";
 export type { RepositorySlice } from "./repository.slice";

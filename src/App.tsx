@@ -26,6 +26,11 @@ import { ToastContainer } from "./core/components/ui/ToastContainer";
 import { useKeyboardShortcuts } from "./core/hooks/useKeyboardShortcuts";
 import { modKeyLabel } from "./core/lib/platform";
 import {
+  containsGitDirPath,
+  invalidateRepositoryQueries,
+  refreshRepositoryState,
+} from "./core/lib/repositoryRefresh";
+import {
   useGitOpsStore,
   useGitOpsStore as useRepositoryStore,
   useGitOpsStore as useUndoStore,
@@ -483,12 +488,21 @@ function App() {
     const unlisten = listen<{ paths: string[] }>(
       "repository-changed",
       (event) => {
-        console.log("Repository changed:", event.payload.paths);
+        const { paths } = event.payload;
+        console.log("Repository changed:", paths);
 
-        // Invalidate relevant queries to trigger refresh
-        queryClient.invalidateQueries({ queryKey: ["stagingStatus"] });
-        queryClient.invalidateQueries({ queryKey: ["commitHistory"] });
-        queryClient.invalidateQueries({ queryKey: ["repositoryStatus"] });
+        if (containsGitDirPath(paths)) {
+          // HEAD or a ref moved (branch switch/create/delete, fetch, tag...),
+          // possibly from outside the app: refresh the store-backed state too
+          // (header branch, branch list, gitflow status), not just the queries.
+          refreshRepositoryState(queryClient).catch((e) => {
+            console.error("Failed to refresh repository state:", e);
+          });
+          return;
+        }
+
+        // Working-tree change: invalidate relevant queries to trigger refresh
+        invalidateRepositoryQueries(queryClient);
 
         // Also refresh undo info
         loadUndoInfo();

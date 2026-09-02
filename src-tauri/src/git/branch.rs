@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 use specta::Type;
@@ -38,6 +39,69 @@ pub struct BranchInfo {
     pub remote_name: Option<String>,
 }
 
+/// List all local branches of the repository at `repo_path`.
+///
+/// Opens a fresh repository handle, so the result always reflects the refs
+/// currently on disk — including branches created or checked out after the
+/// repository was opened, whether by the app (gitflow start) or externally.
+pub fn list_local_branches(repo_path: &Path) -> Result<Vec<BranchInfo>, GitError> {
+    let repo = git2::Repository::open(repo_path)?;
+
+    // Get HEAD commit for merge check
+    let head_commit = match repo.head() {
+        Ok(head) => Some(head.peel_to_commit()?),
+        Err(e) if e.code() == git2::ErrorCode::UnbornBranch => None,
+        Err(e) => return Err(e.into()),
+    };
+
+    let mut branches = Vec::new();
+
+    for branch_result in repo.branches(Some(git2::BranchType::Local))? {
+        let (branch, _branch_type) = branch_result?;
+
+        let name = branch
+            .name()?
+            .ok_or_else(|| GitError::OperationFailed("Invalid branch name".to_string()))?
+            .to_string();
+
+        let is_head = branch.is_head();
+
+        let commit = branch.get().peel_to_commit()?;
+        let last_commit_oid = format!("{:.7}", commit.id());
+        let last_commit_message = commit.summary().ok().flatten().unwrap_or("").to_string();
+
+        let is_merged = if is_head {
+            None
+        } else if let Some(ref head) = head_commit {
+            let merge_base = repo.merge_base(head.id(), commit.id())?;
+            Some(merge_base == commit.id())
+        } else {
+            Some(false)
+        };
+
+        branches.push(BranchInfo {
+            name,
+            is_head,
+            last_commit_oid,
+            last_commit_message,
+            is_merged,
+            is_remote: false,
+            remote_name: None,
+        });
+    }
+
+    // Sort: current branch first, then alphabetically
+    branches.sort_by(|a, b| {
+        if a.is_head != b.is_head {
+            b.is_head.cmp(&a.is_head)
+        } else {
+            a.name.cmp(&b.name)
+        }
+    });
+
+    Ok(branches)
+}
+
 /// List all local branches in the repository.
 #[tauri::command]
 #[specta::specta]
@@ -47,65 +111,9 @@ pub async fn list_branches(state: State<'_, RepositoryState>) -> Result<Vec<Bran
         .await
         .ok_or_else(|| GitError::NotFound("No repository open".to_string()))?;
 
-    tokio::task::spawn_blocking(move || {
-        let repo = git2::Repository::open(&repo_path)?;
-
-        // Get HEAD commit for merge check
-        let head_commit = match repo.head() {
-            Ok(head) => Some(head.peel_to_commit()?),
-            Err(e) if e.code() == git2::ErrorCode::UnbornBranch => None,
-            Err(e) => return Err(e.into()),
-        };
-
-        let mut branches = Vec::new();
-
-        for branch_result in repo.branches(Some(git2::BranchType::Local))? {
-            let (branch, _branch_type) = branch_result?;
-
-            let name = branch
-                .name()?
-                .ok_or_else(|| GitError::OperationFailed("Invalid branch name".to_string()))?
-                .to_string();
-
-            let is_head = branch.is_head();
-
-            let commit = branch.get().peel_to_commit()?;
-            let last_commit_oid = format!("{:.7}", commit.id());
-            let last_commit_message = commit.summary().ok().flatten().unwrap_or("").to_string();
-
-            let is_merged = if is_head {
-                None
-            } else if let Some(ref head) = head_commit {
-                let merge_base = repo.merge_base(head.id(), commit.id())?;
-                Some(merge_base == commit.id())
-            } else {
-                Some(false)
-            };
-
-            branches.push(BranchInfo {
-                name,
-                is_head,
-                last_commit_oid,
-                last_commit_message,
-                is_merged,
-                is_remote: false,
-                remote_name: None,
-            });
-        }
-
-        // Sort: current branch first, then alphabetically
-        branches.sort_by(|a, b| {
-            if a.is_head != b.is_head {
-                b.is_head.cmp(&a.is_head)
-            } else {
-                a.name.cmp(&b.name)
-            }
-        });
-
-        Ok(branches)
-    })
-    .await
-    .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+    tokio::task::spawn_blocking(move || list_local_branches(&repo_path))
+        .await
+        .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
 }
 
 /// Create a new branch from HEAD.
@@ -653,4 +661,60 @@ pub async fn get_branch_ahead_behind(
     })
     .await
     .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use git2::Repository;
+    use tempfile::TempDir;
+
+    /// Fresh repository with an initial commit on `main` and a local signature.
+    fn init_repo() -> (TempDir, Repository) {
+        let dir = TempDir::new().unwrap();
+        let repo = Repository::init(dir.path()).unwrap();
+        {
+            let mut cfg = repo.config().unwrap();
+            cfg.set_str("user.name", "Test").unwrap();
+            cfg.set_str("user.email", "test@example.com").unwrap();
+        }
+        repo.set_head("refs/heads/main").unwrap();
+        let sig = repo.signature().unwrap();
+        let tree_oid = {
+            let mut index = repo.index().unwrap();
+            index.write_tree().unwrap()
+        };
+        {
+            let tree = repo.find_tree(tree_oid).unwrap();
+            repo.commit(Some("HEAD"), &sig, &sig, "initial", &tree, &[])
+                .unwrap();
+        }
+        (dir, repo)
+    }
+
+    #[test]
+    fn list_local_branches_reflects_branch_created_and_checked_out_after_listing() {
+        let (dir, repo) = init_repo();
+
+        // Baseline listing, as done right after the repository is opened.
+        let before = list_local_branches(dir.path()).unwrap();
+        assert_eq!(before.len(), 1);
+        assert_eq!(before[0].name, "main");
+        assert!(before[0].is_head);
+
+        // Simulate a gitflow `start feature` (or an external `git checkout -b`)
+        // happening after the first listing: new branch + HEAD moved to it.
+        let head = repo.head().unwrap().peel_to_commit().unwrap();
+        repo.branch("feature/payments", &head, false).unwrap();
+        repo.set_head("refs/heads/feature/payments").unwrap();
+
+        // A new listing must see the new branch and mark it as HEAD.
+        let after = list_local_branches(dir.path()).unwrap();
+        let names: Vec<&str> = after.iter().map(|b| b.name.as_str()).collect();
+        assert_eq!(names, vec!["feature/payments", "main"], "HEAD sorts first");
+        assert!(after[0].is_head, "feature/payments is the current branch");
+        assert!(!after[1].is_head, "main is no longer HEAD");
+        assert_eq!(after[0].is_merged, None, "HEAD branch has no merged flag");
+        assert_eq!(after[1].is_merged, Some(true));
+    }
 }

@@ -84,7 +84,10 @@ export const createBranchSlice: StateCreator<
     );
     const result = await commands.createBranch(name, checkout);
     if (result.status === "ok") {
-      await get().loadBranches();
+      await Promise.all([
+        get().loadBranches(),
+        checkout ? get().refreshRepoStatus() : Promise.resolve(),
+      ]);
       gitHookBus.emitDid("branch-create", { branchName: name });
       return result.data;
     }
@@ -100,7 +103,9 @@ export const createBranchSlice: StateCreator<
     );
     const result = await commands.checkoutBranch(name);
     if (result.status === "ok") {
-      await get().loadBranches();
+      // HEAD moved: refresh both the branch list and the repository status so
+      // the toolbar branch indicator follows the checkout.
+      await Promise.all([get().loadBranches(), get().refreshRepoStatus()]);
       gitHookBus.emitDid("checkout", { branchName: name });
       return true;
     }
@@ -116,7 +121,7 @@ export const createBranchSlice: StateCreator<
     );
     const result = await commands.checkoutRemoteBranch(remoteBranch);
     if (result.status === "ok") {
-      await get().loadBranches();
+      await Promise.all([get().loadBranches(), get().refreshRepoStatus()]);
       return true;
     }
     set({ branchError: getErrorMessage(result.error), branchIsLoading: false });
@@ -142,3 +147,19 @@ export const createBranchSlice: StateCreator<
   clearBranchError: () =>
     set({ branchError: null }, undefined, "gitOps:branch/clearError"),
 });
+
+/**
+ * Live current-branch name, shared by the toolbar branch indicator and the
+ * sidebar. Prefers the HEAD entry of the loaded branch list (refreshed after
+ * every checkout / gitflow operation / watcher event) and falls back to the
+ * repository status (initial open, detached HEAD short hash, or no list yet).
+ */
+export function selectCurrentBranchName(
+  state: Pick<GitOpsStore, "branchList" | "repoStatus">,
+): string {
+  return (
+    state.branchList.find((b) => b.isHead)?.name ??
+    state.repoStatus?.branchName ??
+    ""
+  );
+}
