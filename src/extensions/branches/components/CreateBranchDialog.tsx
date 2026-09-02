@@ -1,5 +1,13 @@
-import { X } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/core/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/core/components/ui/dialog";
+import { Input } from "@/core/components/ui/input";
 import { useGitOpsStore as useBranchStore } from "../../../core/stores/domain/git-ops";
 
 interface CreateBranchDialogProps {
@@ -17,7 +25,7 @@ export function CreateBranchDialog({ onClose }: CreateBranchDialogProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || isLoading) return;
     const result = await createBranch(name.trim(), checkout);
     if (result) {
       onClose();
@@ -25,18 +33,11 @@ export function CreateBranchDialog({ onClose }: CreateBranchDialogProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-6 w-96">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Create Branch</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1 hover:bg-ctp-surface0 rounded"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create Branch</DialogTitle>
+        </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -46,13 +47,12 @@ export function CreateBranchDialog({ onClose }: CreateBranchDialogProps) {
             >
               Branch name
             </label>
-            <input
+            <Input
               id="branch-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="feature/my-feature"
-              className="w-full px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 rounded focus:outline-none focus:border-ctp-blue"
             />
           </div>
 
@@ -68,24 +68,16 @@ export function CreateBranchDialog({ onClose }: CreateBranchDialogProps) {
 
           {error && <p className="text-ctp-red text-sm">{error}</p>}
 
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm text-ctp-overlay1 hover:text-ctp-text"
-            >
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={onClose}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={!name.trim() || isLoading}
-              className="px-4 py-2 text-sm bg-ctp-blue hover:bg-ctp-blue/80 rounded disabled:opacity-50"
-            >
+            </Button>
+            <Button type="submit" disabled={!name.trim() || isLoading}>
               {isLoading ? "Creating..." : "Create"}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

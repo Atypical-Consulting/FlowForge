@@ -16,6 +16,14 @@ import { usePreferencesStore as useNavigationStore } from "../stores/domain/pref
 import { MenuBar } from "./menu-bar";
 import { Toolbar } from "./toolbar/Toolbar";
 import { Button } from "./ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
 
 interface StashConfirmTarget {
   branchName: string;
@@ -176,32 +184,36 @@ export function Header() {
       </header>
 
       {/* Stash-and-switch confirmation dialog */}
-      {stashConfirmTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-ctp-base rounded-lg p-6 max-w-md shadow-xl border border-ctp-surface0">
-            <h3 className="text-lg font-semibold text-ctp-text">
+      <Dialog
+        open={stashConfirmTarget !== null}
+        onOpenChange={(next) => {
+          if (!next) setStashConfirmTarget(null);
+        }}
+      >
+        <DialogContent className="bg-ctp-base">
+          <DialogHeader>
+            <DialogTitle className="text-ctp-text">
               Uncommitted Changes
-            </h3>
-            <p className="text-sm text-ctp-subtext0 mt-2">
-              You have uncommitted changes. Would you like to stash them before
-              switching to{" "}
-              <span className="font-mono font-medium text-ctp-text">
-                {stashConfirmTarget.branchName}
-              </span>
-              ?
-            </p>
-            <div className="flex justify-end gap-2 mt-4">
-              <Button
-                variant="ghost"
-                onClick={() => setStashConfirmTarget(null)}
-              >
-                Cancel
-              </Button>
-              <Button onClick={handleStashAndSwitch}>Stash and Switch</Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogTitle>
+          </DialogHeader>
+          <DialogDescription className="text-ctp-subtext0">
+            You have uncommitted changes. Would you like to stash them before
+            switching to{" "}
+            <span className="font-mono font-medium text-ctp-text">
+              {stashConfirmTarget?.branchName}
+            </span>
+            ?
+          </DialogDescription>
+          <DialogFooter className="mt-4">
+            <Button variant="ghost" onClick={() => setStashConfirmTarget(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handleStashAndSwitch} data-autofocus>
+              Stash and Switch
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
