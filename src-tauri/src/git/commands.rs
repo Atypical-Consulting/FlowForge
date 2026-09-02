@@ -63,7 +63,14 @@ pub async fn get_repository_status(
 
 /// Check if a path is a valid Git repository.
 ///
-/// Used for drag-drop validation before attempting to open.
+/// Used for drag-drop and "Open Repository" validation before attempting to open.
+///
+/// Returns `Ok(false)` only when the folder genuinely holds no repository
+/// (libgit2 `NotFound`). Any other failure — permission denied, libgit2
+/// ownership validation ("dubious ownership"), corrupt metadata, ... — is a
+/// real error: it is logged and returned as `Err` so the caller can tell the
+/// user *why* the folder could not be opened instead of silently offering to
+/// `git init` an existing repository.
 #[tauri::command]
 #[specta::specta]
 pub async fn is_git_repository(path: String) -> Result<bool, GitError> {
@@ -76,7 +83,18 @@ pub async fn is_git_repository(path: String) -> Result<bool, GitError> {
     tokio::task::spawn_blocking(move || match git2::Repository::open(&path) {
         Ok(_) => Ok(true),
         Err(e) if e.code() == git2::ErrorCode::NotFound => Ok(false),
-        Err(_) => Ok(false), // Any other error means it's not a valid repo
+        Err(e) => {
+            // Not "no repository here" but a genuine failure — surface it rather
+            // than masquerading as "not a repo" and offering `git init`.
+            eprintln!(
+                "is_git_repository: failed to open {:?}: {} (class: {:?}, code: {:?})",
+                path,
+                e.message(),
+                e.class(),
+                e.code()
+            );
+            Err(GitError::from(e))
+        }
     })
     .await
     .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
@@ -319,4 +337,52 @@ pub async fn open_in_terminal(path: String, terminal: String) -> Result<(), GitE
     })
     .await
     .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn is_git_repository_true_for_real_repo() {
+        let dir = tempfile::TempDir::new().unwrap();
+        git2::Repository::init(dir.path()).unwrap();
+
+        let result = is_git_repository(dir.path().display().to_string())
+            .await
+            .unwrap();
+        assert!(result, "an initialized repository should be detected");
+    }
+
+    #[tokio::test]
+    async fn is_git_repository_true_with_trailing_slash() {
+        // Regression: the GTK "Enter location" folder chooser can hand back a
+        // path with a trailing slash. libgit2 opens it fine, so detection must
+        // still return true rather than offering `git init`.
+        let dir = tempfile::TempDir::new().unwrap();
+        git2::Repository::init(dir.path()).unwrap();
+
+        let with_slash = format!("{}/", dir.path().display());
+        let result = is_git_repository(with_slash).await.unwrap();
+        assert!(result, "trailing slash should not break detection");
+    }
+
+    #[tokio::test]
+    async fn is_git_repository_false_for_plain_folder() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let result = is_git_repository(dir.path().display().to_string())
+            .await
+            .unwrap();
+        assert!(!result, "a plain folder is not a repository");
+    }
+
+    #[tokio::test]
+    async fn is_git_repository_false_for_missing_path() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let missing = dir.path().join("does-not-exist");
+        let result = is_git_repository(missing.display().to_string())
+            .await
+            .unwrap();
+        assert!(!result, "a nonexistent path is not a repository");
+    }
 }

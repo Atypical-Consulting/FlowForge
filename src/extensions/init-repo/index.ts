@@ -39,6 +39,16 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
 
       if (selected && typeof selected === "string") {
         const isRepo = await commands.isGitRepository(selected);
+        if (isRepo.status === "error") {
+          // Not "no repository here" but a real failure (permission,
+          // ownership validation, ...): never offer to `git init` over it.
+          const { toast } = await import("@/framework/stores/toast");
+          const { getErrorMessage } = await import("@/core/lib/errors");
+          toast.error(
+            `Could not open repository: ${getErrorMessage(isRepo.error)}`,
+          );
+          return;
+        }
         if (isRepo.status === "ok" && !isRepo.data) {
           openBlade("init-repo", { directoryPath: selected });
         }
