@@ -159,6 +159,7 @@ export const createBranchSlice: StateCreator<
           get().reloadBranchLists(),
           get().refreshRepoStatus(),
         ]);
+        gitHookBus.emitDid("checkout", { branchName: remoteBranch });
         return true;
       }
       failMutation("gitOps:branch/checkoutRemoteFailed", result.error);

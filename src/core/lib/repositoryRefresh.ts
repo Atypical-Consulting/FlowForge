@@ -27,8 +27,9 @@ export function invalidateRepositoryQueries(
  *
  * The header branch indicator, both branch lists (local `branchList` and the
  * local + remote `branchAllList` rendered by the sidebar), gitflow panel,
- * tags, stashes and undo info are backed by the git-ops Zustand store rather
- * than TanStack queries, so invalidating query keys alone leaves them stale.
+ * tags, stashes, undo info and the worktree list (whose main entry shows the
+ * checked-out branch) are backed by the git-ops Zustand store rather than
+ * TanStack queries, so invalidating query keys alone leaves them stale.
  * This helper is the single post-mutation refresh shared by gitflow
  * operations, gitflow init, the "Refresh All" command and the file watcher
  * (for external `git checkout` / branch changes).
@@ -50,6 +51,9 @@ export async function refreshRepositoryState(
     store.loadUndoInfo(),
     store.loadTags(),
     store.loadStashes(),
+    // `git worktree list` is cheap and loadWorktrees never rejects (it records
+    // its error in the store), so the sidebar row/badge follow HEAD for free.
+    store.loadWorktrees(),
   ];
   if (store.nodes.length > 0) {
     tasks.push(store.loadGraph());
