@@ -51,10 +51,13 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     enabled: () => !!useGitOpsStore.getState().repoStatus,
   });
 
-  // Auto-refresh conflict list after merge operations
-  api.onDidGit("merge", () => {
-    useConflictStore.getState().loadConflictFiles();
-  });
+  // Auto-refresh conflict list after merge operations, and clear it once the
+  // merge is aborted or committed so the toolbar badge does not go stale.
+  for (const operation of ["merge", "merge-abort", "commit"] as const) {
+    api.onDidGit(operation, () => {
+      useConflictStore.getState().loadConflictFiles();
+    });
+  }
 }
 
 export function onDeactivate(): void {

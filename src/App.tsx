@@ -30,6 +30,7 @@ import {
   invalidateRepositoryQueries,
   refreshRepositoryState,
 } from "./core/lib/repositoryRefresh";
+import { getMergeActor } from "./core/machines/merge";
 import {
   useGitOpsStore,
   useGitOpsStore as useRepositoryStore,
@@ -490,6 +491,10 @@ function App() {
       (event) => {
         const { paths } = event.payload;
         console.log("Repository changed:", paths);
+
+        // A merge can be aborted, resolved or committed from outside the app:
+        // let the merge machine re-check the repository's real state.
+        getMergeActor().send({ type: "REPOSITORY_CHANGED" });
 
         if (containsGitDirPath(paths)) {
           // HEAD or a ref moved (branch switch/create/delete, fetch, tag...),

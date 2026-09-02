@@ -9,6 +9,7 @@ export type GitOperation =
   | "branch-create"
   | "branch-delete"
   | "merge"
+  | "merge-abort"
   | "stash"
   | "tag-create";
 
