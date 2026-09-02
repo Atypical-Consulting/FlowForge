@@ -2764,6 +2764,11 @@ export type GitflowError =
    */
   | { type: "DirtyWorkingTree" }
   /**
+   * Switching to the named branch would overwrite uncommitted local changes.
+   * The checkout is refused and nothing is modified.
+   */
+  | { type: "CheckoutWouldOverwriteChanges"; data: string }
+  /**
    * Repository has no commits yet
    */
   | { type: "UnbornHead" }
@@ -2796,7 +2801,8 @@ export type GitflowInitResult = {
    */
   developCreated: boolean;
   /**
-   * Whether we switched to the develop branch
+   * Whether HEAD was moved to the develop branch (false if it was already
+   * checked out, in which case the working tree was not touched)
    */
   switchedToDevelop: boolean;
 };

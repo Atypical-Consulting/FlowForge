@@ -40,6 +40,11 @@ pub enum GitflowError {
     #[error("Working directory has uncommitted changes — commit or stash before proceeding")]
     DirtyWorkingTree,
 
+    /// Switching to the named branch would overwrite uncommitted local changes.
+    /// The checkout is refused and nothing is modified.
+    #[error("You have uncommitted changes that would be overwritten by switching to '{0}'; commit or stash them first")]
+    CheckoutWouldOverwriteChanges(String),
+
     /// Repository has no commits yet
     #[error("Repository has no commits (unborn HEAD)")]
     UnbornHead,

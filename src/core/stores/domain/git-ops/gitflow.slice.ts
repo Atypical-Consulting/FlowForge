@@ -1,5 +1,9 @@
 import type { StateCreator } from "zustand";
-import type { GitflowConfig, GitflowStatus } from "../../../../bindings";
+import type {
+  GitflowConfig,
+  GitflowInitResult,
+  GitflowStatus,
+} from "../../../../bindings";
 import { commands } from "../../../../bindings";
 import { getErrorMessage } from "../../../lib/errors";
 import type { GitOpsStore } from "./index";
@@ -13,10 +17,15 @@ export interface GitflowSlice {
   gitflowError: string | null;
 
   refreshGitflow: () => Promise<void>;
+  /**
+   * Initialize Gitflow. Resolves with the init result on success (so callers
+   * can tell whether HEAD actually moved) or `null` on failure, in which case
+   * `gitflowError` holds a user-facing message.
+   */
   initGitflow: (
     config: GitflowConfig,
     pushDevelop: boolean,
-  ) => Promise<boolean>;
+  ) => Promise<GitflowInitResult | null>;
   clearGitflowError: () => void;
 }
 
@@ -60,13 +69,13 @@ export const createGitflowSlice: StateCreator<
     const result = await commands.initGitflow(config, pushDevelop);
     if (result.status === "ok") {
       await get().refreshGitflow();
-      return true;
+      return result.data;
     }
     set({
       gitflowError: getErrorMessage(result.error),
       gitflowIsLoading: false,
     });
-    return false;
+    return null;
   },
 
   clearGitflowError: () =>

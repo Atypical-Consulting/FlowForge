@@ -6,6 +6,7 @@ use specta::Type;
 use tauri::State;
 
 use crate::git::repository::RepositoryState;
+use crate::gitflow::checkout::{checkout_branch_safe, ensure_clean_working_tree};
 use crate::gitflow::error::GitflowError;
 use crate::gitflow::init::get_gitflow_config;
 use crate::gitflow::machine::GitflowState;
@@ -111,20 +112,6 @@ fn rollback_main_and_tag(
     let _ = repo.tag_delete(tag_name);
 }
 
-/// Check if the working directory is clean (no uncommitted changes).
-/// Returns Ok(()) if clean, Err(DirtyWorkingTree) if dirty.
-fn ensure_clean_working_tree(repo: &git2::Repository) -> Result<(), GitflowError> {
-    let statuses = repo.statuses(Some(
-        git2::StatusOptions::new()
-            .include_untracked(false)
-            .include_ignored(false),
-    ))?;
-    if !statuses.is_empty() {
-        return Err(GitflowError::DirtyWorkingTree);
-    }
-    Ok(())
-}
-
 // ============================================================================
 // Feature Flow Commands
 // ============================================================================
@@ -147,38 +134,42 @@ pub async fn start_feature(
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
-
-        // Must be on develop
-        let current = get_current_branch_name(&repo)?
-            .ok_or(GitflowError::Git("HEAD is detached".to_string()))?;
-
-        if !is_develop_branch(&current) {
-            return Err(GitflowError::InvalidContext {
-                expected: "develop".to_string(),
-                actual: current,
-            });
-        }
-
-        let branch_name = format!("feature/{}", name);
-
-        // Check branch doesn't exist
-        if repo.find_branch(&branch_name, BranchType::Local).is_ok() {
-            return Err(GitflowError::BranchExists(branch_name));
-        }
-
-        // Create branch from HEAD
-        let head_commit = repo.head()?.peel_to_commit()?;
-        repo.branch(&branch_name, &head_commit, false)?;
-
-        // Checkout new branch (safe checkout preserves uncommitted changes)
-        let refname = format!("refs/heads/{}", branch_name);
-        repo.set_head(&refname)?;
-        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().safe()))?;
-
-        Ok(branch_name)
+        start_feature_in_repo(&repo, &name)
     })
     .await
     .map_err(|e| GitflowError::Git(format!("Task error: {}", e)))?
+}
+
+/// Synchronous core of [`start_feature`]: create `feature/<name>` from HEAD
+/// (which must be develop) and switch to it with a safe checkout. Uncommitted
+/// changes are carried over to the new branch, never discarded.
+fn start_feature_in_repo(repo: &git2::Repository, name: &str) -> Result<String, GitflowError> {
+    // Must be on develop
+    let current = get_current_branch_name(repo)?
+        .ok_or(GitflowError::Git("HEAD is detached".to_string()))?;
+
+    if !is_develop_branch(&current) {
+        return Err(GitflowError::InvalidContext {
+            expected: "develop".to_string(),
+            actual: current,
+        });
+    }
+
+    let branch_name = format!("feature/{}", name);
+
+    // Check branch doesn't exist
+    if repo.find_branch(&branch_name, BranchType::Local).is_ok() {
+        return Err(GitflowError::BranchExists(branch_name));
+    }
+
+    // Create branch from HEAD
+    let head_commit = repo.head()?.peel_to_commit()?;
+    repo.branch(&branch_name, &head_commit, false)?;
+
+    // Checkout new branch (safe checkout preserves uncommitted changes)
+    checkout_branch_safe(repo, &branch_name)?;
+
+    Ok(branch_name)
 }
 
 /// Finish the current feature branch, merging to develop.
@@ -192,29 +183,36 @@ pub async fn finish_feature(state: State<'_, RepositoryState>) -> Result<(), Git
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
-        ensure_clean_working_tree(&repo)?;
-
-        // Must be on feature branch
-        let current = get_current_branch_name(&repo)?
-            .ok_or(GitflowError::Git("HEAD is detached".to_string()))?;
-
-        let _feature_name = current
-            .strip_prefix("feature/")
-            .ok_or(GitflowError::NotOnFeatureBranch)?;
-
-        // Merge to develop with --no-ff
-        let develop_branch = resolve_develop_branch(&repo);
-        let message = format!("Merge branch '{}' into {}", current, develop_branch);
-        merge_no_ff(&repo, &current, &develop_branch, &message)?;
-
-        // Delete feature branch (we're now on develop after merge)
-        let mut branch = repo.find_branch(&current, BranchType::Local)?;
-        branch.delete()?;
-
-        Ok(())
+        finish_feature_in_repo(&repo)
     })
     .await
     .map_err(|e| GitflowError::Git(format!("Task error: {}", e)))?
+}
+
+/// Synchronous core of [`finish_feature`]. Requires a clean working tree
+/// (returns [`GitflowError::DirtyWorkingTree`] otherwise, without touching
+/// anything).
+fn finish_feature_in_repo(repo: &git2::Repository) -> Result<(), GitflowError> {
+    ensure_clean_working_tree(repo)?;
+
+    // Must be on feature branch
+    let current = get_current_branch_name(repo)?
+        .ok_or(GitflowError::Git("HEAD is detached".to_string()))?;
+
+    let _feature_name = current
+        .strip_prefix("feature/")
+        .ok_or(GitflowError::NotOnFeatureBranch)?;
+
+    // Merge to develop with --no-ff
+    let develop_branch = resolve_develop_branch(repo);
+    let message = format!("Merge branch '{}' into {}", current, develop_branch);
+    merge_no_ff(repo, &current, &develop_branch, &message)?;
+
+    // Delete feature branch (we're now on develop after merge)
+    let mut branch = repo.find_branch(&current, BranchType::Local)?;
+    branch.delete()?;
+
+    Ok(())
 }
 
 // ============================================================================
@@ -273,9 +271,7 @@ pub async fn start_release(
         // Create and checkout (safe checkout preserves uncommitted changes)
         let head_commit = repo.head()?.peel_to_commit()?;
         repo.branch(&branch_name, &head_commit, false)?;
-        let refname = format!("refs/heads/{}", branch_name);
-        repo.set_head(&refname)?;
-        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().safe()))?;
+        checkout_branch_safe(&repo, &branch_name)?;
 
         Ok(branch_name)
     })
@@ -408,9 +404,7 @@ pub async fn start_hotfix(
         // Safe checkout preserves uncommitted changes
         let head_commit = repo.head()?.peel_to_commit()?;
         repo.branch(&branch_name, &head_commit, false)?;
-        let refname = format!("refs/heads/{}", branch_name);
-        repo.set_head(&refname)?;
-        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().safe()))?;
+        checkout_branch_safe(&repo, &branch_name)?;
 
         Ok(branch_name)
     })
@@ -611,91 +605,47 @@ pub async fn abort_gitflow(state: State<'_, RepositoryState>) -> Result<(), Gitf
 
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
-        ensure_clean_working_tree(&repo)?;
-        let ctx = GitflowContext::from_repo(&repo)?;
-
-        let (branch_to_delete, target_branch) = match &ctx.state {
-            GitflowState::Feature { .. } => {
-                (ctx.current_branch.clone(), resolve_develop_branch(&repo))
-            }
-            GitflowState::Release { .. } => {
-                (ctx.current_branch.clone(), resolve_develop_branch(&repo))
-            }
-            GitflowState::Hotfix { .. } => {
-                (ctx.current_branch.clone(), resolve_main_branch(&repo))
-            }
-            GitflowState::Idle => {
-                return Err(GitflowError::Git("No active Gitflow operation".to_string()))
-            }
-        };
-
-        // Checkout target branch
-        let refname = format!("refs/heads/{}", target_branch);
-        repo.set_head(&refname)?;
-        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().force()))?;
-
-        // Delete the workflow branch
-        let mut branch = repo.find_branch(&branch_to_delete, BranchType::Local)?;
-        branch.delete()?;
-
-        Ok(())
+        abort_gitflow_in_repo(&repo)
     })
     .await
     .map_err(|e| GitflowError::Git(format!("Task error: {}", e)))?
 }
 
+/// Synchronous core of [`abort_gitflow`]: switch back to the source branch
+/// (safe checkout) and delete the workflow branch. Requires a clean working
+/// tree; untracked files that would be overwritten by the switch abort the
+/// operation with [`GitflowError::CheckoutWouldOverwriteChanges`].
+fn abort_gitflow_in_repo(repo: &git2::Repository) -> Result<(), GitflowError> {
+    ensure_clean_working_tree(repo)?;
+    let ctx = GitflowContext::from_repo(repo)?;
+
+    let (branch_to_delete, target_branch) = match &ctx.state {
+        GitflowState::Feature { .. } => (ctx.current_branch.clone(), resolve_develop_branch(repo)),
+        GitflowState::Release { .. } => (ctx.current_branch.clone(), resolve_develop_branch(repo)),
+        GitflowState::Hotfix { .. } => (ctx.current_branch.clone(), resolve_main_branch(repo)),
+        GitflowState::Idle => {
+            return Err(GitflowError::Git("No active Gitflow operation".to_string()));
+        }
+    };
+
+    // Checkout target branch (never forced: local work is preserved or the
+    // switch is refused).
+    checkout_branch_safe(repo, &target_branch)?;
+
+    // Delete the workflow branch
+    let mut branch = repo.find_branch(&branch_to_delete, BranchType::Local)?;
+    branch.delete()?;
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use git2::Repository;
-    use tempfile::TempDir;
-
-    /// Create a fresh repository with an initial commit on `main` and a deterministic
-    /// signature so commits/merges succeed without relying on a global git config.
-    fn init_repo() -> (TempDir, Repository) {
-        let dir = TempDir::new().unwrap();
-        let repo = Repository::init(dir.path()).unwrap();
-        {
-            let mut cfg = repo.config().unwrap();
-            cfg.set_str("user.name", "Test").unwrap();
-            cfg.set_str("user.email", "test@example.com").unwrap();
-        }
-        // Point HEAD at an unborn `main` so the initial commit lands on `main`
-        // regardless of the system's configured default branch name.
-        repo.set_head("refs/heads/main").unwrap();
-        let sig = repo.signature().unwrap();
-        let tree_oid = {
-            let mut index = repo.index().unwrap();
-            index.write_tree().unwrap()
-        };
-        {
-            let tree = repo.find_tree(tree_oid).unwrap();
-            repo.commit(Some("HEAD"), &sig, &sig, "initial", &tree, &[])
-                .unwrap();
-        }
-        (dir, repo)
-    }
-
-    /// Add and commit a file with the given contents on the current HEAD.
-    fn commit_file(repo: &Repository, name: &str, contents: &str, msg: &str) -> git2::Oid {
-        let workdir = repo.workdir().unwrap().to_path_buf();
-        std::fs::write(workdir.join(name), contents).unwrap();
-        let sig = repo.signature().unwrap();
-        let mut index = repo.index().unwrap();
-        index.add_path(std::path::Path::new(name)).unwrap();
-        index.write().unwrap();
-        let tree_oid = index.write_tree().unwrap();
-        let tree = repo.find_tree(tree_oid).unwrap();
-        let parent = repo.head().unwrap().peel_to_commit().unwrap();
-        repo.commit(Some("HEAD"), &sig, &sig, msg, &tree, &[&parent])
-            .unwrap()
-    }
-
-    fn checkout(repo: &Repository, branch: &str) {
-        repo.set_head(&format!("refs/heads/{}", branch)).unwrap();
-        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().force()))
-            .unwrap();
-    }
+    use crate::gitflow::test_support::{
+        checkout, commit_file, create_and_checkout, current_branch, init_repo,
+        modification_state, read_file, stage_file, write_file,
+    };
 
     #[test]
     fn resolve_develop_falls_back_to_develop_by_default() {
@@ -732,9 +682,7 @@ mod tests {
         // Rename main -> master so only master exists.
         let head = repo.head().unwrap().peel_to_commit().unwrap();
         repo.branch("master", &head, false).unwrap();
-        repo.set_head("refs/heads/master").unwrap();
-        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().force()))
-            .unwrap();
+        checkout(&repo, "master");
         repo.find_branch("main", BranchType::Local)
             .unwrap()
             .delete()
@@ -792,5 +740,126 @@ mod tests {
         commit_file(&repo, "feat_only.txt", "feat\n", "feature edit");
 
         assert!(!merge_would_conflict(&repo, "feature/y", "develop").unwrap());
+    }
+
+    // ------------------------------------------------------------------
+    // Regression tests: start/finish/abort must never discard local changes.
+    // ------------------------------------------------------------------
+
+    /// `start feature` on develop with staged + unstaged + untracked changes:
+    /// the new branch is created and all local work is carried over intact.
+    #[test]
+    fn start_feature_carries_local_changes_over() {
+        let (_dir, repo) = init_repo();
+        commit_file(&repo, "a.txt", "a\n", "add a");
+        create_and_checkout(&repo, "develop");
+
+        write_file(&repo, "a.txt", "a\nstaged\n");
+        stage_file(&repo, "a.txt");
+        write_file(&repo, "a.txt", "a\nstaged\nunstaged\n");
+        write_file(&repo, "notes.txt", "untracked\n");
+
+        let name = start_feature_in_repo(&repo, "x").unwrap();
+        assert_eq!(name, "feature/x");
+        assert_eq!(current_branch(&repo), "feature/x");
+        assert_eq!(read_file(&repo, "a.txt"), "a\nstaged\nunstaged\n");
+        assert_eq!(modification_state(&repo, "a.txt"), (true, true));
+        assert_eq!(read_file(&repo, "notes.txt"), "untracked\n");
+    }
+
+    /// `finish feature` with uncommitted changes is refused up-front and the
+    /// repository (HEAD, index, working tree, branches) is left untouched.
+    #[test]
+    fn finish_feature_refuses_dirty_tree_and_keeps_changes() {
+        let (_dir, repo) = init_repo();
+        commit_file(&repo, "a.txt", "a\n", "add a");
+        create_and_checkout(&repo, "develop");
+        create_and_checkout(&repo, "feature/x");
+        commit_file(&repo, "f.txt", "feature\n", "feature work");
+
+        write_file(&repo, "a.txt", "a\nstaged\n");
+        stage_file(&repo, "a.txt");
+        write_file(&repo, "f.txt", "feature\nunstaged\n");
+
+        let err = finish_feature_in_repo(&repo).unwrap_err();
+        assert!(matches!(err, GitflowError::DirtyWorkingTree), "got {err:?}");
+        assert_eq!(current_branch(&repo), "feature/x");
+        assert_eq!(read_file(&repo, "a.txt"), "a\nstaged\n");
+        assert_eq!(read_file(&repo, "f.txt"), "feature\nunstaged\n");
+        assert!(modification_state(&repo, "a.txt").0);
+        assert!(modification_state(&repo, "f.txt").1);
+        assert!(repo.find_branch("feature/x", BranchType::Local).is_ok());
+    }
+
+    /// `finish feature` on a clean tree merges into develop with --no-ff and
+    /// deletes the feature branch; an untracked file that does not collide
+    /// with develop survives the switch.
+    #[test]
+    fn finish_feature_clean_tree_merges_and_keeps_untracked() {
+        let (_dir, repo) = init_repo();
+        create_and_checkout(&repo, "develop");
+        create_and_checkout(&repo, "feature/x");
+        commit_file(&repo, "f.txt", "feature\n", "feature work");
+        write_file(&repo, "notes.txt", "untracked\n");
+
+        finish_feature_in_repo(&repo).unwrap();
+        assert_eq!(current_branch(&repo), "develop");
+        assert_eq!(read_file(&repo, "f.txt"), "feature\n");
+        assert_eq!(read_file(&repo, "notes.txt"), "untracked\n");
+        assert!(repo.find_branch("feature/x", BranchType::Local).is_err());
+        let head = repo.head().unwrap().peel_to_commit().unwrap();
+        assert_eq!(head.parent_count(), 2, "expected a --no-ff merge commit");
+    }
+
+    /// `abort` with uncommitted changes is refused and nothing is touched.
+    #[test]
+    fn abort_refuses_dirty_tree_and_keeps_changes() {
+        let (_dir, repo) = init_repo();
+        commit_file(&repo, "a.txt", "a\n", "add a");
+        create_and_checkout(&repo, "develop");
+        create_and_checkout(&repo, "feature/x");
+        write_file(&repo, "a.txt", "a\nwip\n");
+
+        let err = abort_gitflow_in_repo(&repo).unwrap_err();
+        assert!(matches!(err, GitflowError::DirtyWorkingTree), "got {err:?}");
+        assert_eq!(current_branch(&repo), "feature/x");
+        assert_eq!(read_file(&repo, "a.txt"), "a\nwip\n");
+        assert!(repo.find_branch("feature/x", BranchType::Local).is_ok());
+    }
+
+    /// `abort` never clobbers an untracked file that exists (tracked) on the
+    /// branch being switched to: the switch is refused instead.
+    #[test]
+    fn abort_refuses_to_overwrite_untracked_file_present_on_target() {
+        let (_dir, repo) = init_repo();
+        create_and_checkout(&repo, "develop");
+        commit_file(&repo, "notes.txt", "committed on develop\n", "notes");
+        checkout(&repo, "main");
+        // Feature branched from main, so develop's notes.txt is not on it.
+        create_and_checkout(&repo, "feature/x");
+        write_file(&repo, "notes.txt", "my untracked notes\n");
+
+        let err = abort_gitflow_in_repo(&repo).unwrap_err();
+        assert!(
+            matches!(err, GitflowError::CheckoutWouldOverwriteChanges(ref b) if b == "develop"),
+            "got {err:?}"
+        );
+        assert_eq!(current_branch(&repo), "feature/x");
+        assert_eq!(read_file(&repo, "notes.txt"), "my untracked notes\n");
+        assert!(repo.find_branch("feature/x", BranchType::Local).is_ok());
+    }
+
+    /// Happy-path abort: clean tree, switch back to develop, delete the branch.
+    #[test]
+    fn abort_clean_tree_returns_to_develop_and_deletes_branch() {
+        let (_dir, repo) = init_repo();
+        create_and_checkout(&repo, "develop");
+        create_and_checkout(&repo, "feature/x");
+        commit_file(&repo, "f.txt", "feature\n", "feature work");
+
+        abort_gitflow_in_repo(&repo).unwrap();
+        assert_eq!(current_branch(&repo), "develop");
+        assert!(repo.find_branch("feature/x", BranchType::Local).is_err());
+        assert!(!repo.workdir().unwrap().join("f.txt").exists());
     }
 }
