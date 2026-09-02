@@ -1,10 +1,8 @@
 import { Editor } from "@monaco-editor/react";
 import { FileCode } from "lucide-react";
+import { useMonacoTheme } from "../../../core/hooks/useMonacoTheme";
 import { useRepoFile } from "../../../core/hooks/useRepoFile";
-import {
-  MONACO_COMMON_OPTIONS,
-  MONACO_THEME,
-} from "../../../core/lib/monacoConfig";
+import { MONACO_COMMON_OPTIONS } from "../../../core/lib/monacoConfig";
 import "../../../core/lib/monacoTheme";
 import { BladeContentEmpty } from "../../../core/blades/_shared/BladeContentEmpty";
 import { BladeContentError } from "../../../core/blades/_shared/BladeContentError";
@@ -15,6 +13,7 @@ interface ViewerCodeBladeProps {
 }
 
 export function ViewerCodeBlade({ filePath }: ViewerCodeBladeProps) {
+  const monacoTheme = useMonacoTheme();
   const { data, isLoading, error, refetch } = useRepoFile(filePath);
 
   if (isLoading) {
@@ -61,7 +60,7 @@ export function ViewerCodeBlade({ filePath }: ViewerCodeBladeProps) {
       <Editor
         value={data.content}
         path={filePath}
-        theme={MONACO_THEME}
+        theme={monacoTheme}
         options={MONACO_COMMON_OPTIONS}
       />
     </div>

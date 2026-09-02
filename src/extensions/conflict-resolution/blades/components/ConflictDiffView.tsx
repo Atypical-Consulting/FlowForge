@@ -1,9 +1,7 @@
 import { DiffEditor, type DiffOnMount } from "@monaco-editor/react";
 import { useEffect, useMemo, useRef } from "react";
-import {
-  MONACO_COMMON_OPTIONS,
-  MONACO_THEME,
-} from "../../../../core/lib/monacoConfig";
+import { useMonacoTheme } from "../../../../core/hooks/useMonacoTheme";
+import { MONACO_COMMON_OPTIONS } from "../../../../core/lib/monacoConfig";
 import "../../../../core/lib/monacoTheme";
 
 interface ConflictDiffViewProps {
@@ -34,6 +32,7 @@ export function ConflictDiffView({
     editorRef.current = editor;
   };
 
+  const monacoTheme = useMonacoTheme();
   const options = useMemo(
     () => ({
       ...MONACO_COMMON_OPTIONS,
@@ -67,7 +66,7 @@ export function ConflictDiffView({
           original={oursContent}
           modified={theirsContent}
           language={language}
-          theme={MONACO_THEME}
+          theme={monacoTheme}
           options={options}
           onMount={handleMount}
         />
