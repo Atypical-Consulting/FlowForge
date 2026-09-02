@@ -1,9 +1,9 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef } from "react";
-import { getCommandById } from "@/framework/command-palette/commandRegistry";
 import { MenuDivider } from "./MenuDivider";
 import { MenuItem } from "./MenuItem";
 import type { MenuEntryDef, MenuItemDef } from "./menu-definitions";
+import { useMenuCommands } from "./useMenuCommands";
 
 const slideDown = {
   hidden: { opacity: 0, y: -8 },
@@ -42,6 +42,7 @@ export function MenuDropdown({
 }: MenuDropdownProps) {
   const shouldReduceMotion = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
+  const resolveCommand = useMenuCommands();
 
   // Focus the container on mount for keyboard navigation
   useEffect(() => {
@@ -69,8 +70,7 @@ export function MenuDropdown({
         }
 
         const currentActionIndex = actionIndex++;
-        const command = getCommandById(item.commandId);
-        const isDisabled = command?.enabled ? !command.enabled() : !command;
+        const { disabled: isDisabled } = resolveCommand(item.commandId);
 
         return (
           <MenuItem
