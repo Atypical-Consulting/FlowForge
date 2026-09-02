@@ -11,6 +11,9 @@ export const REPOSITORY_QUERY_KEYS: readonly (readonly string[])[] = [
   ["repositoryStatus"],
   ["stagingStatus"],
   ["commitHistory"],
+  // Conflicted-file list of the conflict-resolution blade: changes with the
+  // index (merge, abort, `git add` of a resolved file from a terminal).
+  ["conflictFiles"],
 ];
 
 /** Invalidate every repository-dependent TanStack query. */

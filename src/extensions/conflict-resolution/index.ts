@@ -1,9 +1,25 @@
 import { AlertTriangle } from "lucide-react";
 import { lazy } from "react";
+import { queryClient } from "@/core/lib/queryClient";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
+import { useToolbarRegistry } from "@/framework/extension-system/toolbarRegistry";
 import { openBlade } from "@/framework/layout/bladeOpener";
 import { useGitOpsStore } from "../../core/stores/domain/git-ops";
+import { CONFLICT_FILES_QUERY_KEY } from "./hooks/useConflictQuery";
 import { useConflictStore } from "./store";
+
+let unsubConflictWatch: (() => void) | null = null;
+
+/**
+ * Re-read the conflicted-file list and mirror it into the TanStack query so
+ * the blade's `useConflictFiles` (and its polling decision) stays in sync
+ * even when the refresh was triggered outside the query, e.g. by a git hook.
+ */
+export async function refreshConflictFiles(): Promise<string[]> {
+  const paths = await useConflictStore.getState().loadConflictFiles();
+  queryClient.setQueryData(CONFLICT_FILES_QUERY_KEY, paths);
+  return paths;
+}
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {
   const ConflictResolutionBlade = lazy(() =>
@@ -45,18 +61,35 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     icon: AlertTriangle,
     keywords: ["conflict", "merge", "resolve", "ours", "theirs"],
     action: () => {
-      useConflictStore.getState().loadConflictFiles();
+      void refreshConflictFiles();
       openBlade("conflict-resolution", {});
     },
     enabled: () => !!useGitOpsStore.getState().repoStatus,
   });
 
-  // Auto-refresh conflict list after merge operations
-  api.onDidGit("merge", () => {
-    useConflictStore.getState().loadConflictFiles();
+  // The toolbar only re-evaluates `when()` on repo status or registry
+  // changes, so tell it explicitly whenever the conflict list changes
+  // (conflicts appear after a merge, disappear after resolve/abort).
+  unsubConflictWatch?.();
+  unsubConflictWatch = useConflictStore.subscribe((state, prevState) => {
+    if (state.files !== prevState.files) {
+      useToolbarRegistry.getState().refreshVisibility();
+    }
   });
+
+  // Refresh the conflict list after operations that can create or clear
+  // conflicts, whether or not the blade (and its query) is mounted.
+  const refresh = () => {
+    void refreshConflictFiles();
+  };
+  api.onDidGit("merge", refresh);
+  api.onDidGit("merge-abort", refresh);
+  api.onDidGit("pull", refresh);
+  api.onDidGit("commit", refresh);
 }
 
 export function onDeactivate(): void {
-  // No custom cleanup needed -- api.cleanup() handles all registrations
+  unsubConflictWatch?.();
+  unsubConflictWatch = null;
+  // api.cleanup() handles all registrations
 }

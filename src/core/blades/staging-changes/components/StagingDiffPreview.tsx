@@ -1,3 +1,4 @@
+import { openBlade } from "@/framework/layout/bladeOpener";
 import type { FileChange } from "../../../../bindings";
 import { getPreviewForFile } from "../../../lib/previewRegistry";
 import { useUIStore as useStagingStore } from "../../../stores/domain/ui-state";
@@ -40,6 +41,7 @@ export function StagingDiffPreview({
   }
 
   const preview = getPreviewForFile(file.path);
+  const isConflicted = file.status === "conflicted";
 
   return (
     <div className="flex flex-col h-full">
@@ -50,6 +52,10 @@ export function StagingDiffPreview({
         onNext={onNavigateFile ? () => onNavigateFile("next") : undefined}
         hasPrev={hasPrev}
         hasNext={hasNext}
+        isConflicted={isConflicted}
+        onOpenConflictResolver={() =>
+          openBlade("conflict-resolution", { filePath: file.path })
+        }
       />
       {preview?.mode === "placeholder" && preview.placeholder ? (
         <NonTextPlaceholder

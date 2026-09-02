@@ -50,6 +50,14 @@ export const mergeMachine = setup({
         gitHookBus.emitDid("merge", { branchName: context.sourceBranch });
       }
     },
+    // Fired after `git merge --abort` succeeded so listeners that track the
+    // conflicted state (conflict-resolution badge/list) can clear it. Runs
+    // before clearState so the branch name is still available.
+    emitMergeAbortDid: ({ context }) => {
+      gitHookBus.emitDid("merge-abort", {
+        branchName: context.sourceBranch ?? undefined,
+      });
+    },
   },
 }).createMachine({
   id: "merge",
@@ -136,7 +144,7 @@ export const mergeMachine = setup({
         src: "abortMerge",
         onDone: {
           target: "idle",
-          actions: "clearState",
+          actions: ["emitMergeAbortDid", "clearState"],
         },
         onError: {
           target: "error",

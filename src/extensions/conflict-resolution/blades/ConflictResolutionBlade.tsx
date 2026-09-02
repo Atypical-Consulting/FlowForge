@@ -1,14 +1,17 @@
-import { Check, GitMerge, Loader2, RotateCcw } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  GitMerge,
+  Loader2,
+  RotateCcw,
+} from "lucide-react";
 import { useCallback, useEffect } from "react";
 import {
   ResizablePanel,
   ResizablePanelLayout,
   ResizeHandle,
 } from "@/framework/layout/ResizablePanelLayout";
-import {
-  useConflictFileContent,
-  useConflictFiles,
-} from "../hooks/useConflictQuery";
+import { useConflictFiles } from "../hooks/useConflictQuery";
 import { useConflictStore } from "../store";
 import { ConflictDiffView } from "./components/ConflictDiffView";
 import { ConflictFileList } from "./components/ConflictFileList";
@@ -57,6 +60,7 @@ export function ConflictResolutionBlade({
   const {
     files,
     activeFilePath,
+    loadingPath,
     openConflictFile,
     resolveHunk,
     undoHunkResolution,
@@ -67,26 +71,26 @@ export function ConflictResolutionBlade({
   } = useConflictStore();
 
   const { isLoading: isLoadingFiles } = useConflictFiles();
-  const { isLoading: isLoadingContent } =
-    useConflictFileContent(activeFilePath);
 
-  // Auto-select file from props on mount
+  // Open the file the blade was launched for (staging blade, merge dialog).
+  // The store skips the fetch when the file is already loaded, so this can
+  // never discard resolution progress.
   useEffect(() => {
-    if (filePath && files.has(filePath)) {
-      openConflictFile(filePath);
+    if (filePath) {
+      void openConflictFile(filePath);
     }
-  }, [filePath, files, openConflictFile]);
+  }, [filePath, openConflictFile]);
 
   const handleSelectFile = useCallback(
     (path: string) => {
-      openConflictFile(path);
+      void openConflictFile(path);
     },
     [openConflictFile],
   );
 
   const handleMarkResolved = useCallback(
     (path: string) => {
-      markFileResolved(path);
+      void markFileResolved(path);
     },
     [markFileResolved],
   );
@@ -123,11 +127,19 @@ export function ConflictResolutionBlade({
 
   const handleResolve = useCallback(() => {
     if (activeFilePath) {
-      markFileResolved(activeFilePath);
+      void markFileResolved(activeFilePath);
     }
   }, [activeFilePath, markFileResolved]);
 
+  const handleRetryLoad = useCallback(() => {
+    if (activeFilePath) {
+      void openConflictFile(activeFilePath);
+    }
+  }, [activeFilePath, openConflictFile]);
+
   const activeFile = activeFilePath ? files.get(activeFilePath) : undefined;
+  const isLoadingContent =
+    activeFilePath !== null && loadingPath === activeFilePath;
   const canResolve = activeFilePath
     ? isFileFullyResolved(activeFilePath)
     : false;
@@ -185,6 +197,18 @@ export function ConflictResolutionBlade({
             <div className="flex items-center justify-center h-full">
               <Loader2 className="w-5 h-5 animate-spin text-ctp-overlay1" />
             </div>
+          ) : !activeFile.loaded ? (
+            <div className="flex flex-col items-center justify-center gap-3 h-full text-ctp-subtext0 text-sm">
+              <AlertTriangle className="w-6 h-6 text-ctp-red" />
+              <p>Could not load the conflict content for {activeFile.path}</p>
+              <button
+                type="button"
+                onClick={handleRetryLoad}
+                className="px-3 py-1.5 text-xs rounded border border-ctp-surface1 text-ctp-subtext0 hover:bg-ctp-surface0 transition-colors"
+              >
+                Retry
+              </button>
+            </div>
           ) : (
             <ResizablePanelLayout
               autoSaveId="conflict-editor-split"
@@ -213,7 +237,7 @@ export function ConflictResolutionBlade({
                   {/* Hunk actions bar */}
                   <ConflictHunkActions
                     hunks={activeFile.hunks}
-                    filePath={activeFilePath!}
+                    filePath={activeFile.path}
                     onResolveHunk={handleResolveHunk}
                     onUndo={handleUndo}
                     undoAvailable={activeFile.undoStack.length > 0}
@@ -229,6 +253,7 @@ export function ConflictResolutionBlade({
                   {/* Bottom toolbar */}
                   <div className="flex items-center justify-end gap-2 px-3 py-2 border-t border-ctp-surface0 bg-ctp-mantle">
                     <button
+                      type="button"
                       onClick={handleReset}
                       className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded border border-ctp-surface1 text-ctp-subtext0 hover:bg-ctp-surface0 transition-colors"
                       aria-label="Reset file to original conflicted state"
@@ -237,8 +262,14 @@ export function ConflictResolutionBlade({
                       Reset File
                     </button>
                     <button
+                      type="button"
                       onClick={handleResolve}
                       disabled={!canResolve}
+                      title={
+                        canResolve
+                          ? "Write the result to disk and stage the file"
+                          : "Choose Ours, Theirs or Both for every conflict first"
+                      }
                       className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded font-medium transition-colors bg-ctp-green text-ctp-base hover:bg-ctp-green/80 disabled:opacity-40 disabled:cursor-not-allowed"
                       aria-label="Mark file as resolved and stage it"
                     >
