@@ -76,7 +76,8 @@ export function StagingPanel() {
     }
   }, [result, selectedFile, selectFile]);
 
-  // Reconcile selected file after stage/unstage (file moves between sections)
+  // Reconcile selected file with the fresh status: follow the file when it
+  // moves between sections, and clear the selection when it disappears.
   const _stagedLen = result?.status === "ok" ? result.data.staged.length : 0;
   const _unstagedLen =
     result?.status === "ok" ? result.data.unstaged.length : 0;
@@ -111,8 +112,16 @@ export function StagingPanel() {
       selectFile(inUnstaged, "unstaged");
     } else if (inUntracked) {
       selectFile(inUntracked, "untracked");
+    } else {
+      // The selected file no longer has any changes (committed, discarded,
+      // stashed, branch switched, external edit...). Clear the selection so
+      // the diff preview does not keep showing a diff that no longer exists,
+      // and drop its cached diff so a future selection refetches fresh data.
+      selectFile(null);
+      queryClient.removeQueries({ queryKey: ["fileDiff", filePath] });
+      queryClient.removeQueries({ queryKey: ["fileDiffHunks", filePath] });
     }
-  }, [result, selectFile, selectedFile, selectedSection]);
+  }, [result, selectFile, selectedFile, selectedSection, queryClient]);
 
   // Restore scroll position on mount
   useEffect(() => {
