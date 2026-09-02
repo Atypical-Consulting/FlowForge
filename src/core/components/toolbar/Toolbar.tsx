@@ -5,7 +5,10 @@ import {
   type ToolbarAction,
   useToolbarRegistry,
 } from "@/framework/extension-system/toolbarRegistry";
-import { useGitOpsStore as useRepositoryStore } from "../../stores/domain/git-ops";
+import {
+  selectIsRepositoryOpen,
+  useGitOpsStore as useRepositoryStore,
+} from "../../stores/domain/git-ops";
 import { usePreferencesStore } from "../../stores/domain/preferences";
 import { ToolbarButton } from "./ToolbarButton";
 import { ToolbarGroup } from "./ToolbarGroup";
@@ -22,22 +25,18 @@ import { useToolbarOverflow } from "./useToolbarOverflow";
  * registered action execute/when/isLoading functions.
  */
 export function Toolbar() {
-  // Inputs that invalidate the action list. `when()` conditions read stores
-  // imperatively, so the subscriptions below are re-render triggers AND memo
-  // dependencies: registry contents, the registry's visibility tick
-  // (refreshVisibility() for conditions outside the repo store) and
-  // repoStatus (open/close). Subscribing without listing them as deps is not
-  // enough -- that used to freeze the list computed on the welcome screen
-  // (3 core actions) for the whole session.
+  // Subscribe to registry changes for reactivity
   const actions = useToolbarRegistry((s) => s.items);
   const visibilityTick = useToolbarRegistry((s) => s.visibilityTick);
-  const repoStatus = useRepositoryStore((s) => s.repoStatus);
   const hiddenActions = usePreferencesStore(
     (s) => s.settingsData.toolbar?.hiddenActions ?? [],
   );
+  // Subscribe to the repo-open state so when() conditions re-evaluate when a
+  // repository opens or closes (same source as the welcome-screen switch).
+  const isRepoOpen = useRepositoryStore(selectIsRepositoryOpen);
 
   // Build the flattened ordered action list
-  // biome-ignore lint/correctness/useExhaustiveDependencies: actions/visibilityTick/repoStatus are read imperatively by getGroupedToolbarActions() and the when() callbacks; they must invalidate the memo.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: actions/visibilityTick/isRepoOpen are intentional recompute triggers — getGroupedToolbarActions() reads the registry and evaluates when() imperatively.
   const { orderedActions, groupBoundaries } = useMemo(() => {
     const grouped = getGroupedToolbarActions();
     const ordered: ToolbarAction[] = [];
@@ -53,7 +52,7 @@ export function Toolbar() {
     }
 
     return { orderedActions: ordered, groupBoundaries: boundaries };
-  }, [actions, visibilityTick, repoStatus, hiddenActions]);
+  }, [hiddenActions, actions, visibilityTick, isRepoOpen]);
 
   const { containerRef, visibleCount } = useToolbarOverflow(orderedActions);
 

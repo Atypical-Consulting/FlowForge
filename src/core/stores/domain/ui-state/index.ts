@@ -6,14 +6,19 @@ import {
   createCommandPaletteSlice,
 } from "./command-palette.slice";
 import { createStagingSlice, type StagingSlice } from "./staging.slice";
+import {
+  createTopologyViewSlice,
+  type TopologyViewSlice,
+} from "./topology-view.slice";
 
-export type UIStore = StagingSlice & CommandPaletteSlice;
+export type UIStore = StagingSlice & CommandPaletteSlice & TopologyViewSlice;
 
 export const useUIStore = create<UIStore>()(
   devtools(
     (...args) => ({
       ...createStagingSlice(...args),
       ...createCommandPaletteSlice(...args),
+      ...createTopologyViewSlice(...args),
     }),
     { name: "ui-state", enabled: import.meta.env.DEV },
   ),
@@ -21,3 +26,5 @@ export const useUIStore = create<UIStore>()(
 
 // UI state resets on repo close
 registerStoreForReset(useUIStore);
+
+export type { TopologyView, TopologyViewSlice } from "./topology-view.slice";

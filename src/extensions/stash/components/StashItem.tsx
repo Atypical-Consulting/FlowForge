@@ -40,7 +40,9 @@ export function StashItem({
 
   return (
     <div
-      className="group flex items-center justify-between px-2 py-1 rounded-md hover:bg-ctp-surface0"
+      // The row itself is not clickable (apply/pop/drop are the hover buttons),
+      // so use the default arrow rather than the I-beam text cursor.
+      className="group flex items-center justify-between px-2 py-1 rounded-md cursor-default hover:bg-ctp-surface0"
       onContextMenu={(e) => {
         e.preventDefault();
         useContextMenuRegistry

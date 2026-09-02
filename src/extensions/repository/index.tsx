@@ -4,14 +4,16 @@ import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { openBlade } from "@/framework/layout/bladeOpener";
 import { BladeBreadcrumb } from "../../core/blades/_shared/BladeBreadcrumb";
 import { refreshRepositoryState } from "../../core/lib/repositoryRefresh";
-import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
+import {
+  isRepositoryOpen,
+  useGitOpsStore as useRepositoryStore,
+} from "../../core/stores/domain/git-ops";
 
-/** Shared repo-open condition. */
-const whenRepoOpen = (): boolean => !!useRepositoryStore.getState().repoStatus;
+/** Shared repo-open condition (same source as the welcome-screen switch). */
+const whenRepoOpen = isRepositoryOpen;
 
 /** Shared repo-closed condition. */
-const whenRepoNotOpen = (): boolean =>
-  !useRepositoryStore.getState().repoStatus;
+const whenRepoNotOpen = (): boolean => !isRepositoryOpen();
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {
   // Lazy component import

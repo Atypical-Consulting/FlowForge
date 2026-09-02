@@ -11,7 +11,10 @@ import { lazy } from "react";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { getNavigationActor } from "@/framework/layout/navigation/context";
 import { toast } from "@/framework/stores/toast";
-import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
+import {
+  isRepositoryOpen,
+  useGitOpsStore as useRepositoryStore,
+} from "../../core/stores/domain/git-ops";
 import { usePreferencesStore } from "../../core/stores/domain/preferences";
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {
@@ -86,7 +89,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     group: "git-actions",
     priority: 35,
     commandId: "ext:branches:create-branch",
-    when: () => !!useRepositoryStore.getState().repoStatus,
+    when: isRepositoryOpen,
     execute: () => {
       document.dispatchEvent(new CustomEvent("create-branch-dialog"));
     },

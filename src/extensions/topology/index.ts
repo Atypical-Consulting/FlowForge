@@ -2,7 +2,7 @@ import { listen } from "@tauri-apps/api/event";
 import { History } from "lucide-react";
 import { lazy } from "react";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
-import { getNavigationActor } from "@/framework/layout/navigation/context";
+import { showTopologyView } from "../../core/lib/topologyNavigation";
 import { useGitOpsStore } from "../../core/stores/domain/git-ops";
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {
@@ -28,16 +28,14 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
   api.registerCommand({
     id: "show-topology",
     title: "Show History",
-    description: "Switch to the topology (history) view",
+    description:
+      "Switch to the topology view on its History tab (Ctrl/Cmd+2; Ctrl/Cmd+1 shows Changes)",
     category: "Navigation",
     shortcut: "mod+2",
     icon: History,
     keywords: ["topology", "history", "graph", "commits"],
     action: () => {
-      getNavigationActor().send({
-        type: "SWITCH_WORKFLOW",
-        workflow: "topology",
-      });
+      showTopologyView("history");
     },
     enabled: () => !!useGitOpsStore.getState().repoStatus,
   });
@@ -64,10 +62,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     const defaultTab = settings?.general?.defaultTab;
     if (defaultTab === "topology" || defaultTab === "history") {
       if (useGitOpsStore.getState().repoStatus) {
-        getNavigationActor().send({
-          type: "SWITCH_WORKFLOW",
-          workflow: "topology",
-        });
+        showTopologyView(defaultTab === "history" ? "history" : "graph");
       }
     }
   } catch {

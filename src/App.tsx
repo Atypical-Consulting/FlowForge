@@ -12,7 +12,6 @@ import { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { BladeRenderer } from "@/framework/layout/BladeRenderer";
 import { useBladeRegistry } from "@/framework/layout/bladeRegistry";
 import {
-  getNavigationActor,
   NavigationProvider,
   useNavigationActorRef,
 } from "@/framework/layout/navigation/context";
@@ -32,6 +31,7 @@ import {
   invalidateRepositoryQueries,
   refreshRepositoryState,
 } from "./core/lib/repositoryRefresh";
+import { showTopologyView } from "./core/lib/topologyNavigation";
 import { applyWindowDecorations } from "./core/lib/windowDecorations";
 import {
   useGitOpsStore,
@@ -239,6 +239,7 @@ function App() {
   const initChecklist = useReviewChecklistStore((s) => s.initChecklist);
   const initDiffPreferences = useSettingsStore((s) => s.initDiffPreferences);
   const initLayout = useSettingsStore((s) => s.initLayout);
+  const adoptOpenRepository = useRepositoryStore((s) => s.adoptOpenRepository);
   const loadUndoInfo = useUndoStore((s) => s.loadUndoInfo);
   const discoverExtensions = useExtensionHost((s) => s.discoverExtensions);
   const activateAll = useExtensionHost((s) => s.activateAll);
@@ -255,6 +256,9 @@ function App() {
 
   // Initialize theme, settings, navigation, and branch metadata on mount
   useEffect(() => {
+    // The Rust side keeps its repository across a webview reload; adopt it
+    // instead of showing the welcome screen with a repository-aware toolbar.
+    adoptOpenRepository();
     initTheme();
     initSettings().then(() => {
       const { settingsData: settings } = useSettingsStore.getState();
@@ -264,14 +268,8 @@ function App() {
         console.error("Failed to apply window decorations:", e);
       });
       const defaultTab = settings.general.defaultTab;
-      if (
-        (defaultTab === "topology" || defaultTab === "history") &&
-        useBladeRegistry.getState().items.has("topology-graph")
-      ) {
-        getNavigationActor().send({
-          type: "SWITCH_WORKFLOW",
-          workflow: "topology",
-        });
+      if (defaultTab === "topology" || defaultTab === "history") {
+        showTopologyView(defaultTab === "history" ? "history" : "graph");
       }
     });
     initNavigation();
@@ -457,6 +455,7 @@ function App() {
       deactivate: tagsExtDeactivate,
     });
   }, [
+    adoptOpenRepository,
     initTheme,
     initSettings,
     initNavigation,

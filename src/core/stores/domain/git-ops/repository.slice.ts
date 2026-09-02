@@ -14,6 +14,12 @@ export interface RepositorySlice {
   repoError: string | null;
 
   openRepository: (path: string) => Promise<void>;
+  /**
+   * Adopt a repository the backend already has open (e.g. after a webview
+   * reload) so the frontend shows it instead of the welcome screen. No-op
+   * when a repository is already open on the frontend or the backend has none.
+   */
+  adoptOpenRepository: () => Promise<void>;
   refreshRepoStatus: () => Promise<void>;
   closeRepository: () => Promise<void>;
   clearRepoError: () => void;
@@ -62,6 +68,24 @@ export const createRepositorySlice: StateCreator<
         });
       }
       throw e;
+    }
+  },
+
+  adoptOpenRepository: async () => {
+    if (get().repoStatus) return;
+    try {
+      const result = await commands.getRepositoryStatus();
+      // An error here means the backend has no repository open: stay on the
+      // welcome screen.
+      if (result.status === "ok" && !get().repoStatus) {
+        set(
+          { repoStatus: result.data, repoError: null },
+          undefined,
+          "gitOps:repo/adoptOpen",
+        );
+      }
+    } catch (e) {
+      console.error("Failed to query backend repository status:", e);
     }
   },
 

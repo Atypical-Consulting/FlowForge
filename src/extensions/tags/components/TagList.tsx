@@ -2,6 +2,7 @@ import { Plus, Tag } from "lucide-react";
 import { useEffect } from "react";
 import { EmptyState } from "@/core/components/ui/EmptyState";
 import { useGitOpsStore as useTagStore } from "@/core/stores/domain/git-ops";
+import { openBlade } from "@/framework/layout/bladeOpener";
 import { confirm } from "@/framework/stores/confirm";
 import { CreateTagDialog } from "./CreateTagDialog";
 import { TagItem } from "./TagItem";
@@ -73,6 +74,11 @@ export function TagList({
             <TagItem
               key={tag.name}
               tag={tag}
+              // Lightweight tags point straight at a commit; annotated tags
+              // are peeled by the backend into `targetOid`.
+              onSelect={() =>
+                openBlade("commit-details", { oid: tag.targetOid })
+              }
               onDelete={() => handleDelete(tag.name)}
               disabled={isLoading}
             />

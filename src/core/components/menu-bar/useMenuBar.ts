@@ -29,6 +29,20 @@ export function useMenuBar(menuIds: string[]): UseMenuBarReturn {
     setHighlightedIndex(-1);
   }, []);
 
+  /**
+   * Close the open menu from the keyboard (Escape) and hand focus back to
+   * its trigger. The trigger only shows the "open" style while its menu is
+   * open; keyboard focus is rendered with the distinct focus-visible ring.
+   */
+  const closeMenuFromKeyboard = useCallback(() => {
+    const menuId = activeMenu;
+    closeMenu();
+    if (!menuId) return;
+    containerRef.current
+      ?.querySelector<HTMLElement>(`[data-menu-id="${menuId}"]`)
+      ?.focus();
+  }, [activeMenu, closeMenu]);
+
   const toggleMenu = useCallback(
     (menuId: string) => {
       if (activeMenu === menuId) {
@@ -77,12 +91,15 @@ export function useMenuBar(menuIds: string[]): UseMenuBarReturn {
           cycleMenu(-1);
           break;
         case "Escape":
+          if (activeMenu === null) return;
           e.preventDefault();
-          closeMenu();
+          // Do not let the global Escape hotkey (pop blade) fire as well.
+          e.stopPropagation();
+          closeMenuFromKeyboard();
           break;
       }
     },
-    [openMenu, closeMenu, cycleMenu],
+    [activeMenu, openMenu, closeMenuFromKeyboard, cycleMenu],
   );
 
   const handleItemKeyDown = useCallback(
@@ -98,7 +115,8 @@ export function useMenuBar(menuIds: string[]): UseMenuBarReturn {
           break;
         case "Escape":
           e.preventDefault();
-          closeMenu();
+          e.stopPropagation();
+          closeMenuFromKeyboard();
           break;
         case "ArrowRight":
           e.preventDefault();
@@ -118,7 +136,7 @@ export function useMenuBar(menuIds: string[]): UseMenuBarReturn {
           break;
       }
     },
-    [closeMenu, cycleMenu],
+    [closeMenuFromKeyboard, cycleMenu],
   );
 
   // Click-outside dismissal
@@ -130,14 +148,13 @@ export function useMenuBar(menuIds: string[]): UseMenuBarReturn {
         containerRef.current &&
         !containerRef.current.contains(e.target as Node)
       ) {
-        setActiveMenu(null);
-        setHighlightedIndex(-1);
+        closeMenu();
       }
     };
 
     document.addEventListener("mousedown", handleMouseDown);
     return () => document.removeEventListener("mousedown", handleMouseDown);
-  }, [activeMenu]);
+  }, [activeMenu, closeMenu]);
 
   // Close menu when command palette opens
   useEffect(() => {

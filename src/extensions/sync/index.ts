@@ -14,7 +14,10 @@ import { toast } from "@/framework/stores/toast";
 import type { SyncProgress } from "../../bindings";
 import { commands as tauriCommands } from "../../bindings";
 import { queryClient } from "../../core/lib/queryClient";
-import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
+import {
+  isRepositoryOpen,
+  useGitOpsStore as useRepositoryStore,
+} from "../../core/stores/domain/git-ops";
 import {
   describeSyncResult,
   formatSyncException,
@@ -26,7 +29,7 @@ let fetchLoading = false;
 let pullLoading = false;
 let pushLoading = false;
 
-const whenRepoOpen = (): boolean => !!useRepositoryStore.getState().repoStatus;
+const whenRepoOpen = isRepositoryOpen;
 
 const SYNC_COMMANDS = {
   push: tauriCommands.pushToRemote,
@@ -206,8 +209,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     group: "git-actions",
     priority: 80,
     when: () =>
-      !!useRepositoryStore.getState().repoStatus &&
-      !!useRepositoryStore.getState().undoInfo?.canUndo,
+      isRepositoryOpen() && !!useRepositoryStore.getState().undoInfo?.canUndo,
     isLoading: () => useRepositoryStore.getState().undoIsUndoing,
     execute: async () => {
       const { undoInfo, performUndo } = useRepositoryStore.getState();

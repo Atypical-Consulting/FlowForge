@@ -75,6 +75,21 @@ export function BranchList({
     useBranchMetadataStore.getState().initMetadata();
   }, [reloadBranchLists]);
 
+  // Escape leaves "Clean up" (bulk-select) mode. Registered in the bubble
+  // phase: the shared Dialog handles Escape in the capture phase and stops
+  // propagation, so this never fires while a dialog is open.
+  const { selectionMode, exitSelectionMode } = bulkSelect;
+  useEffect(() => {
+    if (!selectionMode) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.defaultPrevented) return;
+      e.preventDefault();
+      exitSelectionMode();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [selectionMode, exitSelectionMode]);
+
   // Refresh branch lists after push/fetch/pull operations. Local mutations
   // (create / checkout / delete) already reload both lists inside the store.
   useEffect(() => {
