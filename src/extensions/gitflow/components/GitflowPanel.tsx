@@ -4,6 +4,7 @@ import {
   Flag,
   GitBranch,
   Play,
+  RefreshCw,
   Square,
   X,
 } from "lucide-react";
@@ -28,7 +29,16 @@ export function GitflowPanel() {
     refreshGitflow: refresh,
     clearGitflowError: clearError,
   } = useGitflowStore();
-  const { abortGitflow: abort, isBusy: machineIsBusy } = useGitflowWorkflow();
+  const {
+    abortGitflow: abort,
+    isBusy: machineIsBusy,
+    isAborting,
+    error: operationError,
+    refreshErrors,
+    isStale,
+    dismiss,
+    retryRefresh,
+  } = useGitflowWorkflow();
   const { openBlade } = useBladeNavigation();
   const _branches = useBranchStore((s) => s.branchList);
   const [showStartDialog, setShowStartDialog] = useState<FlowType | null>(null);
@@ -101,8 +111,10 @@ export function GitflowPanel() {
               <button
                 type="button"
                 onClick={() => abort()}
-                className="p-1.5 hover:bg-ctp-red/20 rounded text-ctp-red hover:text-ctp-red"
-                title="Abort current flow"
+                disabled={machineIsBusy}
+                className="p-1.5 hover:bg-ctp-red/20 rounded text-ctp-red hover:text-ctp-red disabled:opacity-40 disabled:cursor-not-allowed"
+                title={isAborting ? "Aborting..." : "Abort current flow"}
+                aria-label={isAborting ? "Aborting..." : "Abort current flow"}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -111,14 +123,71 @@ export function GitflowPanel() {
         </div>
       )}
 
-      {/* Error display */}
+      {/* Start/finish/abort failure (from the gitflow machine) */}
+      {operationError && (
+        <div
+          role="alert"
+          className="bg-ctp-red/20 border border-ctp-red/50 rounded p-2.5 text-sm"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-ctp-red text-xs">{operationError}</span>
+            <button
+              type="button"
+              onClick={dismiss}
+              aria-label="Dismiss error"
+              className="text-ctp-red hover:text-ctp-red shrink-0"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Operation succeeded but the post-operation refresh failed */}
+      {isStale && (
+        <div
+          role="alert"
+          className="bg-ctp-yellow/20 border border-ctp-yellow/50 rounded p-2.5 text-sm"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-ctp-yellow text-xs">
+              Operation completed but the view may be outdated:{" "}
+              {refreshErrors.join("; ")}
+            </span>
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={retryRefresh}
+                aria-label="Retry refresh"
+                className="text-ctp-yellow hover:text-ctp-yellow"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={dismiss}
+                aria-label="Dismiss refresh warning"
+                className="text-ctp-yellow hover:text-ctp-yellow"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Status refresh / init failure (from the store) */}
       {error && (
-        <div className="bg-ctp-red/20 border border-ctp-red/50 rounded p-2.5 text-sm">
+        <div
+          role="alert"
+          className="bg-ctp-red/20 border border-ctp-red/50 rounded p-2.5 text-sm"
+        >
           <div className="flex items-center justify-between gap-2">
             <span className="text-ctp-red text-xs">{error}</span>
             <button
               type="button"
               onClick={clearError}
+              aria-label="Dismiss error"
               className="text-ctp-red hover:text-ctp-red shrink-0"
             >
               <X className="w-3.5 h-3.5" />

@@ -39,14 +39,20 @@ const config = {
 export function StartFlowDialog({ flowType, onClose }: StartFlowDialogProps) {
   const { isBusy: isLoading, error, startOperation } = useGitflowWorkflow();
   const [name, setName] = useState("");
+  // Only surface failures of the operation submitted from this dialog, not a
+  // stale error left over from an earlier one (the panel shows that).
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const { title, label, placeholder, prefix } = config[flowType];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || isLoading) return;
-    startOperation(flowType, name.trim());
-    onClose();
+    setHasSubmitted(true);
+    // Stay open while the machine runs and refreshes; close only on success
+    // so a failure is shown right here instead of vanishing with the dialog.
+    const succeeded = await startOperation(flowType, name.trim());
+    if (succeeded) onClose();
   };
 
   return (
@@ -86,7 +92,11 @@ export function StartFlowDialog({ flowType, onClose }: StartFlowDialogProps) {
             </p>
           </div>
 
-          {error && <p className="text-ctp-red text-sm">{error}</p>}
+          {hasSubmitted && error && (
+            <p role="alert" className="text-ctp-red text-sm">
+              {error}
+            </p>
+          )}
 
           <DialogFooter className="pt-2">
             <Button type="button" variant="ghost" onClick={onClose}>
