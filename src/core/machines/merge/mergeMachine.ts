@@ -1,5 +1,6 @@
 import { assign, fromCallback, sendTo, setup } from "xstate";
 import { gitHookBus } from "@/core/services/gitHookBus";
+import { useGitOpsStore } from "@/core/stores/domain/git-ops";
 import { useConflictStore } from "@/extensions/conflict-resolution/store";
 import { toast } from "@/framework/stores/toast";
 import type { MergeResult, MergeStatus } from "../../../bindings";
@@ -152,6 +153,12 @@ export const mergeMachine = setup({
     // Fired after `git merge --abort` succeeded so listeners that track the
     // conflicted state (conflict-resolution badge/list) can clear it. Runs
     // before clearState so the branch name is still available.
+    // A merge (started, conflicted or aborted) changes MERGE_HEAD, so the
+    // header/commit form must see the new merge state without a manual
+    // "Refresh All".
+    refreshRepoStatus: () => {
+      void useGitOpsStore.getState().refreshRepoStatus();
+    },
     emitMergeAbortDid: ({ context }) => {
       gitHookBus.emitDid("merge-abort", {
         branchName: context.sourceBranch ?? undefined,
@@ -253,6 +260,7 @@ export const mergeMachine = setup({
                 };
               }),
               "emitMergeDid",
+              "refreshRepoStatus",
             ],
           },
           {
@@ -266,6 +274,7 @@ export const mergeMachine = setup({
                 conflicts: [],
               })),
               "emitMergeDid",
+              "refreshRepoStatus",
             ],
           },
         ],
@@ -321,7 +330,7 @@ export const mergeMachine = setup({
         src: "abortMerge",
         onDone: {
           target: "idle",
-          actions: ["emitMergeAbortDid", "clearState"],
+          actions: ["emitMergeAbortDid", "clearState", "refreshRepoStatus"],
         },
         onError: {
           target: "error",

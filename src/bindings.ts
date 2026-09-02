@@ -147,8 +147,14 @@ export const commands = {
 	 *  Creates a commit with the given message from the current index (staged changes).
 	 *  If `amend` is true, replaces the last commit instead of creating a new one.
 	 * 
+	 *  When a merge is in progress (`.git/MERGE_HEAD` exists) the commit records
+	 *  HEAD *and* every MERGE_HEAD as parents, i.e. it completes the merge exactly
+	 *  like `git commit` would, and the merge state files are removed afterwards.
+	 * 
 	 *  # Errors
 	 *  - `NoStagedChanges` if index is empty (nothing staged)
+	 *  - `UnresolvedConflicts` if the index still has conflict entries
+	 *  - `AmendDuringMerge` if `amend` is requested while a merge is in progress
 	 *  - `SignatureError` if git config lacks user.name/email
 	 *  - Various git2 errors for other failures
 	 */
@@ -1069,7 +1075,18 @@ export type FlowType = "feature" | "release" | "hotfix";
  *  These errors are sent to the frontend as typed objects,
  *  allowing proper error handling in TypeScript.
  */
-export type GitError = { type: "NotFound"; message: string } | { type: "NotARepository"; message: string } | { type: "EmptyRepository" } | { type: "StatusError"; message: string } | { type: "OperationFailed"; message: string } | { type: "PathNotFound"; message: string } | { type: "Internal"; message: string } | { type: "NoStagedChanges" } | { type: "SignatureError"; message: string } | { type: "RemoteNotFound"; message: string } | { type: "AuthenticationFailed"; message: string } | { type: "PushRejected"; message: string } | { type: "NetworkError"; message: string } | { type: "BranchNotFound"; message: string } | { type: "CannotDeleteCurrentBranch" } | { type: "BranchNotMerged"; message: string } | { type: "InvalidBranchName"; message: string } | { type: "BranchAlreadyExists"; message: string } | { type: "DirtyWorkingDirectory" } | 
+export type GitError = { type: "NotFound"; message: string } | { type: "NotARepository"; message: string } | { type: "EmptyRepository" } | { type: "StatusError"; message: string } | { type: "OperationFailed"; message: string } | { type: "PathNotFound"; message: string } | { type: "Internal"; message: string } | { type: "NoStagedChanges" } | { type: "SignatureError"; message: string } | 
+/**
+ *  The index still holds conflict entries for the listed paths
+ *  (comma-separated). Committing would record conflict markers, so the
+ *  commit is refused until every file is resolved and staged.
+ */
+{ type: "UnresolvedConflicts"; message: string } | 
+/**
+ *  `amend` was requested while a merge is in progress. Amending the
+ *  pre-merge HEAD would silently drop the merge, so it is refused.
+ */
+{ type: "AmendDuringMerge" } | { type: "RemoteNotFound"; message: string } | { type: "AuthenticationFailed"; message: string } | { type: "PushRejected"; message: string } | { type: "NetworkError"; message: string } | { type: "BranchNotFound"; message: string } | { type: "CannotDeleteCurrentBranch" } | { type: "BranchNotMerged"; message: string } | { type: "InvalidBranchName"; message: string } | { type: "BranchAlreadyExists"; message: string } | { type: "DirtyWorkingDirectory" } | 
 /**
  *  Switching branches would overwrite uncommitted local changes to the
  *  listed paths (comma-separated). The checkout was refused and HEAD,
@@ -1573,6 +1590,21 @@ export type RepoStatus = {
 	repoPath: string,
 	/**  Repository display name (folder name) */
 	repoName: string,
+	/**
+	 *  Whether a merge is in progress (`.git/MERGE_HEAD` exists). The next
+	 *  commit will complete it as a real merge commit.
+	 */
+	mergeInProgress: boolean,
+	/**
+	 *  Branch being merged in, when a merge is in progress. Falls back to the
+	 *  short MERGE_HEAD oid when no branch points at it.
+	 */
+	mergeHeadBranch: string | null,
+	/**
+	 *  Contents of `.git/MERGE_MSG` (the message git prepared for the merge
+	 *  commit), when a merge is in progress.
+	 */
+	mergeMessage: string | null,
 };
 
 /**  A scope suggestion from commit history. */

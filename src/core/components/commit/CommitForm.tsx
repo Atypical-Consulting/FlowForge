@@ -27,6 +27,15 @@ interface MergeStateFields {
   mergeMessage?: string | null;
 }
 
+/** Drop `#` comment lines (as `git commit` does) and surrounding blank lines. */
+export function stripCommentLines(text: string): string {
+  return text
+    .split("\n")
+    .filter((line) => !line.trimStart().startsWith("#"))
+    .join("\n")
+    .trim();
+}
+
 export function CommitForm() {
   const [useConventional, setUseConventional] = useState(false);
   const [message, setMessage] = useState("");
@@ -94,7 +103,9 @@ export function CommitForm() {
       message.trim().length === 0
     ) {
       prefilledMergeMessage.current = mergeMessage;
-      setMessage(mergeMessage);
+      // MERGE_MSG carries git's "# Conflicts:" comment block; git strips
+      // comment lines on commit, we must do the same before prefilling.
+      setMessage(stripCommentLines(mergeMessage));
     }
   }, [mergeInProgress, mergeMessage, message]);
 

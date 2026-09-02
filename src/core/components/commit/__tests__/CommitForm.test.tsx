@@ -244,3 +244,15 @@ describe("CommitForm graceful degradation", () => {
     expect(heading).toBeInTheDocument();
   });
 });
+
+describe("stripCommentLines", () => {
+  it("drops comment lines and surrounding blank lines like a commit would", async () => {
+    const { stripCommentLines } = await import("../CommitForm");
+    expect(
+      stripCommentLines("Merge branch 'x'\n\n#Conflicts:\n#\tREADME.md\n"),
+    ).toBe("Merge branch 'x'");
+    expect(stripCommentLines("keep # inline\n  # comment")).toBe(
+      "keep # inline",
+    );
+  });
+});
