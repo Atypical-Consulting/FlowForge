@@ -247,7 +247,7 @@ export function useKeyboardShortcuts() {
     "mod+shift+o",
     (e) => {
       e.preventDefault();
-      executeCommand("clone-repository");
+      executeCommand("ext:repository:clone-repository");
     },
     { preventDefault: true },
   );
@@ -300,7 +300,7 @@ export function useKeyboardShortcuts() {
     (e) => {
       e.preventDefault();
       if (status) {
-        executeCommand("show-branches");
+        executeCommand("ext:branches:show-branches");
       }
     },
     { preventDefault: true, enabled: !!status },
@@ -312,7 +312,7 @@ export function useKeyboardShortcuts() {
     (e) => {
       e.preventDefault();
       if (status) {
-        executeCommand("create-branch");
+        executeCommand("ext:branches:create-branch");
       }
     },
     { preventDefault: true, enabled: !!status },
