@@ -3,6 +3,7 @@ import type { GitflowStatus, GraphNode } from "../../bindings";
 import {
   createBranchInfo,
   createRepoStatus,
+  createWorktreeInfo,
   gitflowOk,
   ok,
 } from "../test-utils/mocks/tauri-commands";
@@ -14,6 +15,7 @@ const mockCommands = vi.hoisted(() => ({
   getUndoInfo: vi.fn(),
   listTags: vi.fn(),
   listStashes: vi.fn(),
+  listWorktrees: vi.fn(),
   getCommitGraph: vi.fn(),
 }));
 
@@ -113,6 +115,9 @@ describe("refreshRepositoryState", () => {
     );
     mockCommands.listTags.mockResolvedValue(ok([]));
     mockCommands.listStashes.mockResolvedValue(ok([]));
+    mockCommands.listWorktrees.mockResolvedValue(
+      ok([createWorktreeInfo({ branch: "feature/payments" })]),
+    );
     mockCommands.getCommitGraph.mockResolvedValue(ok({ nodes: [], edges: [] }));
 
     // State captured when the repository was opened (still on develop)
@@ -120,6 +125,7 @@ describe("refreshRepositoryState", () => {
       repoStatus: createRepoStatus({ branchName: "develop" }),
       branchList: [createBranchInfo({ name: "develop", isHead: true })],
       gitflowStatus: gitflowStatus("develop"),
+      worktreeList: [createWorktreeInfo({ branch: "develop" })],
     });
   });
 
@@ -141,6 +147,28 @@ describe("refreshRepositoryState", () => {
     expect(spy).toHaveBeenCalledWith({ queryKey: ["repositoryStatus"] });
     expect(spy).toHaveBeenCalledWith({ queryKey: ["stagingStatus"] });
     expect(spy).toHaveBeenCalledWith({ queryKey: ["commitHistory"] });
+  });
+
+  it("reloads the worktree list so the main worktree row follows HEAD", async () => {
+    await refreshRepositoryState(createTestQueryClient());
+
+    expect(mockCommands.listWorktrees).toHaveBeenCalledTimes(1);
+    const main = useGitOpsStore.getState().worktreeList.find((w) => w.isMain);
+    expect(main?.branch).toBe("feature/payments");
+  });
+
+  it("keeps a worktree listing failure non-fatal", async () => {
+    mockCommands.listWorktrees.mockResolvedValue({
+      status: "error",
+      error: { type: "OperationFailed", message: "worktree list failed" },
+    });
+
+    await expect(
+      refreshRepositoryState(createTestQueryClient()),
+    ).resolves.toBeUndefined();
+    expect(useGitOpsStore.getState().worktreeError).toBe(
+      "worktree list failed",
+    );
   });
 
   it("only reloads the commit graph when it has already been loaded", async () => {

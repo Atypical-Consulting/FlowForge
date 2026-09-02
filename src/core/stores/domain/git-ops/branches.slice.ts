@@ -122,6 +122,7 @@ export const createBranchSlice: StateCreator<
     const result = await commands.checkoutRemoteBranch(remoteBranch);
     if (result.status === "ok") {
       await Promise.all([get().loadBranches(), get().refreshRepoStatus()]);
+      gitHookBus.emitDid("checkout", { branchName: remoteBranch });
       return true;
     }
     set({ branchError: getErrorMessage(result.error), branchIsLoading: false });

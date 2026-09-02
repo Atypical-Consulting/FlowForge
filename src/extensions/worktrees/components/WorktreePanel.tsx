@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { gitHookBus } from "@/core/services/gitHookBus";
 import { useGitOpsStore as useWorktreeStore } from "../../../core/stores/domain/git-ops";
 import { WorktreeItem } from "./WorktreeItem";
 
@@ -22,6 +23,29 @@ export function WorktreePanel({ onOpenDeleteDialog }: WorktreePanelProps) {
   // Load worktrees on mount
   useEffect(() => {
     loadWorktrees();
+  }, [loadWorktrees]);
+
+  // The main worktree row shows the checked-out branch, so reload whenever
+  // an in-app operation moves HEAD. Gitflow start/finish and external
+  // checkouts go through refreshRepositoryState(), which reloads too.
+  useEffect(() => {
+    const refresh = () => {
+      loadWorktrees();
+    };
+    const unsubCheckout = gitHookBus.onDid(
+      "checkout",
+      refresh,
+      "worktree-panel",
+    );
+    const unsubCreate = gitHookBus.onDid(
+      "branch-create",
+      refresh,
+      "worktree-panel",
+    );
+    return () => {
+      unsubCheckout();
+      unsubCreate();
+    };
   }, [loadWorktrees]);
 
   if (isLoading && worktrees.length === 0) {
