@@ -16,6 +16,13 @@ export interface BranchSlice {
 
   loadBranches: () => Promise<void>;
   loadAllBranches: (includeRemote: boolean) => Promise<void>;
+  /**
+   * Reload both branch lists together. `branchList` (local only) backs the
+   * header indicator and sidebar counts; `branchAllList` (local + remote)
+   * backs the sidebar list, the branch switcher and the worktree dialogs.
+   * Every mutation that touches refs must refresh both or they drift apart.
+   */
+  reloadBranchLists: () => Promise<void>;
   createBranch: (name: string, checkout: boolean) => Promise<BranchInfo | null>;
   checkoutBranch: (name: string) => Promise<boolean>;
   checkoutRemoteBranch: (remoteBranch: string) => Promise<boolean>;
@@ -76,6 +83,10 @@ export const createBranchSlice: StateCreator<
     }
   },
 
+  reloadBranchLists: async () => {
+    await Promise.all([get().loadBranches(), get().loadAllBranches(true)]);
+  },
+
   createBranch: async (name, checkout) => {
     set(
       { branchIsLoading: true, branchError: null },
@@ -85,7 +96,7 @@ export const createBranchSlice: StateCreator<
     const result = await commands.createBranch(name, checkout);
     if (result.status === "ok") {
       await Promise.all([
-        get().loadBranches(),
+        get().reloadBranchLists(),
         checkout ? get().refreshRepoStatus() : Promise.resolve(),
       ]);
       gitHookBus.emitDid("branch-create", { branchName: name });
@@ -103,9 +114,9 @@ export const createBranchSlice: StateCreator<
     );
     const result = await commands.checkoutBranch(name);
     if (result.status === "ok") {
-      // HEAD moved: refresh both the branch list and the repository status so
-      // the toolbar branch indicator follows the checkout.
-      await Promise.all([get().loadBranches(), get().refreshRepoStatus()]);
+      // HEAD moved: refresh both branch lists and the repository status so
+      // the toolbar branch indicator and the sidebar follow the checkout.
+      await Promise.all([get().reloadBranchLists(), get().refreshRepoStatus()]);
       gitHookBus.emitDid("checkout", { branchName: name });
       return true;
     }
@@ -121,7 +132,7 @@ export const createBranchSlice: StateCreator<
     );
     const result = await commands.checkoutRemoteBranch(remoteBranch);
     if (result.status === "ok") {
-      await Promise.all([get().loadBranches(), get().refreshRepoStatus()]);
+      await Promise.all([get().reloadBranchLists(), get().refreshRepoStatus()]);
       return true;
     }
     set({ branchError: getErrorMessage(result.error), branchIsLoading: false });
@@ -136,7 +147,7 @@ export const createBranchSlice: StateCreator<
     );
     const result = await commands.deleteBranch(name, force);
     if (result.status === "ok") {
-      await get().loadBranches();
+      await get().reloadBranchLists();
       gitHookBus.emitDid("branch-delete", { branchName: name });
       return true;
     }
