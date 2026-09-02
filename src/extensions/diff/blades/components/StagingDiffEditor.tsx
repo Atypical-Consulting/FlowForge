@@ -1,6 +1,7 @@
 import { DiffEditor, type DiffOnMount } from "@monaco-editor/react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { MONACO_COMMON_OPTIONS, MONACO_THEME } from "@/core/lib/monacoConfig";
+import { useMonacoTheme } from "@/core/hooks/useMonacoTheme";
+import { MONACO_COMMON_OPTIONS } from "@/core/lib/monacoConfig";
 import type { DiffHunkDetail } from "../../../../bindings";
 import "@/core/lib/monacoTheme";
 import { findHunkForLine, isChangedLine } from "../lib/diffUtils";
@@ -76,6 +77,7 @@ export function StagingDiffEditor({
   const hunksRef = useRef(hunks);
   hunksRef.current = hunks;
 
+  const monacoTheme = useMonacoTheme();
   const options = useMemo(
     () => ({
       ...MONACO_COMMON_OPTIONS,
@@ -559,7 +561,7 @@ export function StagingDiffEditor({
         original={original}
         modified={modified}
         language={language}
-        theme={MONACO_THEME}
+        theme={monacoTheme}
         options={options}
         onMount={handleMount}
         keepCurrentOriginalModel

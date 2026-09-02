@@ -1,56 +1,132 @@
 import "./monacoWorkers";
 import { loader } from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
+import { MONACO_THEMES } from "./monacoConfig";
 
 // Tell @monaco-editor/react to use locally bundled Monaco
 loader.config({ monaco });
 
-// Custom theme matching Catppuccin Mocha color scheme
-// Using CSS variable hex values for Monaco (Monaco doesn't support CSS variables directly)
-const FLOWFORGE_THEME: monaco.editor.IStandaloneThemeData = {
-  base: "vs-dark",
-  inherit: true,
-  rules: [
-    { token: "comment", foreground: "6c7086", fontStyle: "italic" }, // ctp-overlay0
-    { token: "keyword", foreground: "cba6f7" }, // ctp-mauve
-    { token: "string", foreground: "a6e3a1" }, // ctp-green
-    { token: "number", foreground: "fab387" }, // ctp-peach
-    { token: "type", foreground: "94e2d5" }, // ctp-teal
-    { token: "function", foreground: "89b4fa" }, // ctp-blue
-    { token: "variable", foreground: "cdd6f4" }, // ctp-text
-    { token: "operator", foreground: "9399b2" }, // ctp-overlay2
-  ],
-  colors: {
-    "editor.background": "#11111b", // ctp-crust
-    "editor.foreground": "#cdd6f4", // ctp-text
-    "editor.lineHighlightBackground": "#31324466", // ctp-surface0 with transparency
-    "editor.selectionBackground": "#89b4fa40", // ctp-blue with transparency
-    "editor.inactiveSelectionBackground": "#89b4fa20", // ctp-blue with less transparency
-    "editorLineNumber.foreground": "#6c7086", // ctp-overlay0
-    "editorLineNumber.activeForeground": "#9399b2", // ctp-overlay2
-    "editorCursor.foreground": "#89b4fa", // ctp-blue
-    "editorWhitespace.foreground": "#45475a", // ctp-surface1
-    "editorIndentGuide.background": "#45475a", // ctp-surface1
-    "editorIndentGuide.activeBackground": "#585b70", // ctp-surface2
-    "editor.wordHighlightBackground": "#89b4fa20", // ctp-blue with transparency
-    // Word-level: 25% opacity for clear change boundaries
-    "diffEditor.insertedTextBackground": "#a6e3a140", // ctp-green word-level additions
-    "diffEditor.removedTextBackground": "#f38ba840", // ctp-red word-level deletions
-    // Line-level: 6% opacity as subtle background wash
-    "diffEditor.insertedLineBackground": "#a6e3a110", // ctp-green line background
-    "diffEditor.removedLineBackground": "#f38ba810", // ctp-red line background
-    // Gutter: 18% opacity
-    "diffEditorGutter.insertedLineBackground": "#a6e3a130", // ctp-green gutter
-    "diffEditorGutter.removedLineBackground": "#f38ba830", // ctp-red gutter
-    // Collapsed unchanged regions
-    "diffEditor.unchangedRegionBackground": "#181825", // ctp-mantle
-    "diffEditor.unchangedRegionForeground": "#6c7086", // ctp-overlay0
-    "diffEditor.unchangedCodeBackground": "#181825", // ctp-mantle
-    "scrollbarSlider.background": "#58587050", // ctp-surface2 with transparency
-    "scrollbarSlider.hoverBackground": "#6c708670", // ctp-overlay0 with transparency
-    "scrollbarSlider.activeBackground": "#9399b280", // ctp-overlay2 with transparency
-  },
+/**
+ * Catppuccin palette subset used by the Monaco themes.
+ * Monaco doesn't support CSS variables, so the hex values are inlined here
+ * (kept in sync with `@catppuccin/tailwindcss`).
+ */
+interface CatppuccinPalette {
+  crust: string;
+  mantle: string;
+  base: string;
+  surface0: string;
+  surface1: string;
+  surface2: string;
+  overlay0: string;
+  overlay2: string;
+  text: string;
+  mauve: string;
+  green: string;
+  peach: string;
+  teal: string;
+  blue: string;
+  red: string;
+}
+
+const MOCHA: CatppuccinPalette = {
+  crust: "#11111b",
+  mantle: "#181825",
+  base: "#1e1e2e",
+  surface0: "#313244",
+  surface1: "#45475a",
+  surface2: "#585b70",
+  overlay0: "#6c7086",
+  overlay2: "#9399b2",
+  text: "#cdd6f4",
+  mauve: "#cba6f7",
+  green: "#a6e3a1",
+  peach: "#fab387",
+  teal: "#94e2d5",
+  blue: "#89b4fa",
+  red: "#f38ba8",
 };
 
-// Register theme synchronously (Monaco is available immediately)
-monaco.editor.defineTheme("flowforge-dark", FLOWFORGE_THEME);
+const LATTE: CatppuccinPalette = {
+  crust: "#dce0e8",
+  mantle: "#e6e9ef",
+  base: "#eff1f5",
+  surface0: "#ccd0da",
+  surface1: "#bcc0cc",
+  surface2: "#acb0be",
+  overlay0: "#9ca0b0",
+  overlay2: "#7c7f93",
+  text: "#4c4f69",
+  mauve: "#8839ef",
+  green: "#40a02b",
+  peach: "#fe640b",
+  teal: "#179299",
+  blue: "#1e66f5",
+  red: "#d20f39",
+};
+
+/** Build a FlowForge Monaco theme from a Catppuccin flavour palette. */
+function buildTheme(
+  base: "vs" | "vs-dark",
+  p: CatppuccinPalette,
+  background: string,
+): monaco.editor.IStandaloneThemeData {
+  return {
+    base,
+    inherit: true,
+    rules: [
+      {
+        token: "comment",
+        foreground: p.overlay0.slice(1),
+        fontStyle: "italic",
+      },
+      { token: "keyword", foreground: p.mauve.slice(1) },
+      { token: "string", foreground: p.green.slice(1) },
+      { token: "number", foreground: p.peach.slice(1) },
+      { token: "type", foreground: p.teal.slice(1) },
+      { token: "function", foreground: p.blue.slice(1) },
+      { token: "variable", foreground: p.text.slice(1) },
+      { token: "operator", foreground: p.overlay2.slice(1) },
+    ],
+    colors: {
+      "editor.background": background,
+      "editor.foreground": p.text,
+      "editor.lineHighlightBackground": `${p.surface0}66`,
+      "editor.selectionBackground": `${p.blue}40`,
+      "editor.inactiveSelectionBackground": `${p.blue}20`,
+      "editorLineNumber.foreground": p.overlay0,
+      "editorLineNumber.activeForeground": p.overlay2,
+      "editorCursor.foreground": p.blue,
+      "editorWhitespace.foreground": p.surface1,
+      "editorIndentGuide.background": p.surface1,
+      "editorIndentGuide.activeBackground": p.surface2,
+      "editor.wordHighlightBackground": `${p.blue}20`,
+      // Word-level: 25% opacity for clear change boundaries
+      "diffEditor.insertedTextBackground": `${p.green}40`,
+      "diffEditor.removedTextBackground": `${p.red}40`,
+      // Line-level: 6% opacity as subtle background wash
+      "diffEditor.insertedLineBackground": `${p.green}10`,
+      "diffEditor.removedLineBackground": `${p.red}10`,
+      // Gutter: 18% opacity
+      "diffEditorGutter.insertedLineBackground": `${p.green}30`,
+      "diffEditorGutter.removedLineBackground": `${p.red}30`,
+      // Collapsed unchanged regions
+      "diffEditor.unchangedRegionBackground": p.mantle,
+      "diffEditor.unchangedRegionForeground": p.overlay0,
+      "diffEditor.unchangedCodeBackground": p.mantle,
+      "scrollbarSlider.background": `${p.surface2}50`,
+      "scrollbarSlider.hoverBackground": `${p.overlay0}70`,
+      "scrollbarSlider.activeBackground": `${p.overlay2}80`,
+    },
+  };
+}
+
+/** Catppuccin Mocha (dark) theme, used when the app resolves to `mocha`. */
+export const FLOWFORGE_DARK_THEME = buildTheme("vs-dark", MOCHA, MOCHA.crust);
+
+/** Catppuccin Latte (light) theme, used when the app resolves to `latte`. */
+export const FLOWFORGE_LIGHT_THEME = buildTheme("vs", LATTE, LATTE.base);
+
+// Register themes synchronously (Monaco is available immediately)
+monaco.editor.defineTheme(MONACO_THEMES.mocha, FLOWFORGE_DARK_THEME);
+monaco.editor.defineTheme(MONACO_THEMES.latte, FLOWFORGE_LIGHT_THEME);

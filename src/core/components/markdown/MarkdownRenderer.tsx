@@ -2,7 +2,9 @@ import Markdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
-import "@catppuccin/highlightjs/css/catppuccin-mocha.css";
+// Variable-based variant: follows the active flavour via the --ctp-* variables
+// mapped in src/index.css (Latte in light mode, Mocha in dark mode).
+import "@catppuccin/highlightjs/css/catppuccin-variables.css";
 import { useMemo } from "react";
 import { createMarkdownComponents } from "./markdownComponents";
 

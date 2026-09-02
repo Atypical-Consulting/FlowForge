@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { commands } from "../../../../bindings";
+import { useMonacoTheme } from "../../../hooks/useMonacoTheme";
 import "../../../lib/monacoTheme";
 
 interface InlineDiffViewerProps {
@@ -12,7 +13,7 @@ interface InlineDiffViewerProps {
   initialScrollTop?: number;
 }
 
-const INLINE_DIFF_OPTIONS = {
+export const INLINE_DIFF_OPTIONS = {
   readOnly: true,
   originalEditable: false,
   renderSideBySide: false,
@@ -28,7 +29,10 @@ const INLINE_DIFF_OPTIONS = {
   overviewRulerBorder: false,
   renderOverviewRuler: false,
   glyphMargin: false,
-  lineDecorationsWidth: 0,
+  // The line-decorations area sits between the line numbers and the code and
+  // is where Monaco draws the +/- change indicators (`renderIndicators`).
+  // Width 0 hides the indicators and glues the numbers to the content.
+  lineDecorationsWidth: 16,
   lineNumbersMinChars: 3,
   diffAlgorithm: "advanced" as const,
   renderIndicators: true,
@@ -51,6 +55,7 @@ export function InlineDiffViewer({
   const [debouncedFilePath, setDebouncedFilePath] = useState(filePath);
   const [debouncedStaged, setDebouncedStaged] = useState(staged);
   const editorRef = useRef<Parameters<DiffOnMount>[0] | null>(null);
+  const monacoTheme = useMonacoTheme();
 
   // Keep the latest saved scroll position in a ref so the restore effect can
   // read it without re-firing every time a scroll-driven save updates the prop.
@@ -142,7 +147,7 @@ export function InlineDiffViewer({
           original={diff.oldContent}
           modified={diff.newContent}
           language={diff.language}
-          theme="flowforge-dark"
+          theme={monacoTheme}
           options={INLINE_DIFF_OPTIONS}
           onMount={handleMount}
         />

@@ -2,9 +2,22 @@
  * Shared Monaco Editor configuration constants.
  *
  * Used by DiffBlade (DiffEditor) and ViewerCodeBlade (Editor).
- * Theme is registered in monacoTheme.ts (imported as a side effect).
+ * Themes are registered in monacoTheme.ts (imported as a side effect).
  */
-export const MONACO_THEME = "flowforge-dark" as const;
+import type { ResolvedTheme } from "../stores/domain/preferences/theme.slice";
+
+/** Monaco theme name registered for each resolved Catppuccin flavour. */
+export const MONACO_THEMES = {
+  latte: "flowforge-light",
+  mocha: "flowforge-dark",
+} as const satisfies Record<ResolvedTheme, string>;
+
+export type MonacoTheme = (typeof MONACO_THEMES)[ResolvedTheme];
+
+/** Map the app's resolved theme to the matching Monaco theme name. */
+export function getMonacoTheme(resolved: ResolvedTheme): MonacoTheme {
+  return MONACO_THEMES[resolved];
+}
 
 export const MONACO_COMMON_OPTIONS = {
   readOnly: true,

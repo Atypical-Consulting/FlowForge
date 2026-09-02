@@ -26,6 +26,30 @@
  * and .latte class for light mode, bypassing the system preference.
  */
 
+/*
+ * highlight.js (@catppuccin/highlightjs variables build) reads --ctp-* variables.
+ * Alias them to the flavour-switched Catppuccin variables so code blocks follow
+ * the active theme (Latte in light mode, Mocha in dark mode).
+ */
+:root {
+  --ctp-base: var(--catppuccin-color-base);
+  --ctp-text: var(--catppuccin-color-text);
+  --ctp-subtext0: var(--catppuccin-color-subtext0);
+  --ctp-subtext1: var(--catppuccin-color-subtext1);
+  --ctp-overlay2: var(--catppuccin-color-overlay2);
+  --ctp-red: var(--catppuccin-color-red);
+  --ctp-peach: var(--catppuccin-color-peach);
+  --ctp-yellow: var(--catppuccin-color-yellow);
+  --ctp-green: var(--catppuccin-color-green);
+  --ctp-teal: var(--catppuccin-color-teal);
+  --ctp-sky: var(--catppuccin-color-sky);
+  --ctp-sapphire: var(--catppuccin-color-sapphire);
+  --ctp-blue: var(--catppuccin-color-blue);
+  --ctp-mauve: var(--catppuccin-color-mauve);
+  --ctp-pink: var(--catppuccin-color-pink);
+  --ctp-flamingo: var(--catppuccin-color-flamingo);
+}
+
 /* React Flow Controls - Theme-aware */
 .react-flow__controls {
   background: var(--catppuccin-color-mantle);
