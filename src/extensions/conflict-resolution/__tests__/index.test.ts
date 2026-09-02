@@ -1,7 +1,11 @@
-import { act } from "@testing-library/react";
+import { act, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { queryClient } from "../../../core/lib/queryClient";
-import { ok } from "../../../core/test-utils/mocks/tauri-commands";
+import { useGitOpsStore } from "../../../core/stores/domain/git-ops";
+import {
+  createRepoStatus,
+  ok,
+} from "../../../core/test-utils/mocks/tauri-commands";
 import type { ExtensionAPI } from "../../../framework/extension-system/ExtensionAPI";
 import { useToolbarRegistry } from "../../../framework/extension-system/toolbarRegistry";
 
@@ -120,6 +124,108 @@ describe("conflict-resolution extension activation", () => {
     expect(queryClient.getQueryData(CONFLICT_FILES_QUERY_KEY)).toEqual([]);
 
     onDeactivate();
+  });
+
+  describe("repository lifecycle", () => {
+    it("loads the conflict list and shows the badge when a repository opens mid-merge", async () => {
+      const { api } = createFakeApi();
+      await onActivate(api);
+      const toolbarConfig = vi.mocked(api.contributeToolbar).mock.calls[0][0];
+      expect(toolbarConfig.when?.()).toBe(false);
+      const tickBefore = useToolbarRegistry.getState().visibilityTick;
+
+      // The repo being opened already has `UU README.md` in `git status`
+      mockCommands.listConflictFiles.mockResolvedValue(ok(["README.md"]));
+      act(() => {
+        useGitOpsStore.setState({ repoStatus: createRepoStatus() });
+      });
+
+      await waitFor(() =>
+        expect(useConflictStore.getState().conflictCount()).toBe(1),
+      );
+      expect(mockCommands.listConflictFiles).toHaveBeenCalledTimes(1);
+      expect(toolbarConfig.when?.()).toBe(true);
+      expect(useToolbarRegistry.getState().visibilityTick).toBe(tickBefore + 1);
+      expect(queryClient.getQueryData(CONFLICT_FILES_QUERY_KEY)).toEqual([
+        "README.md",
+      ]);
+
+      onDeactivate();
+    });
+
+    it("loads the conflict list when the repository is already open at activation", async () => {
+      useGitOpsStore.setState({ repoStatus: createRepoStatus() });
+      mockCommands.listConflictFiles.mockResolvedValue(ok(["README.md"]));
+
+      const { api } = createFakeApi();
+      await onActivate(api);
+
+      await waitFor(() =>
+        expect(useConflictStore.getState().conflictCount()).toBe(1),
+      );
+      const toolbarConfig = vi.mocked(api.contributeToolbar).mock.calls[0][0];
+      expect(toolbarConfig.when?.()).toBe(true);
+
+      onDeactivate();
+    });
+
+    it("reloads the list when the repository status is refreshed", async () => {
+      useGitOpsStore.setState({ repoStatus: createRepoStatus() });
+      const { api } = createFakeApi();
+      await onActivate(api);
+      await waitFor(() =>
+        expect(mockCommands.listConflictFiles).toHaveBeenCalledTimes(1),
+      );
+      expect(useConflictStore.getState().conflictCount()).toBe(0);
+
+      // refreshRepositoryState() -> refreshRepoStatus() stores a fresh object
+      mockCommands.listConflictFiles.mockResolvedValue(ok(["README.md"]));
+      act(() => {
+        useGitOpsStore.setState({ repoStatus: createRepoStatus() });
+      });
+
+      await waitFor(() =>
+        expect(useConflictStore.getState().conflictCount()).toBe(1),
+      );
+
+      onDeactivate();
+    });
+
+    it("clears the conflict list when the repository is closed", async () => {
+      useGitOpsStore.setState({ repoStatus: createRepoStatus() });
+      mockCommands.listConflictFiles.mockResolvedValue(ok(["README.md"]));
+      const { api } = createFakeApi();
+      await onActivate(api);
+      await waitFor(() =>
+        expect(useConflictStore.getState().conflictCount()).toBe(1),
+      );
+      const toolbarConfig = vi.mocked(api.contributeToolbar).mock.calls[0][0];
+
+      act(() => {
+        useGitOpsStore.setState({ repoStatus: null });
+      });
+
+      expect(useConflictStore.getState().conflictCount()).toBe(0);
+      expect(useConflictStore.getState().activeFilePath).toBeNull();
+      expect(toolbarConfig.when?.()).toBe(false);
+      expect(queryClient.getQueryData(CONFLICT_FILES_QUERY_KEY)).toEqual([]);
+
+      onDeactivate();
+    });
+
+    it("stops following the repository after deactivation", async () => {
+      const { api } = createFakeApi();
+      await onActivate(api);
+      onDeactivate();
+
+      mockCommands.listConflictFiles.mockResolvedValue(ok(["README.md"]));
+      act(() => {
+        useGitOpsStore.setState({ repoStatus: createRepoStatus() });
+      });
+      await Promise.resolve();
+
+      expect(mockCommands.listConflictFiles).not.toHaveBeenCalled();
+    });
   });
 
   it("refreshConflictFiles mirrors the store list into the query cache", async () => {
