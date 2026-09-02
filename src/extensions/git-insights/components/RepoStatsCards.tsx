@@ -1,16 +1,20 @@
 import { motion } from "framer-motion";
 import { Clock, GitBranch, GitCommitHorizontal, Users } from "lucide-react";
-import type { RepoInsights } from "../types";
+import type { RepoInsights, TimeRange } from "../types";
 
 interface Props {
   insights: RepoInsights | null;
+  /** Local branches with a commit inside the selected time range. */
   branchCount: number;
+  timeRange: TimeRange;
   isLoading: boolean;
 }
 
 interface StatCardData {
   label: string;
   value: string;
+  /** Optional explanation shown as a tooltip on the card. */
+  hint?: string;
   icon: React.ComponentType<{ className?: string }>;
   color: string;
   bgColor: string;
@@ -27,11 +31,17 @@ function computeRepoAge(firstCommitMs: number): string {
   return remainMonths > 0 ? `${years}y ${remainMonths}mo` : `${years}y`;
 }
 
-export function RepoStatsCards({ insights, branchCount, isLoading }: Props) {
+export function RepoStatsCards({
+  insights,
+  branchCount,
+  timeRange,
+  isLoading,
+}: Props) {
   const cards: StatCardData[] = [
     {
       label: "Total Commits",
       value: insights?.totalCommits.toLocaleString() ?? "\u2014",
+      hint: `Commits reachable from HEAD in the last ${timeRange} days`,
       icon: GitCommitHorizontal,
       color: "text-ctp-blue",
       bgColor: "bg-ctp-blue/10",
@@ -41,6 +51,7 @@ export function RepoStatsCards({ insights, branchCount, isLoading }: Props) {
     {
       label: "Active Branches",
       value: branchCount.toString(),
+      hint: `Local branches with a commit in the last ${timeRange} days (remote-tracking branches are not counted)`,
       icon: GitBranch,
       color: "text-ctp-green",
       bgColor: "bg-ctp-green/10",
@@ -74,6 +85,8 @@ export function RepoStatsCards({ insights, branchCount, isLoading }: Props) {
       {cards.map((card, index) => (
         <motion.div
           key={card.label}
+          title={card.hint}
+          data-testid={`stat-card-${card.label.toLowerCase().replace(/\s+/g, "-")}`}
           className="group relative overflow-hidden rounded-xl border border-ctp-surface0/50 bg-ctp-mantle/60 px-4 py-3.5 backdrop-blur-sm transition-colors hover:border-ctp-surface1/70"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
