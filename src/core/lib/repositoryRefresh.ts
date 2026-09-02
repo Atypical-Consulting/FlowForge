@@ -25,12 +25,13 @@ export function invalidateRepositoryQueries(
 /**
  * Refresh all frontend state that can change when HEAD or refs move.
  *
- * The header branch indicator, branch list, gitflow panel, tags, stashes and
- * undo info are backed by the git-ops Zustand store rather than TanStack
- * queries, so invalidating query keys alone leaves them stale. This helper is
- * the single post-mutation refresh shared by gitflow operations, gitflow init,
- * the "Refresh All" command and the file watcher (for external `git checkout`
- * / branch changes).
+ * The header branch indicator, both branch lists (local `branchList` and the
+ * local + remote `branchAllList` rendered by the sidebar), gitflow panel,
+ * tags, stashes and undo info are backed by the git-ops Zustand store rather
+ * than TanStack queries, so invalidating query keys alone leaves them stale.
+ * This helper is the single post-mutation refresh shared by gitflow
+ * operations, gitflow init, the "Refresh All" command and the file watcher
+ * (for external `git checkout` / branch changes).
  *
  * Rejects with an aggregated error when any refresh failed, so callers such
  * as the gitflow machine can surface a "stale data" state. The commit graph is
@@ -44,7 +45,7 @@ export async function refreshRepositoryState(
   const store = useGitOpsStore.getState();
   const tasks: Promise<void>[] = [
     store.refreshRepoStatus(),
-    store.loadBranches(),
+    store.reloadBranchLists(),
     store.refreshGitflow(),
     store.loadUndoInfo(),
     store.loadTags(),

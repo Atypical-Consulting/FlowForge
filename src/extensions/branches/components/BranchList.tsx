@@ -40,13 +40,12 @@ export function BranchList({
     repoPath,
     isLoading,
     error,
-    loadBranches,
-    loadAllBranches,
   } = useBranchScopes();
 
   const {
     checkoutBranch,
     deleteBranch,
+    reloadBranchLists,
     clearBranchError: clearError,
   } = useBranchStore();
   const {
@@ -71,31 +70,38 @@ export function BranchList({
   );
 
   useEffect(() => {
-    loadBranches();
-    loadAllBranches(true);
+    reloadBranchLists();
     useBranchMetadataStore.getState().initMetadata();
-  }, [loadBranches, loadAllBranches]);
+  }, [reloadBranchLists]);
 
-  // Refresh branch list after push/fetch/pull operations
+  // Refresh branch lists after push/fetch/pull operations. Local mutations
+  // (create / checkout / delete) already reload both lists inside the store.
   useEffect(() => {
-    const refresh = () => {
-      loadBranches();
-      loadAllBranches(true);
-    };
-    const unsubPush = gitHookBus.onDid("push", refresh, "branch-list");
-    const unsubFetch = gitHookBus.onDid("fetch", refresh, "branch-list");
-    const unsubPull = gitHookBus.onDid("pull", refresh, "branch-list");
+    const unsubPush = gitHookBus.onDid(
+      "push",
+      reloadBranchLists,
+      "branch-list",
+    );
+    const unsubFetch = gitHookBus.onDid(
+      "fetch",
+      reloadBranchLists,
+      "branch-list",
+    );
+    const unsubPull = gitHookBus.onDid(
+      "pull",
+      reloadBranchLists,
+      "branch-list",
+    );
     return () => {
       unsubPush();
       unsubFetch();
       unsubPull();
     };
-  }, [loadBranches, loadAllBranches]);
+  }, [reloadBranchLists]);
 
   const handleCheckout = async (branchName: string) => {
     const success = await checkoutBranch(branchName);
     if (success) {
-      await loadAllBranches(true);
       if (repoPath) {
         await useBranchMetadataStore
           .getState()
@@ -133,7 +139,6 @@ export function BranchList({
     } else {
       await deleteBranch(name, false);
     }
-    await loadAllBranches(true);
   };
 
   const handleMerge = (branchName: string) => {
@@ -172,8 +177,8 @@ export function BranchList({
           `Failed to delete ${result.totalFailed} branch${result.totalFailed !== 1 ? "es" : ""}`,
         );
       }
-      await loadBranches();
-      await loadAllBranches(true);
+      // bulkDeleteBranches bypasses the store, so refresh both lists here.
+      await reloadBranchLists();
     } catch (e) {
       toast.error(
         `Bulk delete failed: ${e instanceof Error ? e.message : String(e)}`,

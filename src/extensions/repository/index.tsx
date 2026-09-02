@@ -82,13 +82,9 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     category: "Repository",
     icon: RefreshCw,
     action: () => {
-      // Shared post-mutation refresh: repo status (header branch), branch
-      // list, gitflow, undo, tags, stashes, graph + query invalidation.
-      const store = useRepositoryStore.getState();
-      Promise.all([
-        refreshRepositoryState(),
-        store.loadAllBranches(true),
-      ]).catch((e) => {
+      // Shared post-mutation refresh: repo status (header branch), both
+      // branch lists, gitflow, undo, tags, stashes, graph + query invalidation.
+      refreshRepositoryState().catch((e) => {
         console.error("Refresh All failed:", e);
       });
     },
@@ -176,7 +172,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     execute: async () => {
       const store = useRepositoryStore.getState();
       await Promise.all([
-        store.loadBranches(),
+        store.reloadBranchLists(),
         store.loadStashes(),
         store.loadTags(),
       ]);

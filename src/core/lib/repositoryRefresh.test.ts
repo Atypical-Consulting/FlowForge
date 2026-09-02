@@ -10,6 +10,7 @@ import {
 const mockCommands = vi.hoisted(() => ({
   getRepositoryStatus: vi.fn(),
   listBranches: vi.fn(),
+  listAllBranches: vi.fn(),
   getGitflowStatus: vi.fn(),
   getUndoInfo: vi.fn(),
   listTags: vi.fn(),
@@ -100,6 +101,18 @@ describe("refreshRepositoryState", () => {
         createBranchInfo({ name: "develop", isHead: false }),
       ]),
     );
+    mockCommands.listAllBranches.mockResolvedValue(
+      ok([
+        createBranchInfo({ name: "feature/payments", isHead: true }),
+        createBranchInfo({ name: "develop", isHead: false }),
+        createBranchInfo({
+          name: "origin/develop",
+          isHead: false,
+          isRemote: true,
+          remoteName: "origin",
+        }),
+      ]),
+    );
     mockCommands.getGitflowStatus.mockResolvedValue(
       gitflowOk(gitflowStatus("feature/payments")),
     );
@@ -119,8 +132,30 @@ describe("refreshRepositoryState", () => {
     useGitOpsStore.setState({
       repoStatus: createRepoStatus({ branchName: "develop" }),
       branchList: [createBranchInfo({ name: "develop", isHead: true })],
+      branchAllList: [createBranchInfo({ name: "develop", isHead: true })],
       gitflowStatus: gitflowStatus("develop"),
     });
+  });
+
+  it("reloads both branch lists (sidebar list and header/count list)", async () => {
+    await refreshRepositoryState(createTestQueryClient());
+
+    expect(mockCommands.listBranches).toHaveBeenCalledTimes(1);
+    expect(mockCommands.listAllBranches).toHaveBeenCalledWith(true);
+
+    const state = useGitOpsStore.getState();
+    expect(state.branchList.map((b) => b.name)).toEqual([
+      "feature/payments",
+      "develop",
+    ]);
+    expect(state.branchAllList.map((b) => b.name)).toEqual([
+      "feature/payments",
+      "develop",
+      "origin/develop",
+    ]);
+    expect(state.branchAllList.find((b) => b.isHead)?.name).toBe(
+      "feature/payments",
+    );
   });
 
   it("refreshes the store-backed state and invalidates the queries", async () => {

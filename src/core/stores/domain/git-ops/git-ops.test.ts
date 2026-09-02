@@ -58,6 +58,7 @@ describe("useGitOpsStore", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockCommands.listBranches.mockResolvedValue(ok([]));
+    mockCommands.listAllBranches.mockResolvedValue(ok([]));
     mockCommands.listTags.mockResolvedValue(ok([]));
     mockCommands.listStashes.mockResolvedValue(ok([]));
   });
@@ -140,6 +141,152 @@ describe("useGitOpsStore", () => {
 
       expect(result).not.toBeNull();
       expect(result?.name).toBe("feature/test");
+    });
+
+    // Regression: the sidebar renders `branchAllList` (listAllBranches) while
+    // the header/count badge use `branchList` (listBranches). Every branch
+    // mutation must refresh both, or the sidebar list goes stale.
+    describe("branch mutations refresh both branch lists", () => {
+      const develop = createBranchInfo({ name: "develop", isHead: true });
+      const feature = createBranchInfo({
+        name: "feature/ui-test",
+        isHead: false,
+      });
+
+      beforeEach(() => {
+        useGitOpsStore.setState({
+          branchList: [develop],
+          branchAllList: [develop],
+        });
+      });
+
+      function mockListsAfterMutation(local: (typeof develop)[], all = local) {
+        mockCommands.listBranches.mockResolvedValueOnce(ok(local));
+        mockCommands.listAllBranches.mockResolvedValueOnce(ok(all));
+      }
+
+      it("createBranch(name, true) reloads both lists and marks the new branch HEAD", async () => {
+        const newHead = { ...feature, isHead: true };
+        const oldHead = { ...develop, isHead: false };
+        mockCommands.createBranch.mockResolvedValueOnce(ok(newHead));
+        mockListsAfterMutation([oldHead, newHead]);
+
+        const result = await useGitOpsStore
+          .getState()
+          .createBranch("feature/ui-test", true);
+
+        expect(result?.name).toBe("feature/ui-test");
+        expect(mockCommands.listBranches).toHaveBeenCalledTimes(1);
+        expect(mockCommands.listAllBranches).toHaveBeenCalledWith(true);
+
+        const state = useGitOpsStore.getState();
+        expect(state.branchList.map((b) => b.name)).toContain(
+          "feature/ui-test",
+        );
+        expect(state.branchAllList.map((b) => b.name)).toContain(
+          "feature/ui-test",
+        );
+        expect(state.branchAllList.find((b) => b.isHead)?.name).toBe(
+          "feature/ui-test",
+        );
+        expect(state.branchIsLoading).toBe(false);
+      });
+
+      it("createBranch(name, false) reloads both lists without moving HEAD", async () => {
+        mockCommands.createBranch.mockResolvedValueOnce(ok(feature));
+        mockListsAfterMutation([develop, feature]);
+
+        await useGitOpsStore.getState().createBranch("feature/ui-test", false);
+
+        expect(mockCommands.listAllBranches).toHaveBeenCalledWith(true);
+        const state = useGitOpsStore.getState();
+        expect(state.branchAllList.map((b) => b.name)).toEqual([
+          "develop",
+          "feature/ui-test",
+        ]);
+        expect(state.branchAllList.find((b) => b.isHead)?.name).toBe("develop");
+      });
+
+      it("checkoutBranch reloads both lists and moves HEAD in branchAllList", async () => {
+        useGitOpsStore.setState({
+          branchList: [develop, feature],
+          branchAllList: [develop, feature],
+        });
+        mockCommands.checkoutBranch.mockResolvedValueOnce(ok(null));
+        mockListsAfterMutation([
+          { ...develop, isHead: false },
+          { ...feature, isHead: true },
+        ]);
+
+        const success = await useGitOpsStore
+          .getState()
+          .checkoutBranch("feature/ui-test");
+
+        expect(success).toBe(true);
+        expect(mockCommands.listBranches).toHaveBeenCalledTimes(1);
+        expect(mockCommands.listAllBranches).toHaveBeenCalledWith(true);
+        const state = useGitOpsStore.getState();
+        expect(state.branchList.find((b) => b.isHead)?.name).toBe(
+          "feature/ui-test",
+        );
+        expect(state.branchAllList.find((b) => b.isHead)?.name).toBe(
+          "feature/ui-test",
+        );
+      });
+
+      it("checkoutRemoteBranch reloads both lists", async () => {
+        mockCommands.checkoutRemoteBranch.mockResolvedValueOnce(ok(null));
+        mockListsAfterMutation([
+          { ...develop, isHead: false },
+          { ...feature, isHead: true },
+        ]);
+
+        const success = await useGitOpsStore
+          .getState()
+          .checkoutRemoteBranch("origin/feature/ui-test");
+
+        expect(success).toBe(true);
+        expect(mockCommands.listBranches).toHaveBeenCalledTimes(1);
+        expect(mockCommands.listAllBranches).toHaveBeenCalledWith(true);
+        expect(
+          useGitOpsStore.getState().branchAllList.find((b) => b.isHead)?.name,
+        ).toBe("feature/ui-test");
+      });
+
+      it("deleteBranch reloads both lists and drops the branch from branchAllList", async () => {
+        useGitOpsStore.setState({
+          branchList: [develop, feature],
+          branchAllList: [develop, feature],
+        });
+        mockCommands.deleteBranch.mockResolvedValueOnce(ok(null));
+        mockListsAfterMutation([develop]);
+
+        const success = await useGitOpsStore
+          .getState()
+          .deleteBranch("feature/ui-test", false);
+
+        expect(success).toBe(true);
+        expect(mockCommands.listBranches).toHaveBeenCalledTimes(1);
+        expect(mockCommands.listAllBranches).toHaveBeenCalledWith(true);
+        const state = useGitOpsStore.getState();
+        expect(state.branchList.map((b) => b.name)).toEqual(["develop"]);
+        expect(state.branchAllList.map((b) => b.name)).toEqual(["develop"]);
+      });
+
+      it("does not reload either list when the mutation fails", async () => {
+        mockCommands.createBranch.mockResolvedValueOnce(
+          err({ type: "BranchAlreadyExists", message: "already exists" }),
+        );
+
+        const result = await useGitOpsStore
+          .getState()
+          .createBranch("develop", true);
+
+        expect(result).toBeNull();
+        expect(mockCommands.listBranches).not.toHaveBeenCalled();
+        expect(mockCommands.listAllBranches).not.toHaveBeenCalled();
+        expect(useGitOpsStore.getState().branchError).toBeTruthy();
+      });
     });
   });
 
