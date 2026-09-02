@@ -191,7 +191,7 @@ describe("formatSyncError", () => {
 
   it("falls back to the generic message for other errors", () => {
     expect(formatSyncError("push", { type: "EmptyRepository" }, "origin")).toBe(
-      "Push failed: EmptyRepository",
+      "Push failed: The repository has no commits yet",
     );
   });
 });

@@ -288,6 +288,65 @@ describe("useGitOpsStore", () => {
         expect(useGitOpsStore.getState().branchError).toBeTruthy();
       });
     });
+
+    it("createBranch failure sets a descriptive mutation error", async () => {
+      mockCommands.createBranch.mockResolvedValueOnce(
+        err({ type: "BranchAlreadyExists", message: "main" }),
+      );
+
+      const result = await useGitOpsStore.getState().createBranch("main", true);
+
+      const state = useGitOpsStore.getState();
+      expect(result).toBeNull();
+      expect(state.branchIsLoading).toBe(false);
+      expect(state.branchError).toBe("A branch named 'main' already exists");
+      expect(state.branchMutationError).toBe(
+        "A branch named 'main' already exists",
+      );
+    });
+
+    it("keeps the mutation error across branch list reloads", async () => {
+      mockCommands.createBranch.mockResolvedValueOnce(
+        err({ type: "InvalidBranchName", message: "bad..name" }),
+      );
+      mockCommands.listBranches.mockResolvedValue(ok([]));
+      mockCommands.listAllBranches.mockResolvedValue(ok([]));
+
+      await useGitOpsStore.getState().createBranch("bad..name", false);
+      // What the file watcher / other panels do at any moment
+      await useGitOpsStore.getState().loadBranches();
+      await useGitOpsStore.getState().loadAllBranches(true);
+
+      const state = useGitOpsStore.getState();
+      expect(state.branchError).toBeNull();
+      expect(state.branchMutationError).toBe(
+        "'bad..name' is not a valid branch name",
+      );
+    });
+
+    it("clears the mutation error when a new mutation starts or on clear", async () => {
+      mockCommands.createBranch.mockResolvedValueOnce(
+        err({ type: "BranchAlreadyExists", message: "main" }),
+      );
+      await useGitOpsStore.getState().createBranch("main", true);
+      expect(useGitOpsStore.getState().branchMutationError).not.toBeNull();
+
+      useGitOpsStore.getState().clearBranchMutationError();
+      expect(useGitOpsStore.getState().branchMutationError).toBeNull();
+
+      mockCommands.deleteBranch.mockResolvedValueOnce(
+        err({ type: "CannotDeleteCurrentBranch" }),
+      );
+      await useGitOpsStore.getState().deleteBranch("main", false);
+      expect(useGitOpsStore.getState().branchMutationError).toBe(
+        "The currently checked-out branch cannot be deleted",
+      );
+
+      useGitOpsStore.getState().clearBranchError();
+      const state = useGitOpsStore.getState();
+      expect(state.branchError).toBeNull();
+      expect(state.branchMutationError).toBeNull();
+    });
   });
 
   describe("Tags slice", () => {
