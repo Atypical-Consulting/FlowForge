@@ -48,9 +48,9 @@ export function MenuItem({
           )}
         />
       )}
-      <span className="flex-1">{label}</span>
+      <span className="flex-1 whitespace-nowrap">{label}</span>
       {shortcut && (
-        <span className="text-xs text-ctp-subtext0 font-mono ml-auto pl-4">
+        <span className="ml-8 shrink-0 whitespace-nowrap text-xs text-ctp-subtext0 font-mono">
           {formatShortcut(shortcut)}
         </span>
       )}

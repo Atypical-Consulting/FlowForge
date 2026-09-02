@@ -61,7 +61,7 @@ export function MenuDropdown({
       role="menu"
       tabIndex={-1}
       onKeyDown={onKeyDown}
-      className="absolute top-full left-0 z-50 mt-1 min-w-[220px] py-1 bg-ctp-mantle border border-ctp-surface0 rounded-lg shadow-xl shadow-black/20 outline-none"
+      className="absolute top-full left-0 z-50 mt-1 w-max min-w-[220px] py-1 bg-ctp-mantle border border-ctp-surface0 rounded-lg shadow-xl shadow-black/20 outline-none"
     >
       {items.map((item) => {
         if (item.type === "divider") {
