@@ -31,8 +31,6 @@ export function Toolbar() {
   // Subscribe to repoStatus so when() conditions re-evaluate on repo change
   const _repoStatus = useRepositoryStore((s) => s.repoStatus);
 
-  const { containerRef, visibleCount } = useToolbarOverflow();
-
   // Build the flattened ordered action list
   const { orderedActions, groupBoundaries } = useMemo(() => {
     const grouped = getGroupedToolbarActions();
@@ -51,6 +49,8 @@ export function Toolbar() {
     return { orderedActions: ordered, groupBoundaries: boundaries };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- repoStatus + visibilityTick trigger when() re-eval
   }, [hiddenActions]);
+
+  const { containerRef, visibleCount } = useToolbarOverflow(orderedActions);
 
   // Split into inline and overflowed
   const inlineActions = orderedActions.slice(0, visibleCount);
@@ -75,7 +75,9 @@ export function Toolbar() {
       aria-label="Main toolbar"
       aria-orientation="horizontal"
       onKeyDown={handleKeyDown}
-      className="flex items-center gap-1"
+      // Width comes from the header (flex-1 min-w-0), never from the content:
+      // overflow measurement relies on it (see useToolbarOverflow).
+      className="flex flex-1 min-w-0 items-center justify-end gap-1"
     >
       {groupBoundaries.map(({ group, startIndex }, groupIdx) => {
         // Determine which actions from this group are still inline
@@ -123,10 +125,7 @@ export function Toolbar() {
       })}
 
       {overflowedActions.length > 0 && (
-        <ToolbarOverflowMenu
-          actions={overflowedActions}
-          count={overflowedActions.length}
-        />
+        <ToolbarOverflowMenu actions={overflowedActions} />
       )}
     </div>
   );

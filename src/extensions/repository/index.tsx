@@ -66,6 +66,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     title: "Clone Repository",
     description: "Clone a remote Git repository",
     category: "Repository",
+    shortcut: "mod+shift+o",
     icon: GitFork,
     action: () => {
       document.dispatchEvent(new CustomEvent("clone-repository-dialog"));
@@ -96,7 +97,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     icon: FolderOpen,
     group: "app",
     priority: 100,
-    shortcut: "mod+o",
+    commandId: "ext:repository:open-repository",
     execute: () => {
       document.dispatchEvent(new CustomEvent("open-repository-dialog"));
     },
@@ -108,6 +109,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     icon: X,
     group: "navigation",
     priority: 60,
+    commandId: "ext:repository:close-repository",
     when: whenRepoOpen,
     execute: () => {
       useRepositoryStore.getState().closeRepository();
@@ -120,6 +122,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     icon: GitFork,
     group: "navigation",
     priority: 40,
+    commandId: "ext:repository:clone-repository",
     when: whenRepoNotOpen,
     execute: () => {
       document.dispatchEvent(new CustomEvent("clone-repository-dialog"));
@@ -152,6 +155,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
   api.contributeToolbar({
     id: "refresh-all",
     label: "Refresh All",
+    commandId: "ext:repository:refresh-all",
     icon: RefreshCw,
     group: "git-actions",
     priority: 70,

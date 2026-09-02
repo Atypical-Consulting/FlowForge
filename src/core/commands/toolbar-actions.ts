@@ -31,7 +31,7 @@ const coreActions: ToolbarAction[] = [
     icon: Settings,
     group: "app",
     priority: 90,
-    shortcut: "mod+,",
+    commandId: "open-settings",
     source: "core",
     execute: () => {
       openBlade("settings", {} as Record<string, never>);
@@ -44,7 +44,7 @@ const coreActions: ToolbarAction[] = [
     icon: Search,
     group: "app",
     priority: 80,
-    shortcut: "mod+shift+P",
+    commandId: "command-palette",
     source: "core",
     execute: () => {
       useCommandPaletteStore.getState().togglePalette();

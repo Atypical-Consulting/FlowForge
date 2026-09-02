@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { formatShortcut } from "../../hooks/useKeyboardShortcuts";
 
 interface ShortcutTooltipProps {
-  shortcut: string;
+  /** Shortcut in react-hotkeys-hook format; omit to show the label alone. */
+  shortcut?: string;
   label: string;
   children: ReactNode;
   side?: "top" | "bottom";
@@ -67,8 +68,7 @@ export function ShortcutTooltip({
     }
   }, [visible]);
 
-  const formatted = formatShortcut(shortcut);
-  const keys = parseKeys(formatted);
+  const keys = shortcut ? parseKeys(formatShortcut(shortcut)) : [];
 
   const positionClasses =
     side === "bottom" ? "top-full mt-1.5" : "bottom-full mb-1.5";
@@ -88,8 +88,18 @@ export function ShortcutTooltip({
 
   const tooltipInner = (
     <>
-      <span className="text-xs text-ctp-subtext0 mr-2">{label}</span>
-      <span className="inline-flex items-center gap-0.5">{kbdElements}</span>
+      <span
+        className={
+          keys.length > 0
+            ? "text-xs text-ctp-subtext0 mr-2"
+            : "text-xs text-ctp-subtext0"
+        }
+      >
+        {label}
+      </span>
+      {keys.length > 0 && (
+        <span className="inline-flex items-center gap-0.5">{kbdElements}</span>
+      )}
     </>
   );
 

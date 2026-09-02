@@ -29,6 +29,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     title: "Create Branch",
     description: "Create a new Git branch",
     category: "Branches",
+    shortcut: "mod+shift+n",
     icon: GitBranch,
     action: () => {
       document.dispatchEvent(new CustomEvent("create-branch-dialog"));
@@ -56,7 +57,6 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     title: "Open Branch Manager",
     description: "Open the branch management blade",
     category: "Navigation",
-    shortcut: "mod+shift+b",
     icon: GitBranch,
     action: () => {
       getNavigationActor().send({
@@ -76,6 +76,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     icon: GitBranch,
     group: "git-actions",
     priority: 35,
+    commandId: "ext:branches:create-branch",
     when: () => !!useRepositoryStore.getState().repoStatus,
     execute: () => {
       document.dispatchEvent(new CustomEvent("create-branch-dialog"));
