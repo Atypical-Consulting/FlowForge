@@ -1,0 +1,132 @@
+name: release-please
+
+# Derives the next semantic version from Conventional Commits on every push to main and keeps a
+# release PR up to date (bumping package.json, package-lock.json, src-tauri/Cargo.toml,
+# src-tauri/tauri.conf.json and CHANGELOG.md — see release-please-config.json). Merging that PR
+# tags vX.Y.Z and creates the GitHub Release; the `release_created` output then gates the `build`
+# matrix below, which builds the installers with tauri-action and attaches them to that same
+# release in this same workflow run.
+#
+# A tag-triggered workflow can't do this: tags and releases created with GITHUB_TOKEN never fire
+# `on: push: tags` / `on: release`, which is why the former release.yml was folded in here.
+#
+# Branch model: PRs land on `dev`; a release is cut by merging `dev` into `main`. release-please
+# only watches `main`, so the release PR is opened against `main` and nothing happens on `dev`.
+#
+# PRs are squash-merged, so it is the PR *title* (the resulting commit on main) that decides the
+# next version: `fix:` → patch, `feat:` → minor, `feat!:` / `BREAKING CHANGE` → major.
+
+on:
+  push:
+    branches: [main]
+  # Manual re-run, e.g. after a token or permission failure. Idempotent: it re-opens or refreshes
+  # the same release PR rather than creating a second one. `release_created` is false off a
+  # dispatch, so the build matrix is skipped.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+# Serialize release-please runs so two overlapping pushes to main can't race on the release PR
+# or the tag. Never cancel an in-progress run — cancelling mid-tag could leave it half-applied.
+concurrency:
+  group: release-please
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: googleapis/release-please-action@v5
+        id: release
+        with:
+          target-branch: main
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  # Installers for every platform, attached to the release that release-please just created.
+  # tauri-action reuses an existing release when one already carries `tagName`, so the release
+  # body written by release-please (the changelog section) is kept and only the assets are added.
+  build:
+    name: build (${{ matrix.platform }})
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            args: --target aarch64-apple-darwin
+          - platform: ubuntu-22.04
+            args: ""
+          - platform: ubuntu-22.04-arm
+            args: ""
+          - platform: windows-latest
+            args: ""
+
+    runs-on: ${{ matrix.platform }}
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: "npm"
+
+      - name: Upgrade npm
+        run: npm install -g npm@latest
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin' || '' }}
+
+      - name: Install dependencies (Linux only)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      # release-please bumps src-tauri/Cargo.toml but cannot rewrite Cargo.lock (cargo strips the
+      # generic-updater annotation from it), so on a release commit the lock's own-package entry
+      # lags Cargo.toml by one version. Refresh just that entry — no dependency churn — so the
+      # build does not have to.
+      - name: Refresh Cargo.lock for the bumped crate version
+        working-directory: src-tauri
+        run: cargo update -p flowforge
+
+      - name: Build and upload installers
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          # macOS code signing (Developer ID Application). When these secrets are
+          # absent the build is simply unsigned, exactly as before. tauri-action
+          # imports the certificate into a temporary keychain on macOS runners and
+          # ignores these on Windows/Linux.
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          # macOS notarization (Apple ID + app-specific password).
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        with:
+          tagName: ${{ needs.release-please.outputs.tag_name }}
+          releaseName: "FlowForge ${{ needs.release-please.outputs.tag_name }}"
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.args }}

@@ -19,7 +19,7 @@
 
 <!-- Badges: Row 3 — Quality -->
 [![Docs](https://github.com/Atypical-Consulting/FlowForge/actions/workflows/docs.yml/badge.svg)](https://github.com/Atypical-Consulting/FlowForge/actions/workflows/docs.yml)
-[![Release](https://github.com/Atypical-Consulting/FlowForge/actions/workflows/release.yml/badge.svg)](https://github.com/Atypical-Consulting/FlowForge/actions/workflows/release.yml)
+[![Release](https://github.com/Atypical-Consulting/FlowForge/actions/workflows/release-please.yml/badge.svg)](https://github.com/Atypical-Consulting/FlowForge/actions/workflows/release-please.yml)
 
 ---
 
