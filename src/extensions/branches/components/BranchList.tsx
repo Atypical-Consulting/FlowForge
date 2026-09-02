@@ -52,9 +52,8 @@ export function BranchList({
   const {
     mergeResult: lastMergeResult,
     sourceBranch: mergeSourceBranch,
+    state: mergeState,
     startMerge,
-    abort: _abortMerge,
-    isMerging: _mergeIsLoading,
   } = useMergeWorkflow();
   const [mergingBranch, setMergingBranch] = useState<string | null>(null);
 
@@ -165,8 +164,16 @@ export function BranchList({
   };
 
   const confirmMerge = () => {
-    if (mergingBranch) {
-      startMerge(mergingBranch);
+    if (!mergingBranch) return;
+    // The machine verifies the repository before merging and toasts when a
+    // merge is still in progress; the only way it refuses the request outright
+    // is while it is busy, which must never look like a dropped click.
+    if (!startMerge(mergingBranch)) {
+      toast.error(
+        mergeState === "aborting"
+          ? "Wait for the current merge to be aborted before starting another one"
+          : "A merge is already running — wait for it to finish",
+      );
     }
   };
 

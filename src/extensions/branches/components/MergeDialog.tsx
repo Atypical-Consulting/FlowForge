@@ -25,7 +25,15 @@ export function MergeDialog({
   onConfirm,
   onClose,
 }: MergeDialogProps) {
-  const { isMerging: isLoading, isAborting, abort } = useMergeWorkflow();
+  const {
+    isMerging: isLoading,
+    isAborting,
+    isConflicted,
+    state,
+    error,
+    sourceBranch: activeSourceBranch,
+    abort,
+  } = useMergeWorkflow();
 
   const handleAbort = () => {
     abort();
@@ -39,6 +47,19 @@ export function MergeDialog({
 
   // Show confirmation before merge
   if (!result) {
+    // The last merge of *this* branch failed: show why instead of leaving the
+    // dialog silently open.
+    const failedMessage =
+      state === "error" && activeSourceBranch === sourceBranch ? error : null;
+    // The singleton machine still tracks conflicts from a previous merge of a
+    // different branch. The Merge button stays enabled: the machine checks the
+    // repository first and refuses (with a toast) only if that merge is really
+    // still in progress.
+    const pendingConflictBranch =
+      isConflicted && activeSourceBranch && activeSourceBranch !== sourceBranch
+        ? activeSourceBranch
+        : null;
+
     return (
       <Dialog open={true} onOpenChange={onClose}>
         <DialogContent>
@@ -53,6 +74,30 @@ export function MergeDialog({
             Merge <strong>{sourceBranch}</strong> into current branch?
           </DialogDescription>
 
+          {failedMessage && (
+            <div
+              role="alert"
+              className="flex items-start gap-2 mb-4 p-3 rounded bg-ctp-red/20 border border-ctp-red/30 text-ctp-red text-sm"
+            >
+              <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+              <span>Merge failed: {failedMessage}</span>
+            </div>
+          )}
+
+          {pendingConflictBranch && (
+            <div
+              role="status"
+              className="flex items-start gap-2 mb-4 p-3 rounded bg-ctp-yellow/20 border border-ctp-yellow/30 text-ctp-yellow text-sm"
+            >
+              <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+              <span>
+                A previous merge of <strong>{pendingConflictBranch}</strong>{" "}
+                reported conflicts. If it is still in progress, resolve or abort
+                it first.
+              </span>
+            </div>
+          )}
+
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose}>
               Cancel
@@ -60,10 +105,10 @@ export function MergeDialog({
             <Button
               type="button"
               onClick={onConfirm}
-              disabled={isLoading}
+              disabled={isLoading || isAborting}
               data-autofocus
             >
-              {isLoading ? "Merging..." : "Merge"}
+              {isLoading ? "Merging..." : failedMessage ? "Retry" : "Merge"}
             </Button>
           </DialogFooter>
         </DialogContent>

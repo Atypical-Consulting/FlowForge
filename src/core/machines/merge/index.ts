@@ -1,5 +1,5 @@
 export { getMergeActor, type MergeActorRef } from "./context";
-export { mergeMachine } from "./mergeMachine";
+export { MERGE_IN_PROGRESS_MESSAGE, mergeMachine } from "./mergeMachine";
 export {
   selectConflicts,
   selectIsAborting,

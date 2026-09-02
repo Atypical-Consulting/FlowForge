@@ -38,8 +38,17 @@ export function useMergeWorkflow() {
     isConflicted,
     isAborting,
     sourceBranch,
-    startMerge: (branch: string) =>
-      actorRef.send({ type: "START_MERGE", sourceBranch: branch }),
+    /**
+     * Request a merge. Returns `false` when the machine cannot accept the
+     * request right now (a merge is running or being aborted) so callers can
+     * tell the user instead of silently dropping the click.
+     */
+    startMerge: (branch: string): boolean => {
+      const event = { type: "START_MERGE", sourceBranch: branch } as const;
+      if (!actorRef.getSnapshot().can(event)) return false;
+      actorRef.send(event);
+      return true;
+    },
     abort: () => actorRef.send({ type: "ABORT" }),
     retry: () => actorRef.send({ type: "RETRY" }),
   };

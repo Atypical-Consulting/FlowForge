@@ -12,7 +12,9 @@ export const selectMergeError = (snap: MergeSnapshot) => snap.context.error;
 export const selectMergeResult = (snap: MergeSnapshot) =>
   snap.context.mergeResult;
 
-export const selectIsMerging = (snap: MergeSnapshot) => snap.matches("merging");
+/** True while a merge request is being verified or executed. */
+export const selectIsMerging = (snap: MergeSnapshot) =>
+  snap.matches("verifying") || snap.matches("merging");
 
 export const selectIsConflicted = (snap: MergeSnapshot) =>
   snap.matches("conflicted");
