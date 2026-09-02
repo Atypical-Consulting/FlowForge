@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { gitHookBus } from "@/core/services/gitHookBus";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
+import { confirm } from "@/framework/stores/confirm";
 import { toast } from "@/framework/stores/toast";
 import type { SyncProgress } from "../../bindings";
 import { commands as tauriCommands } from "../../bindings";
@@ -212,9 +213,11 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
       const { undoInfo, performUndo } = useRepositoryStore.getState();
       if (!undoInfo?.canUndo) return;
 
-      const confirmed = window.confirm(
-        `Are you sure you want to undo?\n\n${undoInfo.description}`,
-      );
+      const confirmed = await confirm({
+        title: "Undo",
+        description: `Are you sure you want to undo?\n\n${undoInfo.description}`,
+        confirmLabel: "Undo",
+      });
 
       if (confirmed) {
         const success = await performUndo();

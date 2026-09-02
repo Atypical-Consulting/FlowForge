@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2, Maximize2, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCommandShortcut } from "@/framework/command-palette/useCommandShortcut";
+import { confirm } from "@/framework/stores/confirm";
 import { commands } from "../../../bindings";
 import { useExtensionHost } from "../../../extensions";
 import { ConventionalCommitForm } from "../../../extensions/conventional-commits/components/ConventionalCommitForm";
@@ -197,11 +198,14 @@ export function CommitForm() {
 
           {/* Commit button */}
           <Button
-            onClick={() => {
+            onClick={async () => {
               if (amendPrefill.amend) {
-                const confirmed = window.confirm(
-                  "Amend will rewrite the last commit. This cannot be undone. Continue?",
-                );
+                const confirmed = await confirm({
+                  title: "Amend commit",
+                  description:
+                    "Amend will rewrite the last commit. This cannot be undone. Continue?",
+                  confirmLabel: "Amend",
+                });
                 if (!confirmed) return;
               }
               commit(message, amendPrefill.amend);

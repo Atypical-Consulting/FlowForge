@@ -20,6 +20,7 @@ import { selectBladeStack } from "@/framework/layout/navigation/selectors";
 import { commands as tauriCommands } from "./bindings";
 import { Header } from "./core/components/Header";
 import { RepositoryView } from "./core/components/RepositoryView";
+import { ConfirmDialogHost } from "./core/components/ui/ConfirmDialogHost";
 import { ContextMenuPortal } from "./core/components/ui/ContextMenu";
 import { StatusBar } from "./core/components/ui/StatusBar";
 import { ToastContainer } from "./core/components/ui/ToastContainer";
@@ -525,6 +526,7 @@ function App() {
         <ToastContainer />
         <CommandPalette />
         <ContextMenuPortal />
+        <ConfirmDialogHost />
       </div>
     </NavigationProvider>
   );
