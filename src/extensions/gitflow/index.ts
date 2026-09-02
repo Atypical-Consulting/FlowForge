@@ -2,7 +2,10 @@ import { GitBranch, GitMerge } from "lucide-react";
 import { lazy } from "react";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { openBlade } from "@/framework/layout/bladeOpener";
-import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
+import {
+  isRepositoryOpen,
+  useGitOpsStore as useRepositoryStore,
+} from "../../core/stores/domain/git-ops";
 import { GitflowPanel } from "./components";
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {
@@ -40,7 +43,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     icon: GitBranch,
     group: "views",
     priority: 50,
-    when: () => !!useRepositoryStore.getState().repoStatus,
+    when: isRepositoryOpen,
     execute: () => {
       openBlade("gitflow-cheatsheet", {} as Record<string, never>);
     },

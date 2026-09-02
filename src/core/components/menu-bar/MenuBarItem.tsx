@@ -42,6 +42,9 @@ export function MenuBarItem({
         tabIndex={tabIndex}
         className={cn(
           "px-3 py-1 text-sm rounded-md transition-colors",
+          // Keyboard focus is shown as a ring, distinct from the "open" fill,
+          // so a trigger that keeps focus after Escape does not look open.
+          "outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ctp-blue",
           isOpen
             ? "bg-ctp-surface0 text-ctp-text"
             : "text-ctp-subtext1 hover:bg-ctp-surface0 hover:text-ctp-text",

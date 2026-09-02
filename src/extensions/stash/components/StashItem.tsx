@@ -38,7 +38,9 @@ export function StashItem({
   const parsed = parseStashMessage(stash.message);
 
   return (
-    <div className="group flex items-center justify-between px-2 py-1 rounded-md hover:bg-ctp-surface0">
+    // The row itself is not clickable (apply/pop/drop are the hover buttons),
+    // so use the default arrow rather than the I-beam text cursor.
+    <div className="group flex items-center justify-between px-2 py-1 rounded-md cursor-default hover:bg-ctp-surface0">
       <div className="flex items-center gap-1.5 min-w-0 flex-1">
         <Archive className="w-3.5 h-3.5 shrink-0 text-ctp-overlay1" />
         <div className="min-w-0">

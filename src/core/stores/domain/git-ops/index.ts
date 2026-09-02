@@ -43,6 +43,19 @@ export const useGitOpsStore = create<GitOpsStore>()(
 
 registerStoreForReset(useGitOpsStore);
 
+/** Selector: is a repository open on the frontend? */
+export const selectIsRepositoryOpen = (state: GitOpsStore): boolean =>
+  state.repoStatus !== null;
+
+/**
+ * Single source of truth for "a repository is open", for non-React code such
+ * as toolbar/menu `when()`/`enabled()` predicates. It reads the same store
+ * the App uses to choose between the welcome screen and the repository view.
+ */
+export function isRepositoryOpen(): boolean {
+  return selectIsRepositoryOpen(useGitOpsStore.getState());
+}
+
 export type { BranchSlice } from "./branches.slice";
 export { selectCurrentBranchName } from "./branches.slice";
 export type { CloneSlice } from "./clone.slice";

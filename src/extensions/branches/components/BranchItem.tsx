@@ -108,7 +108,9 @@ export function BranchItem({
   return (
     <div
       className={cn(
-        "group/item flex items-center justify-between px-2 py-1 rounded-md",
+        // The row itself is not clickable (actions are the hover buttons and
+        // the context menu), so use the default arrow rather than the I-beam.
+        "group/item flex items-center justify-between px-2 py-1 rounded-md cursor-default",
         branch.isHead
           ? "bg-ctp-blue/20 border border-ctp-blue/50"
           : "hover:bg-ctp-surface0",

@@ -3,7 +3,10 @@ import { BarChart3 } from "lucide-react";
 import { lazy } from "react";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { openBlade } from "@/framework/layout/bladeOpener";
-import { useGitOpsStore } from "../../core/stores/domain/git-ops";
+import {
+  isRepositoryOpen,
+  useGitOpsStore,
+} from "../../core/stores/domain/git-ops";
 import { useInsightsStore } from "./insightsStore";
 
 export async function onActivate(api: ExtensionAPI): Promise<void> {
@@ -50,7 +53,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     icon: BarChart3,
     group: "views",
     priority: 40,
-    when: () => !!useGitOpsStore.getState().repoStatus,
+    when: isRepositoryOpen,
     execute: () => openBlade("ext:git-insights:insights-dashboard", {}),
   });
 

@@ -12,6 +12,7 @@ import {
   describeSyncResult,
   formatSyncException,
 } from "../../extensions/sync/lib/syncMessages";
+import { showTopologyView } from "../lib/topologyNavigation";
 import {
   useGitOpsStore as useRepositoryStore,
   useGitOpsStore as useTopologyStore,
@@ -312,11 +313,8 @@ export function useKeyboardShortcuts() {
     "mod+2",
     (e) => {
       e.preventDefault();
-      if (status && useBladeRegistry.getState().items.has("topology-graph")) {
-        getNavigationActor().send({
-          type: "SWITCH_WORKFLOW",
-          workflow: "topology",
-        });
+      if (status) {
+        showTopologyView("history");
       }
     },
     { preventDefault: true, enabled: !!status },

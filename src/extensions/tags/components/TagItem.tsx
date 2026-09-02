@@ -4,11 +4,13 @@ import type { TagInfo } from "../../../bindings";
 
 interface TagItemProps {
   tag: TagInfo;
+  /** Open the tagged commit. */
+  onSelect: () => void;
   onDelete: () => Promise<void> | void;
   disabled?: boolean;
 }
 
-export function TagItem({ tag, onDelete, disabled }: TagItemProps) {
+export function TagItem({ tag, onSelect, onDelete, disabled }: TagItemProps) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
@@ -21,28 +23,36 @@ export function TagItem({ tag, onDelete, disabled }: TagItemProps) {
   };
 
   return (
-    <div className="group flex items-center justify-between px-2 py-1 rounded-md hover:bg-ctp-surface0">
-      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+    <div className="group flex items-center justify-between rounded-md hover:bg-ctp-surface0">
+      <button
+        type="button"
+        onClick={onSelect}
+        title={`Open commit ${tag.targetOid.slice(0, 7)}`}
+        className="flex items-center gap-1.5 min-w-0 flex-1 px-2 py-1 rounded-md text-left cursor-pointer outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ctp-blue"
+      >
         <Tag className="w-3.5 h-3.5 shrink-0 text-ctp-yellow" />
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium">{tag.name}</p>
+        <span className="min-w-0">
+          <span className="block truncate text-sm font-medium">{tag.name}</span>
           {tag.message && (
-            <p className="text-xs text-ctp-overlay0 truncate">{tag.message}</p>
+            <span className="block text-xs text-ctp-overlay0 truncate">
+              {tag.message}
+            </span>
           )}
-        </div>
+        </span>
         {tag.isAnnotated && (
           <span className="text-xs text-ctp-overlay0 px-1 py-0.5 bg-ctp-surface0 rounded">
             annotated
           </span>
         )}
-      </div>
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+      </button>
+      <div className="pr-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
         <button
           type="button"
           onClick={handleDelete}
           disabled={disabled || isDeleting}
           className="p-1 hover:bg-ctp-surface1 rounded text-ctp-overlay1 hover:text-ctp-red"
           title="Delete tag"
+          aria-label={`Delete tag ${tag.name}`}
         >
           {isDeleting ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />

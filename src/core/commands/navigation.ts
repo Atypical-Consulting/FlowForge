@@ -1,8 +1,8 @@
 import { FileText, History, Search } from "lucide-react";
 import { registerCommand } from "@/framework/command-palette/commandRegistry";
 import { usePaletteStore as useCommandPaletteStore } from "@/framework/command-palette/paletteStore";
-import { useBladeRegistry } from "@/framework/layout/bladeRegistry";
 import { getNavigationActor } from "@/framework/layout/navigation/context";
+import { showTopologyView } from "../lib/topologyNavigation";
 import { useGitOpsStore as useRepositoryStore } from "../stores/domain/git-ops";
 
 registerCommand({
@@ -33,18 +33,13 @@ registerCommand({
 registerCommand({
   id: "show-history",
   title: "Show History",
-  description: "Switch to the topology (history) view",
+  description:
+    "Switch to the topology view on its History tab (Ctrl/Cmd+2; Ctrl/Cmd+1 shows Changes)",
   category: "Navigation",
   shortcut: "mod+2",
   icon: History,
   action: () => {
-    const hasTopology = useBladeRegistry.getState().items.has("topology-graph");
-    if (hasTopology) {
-      getNavigationActor().send({
-        type: "SWITCH_WORKFLOW",
-        workflow: "topology",
-      });
-    }
+    showTopologyView("history");
   },
   enabled: () => !!useRepositoryStore.getState().repoStatus,
 });
