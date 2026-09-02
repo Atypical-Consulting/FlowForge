@@ -2,6 +2,7 @@ use std::collections::HashSet;
 
 use serde::{Deserialize, Serialize};
 use specta::Type;
+use specta_typescript::Number;
 use tauri::State;
 
 use crate::git::error::GitError;
@@ -440,6 +441,7 @@ pub struct RecentCheckout {
     /// Branch name (bare, without refs/heads/ prefix)
     pub name: String,
     /// Unix timestamp in milliseconds when the checkout occurred
+    #[specta(type = Number)]
     pub last_checkout_ms: f64,
 }
 

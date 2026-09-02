@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use specta::Type;
+use specta_typescript::Number;
 use tauri::State;
 
 use crate::git::error::GitError;
@@ -22,6 +23,7 @@ pub struct TagInfo {
     /// True for annotated tags, false for lightweight
     pub is_annotated: bool,
     /// Creation timestamp in milliseconds since epoch
+    #[specta(type = Number)]
     pub created_at_ms: f64,
 }
 

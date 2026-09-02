@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use specta::Type;
+use specta_typescript::Number;
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use tauri::State;
@@ -38,6 +39,7 @@ pub struct GraphNode {
     /// Author name
     pub author: String,
     /// Unix timestamp in milliseconds (safe for JS Number up to year 275760)
+    #[specta(type = Number)]
     pub timestamp_ms: f64,
     /// Parent commit SHAs
     pub parents: Vec<String>,

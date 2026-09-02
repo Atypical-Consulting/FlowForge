@@ -1,6 +1,7 @@
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use specta::Type;
+use specta_typescript::Number;
 use std::collections::HashMap;
 use tauri::State;
 
@@ -28,10 +29,13 @@ pub struct ContributorStats {
     /// Total number of commits by this contributor
     pub commit_count: u32,
     /// Percentage of total commits
+    #[specta(type = Number)]
     pub percentage: f64,
     /// Timestamp of first commit in milliseconds
+    #[specta(type = Number)]
     pub first_commit_ms: f64,
     /// Timestamp of last commit in milliseconds
+    #[specta(type = Number)]
     pub last_commit_ms: f64,
 }
 
@@ -46,6 +50,7 @@ pub struct RepoInsights {
     /// Number of unique contributors
     pub contributor_count: u32,
     /// Timestamp of the earliest commit seen (milliseconds)
+    #[specta(type = Number)]
     pub first_commit_ms: f64,
     /// Daily commit counts sorted by date ascending
     pub daily_commits: Vec<DailyCommitCount>,
@@ -66,6 +71,7 @@ pub struct BranchHealthInfo {
     /// Date of last commit in YYYY-MM-DD format
     pub last_commit_date: String,
     /// Timestamp of last commit in milliseconds
+    #[specta(type = Number)]
     pub last_commit_timestamp_ms: f64,
     /// Summary of the last commit message
     pub last_commit_message: String,

@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use specta::Type;
+use specta_typescript::Number;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use tauri::State;
@@ -17,6 +18,7 @@ pub struct CommitSummary {
     pub author_name: String,
     pub author_email: String,
     /// Unix timestamp in milliseconds (safe for JS Number up to year 275760)
+    #[specta(type = Number)]
     pub timestamp_ms: f64,
 }
 
@@ -40,10 +42,12 @@ pub struct CommitDetails {
     pub author_name: String,
     pub author_email: String,
     /// Unix timestamp in milliseconds (safe for JS Number)
+    #[specta(type = Number)]
     pub author_timestamp_ms: f64,
     pub committer_name: String,
     pub committer_email: String,
     /// Unix timestamp in milliseconds (safe for JS Number)
+    #[specta(type = Number)]
     pub committer_timestamp_ms: f64,
     pub parent_oids: Vec<String>,
     pub files_changed: Vec<FileChanged>,

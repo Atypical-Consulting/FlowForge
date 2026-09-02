@@ -5,6 +5,7 @@
 
 use serde::{Deserialize, Serialize};
 use specta::Type;
+use specta_typescript::Number;
 use std::time::Duration;
 
 use crate::git::error::GitError;
@@ -18,6 +19,10 @@ pub struct NugetPackageInfo {
     pub version: String,
     pub description: String,
     pub authors: String,
+    /// Exported as a TypeScript `number`: Specta refuses to emit `u64` by
+    /// default (BigInt precision), but download counts fit comfortably in
+    /// `Number.MAX_SAFE_INTEGER`.
+    #[specta(type = Number)]
     pub total_downloads: u64,
     pub published: String,
     pub project_url: Option<String>,

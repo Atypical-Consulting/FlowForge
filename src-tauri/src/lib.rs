@@ -205,17 +205,12 @@ pub fn run() {
 
     #[cfg(debug_assertions)]
     {
+        // specta-typescript refuses 64-bit integers (BigInt precision) and
+        // emits `f64` as `number | null`; exported structs opt individual
+        // fields back to plain `number` with `#[specta(type = Number)]`.
         builder
             .export(Typescript::default(), "../src/bindings.ts")
             .expect("Failed to export TypeScript bindings");
-
-        // Fix tauri-specta bug: generated `export type TAURI_CHANNEL<TSend> = null`
-        // conflicts with the `Channel as TAURI_CHANNEL` import it also generates.
-        let bindings_path = std::path::Path::new("../src/bindings.ts");
-        if let Ok(content) = std::fs::read_to_string(bindings_path) {
-            let fixed = content.replace("export type TAURI_CHANNEL<TSend> = null\n", "");
-            std::fs::write(bindings_path, fixed).ok();
-        }
     }
 
     tauri::Builder::default()
