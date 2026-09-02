@@ -1,13 +1,42 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
+
+/** Fallback dimensions used before the menu has been measured. */
+const ESTIMATED_MENU_WIDTH = 200;
+const ESTIMATED_ITEM_HEIGHT = 32;
+const ESTIMATED_GROUP_GAP = 8;
+const VIEWPORT_MARGIN = 8;
+
+/**
+ * Keep the menu fully inside the viewport. Prefers the requested position;
+ * when it would overflow, shifts the menu back so its far edge touches the
+ * viewport margin; never returns a negative offset.
+ */
+export function clampMenuPosition(
+  position: { x: number; y: number },
+  size: { width: number; height: number },
+  viewport: { width: number; height: number },
+): { left: number; top: number } {
+  const maxLeft = viewport.width - size.width - VIEWPORT_MARGIN;
+  const maxTop = viewport.height - size.height - VIEWPORT_MARGIN;
+  return {
+    left: Math.max(VIEWPORT_MARGIN, Math.min(position.x, maxLeft)),
+    top: Math.max(VIEWPORT_MARGIN, Math.min(position.y, maxTop)),
+  };
+}
 
 export function ContextMenuPortal() {
   const activeMenu = useContextMenuRegistry((s) => s.activeMenu);
   const hideMenu = useContextMenuRegistry((s) => s.hideMenu);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [measured, setMeasured] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
 
-  // Keyboard and click-outside dismissal
+  // Keyboard, scroll and resize dismissal (click-outside is handled by the
+  // full-screen backdrop below)
   useEffect(() => {
     if (!activeMenu) return;
 
@@ -16,14 +45,30 @@ export function ContextMenuPortal() {
         hideMenu();
       }
     };
+    const handleScroll = () => hideMenu();
+    const handleResize = () => hideMenu();
 
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    // Capture phase: scroll events do not bubble, so this is the only way to
+    // observe scrolling inside any nested panel.
+    document.addEventListener("scroll", handleScroll, true);
+    window.addEventListener("resize", handleResize);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", handleResize);
+    };
   }, [activeMenu, hideMenu]);
 
-  // Focus first menu item on mount
-  useEffect(() => {
+  // Measure the real menu size once rendered so the clamp uses actual
+  // dimensions instead of the estimate; focus the first item.
+  useLayoutEffect(() => {
+    setMeasured(null);
     if (!activeMenu || !menuRef.current) return;
+    const { offsetWidth, offsetHeight } = menuRef.current;
+    if (offsetWidth > 0 && offsetHeight > 0) {
+      setMeasured({ width: offsetWidth, height: offsetHeight });
+    }
     const firstItem =
       menuRef.current.querySelector<HTMLButtonElement>('[role="menuitem"]');
     firstItem?.focus();
@@ -41,25 +86,24 @@ export function ContextMenuPortal() {
   const groups = Array.from(groupMap.entries());
 
   // Clamp position to viewport
-  const menuWidth = 200;
-  const menuHeight = Math.min(
-    groups.reduce((acc, [, items]) => acc + items.length * 32, 0) +
-      groups.length * 8,
-    400,
-  );
-  const left = Math.min(
-    activeMenu.position.x,
-    window.innerWidth - menuWidth - 8,
-  );
-  const top = Math.min(
-    activeMenu.position.y,
-    window.innerHeight - menuHeight - 8,
-  );
+  const size = measured ?? {
+    width: ESTIMATED_MENU_WIDTH,
+    height: Math.min(
+      activeMenu.items.length * ESTIMATED_ITEM_HEIGHT +
+        groups.length * ESTIMATED_GROUP_GAP,
+      400,
+    ),
+  };
+  const { left, top } = clampMenuPosition(activeMenu.position, size, {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
 
   return createPortal(
     <div
       className="fixed inset-0 z-[100]"
       onClick={hideMenu}
+      onWheel={hideMenu}
       onContextMenu={(e) => {
         e.preventDefault();
         hideMenu();

@@ -1,7 +1,16 @@
-import { GitBranch } from "lucide-react";
+import {
+  Check,
+  Copy,
+  GitBranch,
+  GitMerge,
+  Pin,
+  PinOff,
+  Trash2,
+} from "lucide-react";
 import { lazy } from "react";
 import type { ExtensionAPI } from "@/framework/extension-system/ExtensionAPI";
 import { getNavigationActor } from "@/framework/layout/navigation/context";
+import { toast } from "@/framework/stores/toast";
 import { useGitOpsStore as useRepositoryStore } from "../../core/stores/domain/git-ops";
 import { usePreferencesStore } from "../../core/stores/domain/preferences";
 
@@ -80,6 +89,79 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     execute: () => {
       document.dispatchEvent(new CustomEvent("create-branch-dialog"));
     },
+  });
+
+  // Context menu items for branch rows (branch-list). The row passes the
+  // same callbacks its hover buttons use through `ctx.actions`, so these
+  // items reuse BranchList's checkout / merge-dialog / delete-confirm paths.
+  api.contributeContextMenu({
+    id: "checkout",
+    label: "Switch to branch",
+    icon: Check,
+    location: "branch-list",
+    group: "1-branch",
+    priority: 100,
+    when: (ctx) => !ctx.isHead && !!ctx.actions?.checkout,
+    execute: (ctx) => ctx.actions?.checkout?.(),
+  });
+
+  api.contributeContextMenu({
+    id: "merge",
+    label: "Merge into current branch",
+    icon: GitMerge,
+    location: "branch-list",
+    group: "1-branch",
+    priority: 90,
+    when: (ctx) => !ctx.isHead && !!ctx.actions?.merge,
+    execute: (ctx) => ctx.actions?.merge?.(),
+  });
+
+  api.contributeContextMenu({
+    id: "pin",
+    label: "Pin branch",
+    icon: Pin,
+    location: "branch-list",
+    group: "2-organize",
+    priority: 100,
+    when: (ctx) => !ctx.isPinned && !!ctx.actions?.togglePin,
+    execute: (ctx) => ctx.actions?.togglePin?.(),
+  });
+
+  api.contributeContextMenu({
+    id: "unpin",
+    label: "Unpin branch",
+    icon: PinOff,
+    location: "branch-list",
+    group: "2-organize",
+    priority: 100,
+    when: (ctx) => !!ctx.isPinned && !!ctx.actions?.togglePin,
+    execute: (ctx) => ctx.actions?.togglePin?.(),
+  });
+
+  api.contributeContextMenu({
+    id: "copy-name",
+    label: "Copy branch name",
+    icon: Copy,
+    location: "branch-list",
+    group: "3-clipboard",
+    priority: 100,
+    when: (ctx) => !!ctx.branchName,
+    execute: async (ctx) => {
+      if (!ctx.branchName) return;
+      await navigator.clipboard.writeText(ctx.branchName);
+      toast.success("Branch name copied to clipboard");
+    },
+  });
+
+  api.contributeContextMenu({
+    id: "delete",
+    label: "Delete branch",
+    icon: Trash2,
+    location: "branch-list",
+    group: "4-danger",
+    priority: 100,
+    when: (ctx) => !ctx.isHead && !!ctx.actions?.delete,
+    execute: (ctx) => ctx.actions?.delete?.(),
   });
 }
 

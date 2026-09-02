@@ -1,6 +1,7 @@
 import { Archive, Download, Loader2, Play, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { parseStashMessage } from "@/core/lib/stash-utils";
+import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
 import type { StashEntry } from "../../../bindings";
 
 interface StashItemProps {
@@ -38,7 +39,24 @@ export function StashItem({
   const parsed = parseStashMessage(stash.message);
 
   return (
-    <div className="group flex items-center justify-between px-2 py-1 rounded-md hover:bg-ctp-surface0">
+    <div
+      className="group flex items-center justify-between px-2 py-1 rounded-md hover:bg-ctp-surface0"
+      onContextMenu={(e) => {
+        e.preventDefault();
+        useContextMenuRegistry
+          .getState()
+          .showMenu({ x: e.clientX, y: e.clientY }, "stash-list", {
+            location: "stash-list",
+            stashIndex: stash.index,
+            // Same callbacks the hover buttons use (drop keeps its confirm).
+            actions: {
+              apply: () => handleAction("apply", onApply),
+              pop: () => handleAction("pop", onPop),
+              drop: () => handleAction("drop", onDrop),
+            },
+          });
+      }}
+    >
       <div className="flex items-center gap-1.5 min-w-0 flex-1">
         <Archive className="w-3.5 h-3.5 shrink-0 text-ctp-overlay1" />
         <div className="min-w-0">

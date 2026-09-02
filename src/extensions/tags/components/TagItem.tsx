@@ -1,5 +1,6 @@
 import { Loader2, Tag, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { useContextMenuRegistry } from "@/framework/extension-system/contextMenuRegistry";
 import type { TagInfo } from "../../../bindings";
 
 interface TagItemProps {
@@ -21,7 +22,20 @@ export function TagItem({ tag, onDelete, disabled }: TagItemProps) {
   };
 
   return (
-    <div className="group flex items-center justify-between px-2 py-1 rounded-md hover:bg-ctp-surface0">
+    <div
+      className="group flex items-center justify-between px-2 py-1 rounded-md hover:bg-ctp-surface0"
+      onContextMenu={(e) => {
+        e.preventDefault();
+        useContextMenuRegistry
+          .getState()
+          .showMenu({ x: e.clientX, y: e.clientY }, "tag-list", {
+            location: "tag-list",
+            tagName: tag.name,
+            // Same callback the hover button uses (delete keeps its confirm).
+            actions: { delete: handleDelete },
+          });
+      }}
+    >
       <div className="flex items-center gap-1.5 min-w-0 flex-1">
         <Tag className="w-3.5 h-3.5 shrink-0 text-ctp-yellow" />
         <div className="min-w-0">
