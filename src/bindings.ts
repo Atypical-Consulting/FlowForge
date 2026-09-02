@@ -567,6 +567,20 @@ export const commands = {
 	 *  Spawns the terminal application with platform-specific handling.
 	 */
 	openInTerminal: (path: string, terminal: string) => typedError<null, GitError>(__TAURI_INVOKE("open_in_terminal", { path, terminal })),
+	/**
+	 *  Show or hide the client-side decorations of the calling window.
+	 * 
+	 *  Backs the `window.decorations` preference: `"always"` sends `true`,
+	 *  `"never"` sends `false`, and `"auto"` sends whatever
+	 *  [`get_default_window_decorations`] returns.
+	 */
+	setWindowDecorations: (enabled: boolean) => typedError<null, string>(__TAURI_INVOKE("set_window_decorations", { enabled })),
+	/**
+	 *  The decoration state the runtime detection picks on this machine
+	 *  (`true` = decorations shown). Lets the frontend restore the automatic
+	 *  behaviour when the user switches the preference back to `"auto"`.
+	 */
+	getDefaultWindowDecorations: () => __TAURI_INVOKE<boolean>("get_default_window_decorations"),
 };
 
 /* Types */
