@@ -94,6 +94,11 @@ sudo apt update
 sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
 ```
 
+**Linux (Arch / Omarchy / Asahi):**
+```bash
+sudo pacman -S --needed webkit2gtk-4.1 base-devel curl wget openssl gtk3 libappindicator-gtk3 librsvg patchelf rust
+```
+
 **Windows:**
 - Visual Studio 2022 with C++ build tools
 - WebView2 (included in Windows 11, or install from Microsoft)
@@ -106,7 +111,7 @@ Download the latest release from the [Releases page](https://github.com/Atypical
 
 - **macOS (Apple Silicon):** Download the `.dmg` file and drag FlowForge to your Applications folder.
 - **Windows:** Download the `.msi` installer and run it.
-- **Linux:** Download the `.deb` package or `.AppImage` file.
+- **Linux:** Download the `.deb` package or `.AppImage` file. Both `amd64` (x86_64) and `arm64` (aarch64, e.g. Asahi Linux on Apple Silicon) builds are published.
 
 > **macOS users:** FlowForge is not code-signed with an Apple Developer certificate. macOS Gatekeeper will show a "damaged" error when you first open the app. To fix this, run the following command in Terminal after installing:
 > ```bash
