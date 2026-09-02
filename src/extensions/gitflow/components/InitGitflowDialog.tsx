@@ -60,11 +60,15 @@ export function InitGitflowDialog({
       return;
     }
 
-    const success = await initGitflow(config, pushDevelop);
-    if (success) {
+    const result = await initGitflow(config, pushDevelop);
+    if (result) {
       await loadBranches();
       await refreshStatus(); // Update branch name in header
-      toast.success("Gitflow initialized! Switched to develop branch.");
+      toast.success(
+        result.switchedToDevelop
+          ? `Gitflow initialized! Switched to ${config.developBranch} branch.`
+          : `Gitflow initialized! Already on ${config.developBranch} branch.`,
+      );
       handleClose();
     }
   };

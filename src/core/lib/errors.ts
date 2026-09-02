@@ -4,6 +4,15 @@ import type { GitError, GitflowError } from "../../bindings";
  * Extract a human-readable error message from a GitError or GitflowError.
  */
 export function getErrorMessage(error: GitError | GitflowError): string {
+  // Gitflow safety errors: give the user an actionable sentence rather than
+  // the raw variant name.
+  if (error.type === "CheckoutWouldOverwriteChanges") {
+    return `You have uncommitted changes that would be overwritten by switching to '${error.data}'. Commit or stash them first.`;
+  }
+  if (error.type === "DirtyWorkingTree") {
+    return "You have uncommitted changes. Commit or stash them before running this Gitflow operation.";
+  }
+
   // Handle GitflowError types
   if ("data" in error) {
     // For errors with string data (e.g., ReleaseInProgress, BranchNotFound).

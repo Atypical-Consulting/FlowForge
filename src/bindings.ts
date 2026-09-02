@@ -21,7 +21,14 @@ export const commands = {
 	/**
 	 *  Check if a path is a valid Git repository.
 	 * 
-	 *  Used for drag-drop validation before attempting to open.
+	 *  Used for drag-drop and "Open Repository" validation before attempting to open.
+	 * 
+	 *  Returns `Ok(false)` only when the folder genuinely holds no repository
+	 *  (libgit2 `NotFound`). Any other failure — permission denied, libgit2
+	 *  ownership validation ("dubious ownership"), corrupt metadata, ... — is a
+	 *  real error: it is logged and returned as `Err` so the caller can tell the
+	 *  user *why* the folder could not be opened instead of silently offering to
+	 *  `git init` an existing repository.
 	 */
 	isGitRepository: (path: string) => typedError<boolean, GitError>(__TAURI_INVOKE("is_git_repository", { path })),
 	/**
@@ -155,8 +162,8 @@ export const commands = {
 	/**
 	 *  Get paginated commit history.
 	 * 
-	 *  Returns commits starting from HEAD, sorted by time.
-	 *  Use skip and limit for pagination.
+	 *  Returns commits reachable from HEAD in `git log` order (children before
+	 *  parents, newest first). Use skip and limit for pagination.
 	 */
 	getCommitHistory: (skip: number, limit: number) => typedError<CommitSummary[], GitError>(__TAURI_INVOKE("get_commit_history", { skip, limit })),
 	/**  Get full details of a specific commit. */
@@ -265,14 +272,10 @@ export const commands = {
 	 */
 	resolveConflictFile: (path: string, content: string) => typedError<null, GitError>(__TAURI_INVOKE("resolve_conflict_file", { path, content })),
 	/**
-	 *  Initialize Gitflow on a repository.
+	 *  Initialize Gitflow on the currently open repository.
 	 * 
-	 *  This command:
-	 *  1. Verifies the main branch exists
-	 *  2. Creates the develop branch if it doesn't exist
-	 *  3. Stores configuration in .git/config for git-flow CLI compatibility
-	 *  4. Checks out the develop branch
-	 *  5. Optionally pushes develop to origin
+	 *  See [`init_gitflow_in_repo`] for the exact steps. Never discards local
+	 *  changes: the switch to develop is a safe checkout.
 	 */
 	initGitflow: (config: GitflowConfig, pushDevelop: boolean) => typedError<GitflowInitResult, GitflowError>(__TAURI_INVOKE("init_gitflow", { config, pushDevelop })),
 	/**  Start a new feature branch from develop. */
@@ -1131,6 +1134,11 @@ export type GitflowError =
 { type: "MergeConflict" } | 
 /**  Working directory has uncommitted changes */
 { type: "DirtyWorkingTree" } | 
+/**
+ *  Switching to the named branch would overwrite uncommitted local changes.
+ *  The checkout is refused and nothing is modified.
+ */
+{ type: "CheckoutWouldOverwriteChanges"; data: string } | 
 /**  Repository has no commits yet */
 { type: "UnbornHead" } | 
 /**  Specified branch was not found */
@@ -1148,7 +1156,10 @@ export type GitflowError =
 export type GitflowInitResult = {
 	/**  Whether the develop branch was created (false if it already existed) */
 	developCreated: boolean,
-	/**  Whether we switched to the develop branch */
+	/**
+	 *  Whether HEAD was moved to the develop branch (false if it was already
+	 *  checked out, in which case the working tree was not touched)
+	 */
 	switchedToDevelop: boolean,
 };
 
