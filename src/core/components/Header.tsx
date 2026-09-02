@@ -110,6 +110,15 @@ export function Header() {
           }
           await refreshStatus();
           toast.info(`Switched to ${localName}`);
+        } else {
+          // The store returns false and records the reason (e.g. local
+          // changes that the checkout would overwrite); surface it.
+          const message = useBranchStore.getState().branchError;
+          toast.error(
+            message
+              ? `Could not switch to ${branchName}: ${message}`
+              : `Could not switch to ${branchName}`,
+          );
         }
       } catch (e) {
         toast.error(

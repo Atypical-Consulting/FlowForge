@@ -379,14 +379,19 @@ pub async fn pull_from_remote(
                 ));
             }
 
-            // Fast-forward: just update HEAD
+            // Fast-forward: update the working tree and index to the fetched
+            // commit FIRST, with a safe checkout (not force) so git2 refuses to
+            // clobber any file it cannot reconcile rather than discarding local
+            // work. The checkout baseline is the current HEAD tree, so the
+            // branch ref must only be advanced once the checkout succeeded;
+            // moving the ref first would make the old content look like local
+            // edits that a safe checkout leaves in place.
             let refname = format!("refs/heads/{}", branch_name);
+            let target = repo.find_object(fetch_commit.id(), None)?;
+            crate::git::branch::checkout_tree_safe(&repo, &target)?;
             let mut reference = repo.find_reference(&refname)?;
             reference.set_target(fetch_commit.id(), "pull: fast-forward")?;
             repo.set_head(&refname)?;
-            // Use a safe checkout (not force) so git2 refuses to clobber any
-            // file it cannot reconcile rather than discarding local work.
-            repo.checkout_head(Some(git2::build::CheckoutBuilder::default().safe()))?;
 
             return Ok(SyncResult {
                 success: true,

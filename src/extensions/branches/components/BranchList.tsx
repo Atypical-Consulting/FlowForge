@@ -101,7 +101,16 @@ export function BranchList({
           .getState()
           .recordBranchVisit(repoPath, branchName);
       }
+      return;
     }
+    // The store only records the error; make the refused switch visible
+    // (e.g. local changes that would be overwritten by the checkout).
+    const message = useBranchStore.getState().branchError;
+    toast.error(
+      message
+        ? `Could not switch to ${branchName}: ${message}`
+        : `Could not switch to ${branchName}`,
+    );
   };
 
   const handleTogglePin = async (branchName: string) => {

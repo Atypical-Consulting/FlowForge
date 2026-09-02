@@ -108,6 +108,73 @@ pub async fn list_branches(state: State<'_, RepositoryState>) -> Result<Vec<Bran
     .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
 }
 
+/// Update the index and working tree to `target` with a *safe* checkout.
+///
+/// Local modifications that do not overlap with the differences between the
+/// current HEAD tree and `target` are carried over (`git checkout` semantics).
+/// Any file whose local changes would have to be overwritten aborts the whole
+/// checkout with [`GitError::CheckoutWouldOverwrite`] listing those paths, and
+/// nothing is modified.
+pub(crate) fn checkout_tree_safe(
+    repo: &git2::Repository,
+    target: &git2::Object<'_>,
+) -> Result<(), GitError> {
+    let conflicts = std::cell::RefCell::new(Vec::<String>::new());
+
+    let result = {
+        let mut opts = git2::build::CheckoutBuilder::new();
+        opts.safe()
+            .notify_on(git2::CheckoutNotificationType::CONFLICT)
+            .notify(|_, path, _, _, _| {
+                if let Some(path) = path {
+                    conflicts.borrow_mut().push(path.display().to_string());
+                }
+                true
+            });
+        repo.checkout_tree(target, Some(&mut opts))
+    };
+
+    match result {
+        Ok(()) => Ok(()),
+        Err(e) if e.code() == git2::ErrorCode::Conflict => {
+            let mut paths = conflicts.into_inner();
+            paths.sort();
+            paths.dedup();
+            if paths.is_empty() {
+                Err(GitError::CheckoutWouldOverwrite(e.message().to_string()))
+            } else {
+                Err(GitError::CheckoutWouldOverwrite(paths.join(", ")))
+            }
+        }
+        Err(e) => Err(GitError::from(e)),
+    }
+}
+
+/// Switch HEAD to the local branch `branch_name` (`git checkout <branch>`).
+///
+/// The index and working tree are brought to the branch tip with a safe
+/// [`checkout_tree_safe`] *before* HEAD is moved. libgit2 uses the current
+/// HEAD tree as the checkout baseline: if HEAD were moved first, the files of
+/// the previous branch would look like local edits of the new branch and a
+/// safe checkout would leave them in place, turning the switch into a
+/// `git reset --soft` with a pile of staged changes on the wrong branch.
+/// Doing the checkout first also means a refused switch leaves HEAD, index and
+/// working tree exactly as they were.
+pub(crate) fn switch_to_local_branch(
+    repo: &git2::Repository,
+    branch_name: &str,
+) -> Result<(), GitError> {
+    let branch = repo
+        .find_branch(branch_name, git2::BranchType::Local)
+        .map_err(|_| GitError::BranchNotFound(branch_name.to_string()))?;
+    let commit = branch.get().peel_to_commit()?;
+
+    // Working tree and index first; only move HEAD once that succeeded.
+    checkout_tree_safe(repo, commit.as_object())?;
+    repo.set_head(&format!("refs/heads/{}", branch_name))?;
+    Ok(())
+}
+
 /// Create a new branch from HEAD.
 #[tauri::command]
 #[specta::specta]
@@ -142,8 +209,7 @@ pub async fn create_branch(
 
         // Optionally checkout the new branch
         if checkout {
-            repo.set_head(&format!("refs/heads/{}", name))?;
-            repo.checkout_head(Some(git2::build::CheckoutBuilder::new().safe()))?;
+            switch_to_local_branch(&repo, &name)?;
         }
 
         let commit = branch.get().peel_to_commit()?;
@@ -177,23 +243,7 @@ pub async fn checkout_branch(
     tokio::task::spawn_blocking(move || {
         let repo = git2::Repository::open(&repo_path)?;
 
-        // Check if branch exists
-        repo.find_branch(&branch_name, git2::BranchType::Local)
-            .map_err(|_| GitError::BranchNotFound(branch_name.clone()))?;
-
-        // Two-step checkout process
-        repo.set_head(&format!("refs/heads/{}", branch_name))?;
-
-        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().safe()))
-            .map_err(|e| {
-                if e.message().contains("conflict") || e.message().contains("overwrite") {
-                    GitError::DirtyWorkingDirectory
-                } else {
-                    GitError::from(e)
-                }
-            })?;
-
-        Ok(())
+        switch_to_local_branch(&repo, &branch_name)
     })
     .await
     .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
@@ -392,16 +442,7 @@ pub async fn checkout_remote_branch(
             .find_branch(&local_name, git2::BranchType::Local)
             .is_ok()
         {
-            repo.set_head(&format!("refs/heads/{}", local_name))?;
-            repo.checkout_head(Some(git2::build::CheckoutBuilder::new().safe()))
-                .map_err(|e| {
-                    if e.message().contains("conflict") || e.message().contains("overwrite") {
-                        GitError::DirtyWorkingDirectory
-                    } else {
-                        GitError::from(e)
-                    }
-                })?;
-            return Ok(());
+            return switch_to_local_branch(&repo, &local_name);
         }
 
         // Find the remote reference
@@ -418,17 +459,7 @@ pub async fn checkout_remote_branch(
         local_branch.set_upstream(Some(&remote_branch))?;
 
         // Checkout the new local branch
-        repo.set_head(&format!("refs/heads/{}", local_name))?;
-        repo.checkout_head(Some(git2::build::CheckoutBuilder::new().safe()))
-            .map_err(|e| {
-                if e.message().contains("conflict") || e.message().contains("overwrite") {
-                    GitError::DirtyWorkingDirectory
-                } else {
-                    GitError::from(e)
-                }
-            })?;
-
-        Ok(())
+        switch_to_local_branch(&repo, &local_name)
     })
     .await
     .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
@@ -653,4 +684,128 @@ pub async fn get_branch_ahead_behind(
     })
     .await
     .map_err(|e| GitError::Internal(format!("Task join error: {}", e)))?
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::gitflow::test_support::{
+        commit_file, create_and_checkout, current_branch, init_repo, read_file, write_file,
+    };
+
+    /// `main` has `shared.txt` + `readme.txt`; `feature` (one commit ahead) has
+    /// a different `readme.txt`, an extra `pay.ts`, and the same `shared.txt`.
+    /// Returns the repo with `feature` checked out and a clean tree.
+    fn two_branch_repo() -> (tempfile::TempDir, git2::Repository) {
+        let (dir, repo) = init_repo();
+        commit_file(&repo, "shared.txt", "shared\n", "add shared");
+        commit_file(&repo, "readme.txt", "main readme\n", "add readme");
+        create_and_checkout(&repo, "feature");
+        commit_file(&repo, "readme.txt", "feature readme\n", "feature readme");
+        commit_file(&repo, "pay.ts", "export const pay = 1;\n", "feature work");
+        assert_eq!(current_branch(&repo), "feature");
+        assert_eq!(status_paths(&repo), Vec::new(), "fixture must start clean");
+        (dir, repo)
+    }
+
+    fn status_paths(repo: &git2::Repository) -> Vec<(String, git2::Status)> {
+        let mut opts = git2::StatusOptions::new();
+        opts.include_untracked(true).include_ignored(false);
+        repo.statuses(Some(&mut opts))
+            .unwrap()
+            .iter()
+            .map(|s| (s.path().unwrap().to_string(), s.status()))
+            .collect()
+    }
+
+    #[test]
+    fn checkout_on_clean_tree_updates_worktree_and_index() {
+        let (_dir, repo) = two_branch_repo();
+
+        switch_to_local_branch(&repo, "main").unwrap();
+
+        assert_eq!(current_branch(&repo), "main");
+        assert_eq!(read_file(&repo, "readme.txt"), "main readme\n");
+        assert!(
+            !repo.workdir().unwrap().join("pay.ts").exists(),
+            "file only on feature must be removed from the working tree"
+        );
+        // Index must match main's tree too, i.e. no staged changes.
+        assert_eq!(
+            status_paths(&repo),
+            Vec::new(),
+            "git status must be clean after switching branches"
+        );
+
+        // And back again.
+        switch_to_local_branch(&repo, "feature").unwrap();
+        assert_eq!(current_branch(&repo), "feature");
+        assert_eq!(read_file(&repo, "readme.txt"), "feature readme\n");
+        assert_eq!(read_file(&repo, "pay.ts"), "export const pay = 1;\n");
+        assert_eq!(status_paths(&repo), Vec::new());
+    }
+
+    #[test]
+    fn checkout_with_conflicting_modification_is_refused_and_touches_nothing() {
+        let (_dir, repo) = two_branch_repo();
+        write_file(&repo, "readme.txt", "local edit\n");
+        let before = status_paths(&repo);
+
+        let err = switch_to_local_branch(&repo, "main").unwrap_err();
+
+        match err {
+            GitError::CheckoutWouldOverwrite(paths) => {
+                assert!(paths.contains("readme.txt"), "got: {paths}")
+            }
+            other => panic!("expected CheckoutWouldOverwrite, got {other:?}"),
+        }
+        assert_eq!(current_branch(&repo), "feature", "HEAD must not move");
+        assert_eq!(read_file(&repo, "readme.txt"), "local edit\n");
+        assert_eq!(read_file(&repo, "pay.ts"), "export const pay = 1;\n");
+        assert_eq!(status_paths(&repo), before, "index/worktree must be untouched");
+    }
+
+    #[test]
+    fn checkout_keeps_non_conflicting_untracked_file() {
+        let (_dir, repo) = two_branch_repo();
+        write_file(&repo, "notes.txt", "scratch\n");
+
+        switch_to_local_branch(&repo, "main").unwrap();
+
+        assert_eq!(current_branch(&repo), "main");
+        assert_eq!(read_file(&repo, "notes.txt"), "scratch\n");
+        assert_eq!(read_file(&repo, "readme.txt"), "main readme\n");
+        assert_eq!(
+            status_paths(&repo),
+            vec![("notes.txt".to_string(), git2::Status::WT_NEW)]
+        );
+    }
+
+    #[test]
+    fn checkout_carries_over_non_conflicting_tracked_modification() {
+        let (_dir, repo) = two_branch_repo();
+        // `shared.txt` is identical on both branches, so an edit to it does
+        // not conflict with the switch and must be preserved (git semantics).
+        write_file(&repo, "shared.txt", "edited\n");
+
+        switch_to_local_branch(&repo, "main").unwrap();
+
+        assert_eq!(current_branch(&repo), "main");
+        assert_eq!(read_file(&repo, "shared.txt"), "edited\n");
+        assert_eq!(read_file(&repo, "readme.txt"), "main readme\n");
+        assert_eq!(
+            status_paths(&repo),
+            vec![("shared.txt".to_string(), git2::Status::WT_MODIFIED)]
+        );
+    }
+
+    #[test]
+    fn checkout_unknown_branch_is_branch_not_found() {
+        let (_dir, repo) = two_branch_repo();
+        assert!(matches!(
+            switch_to_local_branch(&repo, "nope"),
+            Err(GitError::BranchNotFound(n)) if n == "nope"
+        ));
+        assert_eq!(current_branch(&repo), "feature");
+    }
 }

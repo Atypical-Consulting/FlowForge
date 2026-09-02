@@ -12,6 +12,11 @@ export function getErrorMessage(error: GitError | GitflowError): string {
   if (error.type === "DirtyWorkingTree") {
     return "You have uncommitted changes. Commit or stash them before running this Gitflow operation.";
   }
+  // Branch checkout refused because it would clobber local edits to the
+  // listed files. Nothing was modified.
+  if (error.type === "CheckoutWouldOverwrite") {
+    return `You have local changes to ${error.message} that would be overwritten by checkout; commit or stash them first.`;
+  }
 
   // Handle GitflowError types
   if ("data" in error) {

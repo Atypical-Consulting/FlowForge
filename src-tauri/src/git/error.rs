@@ -69,6 +69,12 @@ pub enum GitError {
     #[error("Cannot checkout with uncommitted changes")]
     DirtyWorkingDirectory,
 
+    /// Switching branches would overwrite uncommitted local changes to the
+    /// listed paths (comma-separated). The checkout was refused and HEAD,
+    /// index and working tree are untouched.
+    #[error("Local changes to {0} would be overwritten by checkout; commit or stash them first")]
+    CheckoutWouldOverwrite(String),
+
     // Stash errors
     #[error("Stash not found at index {0}")]
     StashNotFound(u32),

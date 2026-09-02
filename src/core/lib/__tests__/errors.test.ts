@@ -29,6 +29,17 @@ describe("getErrorMessage", () => {
     expect(getErrorMessage(error)).toBe("Expected main, got develop");
   });
 
+  it("turns a refused checkout into an actionable sentence listing the files", () => {
+    const error: GitError = {
+      type: "CheckoutWouldOverwrite",
+      message: "README.md, src/index.ts",
+    };
+
+    expect(getErrorMessage(error)).toBe(
+      "You have local changes to README.md, src/index.ts that would be overwritten by checkout; commit or stash them first.",
+    );
+  });
+
   it("uses the message field for GitError variants", () => {
     const error = {
       type: "GitOperationFailed",
