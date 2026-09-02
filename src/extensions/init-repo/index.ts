@@ -25,6 +25,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     description:
       "Set up a new Git repository with .gitignore templates, README, and initial commit",
     category: "Repository",
+    shortcut: "mod+n",
     icon: FolderGit2,
     keywords: ["init", "initialize", "new", "repository", "git", "create"],
     action: async () => {

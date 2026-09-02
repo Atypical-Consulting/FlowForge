@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Maximize2, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useCommandShortcut } from "@/framework/command-palette/useCommandShortcut";
 import { commands } from "../../../bindings";
 import { useExtensionHost } from "../../../extensions";
 import { ConventionalCommitForm } from "../../../extensions/conventional-commits/components/ConventionalCommitForm";
@@ -30,6 +31,7 @@ export function CommitForm() {
   });
 
   const amendPrefill = useAmendPrefill({ mode: "simple" });
+  const amendShortcut = useCommandShortcut("ext:sync:toggle-amend");
 
   // Listen for toggle-amend event from keyboard shortcut
   useEffect(() => {
@@ -156,7 +158,7 @@ export function CommitForm() {
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
               <ShortcutTooltip
-                shortcut="mod+shift+M"
+                shortcut={amendShortcut}
                 label="Toggle Amend"
                 side="top"
               >

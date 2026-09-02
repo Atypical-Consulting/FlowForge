@@ -70,14 +70,16 @@ export function MenuDropdown({
         }
 
         const currentActionIndex = actionIndex++;
-        const { disabled: isDisabled } = resolveCommand(item.commandId);
+        const { command, disabled: isDisabled } = resolveCommand(
+          item.commandId,
+        );
 
         return (
           <MenuItem
             key={item.id}
             label={item.label}
             icon={item.icon}
-            shortcut={item.shortcut}
+            shortcut={command?.shortcut}
             disabled={isDisabled}
             isHighlighted={currentActionIndex === highlightedIndex}
             onClick={() => onItemClick(item)}

@@ -1,5 +1,7 @@
+import { useCommandRegistry } from "@/framework/command-palette/commandRegistry";
 import {
   getGroupedToolbarActions,
+  resolveToolbarActionShortcut,
   TOOLBAR_GROUP_ORDER,
   type ToolbarAction,
   useToolbarRegistry,
@@ -13,6 +15,8 @@ import { usePreferencesStore as useSettingsStore } from "../../../stores/domain/
  */
 export function ToolbarSettings() {
   const actions = useToolbarRegistry((s) => s.items);
+  // Subscribed for re-render only: shortcut hints are resolved from the command registry.
+  useCommandRegistry((s) => s.items);
   const { settingsData, updateSetting } = useSettingsStore();
   const hiddenActions = settingsData.toolbar?.hiddenActions ?? [];
 
@@ -85,6 +89,7 @@ export function ToolbarSettings() {
             <div className="space-y-1">
               {groupActions.map((action) => {
                 const Icon = action.icon;
+                const shortcut = resolveToolbarActionShortcut(action);
                 const isVisible = !hiddenActions.includes(action.id);
 
                 return (
@@ -102,9 +107,9 @@ export function ToolbarSettings() {
                     <span className="text-sm text-ctp-text flex-1">
                       {action.label}
                     </span>
-                    {action.shortcut && (
+                    {shortcut && (
                       <span className="text-xs text-ctp-subtext0 font-mono">
-                        {formatShortcut(action.shortcut)}
+                        {formatShortcut(shortcut)}
                       </span>
                     )}
                   </label>

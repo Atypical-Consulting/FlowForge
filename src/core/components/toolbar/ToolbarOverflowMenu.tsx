@@ -1,28 +1,66 @@
 import { MoreHorizontal } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import type { ToolbarAction } from "@/framework/extension-system/toolbarRegistry";
+import {
+  type ToolbarAction,
+  useToolbarActionShortcut,
+} from "@/framework/extension-system/toolbarRegistry";
 import { formatShortcut } from "../../hooks/useKeyboardShortcuts";
 import { Button } from "../ui/button";
 
 interface ToolbarOverflowMenuProps {
   actions: ToolbarAction[];
-  count: number;
+}
+
+interface OverflowMenuItemProps {
+  action: ToolbarAction;
+  onSelect: () => void;
+}
+
+function OverflowMenuItem({ action, onSelect }: OverflowMenuItemProps) {
+  const Icon = action.icon;
+  const loading = action.isLoading?.() ?? false;
+  const shortcut = useToolbarActionShortcut(action);
+
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      disabled={loading}
+      onClick={() => {
+        action.execute();
+        onSelect();
+      }}
+      className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-ctp-subtext1 hover:bg-ctp-surface0 hover:text-ctp-text disabled:opacity-50 transition-colors"
+    >
+      <Icon className={`w-4 h-4 shrink-0${loading ? " animate-spin" : ""}`} />
+      <span className="flex-1 text-left whitespace-nowrap">{action.label}</span>
+      {shortcut && (
+        <span className="ml-8 shrink-0 whitespace-nowrap text-xs text-ctp-subtext0 font-mono">
+          {formatShortcut(shortcut)}
+        </span>
+      )}
+    </button>
+  );
 }
 
 /**
  * Overflow dropdown showing actions that don't fit inline.
- * Trigger has a count badge and participates in roving tabindex
- * via `data-toolbar-item`.
+ *
+ * The trigger is a plain "more" button: the number of collapsed actions is
+ * layout trivia, not a notification, so it is not surfaced as a badge.
+ * The trigger participates in roving tabindex via `data-toolbar-item` and is
+ * tagged `data-toolbar-overflow-trigger` so overflow measurement can tell it
+ * apart from real actions.
  */
 export const ToolbarOverflowMenu = memo(function ToolbarOverflowMenu({
   actions,
-  count,
 }: ToolbarOverflowMenuProps) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   const toggle = useCallback(() => setOpen((prev) => !prev), []);
+  const close = useCallback(() => setOpen(false), []);
 
   // Close on click outside
   useEffect(() => {
@@ -65,15 +103,14 @@ export const ToolbarOverflowMenu = memo(function ToolbarOverflowMenu({
         variant="ghost"
         size="sm"
         onClick={toggle}
-        aria-label={`${count} more actions`}
+        aria-label="More actions"
+        title="More actions"
         aria-haspopup="true"
         aria-expanded={open}
         data-toolbar-item
+        data-toolbar-overflow-trigger
       >
         <MoreHorizontal className="w-4 h-4" />
-        <span className="absolute -top-1 -right-1 bg-ctp-blue text-ctp-base text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
-          {count}
-        </span>
       </Button>
 
       {open && (
@@ -82,36 +119,13 @@ export const ToolbarOverflowMenu = memo(function ToolbarOverflowMenu({
           role="menu"
           className="absolute right-0 top-full mt-1 w-max min-w-48 rounded-md border border-ctp-surface0 bg-ctp-mantle/95 backdrop-blur-sm shadow-lg py-1 z-50"
         >
-          {actions.map((action) => {
-            const Icon = action.icon;
-            const loading = action.isLoading?.() ?? false;
-
-            return (
-              <button
-                key={action.id}
-                type="button"
-                role="menuitem"
-                disabled={loading}
-                onClick={() => {
-                  action.execute();
-                  setOpen(false);
-                }}
-                className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-ctp-subtext1 hover:bg-ctp-surface0 hover:text-ctp-text disabled:opacity-50 transition-colors"
-              >
-                <Icon
-                  className={`w-4 h-4 shrink-0${loading ? " animate-spin" : ""}`}
-                />
-                <span className="flex-1 text-left whitespace-nowrap">
-                  {action.label}
-                </span>
-                {action.shortcut && (
-                  <span className="ml-8 shrink-0 whitespace-nowrap text-xs text-ctp-subtext0 font-mono">
-                    {formatShortcut(action.shortcut)}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+          {actions.map((action) => (
+            <OverflowMenuItem
+              key={action.id}
+              action={action}
+              onSelect={close}
+            />
+          ))}
         </div>
       )}
     </div>

@@ -146,7 +146,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     icon: ArrowUp,
     group: "git-actions",
     priority: 40,
-    shortcut: "mod+shift+U",
+    commandId: "ext:sync:push",
     when: whenRepoOpen,
     isLoading: () => pushLoading,
     execute: async () => {
@@ -178,7 +178,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     icon: ArrowDown,
     group: "git-actions",
     priority: 50,
-    shortcut: "mod+shift+L",
+    commandId: "ext:sync:pull",
     when: whenRepoOpen,
     isLoading: () => pullLoading,
     execute: async () => {
@@ -210,7 +210,7 @@ export async function onActivate(api: ExtensionAPI): Promise<void> {
     icon: CloudDownload,
     group: "git-actions",
     priority: 60,
-    shortcut: "mod+shift+F",
+    commandId: "ext:sync:fetch",
     when: whenRepoOpen,
     isLoading: () => fetchLoading,
     execute: async () => {

@@ -17,17 +17,26 @@ import { usePreferencesStore } from "../stores/domain/preferences";
 /**
  * Keyboard shortcuts for common Git operations.
  *
+ * The hints displayed in menus, tooltips and the command palette come from
+ * the `shortcut` declared on each command in the command registry -- keep the
+ * bindings below and those declarations in sync.
+ *
  * Shortcuts:
+ * - Cmd/Ctrl+N: New repository
  * - Cmd/Ctrl+O: Open repository
+ * - Cmd/Ctrl+Shift+O: Clone repository
  * - Cmd/Ctrl+,: Open settings
  * - Cmd/Ctrl+Shift+A: Stage all files
- * - Cmd/Ctrl+K: Open command palette
- * - Cmd/Ctrl+Shift+P: Open command palette
+ * - Cmd/Ctrl+K: Open command palette (the advertised shortcut)
+ * - Cmd/Ctrl+Shift+P: Open command palette (unadvertised VS Code-style alias)
  * - Cmd/Ctrl+Shift+U: Push (Upload)
  * - Cmd/Ctrl+Shift+L: Pull (L for "pull Latest")
  * - Cmd/Ctrl+Shift+F: Fetch
  * - Cmd/Ctrl+Shift+M: Toggle amend commit
  * - Cmd/Ctrl+\: Toggle sidebar visibility
+ * - Cmd/Ctrl+1 / Cmd/Ctrl+2: Show changes / history
+ * - Cmd/Ctrl+B: Show branches
+ * - Cmd/Ctrl+Shift+N: New branch
  * - Escape: Exit focus mode (if active), else pop blade
  * - Backspace: Pop blade (navigate back)
  */
@@ -182,7 +191,7 @@ export function useKeyboardShortcuts() {
     { preventDefault: true, enabled: !!status },
   );
 
-  // Command palette shortcut
+  // Command palette alias (VS Code muscle memory); not shown in the UI
   useHotkeys(
     "mod+shift+p",
     (e) => {
@@ -192,7 +201,7 @@ export function useKeyboardShortcuts() {
     { preventDefault: true },
   );
 
-  // Command palette shortcut (discoverable alias)
+  // Command palette shortcut (the one advertised by the "command-palette" command)
   useHotkeys(
     "mod+k",
     (e) => {
