@@ -150,6 +150,10 @@ export const commands = {
 	 *  When a merge is in progress (`.git/MERGE_HEAD` exists) the commit records
 	 *  HEAD *and* every MERGE_HEAD as parents, i.e. it completes the merge exactly
 	 *  like `git commit` would, and the merge state files are removed afterwards.
+	 *  During a cherry-pick or revert (single or a `git cherry-pick a..b`
+	 *  sequence) the commit is a plain single-parent commit and only
+	 *  CHERRY_PICK_HEAD / REVERT_HEAD and MERGE_MSG are removed, so the sequence
+	 *  can be continued with `git cherry-pick --continue`.
 	 * 
 	 *  # Errors
 	 *  - `NoStagedChanges` if index is empty (nothing staged)
@@ -1601,10 +1605,26 @@ export type RepoStatus = {
 	 */
 	mergeHeadBranch: string | null,
 	/**
-	 *  Contents of `.git/MERGE_MSG` (the message git prepared for the merge
-	 *  commit), when a merge is in progress.
+	 *  Contents of `.git/MERGE_MSG` (the message git prepared for the merge,
+	 *  cherry-pick or revert commit), when one of those is in progress.
 	 */
 	mergeMessage: string | null,
+	/**
+	 *  Whether a cherry-pick is in progress (`.git/CHERRY_PICK_HEAD` exists),
+	 *  on its own or as one step of a `git cherry-pick a..b` sequence. The
+	 *  next commit records the pick; a sequence is then continued with git.
+	 */
+	cherryPickInProgress: boolean,
+	/**
+	 *  Whether a revert is in progress (`.git/REVERT_HEAD` exists), on its
+	 *  own or as one step of a `git revert a..b` sequence.
+	 */
+	revertInProgress: boolean,
+	/**
+	 *  Short oid of the commit being cherry-picked or reverted
+	 *  (CHERRY_PICK_HEAD / REVERT_HEAD), when one of those is in progress.
+	 */
+	sequencerHead: string | null,
 };
 
 /**  A scope suggestion from commit history. */

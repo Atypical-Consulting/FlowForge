@@ -58,6 +58,9 @@ export function useRecentRepos() {
       ].slice(0, MAX_RECENT_REPOS);
 
       await store.set(RECENT_REPOS_KEY, updated);
+      // Flush to disk: nothing else is guaranteed to save the store before the
+      // app closes, and a lost timestamp reorders the welcome-screen list.
+      await store.save();
       setRecentRepos(updated);
     } catch (e) {
       console.error("Failed to add recent repo:", e);
@@ -70,6 +73,9 @@ export function useRecentRepos() {
       const existing = (await store.get<RecentRepo[]>(RECENT_REPOS_KEY)) || [];
       const updated = existing.filter((r) => r.path !== path);
       await store.set(RECENT_REPOS_KEY, updated);
+      // Flush to disk: nothing else is guaranteed to save the store before the
+      // app closes, and a lost timestamp reorders the welcome-screen list.
+      await store.save();
       setRecentRepos(updated);
     } catch (e) {
       console.error("Failed to remove recent repo:", e);
@@ -84,6 +90,9 @@ export function useRecentRepos() {
         r.path === path ? { ...r, isPinned: !r.isPinned } : r,
       );
       await store.set(RECENT_REPOS_KEY, updated);
+      // Flush to disk: nothing else is guaranteed to save the store before the
+      // app closes, and a lost timestamp reorders the welcome-screen list.
+      await store.save();
       setRecentRepos(updated);
     } catch (e) {
       console.error("Failed to toggle pin:", e);
