@@ -63,10 +63,10 @@ pub fn apply_startup_decorations(window: &tauri::WebviewWindow) {
         if hide { "hidden" } else { "shown" },
         hide
     );
-    if hide {
-        if let Err(e) = window.set_decorations(false) {
-            eprintln!("[warn] failed to hide window decorations: {e}");
-        }
+    if hide
+        && let Err(e) = window.set_decorations(false)
+    {
+        eprintln!("[warn] failed to hide window decorations: {e}");
     }
 }
 

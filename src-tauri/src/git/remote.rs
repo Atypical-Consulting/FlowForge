@@ -250,10 +250,10 @@ pub fn push_branch(
 
     let rejection_sink = rejection.clone();
     callbacks.push_update_reference(move |_refname, status| {
-        if let Some(status) = status {
-            if let Ok(mut slot) = rejection_sink.lock() {
-                *slot = Some(status.to_string());
-            }
+        if let Some(status) = status
+            && let Ok(mut slot) = rejection_sink.lock()
+        {
+            *slot = Some(status.to_string());
         }
         Ok(())
     });
@@ -326,10 +326,10 @@ pub fn fetch_remote(
 
     let updates_sink = updates.clone();
     callbacks.update_tips(move |refname, old, new| {
-        if refname.starts_with("refs/remotes/") {
-            if let Ok(mut list) = updates_sink.lock() {
-                list.push((old, new));
-            }
+        if refname.starts_with("refs/remotes/")
+            && let Ok(mut list) = updates_sink.lock()
+        {
+            list.push((old, new));
         }
         true
     });
